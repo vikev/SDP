@@ -1,0 +1,338 @@
+
+<!doctype html>
+
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<style type="text/css">
+			body{
+				max-width: 640px;
+				margin-left: auto;
+				margin-right: auto;
+			}
+			.code{
+				font-family: sans-serif;
+				background-color: #dedede;
+			}
+			.bold{
+				font-weight: bold;
+			}
+			hr{
+				height: 1px;
+				background-color: #dedede;
+				border-color: #ffffff;
+			}
+		</style>
+		<title>SDP 2013 Common Criteria</title>
+	</head>
+	<body>
+		<p>
+			SDP 2013 Common Criteria
+		</p>
+		<p>
+			This page aims to be a reference for previous years' code, telling us packages used 
+			and strengths and weaknesses as well.
+		</p>
+		<hr />
+		<p>
+			Index:
+		</p>
+		<p>
+			For each group:
+		</p>
+		<ol>
+			<li>Comments</li>
+			<li>Organization/Documentation</li>
+			<li>Package List (beyond java, javax, junit...)</li>
+		</ol>
+		<hr />
+		<p>
+			Group 1:
+		</p>
+		<p>
+			Received google prize; almost won tournament but tried to score in its own goal when placed
+			on second table.
+		</p>
+		<p>
+			Mostly available/good documentation, decent organization, medium to large code base.
+		</p>
+		<p class="code">
+			import lejos.nxt.I2CSensor;<br />
+			import lejos.nxt.comm.Bluetooth;<br />
+			import lejos.nxt.Button;<br />
+			import lejos.nxt.ButtonListener;<br />
+			import lejos.nxt.comm.NXTConnection;<br />
+			import lejos.nxt.SensorPort;<br />
+			import lejos.nxt.TouchSensor;<br />
+			import lejos.pc.comm.NXTComm;<br />
+			import lejos.pc.comm.NXTCommException;<br />
+			import lejos.pc.comm.NXTCommFactory;<br />
+			import lejos.pc.comm.NXTInfo;<br />
+			import org.apache.log4j.Logger;<br />
+			import static org.mockito.Mockito.mock;<br />
+			import static org.mockito.Mockito.when;<br />
+			import static org.mockito.Mockito.verify;<br />
+			import org.mockito.verification.VerificationMode;<br />
+			import au.edu.jcu.v4l4j.V4L4JConstants;<br />
+			import au.edu.jcu.v4l4j.exceptions.V4L4JException;<br />
+			import au.edu.jcu.v4l4j.CaptureCallback;<br />
+			import au.edu.jcu.v4l4j.DeviceInfo;<br />
+			import au.edu.jcu.v4l4j.FrameGrabber;<br />
+			import au.edu.jcu.v4l4j.ImageFormat;<br />
+			import au.edu.jcu.v4l4j.VideoDevice;<br />
+			import au.edu.jcu.v4l4j.VideoFrame;<br />
+			import au.edu.jcu.v4l4j.exceptions.ImageFormatException;<br />
+		</p>
+		<hr />
+		<p>
+			Group 3:
+		</p>
+		<p>
+			Whole codebase for their testing, including using some w3/xml packages available. 
+			Some code seems unused, never cleaned up/deleted. Has a "FutureBall" class for 
+			predicting ball locations.
+		</p>
+		<p>
+			Decent documentation and medium sized code base.
+		</p>
+		<p class="code">
+			import org.apache.log4j.Logger;<br />
+			import org.apache.log4j.spi.RootLogger;<br />
+			import lejos.nxt.*;<br />
+			import lejos.nxt.Motor;<br />
+			import lejos.nxt.remote.RemoteMotor;<br />
+			import lejos.nxt.remote.NXTCommand;<br />
+			import lejos.nxt.SensorPort;<br />
+			import lejos.nxt.TouchSensor;<br />
+			import lejos.pc.comm.NXTCommException;<br />
+			import lejos.pc.comm.NXTComm;<br />
+			import lejos.pc.comm.NXTCommFactory;<br />
+			import lejos.pc.comm.NXTInfo;<br />
+			import lejos.robotics.navigation.TachoPilot;<br />
+			import au.edu.jcu.v4l4j.V4L4JConstants;<br />
+			import au.edu.jcu.v4l4j.*;<br />
+			import au.edu.jcu.v4l4j.exceptions.StateException;<br />
+			import au.edu.jcu.v4l4j.exceptions.V4L4JException;<br />
+		</p>
+		<hr />
+		<p>
+			Group 4:
+		</p>
+		<p>
+			Using jbox2d package for a simulator, which seems useful.
+		</p>
+		<p>
+			Decent coding style. Fair documentation; medium length code.
+		</p>
+		<p class="code">
+			import lejos.nxt.Button;<br />
+			import lejos.nxt.LCD;<br />
+			import lejos.nxt.Motor;<br />
+			import lejos.nxt.NXTRegulatedMotor;<br />
+			import lejos.nxt.SensorPort;<br />
+			import lejos.nxt.Sound;<br />
+			import lejos.nxt.comm.Bluetooth;<br />
+			import lejos.nxt.comm.NXTConnection;<br />
+			import lejos.nxt.I2CPort;<br />
+			import lejos.nxt.I2CSensor;<br />
+			import lejos.pc.comm.NXTComm;<br />
+			import lejos.pc.comm.NXTCommException;<br />
+			import lejos.pc.comm.NXTCommFactory;<br />
+			import lejos.pc.comm.NXTInfo;<br />
+			import au.edu.jcu.v4l4j.V4L4JConstants;<br />
+			import au.edu.jcu.v4l4j.CaptureCallback;<br />
+			import au.edu.jcu.v4l4j.Control;<br />
+			import au.edu.jcu.v4l4j.DeviceInfo;<br />
+			import au.edu.jcu.v4l4j.FrameGrabber;<br />
+			import au.edu.jcu.v4l4j.ImageFormat;<br />
+			import au.edu.jcu.v4l4j.VideoDevice;<br />
+			import au.edu.jcu.v4l4j.VideoFrame;<br />
+			import au.edu.jcu.v4l4j.exceptions.ImageFormatException;<br />
+			import au.edu.jcu.v4l4j.exceptions.V4L4JException;<br />
+			import org.jbox2d.collision.shapes.CircleShape;<br />
+			import org.jbox2d.collision.shapes.PolygonShape;<br />
+			import org.jbox2d.common.Vec2;<br />
+			import org.jbox2d.common.MathUtils;<br />
+			import org.jbox2d.dynamics.Body;<br />
+			import org.jbox2d.dynamics.BodyDef;<br />
+			import org.jbox2d.dynamics.BodyType;<br />
+			import org.jbox2d.dynamics.FixtureDef;<br />
+			import org.jbox2d.dynamics.World;<br />
+			import org.jbox2d.dynamics.contacts.Contact;<br />
+			import org.jbox2d.dynamics.contacts.ContactEdge;<br />
+			import org.jbox2d.dynamics.joints.PrismaticJoint;<br />
+			import org.jbox2d.dynamics.joints.PrismaticJointDef;<br />
+			import org.jbox2d.testbed.framework.TestbedFrame;<br />
+			import org.jbox2d.testbed.framework.TestbedModel;<br />
+			import org.jbox2d.testbed.framework.TestbedPanel;<br />
+			import org.jbox2d.testbed.framework.j2d.TestPanelJ2D;<br />
+			import org.jbox2d.testbed.framework.TestbedSettings;<br />
+			import org.jbox2d.testbed.framework.TestbedTest;<br />
+		</p>
+		<hr />
+		<p>
+			Group 6:
+		</p>
+		<p>
+			Contains w3/xml stuff for testing, as well as python code for vision and 
+			jama/neuroph packages for machine learning, all of which may have been 
+			inherited from previous years (not sure if in use).
+		</p>
+		<p>
+			This group had their code well segmented into packages which was easy to navigate
+			in spite of the huge code size.
+		</p>
+		<p class="code">
+			import lejos.pc.comm.NXTCommException;<br />
+			import lejos.pc.comm.NXTCommFactory;<br />
+			import lejos.pc.comm.NXTConnector;<br />
+			import lejos.pc.comm.NXTComm;<br />
+			import lejos.pc.comm.NXTInfo;<br />
+			import lejos.nxt.Button;<br />
+			import lejos.nxt.LCD;<br />
+			import lejos.nxt.Sound;<br />
+			import lejos.nxt.SensorPort;<br />
+			import lejos.nxt.UltrasonicSensor;<br />
+			import lejos.nxt.TouchSensor;<br />
+			import lejos.nxt.MotorPort;<br />
+			import lejos.nxt.NXTRegulatedMotor;<br />
+			import lejos.robotics.navigation.DifferentialPilot;<br />
+			import lejos.util.PIDController;<br />
+			import lejos.util.KalmanFilter;<br />
+			import lejos.util.Matrix;<br />
+			import lejos.util.PilotProps;<br />
+			import lejos.nxt.comm.Bluetooth;<br />
+			import lejos.nxt.comm.NXTConnection;<br />
+			import org.apache.log4j.Level;<br />
+			import org.apache.log4j.PatternLayout;<br />
+			import org.apache.log4j.spi.LoggingEvent;<br />
+			import org.apache.log4j.FileAppender;<br />
+			import org.apache.log4j.Layout;<br />
+			import org.apache.log4j.spi.ErrorCode;<br />
+			import org.apache.log4j.AppenderSkeleton;<br />
+			import org.neuroph.core.NeuralNetwork;<br />
+			import org.neuroph.core.learning.SupervisedTrainingElement;<br />
+			import org.neuroph.core.learning.TrainingSet;<br />
+			import org.neuroph.nnet.MultiLayerPerceptron;<br />
+			import org.neuroph.nnet.learning.BackPropagation;<br />
+			import org.jbox2d.common.Vec2;<br />
+			import org.jbox2d.testbed.framework.TestbedFrame;<br />
+			import org.jbox2d.testbed.framework.TestbedModel;<br />
+			import org.jbox2d.testbed.framework.TestbedPanel;<br />
+			import org.jbox2d.testbed.framework.TestbedTest;<br />
+			import org.jbox2d.dynamics.Body;<br />
+			import org.jbox2d.dynamics.BodyDef;<br />
+			import org.jbox2d.dynamics.BodyType;<br />
+			import org.jbox2d.dynamics.FixtureDef;<br />
+			import org.jbox2d.dynamics.World;<br />
+			import org.jbox2d.dynamics.joints.FrictionJointDef;<br />
+			import org.jbox2d.dynamics.joints.WeldJointDef;<br />
+			import org.jbox2d.collision.Collision;<br />
+			import org.jbox2d.collision.shapes.CircleShape;<br />
+			import org.jbox2d.collision.shapes.PolygonShape;<br />
+			import static org.mockito.Mockito.spy;<br />
+			import static org.mockito.Mockito.when;<br />
+			import static org.mockito.Mockito.mock;<br />
+			import static org.mockito.Mockito.verify;<br />
+		</p>
+		<hr />
+		<p>
+			Group 7:
+		</p>
+		<p>
+			All of this code is almost the same as group 6. Either it was all inherited 
+			from a previous year or there is a mistake in the archive.
+		</p>
+		<p>
+			Readability: Same as group 6.
+		</p>
+		<p class="code">
+			import lejos.pc.comm.NXTCommFactory;<br />
+			import lejos.pc.comm.NXTConnector;<br />
+			import lejos.nxt.LCD;<br />
+			import lejos.nxt.SensorPort;<br />
+			import lejos.nxt.TouchSensor;<br />
+			import lejos.nxt.Button;<br />
+			import lejos.robotics.navigation.LegacyPilot;<br />
+			import lejos.nxt.Motor;<br />
+			import lejos.nxt.NXTRegulatedMotor;<br />
+			import lejos.nxt.addon.RCXMotor;<br />
+			import lejos.nxt.MotorPort;<br />
+			import lejos.nxt.I2CPort;<br />
+			import lejos.nxt.I2CSensor;<br />
+			import lejos.nxt.Sound;<br />
+			import lejos.nxt.SensorPort;<br />
+			import lejos.util.Delay;<br />
+			import lejos.nxt.comm.BTConnection;<br />
+			import lejos.nxt.comm.Bluetooth;<br />
+			import org.apache.log4j.Level;<br />
+			import org.apache.log4j.PatternLayout;<br />
+			import org.apache.log4j.spi.LoggingEvent;<br />
+			import org.apache.log4j.FileAppender;<br />
+			import org.apache.log4j.Layout;<br />
+			import org.apache.log4j.spi.ErrorCode;<br />
+			import org.apache.log4j.AppenderSkeleton;<br />
+			import org.apache.log4j.Appender;<br />
+			import org.apache.log4j.Level;<br />
+			import org.apache.log4j.Logger;<br />
+			import org.apache.log4j.PropertyConfigurator;<br />
+			import org.apache.log4j.spi.LoggingEvent;<br />
+			import org.neuroph.core.NeuralNetwork;<br />
+			import org.neuroph.core.learning.SupervisedTrainingElement;<br />
+			import org.neuroph.core.learning.TrainingSet;<br />
+			import org.neuroph.nnet.MultiLayerPerceptron;<br />
+			import org.neuroph.nnet.learning.BackPropagation;<br />
+			import org.jbox2d.common.Vec2;<br />
+			import org.jbox2d.testbed.framework.TestbedFrame;<br />
+			import org.jbox2d.testbed.framework.TestbedModel;<br />
+			import org.jbox2d.testbed.framework.TestbedPanel;<br />
+			import org.jbox2d.testbed.framework.TestbedTest;<br />
+			import org.jbox2d.testbed.framework.j2d.TestPanelJ2D;<br />
+			import org.jbox2d.dynamics.Body;<br />
+			import org.jbox2d.dynamics.World;<br />
+			import org.jbox2d.collision.Collision;<br />
+			import org.jbox2d.collision.shapes.CircleShape;<br />
+			import org.jbox2d.collision.shapes.PolygonShape;<br />
+			import org.jbox2d.dynamics.joints.FrictionJointDef;<br />
+			import org.jbox2d.dynamics.joints.WeldJointDef;<br />
+			import org.jbox2d.dynamics.BodyDef;<br />
+			import org.jbox2d.dynamics.BodyType;<br />
+			import org.jbox2d.dynamics.FixtureDef;<br />
+			import org.reflections.Reflections;<br />
+			import org.reflections.scanners.MethodAnnotationsScanner;<br />
+			import org.reflections.util.ClasspathHelper;<br />
+			import org.reflections.util.ConfigurationBuilder;<br />
+			import static org.mockito.Mockito.spy;<br />
+			import static org.mockito.Mockito.when;<br />
+			import static org.mockito.Mockito.mock;<br />
+			import static org.mockito.Mockito.verify;<br />
+		</p>
+		<hr />
+		<p>
+			Group 8:
+		</p>
+		<p>
+			Mostly written in C++ so likely not useful for us. Also contains the same 
+			reused python code for vision. <span class="bold">Also contains all reports.</span>
+		</p>
+		<p>
+			Code is organized much differntly than others, but seems good anyway.
+		</p>
+		<p class="code">
+			import lejos.nxt.Motor;<br />
+			import lejos.nxt.LCD;<br />
+			import lejos.nxt.SensorPort;<br />
+			import lejos.nxt.TouchSensor;<br />
+			import lejos.util.Delay;<br />
+			import lejos.nxt.addon.RCXMotor;<br />
+			import lejos.nxt.Button;<br />
+			import lejos.robotics.navigation.DifferentialPilot;<br />
+		</p>
+		<hr />
+		<p>
+			Please note that all package lists are for java only and don't include some standard 
+			libraries that may actually be useful to know of - swing, awt, etc.
+		</p>
+	</body>
+</html>
+
