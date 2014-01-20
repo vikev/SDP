@@ -21,7 +21,7 @@ public class Travel {
             }else{
                 pilot.setTravelSpeed(TRAVEL_SPEED);  
                 System.out.println("Forward movement");
-                pilot.forward();
+                pilot.travel(10.0,true);
             }
 		}
     }
