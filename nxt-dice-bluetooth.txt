@@ -7,7 +7,7 @@
 
 2. Go to the leJOS_NXJ_0.9.1beta-3/build folder and type in terminal "ant"
 
-3. Add the libbluetooth.so from the git repository file to the leJOS_NXJ_0.9.1beta-3/bin/ directory
+3. Add the libbluetooth.so file from the git repository to the leJOS_NXJ_0.9.1beta-3/bin/ directory
 
 4. In terminal, write  "gedit ~/.profile" and add the line:
 
