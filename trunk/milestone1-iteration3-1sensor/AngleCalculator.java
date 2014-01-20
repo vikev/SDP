@@ -5,7 +5,7 @@ public class AngleCalculator {
     
     public static void main(String[] args){
         int frame = 0;
-        Motor.rotateTo(TARGET_ANG)
+        Motor.rotateTo(TARGET_ANG);
         while(! Motor.isStopped()){
             frame++;
         }
