@@ -4,7 +4,8 @@
 
 public class RelativeLocation{
     private static final double FRAME_ANGLE = 1.0 //To be calculated
-    private static final double DEGTORAD = 
+    private static final double DEGTORAD = Math.PI/180.0;
+    private static final double RADTODEG = 180.0/Math.PI;
     public static double x = 0.0, y = 0.0, facing = 0.0;
     
     public static void addAng(double deg){
@@ -26,7 +27,7 @@ public class RelativeLocation{
     }
     
     public static void returnAng(){
-        //Motor.rotateTo(facing+180.);
+        //Motor.rotateTo(Math.Atan2(y,x)*RADTODEG+180.);
     }
     
     public static void returnDist(){
