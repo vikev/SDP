@@ -3,10 +3,11 @@
 // author s1143704
 
 public class RelativeLocation{
-    private static final double FRAME_ANGLE = 1.0 //To be calculated
-    private static final double FRAME_DIST = 1.0 //TO be calculated
+    private static final double FRAME_ANGLE = 1.0 //To be calculated using AngleCalculator
+    private static final double FRAME_DIST = 1.0  //To be calculated using DistanceCalculator
     private static final double DEGTORAD = Math.PI/180.0;
     private static final double RADTODEG = 180.0/Math.PI;
+    
     public static double x = 0.0, y = 0.0, facing = 0.0;
     
     public static void addAng(double deg){
@@ -22,7 +23,7 @@ public class RelativeLocation{
         addAng(-FRAME_ANGLE);
     }
     
-    public static void addDist(double cm){
+    public static void addDist(double cm){ // Travel distance method will need to factor in gear ratio
         x += cm * Math.cos(facing*DEGTORAD);
         y += cm * Math.sin(facing*DEGTORAD);
     }
@@ -32,10 +33,10 @@ public class RelativeLocation{
     }
     
     public static void returnAng(){
-        //Motor.rotateTo(Math.Atan2(y,x)*RADTODEG+180.);
+        return Math.Atan2(y,x)*RADTODEG + 180.0;
     }
     
     public static void returnDist(){
-        //Motor.move(Math.sqrt(x*x+y*y));
+        return Math.sqrt(x*x + y*y);
     }
 }
