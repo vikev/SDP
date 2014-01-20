@@ -43,5 +43,6 @@ public class Travel {
         
         pilot.rotateTo(RelativeLocation.returnAng());
         pilot.travel(RelativeLocation.returnDist());
+        pilot.rotateTo(0.0); //Initial angle is always zero :3
     }
 }
