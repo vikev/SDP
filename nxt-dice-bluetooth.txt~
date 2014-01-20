@@ -1,0 +1,26 @@
+
+// Directions for connecting an NXT brick to a Dice machine via Bluetooth
+
+1. Download the leJOS_NXJ_0.9.1beta-3 source contents for linux
+	http://sourceforge.net/projects/lejos/files/lejos-NXJ/
+
+2. Go to the leJOS_NXJ_0.9.1beta-3/build folder and type in terminal "ant"
+
+3. Add the libbluetooth.so file to the leJOS_NXJ_0.9.1beta-3 dir
+
+4. In terminal, write  "gedit ~/.bashrc" and add the line:
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/afs/inf.ed.ac.uk/user/sXX/sXXXXXX/{PATH_TO_leJOS_FOLDER}/leJOS_NXJ_0.9.1beta-3
+
+Save and close the .bashrc file.
+
+5. In terminal, write  "exec bash"
+
+6. (Possibly not needed, usnure) Pair your computer with the brick through Bluetooth (do PINs properly)
+
+7. Go in leJOS_NXJ_0.9.1beta-3/bin and open in terminal
+
+8. Type ./nxjbrowse - at this point it should find your brick (or at least it shouldn't fail immediately)
+
+9. In /bin and type ./nxjcontrol
+
