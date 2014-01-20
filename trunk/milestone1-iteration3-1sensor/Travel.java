@@ -15,7 +15,9 @@ public class Travel {
             int q = Direct.getDirection();
             if(q==Direct.DIR_RIGHT){
                 System.out.println("On white");
-                pilot.rotate(ROTATE);
+                pilot.rotate(ROTATE,true); // The TRUE flag means return immediately, this should
+                                           // stop the robot from doing that repetitive turn,stop
+                                           // thing. Haven't tested because I'm at home.
             }else{
                 pilot.setTravelSpeed(TRAVEL_SPEED);  
                 System.out.println("Forward movement");
