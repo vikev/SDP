@@ -2,9 +2,11 @@
 // Needs proper files imported - NOT been debugged or tested
 // author s1143704
 
+import java.lang.Math.*;
+
 public class RelativeLocation{
-    private static final double FRAME_ANGLE = 1.0 //To be calculated using AngleCalculator
-    private static final double FRAME_DIST = 1.0  //To be calculated using DistanceCalculator
+    private static final double FRAME_ANGLE = 1.0; //To be calculated using AngleCalculator
+    private static final double FRAME_DIST = 1.0;  //To be calculated using DistanceCalculator
     private static final double DEGTORAD = Math.PI/180.0;
     private static final double RADTODEG = 180.0/Math.PI;
     
@@ -32,11 +34,11 @@ public class RelativeLocation{
         addDist(FRAME_DIST);
     }
     
-    public static void returnAng(){
-        return Math.Atan2(y,x)*RADTODEG + 180.0;
+    public static double returnAng(){
+        return Math.atan2(y,x)*RADTODEG + 180.0;
     }
     
-    public static void returnDist(){
+    public static double returnDist(){
         return Math.sqrt(x*x + y*y);
     }
 }

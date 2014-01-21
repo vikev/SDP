@@ -2,7 +2,7 @@
 // Class for calculating the new direction
 
 public class Direct {
-    private static final int THRESHOLD = 50
+    private static final int THRESHOLD = 50;
 	public static int DIR_RIGHT = 0, DIR_STRAIGHT = 1;
 	
     public static int getDirection(){

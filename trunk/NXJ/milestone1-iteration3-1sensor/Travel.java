@@ -1,11 +1,9 @@
 
 // Main class for the robot which will conduct milestone 1
 
-import lejos.nxt.LCD;
 import lejos.nxt.Motor;
 import lejos.nxt.Button;
 import lejos.nxt.NXTRegulatedMotor;
-import lejos.nxt.SensorPort;
 import lejos.robotics.navigation.DifferentialPilot;
 
 public class Travel {
@@ -13,7 +11,7 @@ public class Travel {
     private static final String FORWARD = "Forward Movement", RIGHT = "On White";
     
 	static DifferentialPilot pilot;
-    static String state = ""
+    static String state = "";
     
     private static void assertState(String n){
         if(! state.equals(n)){
@@ -23,9 +21,9 @@ public class Travel {
     }
 	
 	public static void main(String[] args){
-        pilot = new DifferentialPilot(2.25f, 5.5f,(NXTRegulatedMotor) Motor.A,(NXTRegulatedMotor) Motor.C, true);
+        DifferentialPilot pilot = new DifferentialPilot(2.25f, 5.5f,(NXTRegulatedMotor) Motor.A,(NXTRegulatedMotor) Motor.C, true);
         
-        while(! button.isPressed()){
+        while(!Button.ENTER.isDown()){
             int q = Direct.getDirection();
             if(q==Direct.DIR_RIGHT){
                 assertState(RIGHT);
@@ -41,8 +39,8 @@ public class Travel {
             }
 		}
         
-        pilot.rotateTo(RelativeLocation.returnAng());
+        pilot.rotate(RelativeLocation.returnAng());
         pilot.travel(RelativeLocation.returnDist());
-        pilot.rotateTo(0.0); //Initial angle is always zero :3
+        pilot.rotate(0.0); //Initial angle is always zero :3
     }
 }
