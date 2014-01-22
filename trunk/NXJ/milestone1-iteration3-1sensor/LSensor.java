@@ -6,8 +6,11 @@ import lejos.nxt.SensorPort;
 
 public class LSensor {
     static LightSensor sens = new LightSensor(SensorPort.S1);
+    static LightSensor sens2 = new LightSensor(SensorPort.S4);
+    static int l=0, r=0;
 			
-    public static int getValue(){
-        return sens.getLightValue();
+    public static void getValue(){
+    	l = sens2.getLightValue();
+    	r = sens.getLightValue();
     }
 }
