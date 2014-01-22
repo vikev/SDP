@@ -8,6 +8,7 @@ import lejos.robotics.navigation.DifferentialPilot;
 
 public class Travel {
     private static final double ROTATE = -12.0, TRAVEL_SPEED = 10.0; //both are completely arbitrary
+    private static final double ROTATE_SPEED = 90.0 / 0.8; //Changing this will affect the relative location!
     private static final String FORWARD = "Forward Movement", RIGHT = "On White";
     
 	static DifferentialPilot pilot;
@@ -21,8 +22,8 @@ public class Travel {
     }
 	
 	public static void main(String[] args){
-        DifferentialPilot pilot = new DifferentialPilot(2.25f, 5.5f,(NXTRegulatedMotor) Motor.A,(NXTRegulatedMotor) Motor.C, true);
-        
+        DifferentialPilot pilot = new DifferentialPilot(2.25f, 6.25f,(NXTRegulatedMotor) Motor.A,(NXTRegulatedMotor) Motor.C, true);
+        pilot.setRotateSpeed(ROTATE_SPEED)
         while(!Button.ENTER.isDown()){
             int q = Direct.getDirection();
             if(q==Direct.DIR_RIGHT){

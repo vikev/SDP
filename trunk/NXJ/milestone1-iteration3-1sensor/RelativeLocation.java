@@ -5,7 +5,7 @@
 import java.lang.Math.*;
 
 public class RelativeLocation{
-    private static final double FRAME_ANGLE = 1.0; //To be calculated using AngleCalculator
+    private static final double FRAME_ANGLE = 1372.05333333; //To be calculated using AngleCalculator
     private static final double FRAME_DIST = 10.0/18800.0;  //To be calculated using DistanceCalculator
     private static final double DEGTORAD = Math.PI/180.0;
     private static final double RADTODEG = 180.0/Math.PI;

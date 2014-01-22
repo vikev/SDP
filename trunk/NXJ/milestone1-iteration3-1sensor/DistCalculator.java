@@ -17,6 +17,7 @@ public class DistCalculator {
         int frame = 0;
         System.out.println("hello");
         while(true){
+        	frame = 0;
 	        while(pil.isMoving()){
 	            frame++;
 	        }
