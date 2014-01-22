@@ -30,6 +30,7 @@ public class Travel {
         pilot.setTravelSpeed(TRAVEL_SPEED);
         RelativeLocation.reset();
         double d = 0.0;
+        long n = 0;
         while(!Button.ENTER.isDown()){
             int q = Direct.getDirection();
             if(q==Direct.DIR_RIGHT){
@@ -43,29 +44,28 @@ public class Travel {
                 RelativeLocation.addDist();
                 pilot.travel(TRAVEL_DIST,true);
             }
+            n++;
 		}
+        System.out.println(n);
         pilot.stop();
         System.out.println("Beginning Return..");
         
-        Delay.msDelay(2000);
-        System.out.println("Rotating to Return Ang:");
+        Delay.msDelay(10000);
         d = RelativeLocation.returnAng();
+        Button.waitForAnyPress();
         System.out.println(d);
         pilot.rotate(d);
        
         Delay.msDelay(2000);
-        System.out.println("Going to Return Dist:");
         d = RelativeLocation.returnDist();
         System.out.println(d);
         pilot.travel(d);
         
         Delay.msDelay(2000);
-        System.out.println("Resetting facing angle:");
         d = RelativeLocation.facing*-1.0;
         System.out.println(d);
         pilot.rotate(d);
         
-        System.out.println("Done.");
         Button.waitForAnyPress();
     }
 }

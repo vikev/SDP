@@ -50,12 +50,14 @@ public class RelativeLocation{
     }
     
     public static double returnAng(){
-        return normalize(Math.atan2(y,x)*RADTODEG);
+    	System.out.println((int)x);
+    	System.out.println((int)y);
+    	System.out.println((int)facing);
+    	System.out.println((int)(Math.atan2(y,x)*RADTODEG - 180.0));
+        return normalize(Math.atan2(y,x)*RADTODEG - 180.0);
     }
     
     public static double returnDist(){
-        System.out.println(x);
-        System.out.println(y);
         return Math.sqrt(x*x + y*y);
     }
 }
