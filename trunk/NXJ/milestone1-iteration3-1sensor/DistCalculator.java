@@ -7,26 +7,30 @@ import lejos.nxt.Motor;
 import lejos.nxt.Button;
 import lejos.nxt.LCD;
 import lejos.robotics.navigation.DifferentialPilot;
+import lejos.util.Delay;
 
 public class DistCalculator {
-    private static int TRAVEL_DIST = 10; // Arbitrary
+    private static int TRAVEL_DIST = 30; // cm
     
     public static void main(String[] args){
-    	DifferentialPilot pil = new DifferentialPilot(2.25f,5f,Motor.A,Motor.C,true);
-    	pil.travel(TRAVEL_DIST,true);
+    	DifferentialPilot pil = new DifferentialPilot(Travel.WHEEL_DIAM,Travel.TRACK_BASE,Motor.A,Motor.C,true);
+    	pil.setTravelSpeed(Travel.TRAVEL_SPEED);
         int frame = 0;
-        System.out.println("hello");
-        while(true){
+        double q;
+        int[] frames = new int[5];
+        for(int i=0;i<5;i++){
         	frame = 0;
+        	pil.travel(TRAVEL_DIST,true);
 	        while(pil.isMoving()){
 	            frame++;
 	        }
-	        System.out.println("frames: "+frame); // TARGET_DIST /  frame is the distnace per frame
-	        Button.waitForAnyPress();
-	        // 19197
-	        // 18967
-	        // 18686
-	        // 18423
+	        System.out.println(frame);
+	        frames[i] = frame;
+	        Delay.msDelay(2000);
         }
+        q = ((double)(frames[0] + frames[1] + frames[2] + frames[3] + frames[4]))/5.0;
+        System.out.println(q);
+        System.out.println(TRAVEL_DIST/q);
+        Button.waitForAnyPress();
     }
 }

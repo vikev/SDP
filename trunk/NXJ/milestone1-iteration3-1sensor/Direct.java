@@ -2,12 +2,12 @@
 // Class for calculating the new direction
 
 public class Direct {
-    private static final int THRESHOLD = 50;
+    private static final int THRESHOLD = 40;
 	public static int DIR_RIGHT = 0, DIR_STRAIGHT = 1;
 	
     public static int getDirection(){
-        int val = LSensor.getValue();
-        if(val>=THRESHOLD){
+        LSensor.getValue();
+        if(LSensor.l>=THRESHOLD || LSensor.r>=THRESHOLD){
             return DIR_RIGHT;
         }
         return DIR_STRAIGHT;
