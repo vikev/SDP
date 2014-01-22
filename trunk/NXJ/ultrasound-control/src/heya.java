@@ -171,33 +171,36 @@ public class heya {
 		int[] retVal = new int[8];
 		
 		for(int i = 0; i < 8; i++) {
-			pilot.rotate(50);
+			pilot.rotate(45);
 			retVal[i] = s.getFastMeasurement();
 		}
 		return retVal;
 	}
 	
 	public static void main(String[] args) {
-		//setup pilot
-		pilot = new DifferentialPilot(2.25f, 5.5f,(NXTRegulatedMotor) Motor.A,(NXTRegulatedMotor) Motor.C, true);
-		
-		
-		int[] sc = rotateAndScan();
-		LCD.drawString(sc[0] + " " + sc[1] + " " + sc[2] + " " + sc[3], 0, 0);
-		LCD.drawString(sc[4] + " " + sc[5] + " " + sc[6] + " " + sc[7], 0, 1);
-//		LCD.drawString((int)pilot.getRotateSpeed() + " " + (int)pilot.getMaxRotateSpeed(), 0, 0);
-		Button.waitForAnyPress();
+		//setup pilot 
+		pilot = new DifferentialPilot(5.25f, 12f,(NXTRegulatedMotor) Motor.A,(NXTRegulatedMotor) Motor.C, true);
 		
 		while(true) {
-			runToWall(10, 20, true);
-//			safeSleep(1000);
-			int leftOrRight = LeftOrRight();
-			if(leftOrRight == 0)
-				leftOrRight = 1;
-			leftOrRight = -leftOrRight;
-//			safeSleep(1000);
-			TurnUntilOk(25, 80, leftOrRight);
+			s.getFastMeasurement();
 		}
+		
+////		int[] sc = rotateAndScan();
+////		LCD.drawString(sc[0] + " " + sc[1] + " " + sc[2] + " " + sc[3], 0, 0);
+////		LCD.drawString(sc[4] + " " + sc[5] + " " + sc[6] + " " + sc[7], 0, 1);
+////		LCD.drawString((int)pilot.getRotateSpeed() + " " + (int)pilot.getMaxRotateSpeed(), 0, 0);
+//		Button.waitForAnyPress();
+//		
+//		while(true) {
+//			runToWall(10, 1, true);
+////			safeSleep(1000);
+//			int leftOrRight = LeftOrRight();
+//			if(leftOrRight == 0)
+//				leftOrRight = 1;
+//			leftOrRight = -leftOrRight;
+////			safeSleep(1000);
+//			TurnUntilOk(20, 70, leftOrRight);
+//		}
 		
 //		Button.waitForAnyPress();
 	}
