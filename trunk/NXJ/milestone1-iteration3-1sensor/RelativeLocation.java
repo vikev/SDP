@@ -4,8 +4,8 @@
 import java.lang.Math.*;
 
 public class RelativeLocation{
-    private static final double FRAME_ANGLE = 0.0025753285436; //To be calculated using AngleCalculator
-    private static final double FRAME_DIST = 0.00085790762050; //To be calculated using DistanceCalculator
+    private static final double FRAME_ANGLE = 0.41171088; //To be calculated using AngleCalculator
+    private static final double FRAME_DIST =  0.13673655; //To be calculated using DistanceCalculator
     private static final double DEGTORAD = Math.PI/180.0;
     private static final double RADTODEG = 180.0/Math.PI;
     
@@ -50,8 +50,8 @@ public class RelativeLocation{
     }
     
     public static double returnAng(){
-    	System.out.println((int)x);
-    	System.out.println((int)y);
+    	System.out.println((int)x*100.0);
+    	System.out.println((int)y*100.0);
     	System.out.println((int)facing);
     	System.out.println((int)(Math.atan2(y,x)*RADTODEG - 180.0));
         return normalize(Math.atan2(y,x)*RADTODEG - 180.0);

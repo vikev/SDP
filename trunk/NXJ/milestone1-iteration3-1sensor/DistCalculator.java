@@ -23,6 +23,7 @@ public class DistCalculator {
         	pil.travel(TRAVEL_DIST,true);
 	        while(pil.isMoving()){
 	            frame++;
+	            Delay.msDelay((int)(1000.0*Travel.CLOCK_PERIOD));
 	        }
 	        System.out.println(frame);
 	        frames[i] = frame;

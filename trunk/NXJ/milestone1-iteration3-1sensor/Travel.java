@@ -10,6 +10,7 @@ import lejos.util.Delay;
 public class Travel {
 	// Using all CM now
     private static final double ROTATE = 90.0, TRAVEL_DIST = 10.0; //both are completely arbitrary
+    public static final double CLOCK_PERIOD = 1.0/100.0;
     private static final String FORWARD = "Forward Movement", RIGHT = "On White";
     
     public static final double WHEEL_DIAM = 5.715, TRACK_BASE = 15.875, ROTATE_SPEED = 90.0 / 2.0, TRAVEL_SPEED = 15.24;
@@ -45,14 +46,14 @@ public class Travel {
                 pilot.travel(TRAVEL_DIST,true);
             }
             n++;
+            Delay.msDelay((int)(1000.0*CLOCK_PERIOD));
 		}
         System.out.println(n);
         pilot.stop();
         System.out.println("Beginning Return..");
         
-        Delay.msDelay(10000);
+        Delay.msDelay(2000);
         d = RelativeLocation.returnAng();
-        Button.waitForAnyPress();
         System.out.println(d);
         pilot.rotate(d);
        

@@ -22,6 +22,7 @@ public class AngCalc {
         	frame = 0;
 	        while(pil.isMoving()){
 	            frame++;
+	            Delay.msDelay((int)(1000.0*Travel.CLOCK_PERIOD));
 	        }
 	        System.out.println(frame);
 	        Delay.msDelay(2000);
