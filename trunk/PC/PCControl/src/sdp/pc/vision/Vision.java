@@ -23,6 +23,7 @@ import au.edu.jcu.v4l4j.exceptions.V4L4JException;
  * calculates and displays positions of objects on the field.
  * Part of the code is inspired from group 1 of SDP 2013.
  * Most important method is processImage - don't touch stuff like initGui unless need be
+ * 
  * @author Borislav Ikonomov, Group 8, SDP 2014
  *
  */
@@ -87,14 +88,13 @@ public class Vision extends WindowAdapter implements CaptureCallback{
                 
         }
                
-        
         /**
          * Finds locations of balls and robots and makes the graphical image
          * (still largely incomplete; only finds ball at this stage)
          * @param image
          */
-        private void processImage(BufferedImage image) {
-        	
+        private void processImage(final BufferedImage image) {
+
         	int ballX = 0;
             int ballY = 0;
             int numBallPos = 0;
@@ -102,19 +102,20 @@ public class Vision extends WindowAdapter implements CaptureCallback{
             ArrayList<Integer> ballYPoints = new ArrayList<Integer>();
             
             // Checks every pixel
-            int ballPix =0; // For debug
+            int ballPix =0; // for debugging
         	for (int row = 0; row < image.getHeight() - 0; row++) {    // Both loops need to start from table edges
                 for (int column = 0; column < image.getWidth() - 0; column++) { // rather than image edges (0)
                     // RGB colour scheme
                 	Color c = new Color(image.getRGB(column, row));
-				    // HSB colour scheme
+				    // HSB colour scheme (unused atm)
                 	float hsbvals[] = new float[3];
                     Color.RGBtoHSB(c.getRed(), c.getBlue(), c.getGreen(), hsbvals);
                 	
                     // Find "Ball" pixels
-                	if (c.getRed()>120 && c.getBlue()<45 && c.getGreen()<45) {
+                	if (c.getRed()>140 && c.getBlue()<45 && c.getGreen()<45) {
                 		
                 		ballPix++;
+                		
                         ballX += column;
                         ballY += row;
                         numBallPos++;
@@ -127,7 +128,7 @@ public class Vision extends WindowAdapter implements CaptureCallback{
                 }
         	}
         	
-        	System.out.println(ballPix);
+        	System.out.println("Ball pixels: " + ballPix);
         	// Get average position of ball
         	if (numBallPos!=0) {
         		ballX /= numBallPos;
@@ -155,8 +156,15 @@ public class Vision extends WindowAdapter implements CaptureCallback{
         
         
         /**
-         * Initialises the FrameGrabber object
-         * @throws V4L4JException if any parameter if invalid
+         * Initialises a FrameGrabber object with the given parameters.
+         * @param videoDevice           The video device file to capture from.
+         * @param inWidth               The desired capture width.
+         * @param inHeight              The desired capture height.
+         * @param channel               The capture channel.
+         * @param videoStandard         The capture standard.
+         * @param compressionQuality    The JPEG compression quality.
+         * 
+         * @throws V4L4JException   If any parameter is invalid.
          */
         private void initFrameGrabber() throws V4L4JException{
                 videoDevice = new VideoDevice(device);
