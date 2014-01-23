@@ -20,10 +20,15 @@ import au.edu.jcu.v4l4j.exceptions.StateException;
 import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 
 /**
- * This code builds a JFrame that shows the feed from the camera and calculates
- * and displays positions of objects on the field. Part of the code is inspired
- * from group 1 of SDP 2013. Most important method is processImage - don't touch
- * stuff like initGui unless need be
+ * <<<<<<< HEAD This code builds a JFrame that shows the feed from the camera
+ * and calculates and displays positions of objects on the field. Part of the
+ * code is inspired from group 1 of SDP 2013. Most important method is
+ * processImage - don't touch stuff like initGui unless need be ======= This
+ * code builds a JFrame that shows the feed from the camera and calculates and
+ * displays positions of objects on the field. Part of the code is inspired from
+ * group 1 of SDP 2013. Most important method is processImage - don't touch
+ * stuff like initGui unless need be >>>>>>>
+ * 68bb0ed63273d01f94523eca06cd21a1cfa46cd3
  * 
  * @author Borislav Ikonomov, Group 8, SDP 2014
  * 
@@ -173,8 +178,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 		if (frame.getMousePosition() != null
 				&& frame.getMousePosition() != null) {
-			int x = (int) Math.round(frame.getMousePosition().getX())-5;
-			int y = (int) Math.round(frame.getMousePosition().getY())-23;
+			int x = (int) Math.round(frame.getMousePosition().getX()) - 5;
+			int y = (int) Math.round(frame.getMousePosition().getY()) - 23;
 
 			imageGraphics.drawString("Mouse pos: x:" + x + " y:" + y, 15, 30);
 			frameGraphics.drawImage(image, 0, 0, width, height, null);
