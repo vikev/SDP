@@ -66,4 +66,13 @@ public class Driver {
 		return conn.sendCommand('r', deg);
 	}
 
+	/**
+	 * Kick the ball at hopefully the given distance.
+	 * @param dist
+	 * @return
+	 */
+	public boolean kick(double dist) {
+		return conn.sendCommand('k', dist);
+	}
+
 }
