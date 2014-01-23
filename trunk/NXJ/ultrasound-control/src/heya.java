@@ -52,6 +52,7 @@ public class heya {
 		double currentSpeed;
 		
 		
+		
 		while(true)
 		{
 			
@@ -103,38 +104,11 @@ public class heya {
 	 * @return the direction which is best for us to turn to!
 	 */
 	public static int LeftOrRight() {
-		//const
-		int sleepTime = 300;
-		double angle = 15;
-		
-		//action info
-		LCD.clear(0);
-		LCD.drawString("Finding direction", 0, 0);
-		
-		//get central dist
-		int cd = s.getFastMeasurement();
-		LCD.drawInt(cd, 5, 1);
-		
-		//rotate, ping, wait a bit
-		pilot.rotate(angle);
-		
-		//read left distance
-		int ld = s.getFastMeasurement();
-		LCD.drawInt(ld, 0, 1);
-
-		//rotate, ping, wait a bit
-		pilot.rotate(-2*angle);
-		
-		//read right distance
-		int rd = s.getFastMeasurement();
-		LCD.drawInt(rd, 10, 1);
-
-		pilot.rotate(angle);
-		
+		int[] dist = s.getAngledDistances(pilot);
 		//return highest dist
-		if(ld > rd)
+		if(dist[0] > dist[2])
 			return -1;
-		else if (rd > ld)
+		else if (dist[2] > dist[0])
 			return 1;
 		return 0;
 		
@@ -182,7 +156,12 @@ public class heya {
 		pilot = new DifferentialPilot(5.25f, 12f,(NXTRegulatedMotor) Motor.A,(NXTRegulatedMotor) Motor.C, true);
 		
 		while(true) {
-			s.getFastMeasurement();
+			double sug = s.getSuggestedRotateAngle(pilot, 15);
+			LCD.clear(3);
+			LCD.drawInt((int)sug, 0, 3);
+			Button.waitForAnyPress();
+			pilot.rotate(sug);
+			Button.waitForAnyPress();
 		}
 		
 ////		int[] sc = rotateAndScan();

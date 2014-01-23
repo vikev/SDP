@@ -25,13 +25,18 @@ public class UltrasonicControl {
 	private static final int ECHOS = 8;
 	
 	private int[] m_iMeasured = new int[ECHOS];
+
+	public double getSuggestedRotateAngle(DifferentialPilot pilot, int angle, int tries) {
+		return 0;
+	}
 	
 	public double getSuggestedRotateAngle(DifferentialPilot pilot, int angle) {
 		int[] vals = getAngledDistances(pilot, angle);
+		if(vals[0] == vals[2])
+			return 90;
 		if(vals[0] > vals[2])	//left is further than right => turn left
-			return cosineLaw(angle, vals[0], vals[1]);
-		else
-			return cosineLaw(angle, vals[2], vals[1]);
+			return shanoFunc(angle, vals[1], vals[0]);
+		return -shanoFunc(angle, vals[1], vals[2]);
 	}
 	
 	private static double cosineLaw(int angleDeg, int a, int b) {
@@ -39,38 +44,47 @@ public class UltrasonicControl {
 		return Math.sqrt(a*a + b*b - 2*a*b*Math.cos(angleRad));
 	}
 	
+	private static double shanoFunc(int angleDeg, int a, int b) {
+		return (a * 180 + angleDeg * b) / (a + b);
+	}
+	
 	public int[] getAngledDistances(DifferentialPilot pilot) {
 		return getAngledDistances(pilot, 15);
 	}
 	
 	public int[] getAngledDistances(DifferentialPilot pilot, int angle) {
+		return getAngledDistances(pilot, angle, new int[3]);
+	}
+	public int[] getAngledDistances(DifferentialPilot pilot, int angle, int[] prevVals) {
 
 		//const
-		int sleepTime = 300;
+		int sleepTime = 350;
 		
 		//action info
 		LCD.clear(0);
 		LCD.drawString("Finding direction", 0, 0);
 		
 		//get central dist
-		int cd = getFastMeasurement();
-		LCD.drawInt(cd, 5, 1);
+		prevVals[1] += getFastMeasurement();
+		LCD.drawInt(prevVals[1], 5, 1);
 		
 		//rotate, ping, wait a bit
 		pilot.rotate(angle);
 		
 		//read left distance
-		int ld = getFastMeasurement();
-		LCD.drawInt(ld, 0, 1);
+		prevVals[0] += getFastMeasurement();
+		LCD.drawInt(prevVals[0], 0, 1);
 
 		//rotate, ping, wait a bit
 		pilot.rotate(-2*angle);
 		
 		//read right distance
-		int rd = getFastMeasurement();
-		LCD.drawInt(rd, 10, 1);
+		prevVals[2] += getFastMeasurement();
+		LCD.drawInt(prevVals[2], 10, 1);
+		
+		pilot.rotate(angle);
 
-		return new int[] { ld, cd, rd };
+		return prevVals;
 	}
 	
 	public int getFastMeasurement() {

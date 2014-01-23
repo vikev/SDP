@@ -1,25 +1,21 @@
 @echo off
-set NLM=^
-
-
-set NL=^^^%NLM%%NLM%^%NLM%%NLM%
 
 @IF [%1] == [] GOTO PrintInfo
 
 :Setup
-set vc=c
-set vcr=cr
 
-ECHO call nxjc %1.java>src\%vc%.bat
-ECHO call nxjlink -o %1.nxj %1>>src\%vc%.bat
-ECHO call nxjupload %1.nxj>>src\%vc%.bat
+set vc=c%1
+set vcr=cr%1
 
-ECHO call nxjc %1.java>src\%vcr%.bat
-ECHO call nxjlink -o %1.nxj %1>>src\%vcr%.bat
-ECHO call nxjupload -r %1.nxj>>src\%vcr%.bat
+ECHO call nxjc %1.java>%vc%.bat
+ECHO call nxjlink -o %1.nxj %1>>%vc%.bat
+ECHO call nxjupload %1.nxj>>%vc%.bat
 
-ECHO Successfully created 'src\%vc%.bat' and 'src\%vcr%.bat' for file '%1.java'
+ECHO call nxjc %1.java>%vcr%.bat
+ECHO call nxjlink -o %1.nxj %1>>%vcr%.bat
+ECHO call nxjupload -r %1.nxj>>%vcr%.bat
 
+ECHO Successfully created '%vc%.bat' and '%vcr%.bat' for file '%1.java'
 GOTO end
 
 :PrintInfo

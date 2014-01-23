@@ -15,15 +15,17 @@ public class DistCalculator {
     public static void main(String[] args){
     	DifferentialPilot pil = new DifferentialPilot(Travel.WHEEL_DIAM,Travel.TRACK_BASE,Motor.A,Motor.C,true);
     	pil.setTravelSpeed(Travel.TRAVEL_SPEED);
+    	
         int frame = 0;
         double q;
         int[] frames = new int[5];
+        
         for(int i=0;i<5;i++){
         	frame = 0;
         	pil.travel(TRAVEL_DIST,true);
 	        while(pil.isMoving()){
 	            frame++;
-	            Delay.msDelay((int)(1000.0*Travel.CLOCK_PERIOD));
+	            Delay.msDelay(Travel.CLOCK_PERIOD);
 	        }
 	        System.out.println(frame);
 	        frames[i] = frame;
