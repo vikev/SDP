@@ -3,5 +3,8 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.lejos.nxt.ldt.LEJOS_LIBRARY_CONTAINER/pc"/>
+	<classpathentry exported="true" kind="lib" path="lib/bluecove-gpl.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/bluecove.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/pccomm.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
