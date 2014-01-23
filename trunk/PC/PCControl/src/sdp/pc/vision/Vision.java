@@ -88,13 +88,14 @@ public class Vision extends WindowAdapter implements CaptureCallback{
         }
                
         
+        
+        int prevFramePosX=0, prevFramePosY=0;
         /**
          * Finds locations of balls and robots and makes the graphical image
          * (still largely incomplete; only finds ball at this stage)
          * @param image
          */
         private void processImage(BufferedImage image) {
-        	
         	int ballX = 0;
             int ballY = 0;
             int numBallPos = 0;
@@ -134,6 +135,11 @@ public class Vision extends WindowAdapter implements CaptureCallback{
         		ballY /= numBallPos;
         	}
         	
+        	int deltaX = ballX - prevFramePosX;
+        	int deltaY = ballY - prevFramePosY;
+        	
+        	prevFramePosX=prevFramePosX+100*deltaX;
+        	prevFramePosY=prevFramePosY+100*deltaY;
         	
         	/* Create graphical representation */
         	Graphics imageGraphics = image.getGraphics();
@@ -141,8 +147,10 @@ public class Vision extends WindowAdapter implements CaptureCallback{
         	imageGraphics.setColor(Color.red);
             imageGraphics.drawLine(0, ballY, 640, ballY);
             imageGraphics.drawLine(ballX, 0, ballX, 480);
+            imageGraphics.drawLine(ballX, ballY, prevFramePosX, prevFramePosY);
         	imageGraphics.drawImage(image, 0, 0, width, height, null);
-        	
+        	prevFramePosX=ballX;
+        	prevFramePosY=ballY;
         	 /* Used to calculate the FPS. */
             long after = System.currentTimeMillis();
 
@@ -210,6 +218,6 @@ public class Vision extends WindowAdapter implements CaptureCallback{
         @Override
         public void nextFrame(VideoFrame frame) {        
                 label.getGraphics().drawImage(frame.getBufferedImage(), 0, 0, width, height, null);
-                frame.recycle();
-        }
+		frame.recycle();
+	}
 }
