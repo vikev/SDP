@@ -22,7 +22,7 @@ public class Travel {
     private static final String STATE_FORWARD = "Forward Movement", 
     		STATE_RIGHT = "On White";
     
-    public static final double WHEEL_DIAM = 5.715, TRACK_BASE = 15.875, ROTATE_SPEED = 90.0 / 2.0, TRAVEL_SPEED = 15.24;
+    public static final double WHEEL_DIAM = 5.715, TRACK_BASE = 15.875, ROTATE_SPEED = 90.0 / 3.0, TRAVEL_SPEED = 15.24;
     
 	static DifferentialPilot pilot;
     static String state = "";
@@ -79,20 +79,27 @@ public class Travel {
         long n = 0;
         
         while(!Button.ENTER.isDown()) {
+        	if (LocationT.dist>= 138.340347661 && LocationT.dist<=140.340347661) break;
+        	
             int newDirection = Direct.getDirection();
             if(newDirection == Direct.DIR_RIGHT) {
                 setState(STATE_RIGHT);
-                pilot.rotate(ROTATE,true); //true flag works as expected
+                pilot.setRotateSpeed(ROTATE_SPEED);
+                pilot.rotateLeft(); //true flag works as expected
 
             } else {
                 setState(STATE_FORWARD);
                 pilot.travel(TRAVEL_DIST,true);
+                LocationT.addDist(LocationT.FRAME_DIST);
             }
             n++;
             Delay.msDelay(CLOCK_PERIOD);
-		}
+            
+        }
         System.out.println(n);
+        System.out.println("Dist frames for attacker: " + LocationT.dist);
         
+        /*
         //issue stop
         state = "stop";	//todo: remove
         pilot.stop();
@@ -110,12 +117,13 @@ public class Travel {
         d = tracker.getReturnDistance();
         System.out.println(d);
         pilot.travel(d);
-        
+         
         Delay.msDelay(2000);
         d = -tracker.facing;
         System.out.println(d);
         pilot.rotate(d);
-        
+        */
+        Button.waitForAnyPress();
         Button.waitForAnyPress();
     }
 }
