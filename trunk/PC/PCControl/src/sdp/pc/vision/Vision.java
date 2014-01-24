@@ -5,7 +5,6 @@ import java.awt.Graphics;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -91,7 +90,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 	}
 
-	int prevFramePosX = 0, prevFramePosY = 0;
+	// Used for calculating direction the ball is heading
+	int[] prevFramePosX = new int[10], prevFramePosY = new int[10];
 
 	/**
 	 * Finds locations of balls and robots and makes the graphical image (still
@@ -99,26 +99,24 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * 
 	 * @param image
 	 */
-
 	private void processImage(BufferedImage image) {
 
 		int ballX = 0;
 		int ballY = 0;
 		int numBallPos = 0;
-		ArrayList<Integer> ballXPoints = new ArrayList<Integer>();
-		ArrayList<Integer> ballYPoints = new ArrayList<Integer>();
+		int yellowX = 0;
+		int yellowY = 0;
+		int numYellowPos = 0;
+		int blueX = 0;
+		int blueY = 0;
+		int numBluePos = 0;
 
 		// Checks every pixel
-		int ballPix = 0; // for debugging
-		for (int row = 0; row < image.getHeight() - 0; row++) { // Both loops
-																// need to start
-																// from table
-																// edges
-			for (int column = 0; column < image.getWidth() - 0; column++) { // rather
-																			// than
-																			// image
-																			// edges
-																			// (0)
+		int ballPix = 0; int yellowPix=0; int bluePix =0; // for debugging
+			
+		// Both loops need to start from table edges rather than image edges (0)
+		for (int row = 0; row < image.getHeight() - 0; row++) { 
+			for (int column = 0; column < image.getWidth() - 0; column++) {
 				// RGB colour scheme
 				Color c = new Color(image.getRGB(column, row));
 				// HSB colour scheme (unused atm)
@@ -126,44 +124,93 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				Color.RGBtoHSB(c.getRed(), c.getBlue(), c.getGreen(), hsbvals);
 
 				// Find "Ball" pixels
-				if (c.getRed() > 140 && c.getBlue() < 45 && c.getGreen() < 45) {
-
-					ballPix++;
-
+				if (c.getRed() > 160 && c.getBlue() < 20 && c.getGreen() < 20) {
+					//ballPix++;
 					ballX += column;
 					ballY += row;
 					numBallPos++;
-
-					ballXPoints.add(column);
-					ballYPoints.add(row);
-
+				}
+				
+				// Find Yellow pixels
+				if (c.getRed() > 210 && c.getBlue() < 5 && c.getGreen()>60 && c.getGreen() < 110) {
+					yellowPix++;
+					yellowX += column;
+					yellowY += row;
+					numYellowPos++;
+			        image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes yellow pixels orange
+				}
+				
+				// Find Blue pixels - sucks atm
+				if (c.getRed() > 40 && c.getRed() < 48 &&
+						c.getBlue() > 80 && c.getBlue() < 90 && 
+						c.getGreen()>65 && c.getGreen() < 75) {
+					bluePix++;
+					blueX += column;
+					blueY += row;
+					numBluePos++;
+			        //image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes blue pixels orange
 				}
 			}
 		}
 
-		System.out.println("Ball pixels: " + ballPix);
+		System.out.println("Yellow pixels: " + yellowPix);
+		
 		// Get average position of ball
 		if (numBallPos != 0) {
 			ballX /= numBallPos;
 			ballY /= numBallPos;
 		}
-
-		int deltaX = ballX - prevFramePosX;
-		int deltaY = ballY - prevFramePosY;
-
-		prevFramePosX = prevFramePosX + 100 * deltaX;
-		prevFramePosY = prevFramePosY + 100 * deltaY;
+		//Get average position of yellow bot
+		if (numYellowPos != 0) {
+			yellowX /= numYellowPos;
+			yellowY /= numYellowPos;
+		}
+		//Get average position of blue bot
+		if (numBluePos != 0) {
+			blueX /= numBluePos;
+			blueY /= numBluePos;
+		}
+		
+		// Calculates where ball is going
+		int avgPrevPosX = 0;
+		for (int i : prevFramePosX) avgPrevPosX+=i;
+		avgPrevPosX/=prevFramePosX.length;
+		int avgPrevPosY = 0;
+		for (int i : prevFramePosY) avgPrevPosY+=i;
+		avgPrevPosY/=prevFramePosY.length;
+	
+		avgPrevPosX += 10 * (ballX - avgPrevPosX);
+		avgPrevPosY += 10 * (ballY - avgPrevPosY);
 
 		/* Create graphical representation */
 		Graphics imageGraphics = image.getGraphics();
 		Graphics frameGraphics = label.getGraphics();
+		// Ball location (and direction)
 		imageGraphics.setColor(Color.red);
 		imageGraphics.drawLine(0, ballY, 640, ballY);
 		imageGraphics.drawLine(ballX, 0, ballX, 480);
-		imageGraphics.drawLine(ballX, ballY, prevFramePosX, prevFramePosY);
+		imageGraphics.drawLine(ballX, ballY, avgPrevPosX, avgPrevPosY);
+		// Yellow robots locations
+		imageGraphics.setColor(Color.yellow);
+		imageGraphics.drawOval(yellowX-15, yellowY-15, 30,30);
+		imageGraphics.setColor(Color.black);
+		imageGraphics.drawOval(yellowX-2, yellowY-2, 4,4);
+		// Blue robots locations
+		imageGraphics.setColor(Color.blue);
+		//imageGraphics.drawOval(blueX-15, blueY-15, 30,30);
+		
 		imageGraphics.drawImage(image, 0, 0, width, height, null);
-		prevFramePosX = ballX;
-		prevFramePosY = ballY;
+		
+		// Saves this frame's ball position and shifts previous frames' positions
+		for (int i=prevFramePosX.length-1; i>0 ; i--) {
+			prevFramePosX[i] = prevFramePosX[i-1];
+		}
+		for (int i=prevFramePosY.length-1; i>0 ; i--) {
+			prevFramePosY[i] = prevFramePosY[i-1];
+		}
+		prevFramePosX[0] = ballX;
+		prevFramePosY[0] = ballY;
+		
 		/* Used to calculate the FPS. */
 		long after = System.currentTimeMillis();
 
@@ -172,7 +219,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		imageGraphics.setColor(Color.white);
 		imageGraphics.drawString("FPS: " + fps, 15, 15);
 		frameGraphics.drawImage(image, 0, 0, width, height, null);
-
+		
+		// Gives RGB values of the point the cursor is on
 		if (frame.getMousePosition() != null
 				&& frame.getMousePosition() != null) {
 			int x = (int) Math.round(frame.getMousePosition().getX()) - 5;
