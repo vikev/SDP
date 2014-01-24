@@ -25,6 +25,10 @@
 		</fileset>
 	</path>
 	
+	<path id="v4l4j">
+	    <pathelement location="${source.lib}/v4l4j.jar"/>
+	</path>
+	
 	<condition property="d32Flag" value="-d32" else="-Dblank.dummy.arg=">
 		<and>
 			<os family="mac" />
@@ -53,6 +57,7 @@
 			verbose="false"
 		>
 			<classpath refid="lejos.pc" />
+			<classpath refid="v4l4j" />
 			<!-- enable warnings -->
 			<compilerarg value="-Xlint:${source.warn}" />
 		</javac>

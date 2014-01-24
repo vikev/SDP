@@ -1,10 +1,10 @@
 package sdp.pc;
 
-import sdp.pc.robot.btcomm.BTConnection;
-import sdp.pc.robot.pilot.Driver;
 import lejos.pc.comm.NXTComm;
 import lejos.pc.comm.NXTCommFactory;
 import lejos.pc.comm.NXTInfo;
+import sdp.pc.robot.btcomm.BTConnection;
+import sdp.pc.robot.pilot.Driver;
 
 public class Start {
 	public static void main(String[] args) {
