@@ -10,30 +10,61 @@ import lejos.robotics.navigation.DifferentialPilot;
 import lejos.util.Delay;
 
 public class DistCalculator {
-    private static int TRAVEL_DIST = 30; // cm
     
-    public static void main(String[] args){
-    	DifferentialPilot pil = new DifferentialPilot(Travel.WHEEL_DIAM,Travel.TRACK_BASE,Motor.A,Motor.C,true);
-    	pil.setTravelSpeed(Travel.TRAVEL_SPEED);
-    	
-        int frame = 0;
-        double q;
-        int[] frames = new int[5];
-        
-        for(int i=0;i<5;i++){
-        	frame = 0;
-        	pil.travel(TRAVEL_DIST,true);
-	        while(pil.isMoving()){
-	            frame++;
+    private static final boolean goBack = true;
+    
+    private static int[] distances = new int[] { 2, 5, 10, 
+    							15, 20, 30 };
+    
+    private static int doTest(int nTests, int distance) {
+    	int nFrames = 0;
+    	int totalFrames = 0;
+        for(int i=0; i<5; i++) {
+        	nFrames = 0;
+        	
+        	pilot.travel(distance,true);
+	        while(pilot.isMoving()){
+	            nFrames++;
 	            Delay.msDelay(Travel.CLOCK_PERIOD);
 	        }
-	        System.out.println(frame);
-	        frames[i] = frame;
-	        Delay.msDelay(2000);
+	        totalFrames += nFrames;
+	        if(goBack)
+	        	pilot.travel(-distance);
+	        Delay.msDelay(500);
         }
-        q = ((double)(frames[0] + frames[1] + frames[2] + frames[3] + frames[4]))/5.0;
-        System.out.println(q);
-        System.out.println(TRAVEL_DIST/q);
+        int avgFrames = totalFrames / nTests;
+        return avgFrames;
+    }
+    
+    static DifferentialPilot pilot;
+    
+    static int getX(int distId) {
+    	return (distId % 4) * 4;
+    }
+    
+    static int getY(int distId) {
+    	return (distId / 4) * 2;
+    }
+    
+    static int getRepeats(int distId) {
+    	return 5 * (3 - (distId / 3));
+    }
+    
+    public static void main(String[] args){
+    	pilot = new DifferentialPilot(Travel.WHEEL_DIAM,Travel.TRACK_BASE,Motor.A,Motor.C,true);
+    	pilot.setTravelSpeed(Travel.TRAVEL_SPEED);
+
+    	for(int i = 0; i < distances.length; i++) {
+    		int x = getX(i);
+    		int y = getY(i);
+    		int reps = getRepeats(i);
+    		
+    		int ans = doTest(reps, distances[i]);
+    		
+    		LCD.drawInt(distances[i], x, y);    		
+    		LCD.drawInt(ans, x, y);
+    	}
+    	
         Button.waitForAnyPress();
     }
 }

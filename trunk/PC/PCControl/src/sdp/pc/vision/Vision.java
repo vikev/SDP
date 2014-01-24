@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -107,11 +108,14 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		int yellowX = 0;
 		int yellowY = 0;
 		int numYellowPos = 0;
+		ArrayList<Integer> yellowXPoints = new ArrayList<Integer>();
+        ArrayList<Integer> yellowYPoints = new ArrayList<Integer>();
 		int blueX = 0;
 		int blueY = 0;
 		int numBluePos = 0;
 
 		// Checks every pixel
+		@SuppressWarnings("unused")
 		int ballPix = 0; int yellowPix=0; int bluePix =0; // for debugging
 			
 		// Both loops need to start from table edges rather than image edges (0)
@@ -132,12 +136,14 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				}
 				
 				// Find Yellow pixels
-				if (c.getRed() > 210 && c.getBlue() < 5 && c.getGreen()>60 && c.getGreen() < 110) {
+				if (c.getRed() > 180 && c.getBlue() < 5 && c.getGreen()>60 && c.getGreen() < 110) {
 					yellowPix++;
 					yellowX += column;
 					yellowY += row;
 					numYellowPos++;
 			        image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes yellow pixels orange
+			        yellowXPoints.add(column);
+                    yellowYPoints.add(row);
 				}
 				
 				// Find Blue pixels - sucks atm
@@ -153,7 +159,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			}
 		}
 
-		System.out.println("Yellow pixels: " + yellowPix);
+		//System.out.println("Yellow pixels: " + yellowPix);
 		
 		// Get average position of ball
 		if (numBallPos != 0) {
@@ -181,6 +187,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	
 		avgPrevPosX += 10 * (ballX - avgPrevPosX);
 		avgPrevPosY += 10 * (ballY - avgPrevPosY);
+		
+		if (!yellowXPoints.isEmpty() || !yellowYPoints.isEmpty())
+			findOrientation(yellowXPoints, yellowYPoints, yellowX, yellowY, image, true);
 
 		/* Create graphical representation */
 		Graphics imageGraphics = image.getGraphics();
@@ -235,7 +244,76 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			frameGraphics.drawImage(image, 0, 0, width, height, null);
 		}
 	}
+	
+	/**
+     * Finds the orientation of a robot, given a list of the points contained within it's
+     * T-shape (in terms of a list of x coordinates and y coordinates), the mean x and
+     * y coordinates, and the image from which it was taken.
+     *
+     * @param xpoints           The x-coordinates of the points contained within the T-shape.
+     * @param ypoints           The y-coordinates of the points contained within the T-shape.
+     * @param meanX             The mean x-point of the T.
+     * @param meanY             The mean y-point of the T.
+     * @param image             The image from which the points were taken.
+     * @param showImage         A boolean flag - if true a line will be drawn showing
+     *                          the direction of orientation found.
+     *
+     * @return                  An orientation from -Pi to Pi degrees.
+     * @throws NoAngleException
+     */
+	public float findOrientation(ArrayList<Integer> xpoints, ArrayList<Integer> ypoints,
+            int meanX, int meanY, BufferedImage image, boolean showImage) {
+        assert (xpoints.size() == ypoints.size()) :
+            "Error: Must be equal number of x and y points!";
+        
+        /* Find the position of the front of the T. */
+        int frontX = 0;
+        int frontY = 0;
+        int frontCount = 0;
+        for (int i = 0; i < xpoints.size(); i++) {
+        	// If pixel is certain distance from mean, add it to the "front"
+        	if (sqrdEuclidDist(xpoints.get(i), ypoints.get(i), meanX, meanY) > Math.pow(12, 2)) {
+        		frontCount++;
+        		frontX += xpoints.get(i);
+        		frontY += ypoints.get(i);
+        		image.setRGB(xpoints.get(i), ypoints.get(i), Color.BLACK.getRGB());
+        	}
+        }
+        
+        // Set frontX and frontY to their average values
+        if (frontCount!=0) {
+        	frontX /= frontCount;
+        	frontY /= frontCount;
+        }
+        
+        // Calculate angle and 
+        float length = (float) Math.sqrt(Math.pow(frontX - meanX, 2)
+                + Math.pow(frontY - meanY, 2));
+        float ax = (frontX - meanX) / length;
+        float ay = (frontY - meanY) / length;
+        float angle = (float) Math.acos(ax);
 
+        if (frontY < meanY) {
+            angle = -angle;
+        }
+        
+        if (angle == 0) {
+            return (float) 0.001;
+        }
+        
+        if (showImage) {
+            image.getGraphics().drawLine((int)frontX, (int)frontY, (int)(frontX+ax*70), (int)(frontY+ay*70));
+            image.getGraphics().drawOval((int) frontX-4, (int) frontY-4, 8, 8);
+        }
+
+        return angle;
+        
+	}	
+	public static float sqrdEuclidDist(int x1, int y1, int x2, int y2) {
+		return (float) (Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+	}
+
+	
 	/**
 	 * Initialises a FrameGrabber object with the given parameters.
 	 * 

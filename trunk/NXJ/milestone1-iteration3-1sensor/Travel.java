@@ -12,6 +12,9 @@ public class Travel {
 	// Using all CM now
     private static final double ROTATE = 90.0, TRAVEL_DIST = 10.0; //both are completely arbitrary
     
+    /**
+     * The frames per second that determine the clock period
+     */
     public static final int FPS = 100;
     
     /**
@@ -19,13 +22,21 @@ public class Travel {
      */
     public static final int CLOCK_PERIOD = 1000 / FPS;
     
-    private static final String STATE_FORWARD = "Forward Movement", 
-    		STATE_RIGHT = "On White";
+    private static final String STATE_FORWARD = "Move Forward", 
+    		STATE_RIGHT = "Turn Right",
+    		STATE_STOP = "Idle";
     
+<<<<<<< HEAD
     public static final double WHEEL_DIAM = 5.715, TRACK_BASE = 15.875, ROTATE_SPEED = 90.0 / 3.8, TRAVEL_SPEED = 12.24;
+=======
+    public static final double WHEEL_DIAM = 0.41, 
+    		TRACK_BASE = 1, 
+    		ROTATE_SPEED = 90.0 / 3.0, 
+    		TRAVEL_SPEED = 15.24;
+>>>>>>> 29152ca22d5b4a4f33aa8e8e548aa843661c850c
     
 	static DifferentialPilot pilot;
-    static String state = "";
+    static String state = STATE_STOP;
 
     /**
      * Returns whether the robot is currently moving
@@ -105,27 +116,27 @@ public class Travel {
         
         /*
         //issue stop
-        state = "stop";	//todo: remove
+        state = STATE_STOP;
         pilot.stop();
         
+        double returnAng = tracker.getReturnAngle();
+        double returnDist = tracker.getReturnDistance();
         
         tracker.printReturnInfo();
         System.out.println("Beginning Return..");
         
         Delay.msDelay(2000);
-        d = tracker.getReturnAngle();
-        System.out.println(d);
-        pilot.rotate(d);
+        System.out.println(returnAng);
+        pilot.rotate(returnAng);
        
         Delay.msDelay(2000);
-        d = tracker.getReturnDistance();
-        System.out.println(d);
-        pilot.travel(d);
-         
+        System.out.println(returnDist);
+        pilot.travel(returnDist);
+
         Delay.msDelay(2000);
-        d = -tracker.facing;
-        System.out.println(d);
-        pilot.rotate(d);
+        double rotateAng = -tracker.facing;
+        System.out.println(rotateAng);
+        pilot.rotate(rotateAng);
         */
         Button.waitForAnyPress();
         Button.waitForAnyPress();
