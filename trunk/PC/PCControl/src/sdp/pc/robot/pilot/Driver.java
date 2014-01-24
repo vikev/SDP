@@ -68,6 +68,7 @@ public class Driver {
 
 	/**
 	 * Kick the ball at hopefully the given distance.
+	 * 
 	 * @param dist
 	 * @return
 	 */
@@ -75,4 +76,12 @@ public class Driver {
 		return conn.sendCommand('k', dist);
 	}
 
+	/**
+	 * Robot stop whatever you are doing.
+	 * 
+	 * @return
+	 */
+	public boolean stop() {
+		return conn.sendCommand('s', 0);
+	}
 }
