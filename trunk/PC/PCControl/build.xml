@@ -43,6 +43,7 @@
 	<target name="compile" depends="clean" description="compile the source ">
 		<!-- Compile the java code from ${source.dir} to ${classes.dir}  -->
 		<mkdir dir="${classes.dir}" />
+		
 		<javac
 			srcdir="${source.dir}"
 			includes="${source.include}"
@@ -57,6 +58,8 @@
 			verbose="false"
 		>
 			<classpath refid="lejos.pc" />
+			<classpath refid="v4l4j" />
+
 		<!-- enable warnings -->
 		<compilerarg value="-Xlint:${source.warn}" />
 	</javac>
