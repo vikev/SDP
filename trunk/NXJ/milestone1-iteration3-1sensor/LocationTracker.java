@@ -15,8 +15,8 @@ public class LocationTracker extends Thread {
 	 * 0.424 for 135deg
 	 * 0.430 for 180deg
 	 */
-    private static final double FRAME_ANGLE = 0.44451088; //To be calculated using AngleCalculator
-    private static final double FRAME_ANGLE_FST = -6.5;	//heavy maths suggest this should be -6.5, lmao
+    private static final double FRAME_ANGLE = 0.435; //To be calculated using AngleCalculator
+    private static final double FRAME_ANGLE_FST = -16.5;	//heavy maths suggest this should be -16.5, lmao
     /**
      * The distance we travel in a single frame, in centimeters
      */
