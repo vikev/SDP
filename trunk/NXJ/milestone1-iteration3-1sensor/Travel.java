@@ -22,7 +22,7 @@ public class Travel {
     private static final String STATE_FORWARD = "Forward Movement", 
     		STATE_RIGHT = "On White";
     
-    public static final double WHEEL_DIAM = 5.715, TRACK_BASE = 15.875, ROTATE_SPEED = 90.0 / 3.0, TRAVEL_SPEED = 15.24;
+    public static final double WHEEL_DIAM = 5.715, TRACK_BASE = 15.875, ROTATE_SPEED = 90.0 / 3.8, TRAVEL_SPEED = 12.24;
     
 	static DifferentialPilot pilot;
     static String state = "";
@@ -79,8 +79,12 @@ public class Travel {
         long n = 0;
         
         while(!Button.ENTER.isDown()) {
-        	if (LocationT.dist>= 138.340347661 && LocationT.dist<=140.340347661) break;
-        	
+        	// attacker good angle  175.8432032
+        	// attacker bad angle  167.7757468   172.9999999 
+        	// goalkeeper good angle 158.484817
+        	// goalkeeper bad angle 152.051043  153.965355
+        	if (LocationT.dist >= 170.0063 && LocationT.dist <= 172.0063) break; // attacker stopping condition 
+        	//if (LocationT.dist >= 151.8337 && LocationT.dist <= 153.6337) break; // goalkeeper stopping condition
             int newDirection = Direct.getDirection();
             if(newDirection == Direct.DIR_RIGHT) {
                 setState(STATE_RIGHT);
