@@ -40,7 +40,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private JFrame frame;
 
 	long before = 0; // For FPS
-
+ 
 	public static void main(String args[]) {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
