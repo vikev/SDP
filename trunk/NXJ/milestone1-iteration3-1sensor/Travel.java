@@ -103,30 +103,6 @@ public class Travel {
         System.out.println(n);
         System.out.println("Dist frames for attacker: " + LocationT.dist);
         
-        /*
-        //issue stop
-        state = "stop";	//todo: remove
-        pilot.stop();
-        
-        
-        tracker.printReturnInfo();
-        System.out.println("Beginning Return..");
-        
-        Delay.msDelay(2000);
-        d = tracker.getReturnAngle();
-        System.out.println(d);
-        pilot.rotate(d);
-       
-        Delay.msDelay(2000);
-        d = tracker.getReturnDistance();
-        System.out.println(d);
-        pilot.travel(d);
-         
-        Delay.msDelay(2000);
-        d = -tracker.facing;
-        System.out.println(d);
-        pilot.rotate(d);
-        */
         Button.waitForAnyPress();
         Button.waitForAnyPress();
     }
