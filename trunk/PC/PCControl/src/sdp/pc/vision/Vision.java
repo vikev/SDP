@@ -2,6 +2,7 @@ package sdp.pc.vision;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -32,7 +33,8 @@ import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 public class Vision extends WindowAdapter implements CaptureCallback {
 	// Camera and image parameters
 	private static final int width = 640, height = 480,
-			std = V4L4JConstants.STANDARD_PAL, channel = 0;
+			std = V4L4JConstants.STANDARD_PAL, channel = 0,
+			X_FRAME_OFFSET = 1, Y_FRAME_OFFSET = 25;
 	private static String device = "/dev/video0";
 
 	// Other globals
@@ -226,13 +228,15 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		imageGraphics.drawString("FPS: " + fps, 15, 15);
 		frameGraphics.drawImage(image, 0, 0, width, height, null);
 		int x=1, y=0;
+		Point pos;
 		
 		// Gives RGB values of the point the cursor is on
 		if (frame.getMousePosition() != null
 				&& frame.getMousePosition() != null) {
-			x = (int) Math.round(frame.getMousePosition().getX()) - 1;
-			y = (int) Math.round(frame.getMousePosition().getY()) - 23;
-			if(x>0 && x<= width && y<= height){
+			pos = frame.getMousePosition();
+			x = (int) Math.round(pos.getX()) - X_FRAME_OFFSET;
+			y = (int) Math.round(pos.getY()) - Y_FRAME_OFFSET;
+			if(x>0 && x<= (width-X_FRAME_OFFSET) && y<= (height-Y_FRAME_OFFSET)){
 				
 	
 				imageGraphics.drawString("Mouse pos: x:" + x + " y:" + y, 15, 30);
