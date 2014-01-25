@@ -25,7 +25,7 @@ public class DistCalculator {
         	pilot.travel(distance,true);
 	        while(pilot.isMoving()){
 	            nFrames++;
-	            Delay.msDelay(Travel.CLOCK_PERIOD);
+	            Delay.msDelay(Travel.CLOCK_PERIOD_MS);
 	        }
 	        totalFrames += nFrames;
 	        if(goBack)
