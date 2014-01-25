@@ -120,7 +120,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// Checks every pixel
 		@SuppressWarnings("unused")
 		int ballPix = 0; int yellowPix=0; int bluePix =0; // for debugging
-			
+		
+		ArrayList<Point> bluePoints = new ArrayList<Point>();
 		// Both loops need to start from table edges rather than image edges (0)
 		for (int row = 80; row < image.getHeight() - 80; row++) { 
 			for (int column = 50; column < image.getWidth() - 50; column++) {
@@ -155,11 +156,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 					blueX += column;
 					blueY += row;
 					numBluePos++;
-			        image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes blue pixels orange
+					Point p = new Point(row, column);
+					bluePoints.add(p);
+			        //image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes blue pixels orange));
 				}
 			}
 		}
-
+		
 		//System.out.println("Yellow pixels: " + yellowPix);
 		
 		// Get average position of ball
@@ -173,10 +176,26 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			yellowY /= numYellowPos;
 		}
 		//Get average position of blue bot
-		if (numBluePos != 0) {
+		int maxScore = 0;
+		for (Point p : bluePoints) {
+			int score = 0;
+			for (int i=-5; i<5; i++) for (int j=-5; j<5; j++) {
+				System.out.println(p.getX());
+				System.out.println(p.getY());
+				Color c = new Color(image.getRGB((int) p.getX()+i,(int)  p.getY()+j));
+				if (isBlue(c)) {
+					score++;
+				}
+			}
+			if (score>maxScore) {
+				maxScore = score;
+				blueX = p.x; blueY = p.y;
+			}
+		}
+		/*if (numBluePos != 0) {
 			blueX /= numBluePos;
 			blueY /= numBluePos;
-		}
+		}*/
 		
 		// Calculates where ball is going
 		int avgPrevPosX = 0;
@@ -205,7 +224,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		imageGraphics.drawOval(yellowX-15, yellowY-15, 30,30);
 		// Blue robots locations
 		imageGraphics.setColor(Color.blue);
-		//imageGraphics.drawOval(blueX-15, blueY-15, 30,30);
+		imageGraphics.drawOval(blueX-15, blueY-15, 30,30);
 		
 		imageGraphics.drawImage(image, 0, 0, width, height, null);
 		
@@ -300,9 +319,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
      *                      false otherwise.
      */
 	private boolean isBlue(Color c) {
-		return (c.getRed() > 40 && c.getRed() < 55 &&
-				c.getBlue() > 80 && c.getBlue() < 100 && 
-				c.getGreen()>65 && c.getGreen() < 75);
+		return (c.getRed() > 40 && c.getRed() <60 &&
+				c.getBlue() > 80 && c.getBlue() < 120 && 
+				c.getGreen()>55 && c.getGreen() < 75);
 	}
 	
 	double prevBestAngle = 0;
