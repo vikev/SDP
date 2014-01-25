@@ -13,10 +13,12 @@ public class LocationT {
     public static double dist = 0.0;
     public static boolean distReach = false;
     
-    
-    public static void addDist(double cm){ // Travel distance method will need to factor in gear ratio
-        dist+=cm;
+    public static void reset(){
+    	dist = 0.0;
     }
     
-	
+    public static void addDist(double cm){
+        dist+=cm;
+    }
 }
+

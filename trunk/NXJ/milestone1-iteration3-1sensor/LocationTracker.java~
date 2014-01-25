@@ -105,8 +105,8 @@ public class LocationTracker extends Thread {
     		}
     		
     		//are we rotating
-    		if(M1.isRotating()) {
-    			if(M1.isRotatingRight()) {
+    		if(Travel.isRotating()) {
+    			if(Travel.isRotatingRight()) {
     				subAng();
     			}
     			else {
@@ -116,7 +116,7 @@ public class LocationTracker extends Thread {
     		}
     		
     		//are we moving
-    		moving = M1.isMovingForward();
+    		moving = Travel.isMovingForward();
     		if(moving) {
     			addDist();
     		}

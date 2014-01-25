@@ -10,7 +10,7 @@ import lejos.util.Delay;
 
 public class Travel {
 	// Using all CM now
-    private static final double ROTATE = 90.0, TRAVEL_DIST = 10.0; //both are completely arbitrary
+    private static final double ROTATE = 90.0, TRAVEL_DIST = 5.0; //both are completely arbitrary
     
     public static final int FPS = 100;
     
@@ -22,7 +22,7 @@ public class Travel {
     private static final String STATE_FORWARD = "Forward Movement", 
     		STATE_RIGHT = "On White";
     
-    public static final double WHEEL_DIAM = 5.715, TRACK_BASE = 15.875, ROTATE_SPEED = 90.0 / 3.0, TRAVEL_SPEED = 15.24;
+    public static final double WHEEL_DIAM = 5.715, TRACK_BASE = 15.875, ROTATE_SPEED = 90.0 / 3.8, TRAVEL_SPEED = 12.24;
     
 	static DifferentialPilot pilot;
     static String state = "";
@@ -61,8 +61,19 @@ public class Travel {
     }
 	
     static LocationTracker tracker;
+    static double minDist = 0.0;
     
 	public static void main(String[] args){
+		// Get tracking location
+		System.out.println("Press Enter for attacker; Back for defender");
+		int btn = Button.waitForAnyPress();
+		if(btn==Button.ID_ENTER){
+			minDist = 170.0063;
+		}else{
+			minDist = 151.8337;
+		}
+		
+		LCD.clear();
 		
 		//Initialise the pilot
         DifferentialPilot pilot = new DifferentialPilot(WHEEL_DIAM, TRACK_BASE,Motor.A,Motor.C, true);
@@ -74,17 +85,19 @@ public class Travel {
         tracker.setDaemon(true);	//no need to terminate the thread explicitly this way
         tracker.start();
         
+        Delay.msDelay(500);
         
         double d = 0.0;
         long n = 0;
         
         while(!Button.ENTER.isDown()) {
-        	if (LocationT.dist>= 138.340347661 && LocationT.dist<=140.340347661) break;
+        
+        	// Stop when the target distance is reached.
+        	if (LocationT.dist > minDist) break;
         	
             int newDirection = Direct.getDirection();
             if(newDirection == Direct.DIR_RIGHT) {
                 setState(STATE_RIGHT);
-                pilot.setRotateSpeed(ROTATE_SPEED);
                 pilot.rotateLeft(); //true flag works as expected
 
             } else {
@@ -96,34 +109,10 @@ public class Travel {
             Delay.msDelay(CLOCK_PERIOD);
             
         }
+        pilot.stop();
         System.out.println(n);
         System.out.println("Dist frames for attacker: " + LocationT.dist);
         
-        /*
-        //issue stop
-        state = "stop";	//todo: remove
-        pilot.stop();
-        
-        
-        tracker.printReturnInfo();
-        System.out.println("Beginning Return..");
-        
-        Delay.msDelay(2000);
-        d = tracker.getReturnAngle();
-        System.out.println(d);
-        pilot.rotate(d);
-       
-        Delay.msDelay(2000);
-        d = tracker.getReturnDistance();
-        System.out.println(d);
-        pilot.travel(d);
-         
-        Delay.msDelay(2000);
-        d = -tracker.facing;
-        System.out.println(d);
-        pilot.rotate(d);
-        */
-        Button.waitForAnyPress();
         Button.waitForAnyPress();
     }
 }
