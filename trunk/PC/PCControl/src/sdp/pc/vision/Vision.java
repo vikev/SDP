@@ -225,26 +225,31 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		imageGraphics.setColor(Color.white);
 		imageGraphics.drawString("FPS: " + fps, 15, 15);
 		frameGraphics.drawImage(image, 0, 0, width, height, null);
+		int x=1, y=0;
 		
 		// Gives RGB values of the point the cursor is on
 		if (frame.getMousePosition() != null
 				&& frame.getMousePosition() != null) {
-			int x = (int) Math.round(frame.getMousePosition().getX()) - 5;
-			int y = (int) Math.round(frame.getMousePosition().getY()) - 23;
-
-			imageGraphics.drawString("Mouse pos: x:" + x + " y:" + y, 15, 30);
-			frameGraphics.drawImage(image, 0, 0, width, height, null);
-			Color c = new Color(image.getRGB(x, y));
-			imageGraphics.drawString(
-					"Color: R:" + c.getRed() + " G:" + c.getGreen() + " B:"
-							+ c.getBlue(), 15, 45);
-			float[] hsb = new float[3];
-			Color.RGBtoHSB(c.getRed(), c.getBlue(), c.getGreen(), hsb);
-			imageGraphics.drawString(
-					"HSB: H:" + new DecimalFormat("#.###").format(hsb[0]) + 
-					" S:" + new DecimalFormat("#.###").format(hsb[1]) + 
-					" B:" + new DecimalFormat("#.###").format(hsb[2]), 15, 60);
-			frameGraphics.drawImage(image, 0, 0, width, height, null);
+			if(x>0){
+				x = (int) Math.round(frame.getMousePosition().getX()) - 1;
+				y = (int) Math.round(frame.getMousePosition().getY()) - 23;
+	
+				imageGraphics.drawString("Mouse pos: x:" + x + " y:" + y, 15, 30);
+				frameGraphics.drawImage(image, 0, 0, width, height, null);
+				
+				Color c = new Color(image.getRGB(x, y));
+				
+				imageGraphics.drawString(
+						"Color: R:" + c.getRed() + " G:" + c.getGreen() + " B:"
+								+ c.getBlue(), 15, 45);
+				float[] hsb = new float[3];
+				Color.RGBtoHSB(c.getRed(), c.getBlue(), c.getGreen(), hsb);
+				imageGraphics.drawString(
+						"HSB: H:" + new DecimalFormat("#.###").format(hsb[0]) + 
+						" S:" + new DecimalFormat("#.###").format(hsb[1]) + 
+						" B:" + new DecimalFormat("#.###").format(hsb[2]), 15, 60);
+				frameGraphics.drawImage(image, 0, 0, width, height, null);
+			}
 		}
 	}
 	
