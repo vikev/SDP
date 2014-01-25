@@ -31,7 +31,7 @@ import au.edu.jcu.v4l4j.exceptions.V4L4JException;
  */
 public class Vision extends WindowAdapter implements CaptureCallback {
 	// Camera and image parameters
-	private static int width = 640, height = 480,
+	private static final int width = 640, height = 480,
 			std = V4L4JConstants.STANDARD_PAL, channel = 0;
 	private static String device = "/dev/video0";
 
@@ -230,9 +230,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// Gives RGB values of the point the cursor is on
 		if (frame.getMousePosition() != null
 				&& frame.getMousePosition() != null) {
-			if(x>0){
-				x = (int) Math.round(frame.getMousePosition().getX()) - 1;
-				y = (int) Math.round(frame.getMousePosition().getY()) - 23;
+			x = (int) Math.round(frame.getMousePosition().getX()) - 1;
+			y = (int) Math.round(frame.getMousePosition().getY()) - 23;
+			if(x>0 && x<= width && y<= height){
+				
 	
 				imageGraphics.drawString("Mouse pos: x:" + x + " y:" + y, 15, 30);
 				frameGraphics.drawImage(image, 0, 0, width, height, null);
@@ -406,8 +407,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		frameGrabber = videoDevice.getJPEGFrameGrabber(width, height, channel,
 				std, 80);
 		frameGrabber.setCaptureCallback(this);
-		width = frameGrabber.getWidth();
-		height = frameGrabber.getHeight();
+		//width = frameGrabber.getWidth();
+		//height = frameGrabber.getHeight();
 		System.out.println("Starting capture at " + width + "x" + height);
 	}
 
