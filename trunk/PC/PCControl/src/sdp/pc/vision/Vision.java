@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import javax.swing.JFrame;
@@ -119,8 +120,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		int ballPix = 0; int yellowPix=0; int bluePix =0; // for debugging
 			
 		// Both loops need to start from table edges rather than image edges (0)
-		for (int row = 0; row < image.getHeight() - 0; row++) { 
-			for (int column = 0; column < image.getWidth() - 0; column++) {
+		for (int row = 80; row < image.getHeight() - 80; row++) { 
+			for (int column = 50; column < image.getWidth() - 50; column++) {
 				// RGB colour scheme
 				Color c = new Color(image.getRGB(column, row));
 				// HSB colour scheme (unused atm)
@@ -128,7 +129,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				Color.RGBtoHSB(c.getRed(), c.getBlue(), c.getGreen(), hsbvals);
 
 				// Find "Ball" pixels
-				if (c.getRed() > 160 && c.getBlue() < 20 && c.getGreen() < 20) {
+				if (isBall(c)) {
 					//ballPix++;
 					ballX += column;
 					ballY += row;
@@ -136,25 +137,23 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				}
 				
 				// Find Yellow pixels
-				if (c.getRed() > 180 && c.getBlue() < 5 && c.getGreen()>60 && c.getGreen() < 110) {
+				if (isYellow(c)) {
 					yellowPix++;
 					yellowX += column;
 					yellowY += row;
 					numYellowPos++;
-			        image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes yellow pixels orange
+			        //image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes yellow pixels orange
 			        yellowXPoints.add(column);
                     yellowYPoints.add(row);
 				}
 				
 				// Find Blue pixels - sucks atm
-				if (c.getRed() > 40 && c.getRed() < 48 &&
-						c.getBlue() > 80 && c.getBlue() < 90 && 
-						c.getGreen()>65 && c.getGreen() < 75) {
+				if (isBlue(c)) {
 					bluePix++;
 					blueX += column;
 					blueY += row;
 					numBluePos++;
-			        //image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes blue pixels orange
+			        image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes blue pixels orange
 				}
 			}
 		}
@@ -202,8 +201,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// Yellow robots locations
 		imageGraphics.setColor(Color.yellow);
 		imageGraphics.drawOval(yellowX-15, yellowY-15, 30,30);
-		imageGraphics.setColor(Color.black);
-		imageGraphics.drawOval(yellowX-2, yellowY-2, 4,4);
 		// Blue robots locations
 		imageGraphics.setColor(Color.blue);
 		//imageGraphics.drawOval(blueX-15, blueY-15, 30,30);
@@ -241,10 +238,64 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			imageGraphics.drawString(
 					"Color: R:" + c.getRed() + " G:" + c.getGreen() + " B:"
 							+ c.getBlue(), 15, 45);
+			float[] hsb = new float[3];
+			Color.RGBtoHSB(c.getRed(), c.getBlue(), c.getGreen(), hsb);
+			imageGraphics.drawString(
+					"HSB: H:" + new DecimalFormat("#.###").format(hsb[0]) + 
+					" S:" + new DecimalFormat("#.###").format(hsb[1]) + 
+					" B:" + new DecimalFormat("#.###").format(hsb[2]), 15, 60);
 			frameGraphics.drawImage(image, 0, 0, width, height, null);
 		}
 	}
 	
+	/**
+     * Determines if a pixel is part of the ball, based on input RGB colours
+     * and hsv values.
+     *
+     * @param color         The RGB colours for the pixel.
+     * @param hsbvals       The HSV values for the pixel.
+     *
+     * @return              True if the RGB and HSV values are within the defined
+     *                      thresholds (and thus the pixel is part of the ball),
+     *                      false otherwise.
+     */
+    private boolean isBall(Color c) {
+        return (c.getRed() > 150 && c.getBlue() < 20 && c.getGreen() < 20);
+    }
+	
+    /**
+     * Determines if a pixel is part of the yellow T, based on input RGB colours
+     * and hsv values.
+     *
+     * @param color         The RGB colours for the pixel.
+     * @param hsbvals       The HSV values for the pixel.
+     *
+     * @return              True if the RGB and HSV values are within the defined
+     *                      thresholds (and thus the pixel is part of the yellow T),
+     *                      false otherwise.
+     */
+    private boolean isYellow(Color c) {
+    	return (c.getRed() > 170 && c.getBlue() < 5 && c.getGreen()>60 && c.getGreen() < 100);
+    }
+    
+    /**
+     * Determines if a pixel is part of the blue T, based on input RGB colours
+     * and hsv values.
+     *
+     * @param color         The RGB colours for the pixel.
+     * @param hsbvals       The HSV values for the pixel.
+     *
+     * @return              True if the RGB and HSV values are within the defined
+     *                      thresholds (and thus the pixel is part of the blue T),
+     *                      false otherwise.
+     */
+	private boolean isBlue(Color c) {
+		return (c.getRed() > 40 && c.getRed() < 55 &&
+				c.getBlue() > 80 && c.getBlue() < 100 && 
+				c.getGreen()>65 && c.getGreen() < 75);
+	}
+	
+	double prevBestAngle = 0;
 	/**
      * Finds the orientation of a robot, given a list of the points contained within it's
      * T-shape (in terms of a list of x coordinates and y coordinates), the mean x and
@@ -261,56 +312,68 @@ public class Vision extends WindowAdapter implements CaptureCallback {
      * @return                  An orientation from -Pi to Pi degrees.
      * @throws NoAngleException
      */
-	public float findOrientation(ArrayList<Integer> xpoints, ArrayList<Integer> ypoints,
+	public double findOrientation(ArrayList<Integer> xpoints, ArrayList<Integer> ypoints,
             int meanX, int meanY, BufferedImage image, boolean showImage) {
-        assert (xpoints.size() == ypoints.size()) :
-            "Error: Must be equal number of x and y points!";
-        
-        /* Find the position of the front of the T. */
-        int frontX = 0;
-        int frontY = 0;
-        int frontCount = 0;
-        for (int i = 0; i < xpoints.size(); i++) {
-        	// If pixel is certain distance from mean, add it to the "front"
-        	if (sqrdEuclidDist(xpoints.get(i), ypoints.get(i), meanX, meanY) > Math.pow(12, 2)) {
-        		frontCount++;
-        		frontX += xpoints.get(i);
-        		frontY += ypoints.get(i);
-        		image.setRGB(xpoints.get(i), ypoints.get(i), Color.BLACK.getRGB());
-        	}
-        }
-        
-        // Set frontX and frontY to their average values
-        if (frontCount!=0) {
-        	frontX /= frontCount;
-        	frontY /= frontCount;
-        }
-        
-        // Calculate angle and 
-        float length = (float) Math.sqrt(Math.pow(frontX - meanX, 2)
-                + Math.pow(frontY - meanY, 2));
-        float ax = (frontX - meanX) / length;
-        float ay = (frontY - meanY) / length;
-        float angle = (float) Math.acos(ax);
+		double angle;
+		double goodAngle=0;
+		int goodAngleCount=0;
+		
+		for (angle=0 ; angle<360; angle++) {
+			int newCentX = meanX + (int) Math.round(4*Math.cos(angle*2*Math.PI/360));
+			int newCentY = meanY + (int) Math.round(4*Math.sin(angle*2*Math.PI/360));
+			int yellowCountBack=0;
+			int yellowCountSides=0;
+			int yellowCountFront=0;
+			
+			// Goes to back of bot
+			for (int i=0; i<20; i++) {
+				int x = newCentX + (int) Math.round(i*Math.cos(angle*2*Math.PI/360));
+				int y = newCentY + (int) Math.round(i*Math.sin(angle*2*Math.PI/360));
+				Color c = new Color(image.getRGB(x,y));
+				if (isYellow(c)) {
+					yellowCountBack++;
+				}
+			}
+			// Goes to sides of bot
+			for (int i=-20; i<20; i++) {
+				int x = newCentX + (int) Math.round(i*Math.cos((angle+90)*2*Math.PI/360));
+				int y = newCentY + (int) Math.round(i*Math.sin((angle+90)*2*Math.PI/360));
+				Color c = new Color(image.getRGB(x,y));
+				if (isYellow(c)) {
+					yellowCountSides++;
+				}
+			}
+			
+			// Goes to front of bot
+			for (int i=0; i<25; i++) {
+				int x = newCentX + (int) Math.round(i*Math.cos((angle+180)*2*Math.PI/360));
+				int y = newCentY + (int) Math.round(i*Math.sin((angle+180)*2*Math.PI/360));
+				Color c = new Color(image.getRGB(x,y));
+				if (isYellow(c)) {
+					yellowCountFront++;
+				}
+			}
 
-        if (frontY < meanY) {
-            angle = -angle;
-        }
-        
-        if (angle == 0) {
-            return (float) 0.001;
-        }
-        
-        if (showImage) {
-            image.getGraphics().drawLine((int)frontX, (int)frontY, (int)(frontX+ax*70), (int)(frontY+ay*70));
-            image.getGraphics().drawOval((int) frontX-4, (int) frontY-4, 8, 8);
-        }
+			// Checks if angle is good
+			if (yellowCountBack >= 2 && yellowCountBack <= 4 && 
+					yellowCountSides >= 18 && yellowCountFront >= 18) {
+				goodAngle+=angle;
+				goodAngleCount++;
+				System.out.println(yellowCountBack + " " + yellowCountSides + " " + yellowCountFront);
+			}
+			
+		}
+		
+		if (goodAngleCount!=0) goodAngle /= goodAngleCount;
+		else goodAngle = prevBestAngle;
+		
+		int x = meanX + (int) Math.round(10*Math.cos((goodAngle+180)*2*Math.PI/360));
+		int y = meanY + (int) Math.round(10*Math.sin((goodAngle+180)*2*Math.PI/360));
+		image.getGraphics().setColor(Color.black);
+		image.getGraphics().drawOval(x-2, y-2, 4,4);
 
-        return angle;
-        
-	}	
-	public static float sqrdEuclidDist(int x1, int y1, int x2, int y2) {
-		return (float) (Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+		prevBestAngle = goodAngle;
+		return goodAngle;
 	}
 
 	

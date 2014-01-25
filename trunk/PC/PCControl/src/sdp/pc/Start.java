@@ -8,11 +8,11 @@ import sdp.pc.robot.pilot.Driver;
 
 public class Start {
 	public static void main(String[] args) {
-		//NXTInfo nxt1 = new NXTInfo(NXTCommFactory.BLUETOOTH, "SDP 9B",
-		//		"001653077531");
+		NXTInfo nxt1 = new NXTInfo(NXTCommFactory.BLUETOOTH, "SDP 9B",
+				"001653077531");
 
-		 NXTInfo nxt1 = new NXTInfo(NXTCommFactory.BLUETOOTH, "SDP 9A",
-					"0016530BB5A3");
+		 //NXTInfo nxt1 = new NXTInfo(NXTCommFactory.BLUETOOTH, "SDP 9A",
+		//			"0016530BB5A3");
 
 		BTConnection conn1 = new BTConnection(nxt1, NXTComm.PACKET);
 
