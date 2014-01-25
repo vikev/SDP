@@ -8,10 +8,10 @@ public class Direct {
     public static int getDirection(){
         LSensor.getValue();
         if(LSensor.l>=THRESHOLD || LSensor.r>=THRESHOLD){
-        	if (!DistanceTracker.distReach)
+        	if (!LocationT.distReach)
             {
-            	DistanceTracker.distReach = true;
-            	DistanceTracker.dist = 0.0;
+            	LocationT.distReach = true;
+            	LocationT.dist = 0.0;
             }
         	return DIR_RIGHT;
         }
