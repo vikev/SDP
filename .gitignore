@@ -1,3 +1,4 @@
 ## compiled source ##
 *.class
 *.nxj
+*.java~
