@@ -176,7 +176,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			yellowY /= numYellowPos;
 		}
 		//Get average position of blue bot
-		int maxScore = 0;
+		/*int maxScore = 0;
 		for (Point p : bluePoints) {
 			int score = 0;
 			for (int i=-5; i<5; i++) for (int j=-5; j<5; j++) {
@@ -191,11 +191,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				maxScore = score;
 				blueX = p.x; blueY = p.y;
 			}
-		}
-		/*if (numBluePos != 0) {
+		}*/
+		if (numBluePos != 0) {
 			blueX /= numBluePos;
 			blueY /= numBluePos;
-		}*/
+		}
 		
 		// Calculates where ball is going
 		int avgPrevPosX = 0;
@@ -385,7 +385,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 			// Checks if angle is good
 			if (yellowCountBack >= 2 && yellowCountBack <= 4 && 
-					yellowCountSides >= 18 && yellowCountFront >= 18) {
+					yellowCountSides >= 16 && yellowCountFront >= 16) {
 				goodAngle+=angle;
 				goodAngleCount++;
 				System.out.println(yellowCountBack + " " + yellowCountSides + " " + yellowCountFront);
