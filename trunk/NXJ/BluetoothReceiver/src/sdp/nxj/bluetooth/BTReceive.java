@@ -62,6 +62,8 @@ public class BTReceive {
 				case 'r':
 					pilot.turnRight(distance); 
 					break;
+				case 'k':
+					Kicker.kick(distance);
 				case 's':
 					pilot.stopNow();   // stop robot immediately
 					break;

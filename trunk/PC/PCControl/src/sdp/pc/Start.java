@@ -8,7 +8,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import org.jfree.util.WaitingImageObserver;
 
 import lejos.pc.comm.NXTComm;
 import lejos.pc.comm.NXTCommFactory;
@@ -60,7 +59,6 @@ public class Start {
 		
 
 		conn1.disconnect();
-		// conn2.disconnect();
 
 	}
 }
