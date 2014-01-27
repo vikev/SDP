@@ -119,12 +119,14 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		int blueX = 0;
 		int blueY = 0;
 		int numBluePos = 0;
+		
+		ArrayList<Position> yellowPoints = new ArrayList<Position>();
+		ArrayList<Position> bluePoints = new ArrayList<Position>();
 
 		// Checks every pixel
 		@SuppressWarnings("unused")
 		int ballPix = 0; int yellowPix=0; int bluePix =0; // for debugging
 		
-		ArrayList<Point> bluePoints = new ArrayList<Point>();
 		// Both loops need to start from table edges rather than image edges (0)
 		for (int row = 80; row < image.getHeight() - 80; row++) { 
 			for (int column = 50; column < image.getWidth() - 50; column++) {
@@ -160,9 +162,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 					blueX += column;
 					blueY += row;
 					numBluePos++;
-					Point p = new Point(row, column);
-					bluePoints.add(p);
-			        //image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes blue pixels orange));
+					if (groupCheckBlue(image, column, row)){
+						Position p = new Position(column,row);
+						bluePoints.add(p);
+						image.setRGB(column, row, Color.WHITE.getRGB());
+					}
 				}
 			}
 		}
@@ -335,6 +339,15 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		return (c.getRed() > 40 && c.getRed() <60 &&
 				c.getBlue() > 80 && c.getBlue() < 120 && 
 				c.getGreen()>55 && c.getGreen() < 75);
+	}
+	
+	private boolean groupCheckBlue(BufferedImage image, int row,int column){
+		Color b = new Color(image.getRGB(column-1, row));
+		Color c = new Color(image.getRGB(column, row));
+		Color d = new Color(image.getRGB(column+1, row));
+		if (isBlue(b) && isBlue(c) && isBlue(d)){
+			return true;
+		}
 	}
 	
 	double prevBestAngle = 0;
