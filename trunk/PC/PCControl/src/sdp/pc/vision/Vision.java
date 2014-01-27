@@ -13,9 +13,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
-import sdp.pc.vision.relay.Driver;
-import sdp.pc.vision.relay.TCPClient;
-
 import au.edu.jcu.v4l4j.FrameGrabber;
 import au.edu.jcu.v4l4j.CaptureCallback;
 import au.edu.jcu.v4l4j.V4L4JConstants;
@@ -45,6 +42,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private FrameGrabber frameGrabber;
 	private JLabel label;
 	private JFrame frame;
+	
+	private WorldState state;
 
 	long before = 0; // For FPS
  
@@ -53,20 +52,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			@Override
 			public void run() {
 				try {
-					new Vision();
+					new Vision(new WorldState());
 				} catch (V4L4JException e) {
 					e.printStackTrace();
 				}
 			}
 		});
-		
-		Driver driver = new Driver(new TCPClient("localhost", 4456));
-		try {
-			driver.turnLeft(900);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	/**
@@ -75,7 +66,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * @throws V4L4JException
 	 *             if any parameter if invalid
 	 */
-	public Vision() throws V4L4JException {
+	public Vision(WorldState state) throws V4L4JException {
+		this.state = state;
 		try {
 			initFrameGrabber();
 		} catch (V4L4JException e1) {
@@ -148,6 +140,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 					ballX += column;
 					ballY += row;
 					numBallPos++;
+					//image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes red pixels orange
 				}
 				
 				// Find Yellow pixels
@@ -207,7 +200,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			blueX /= numBluePos;
 			blueY /= numBluePos;
 		}
-		
+
 		// Calculates where ball is going
 		int avgPrevPosX = 0;
 		for (int i : prevFramePosX) avgPrevPosX+=i;
@@ -219,8 +212,17 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		avgPrevPosX += 10 * (ballX - avgPrevPosX);
 		avgPrevPosY += 10 * (ballY - avgPrevPosY);
 		
+		double yellowOrientation = 0;
 		if (!yellowXPoints.isEmpty() || !yellowYPoints.isEmpty())
-			findOrientation(yellowXPoints, yellowYPoints, yellowX, yellowY, image, true);
+			yellowOrientation = findOrientation(yellowXPoints, yellowYPoints, yellowX, yellowY, image, true);
+		
+		// Update World State
+		state.setBallX(ballX);
+		state.setBallY(ballY);
+		state.setYellowX(yellowX);
+		state.setYellowY(yellowY);
+		state.setYellowOrientation(yellowOrientation);
+		
 
 		/* Create graphical representation */
 		Graphics imageGraphics = image.getGraphics();
@@ -300,7 +302,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
      *                      false otherwise.
      */
     private boolean isBall(Color c) {
-        return (c.getRed() > 150 && c.getBlue() < 20 && c.getGreen() < 20);
+        return (c.getRed() > 130 && c.getGreen() < 30 && c.getBlue() < 30);
     }
 	
     /**
@@ -394,21 +396,27 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				}
 			}
 
-			// Checks if angle is good
+			// Checks if angle is good 
+			//(note the thresholds change constantly during a 24-hour cycle due to lighting)
 			if (yellowCountBack >= 2 && yellowCountBack <= 4 && 
-					yellowCountSides >= 17 && yellowCountFront >= 16) {
+					yellowCountSides >= 20 && yellowCountFront >= 18) {
 				goodAngle+=angle;
 				goodAngleCount++;
-				System.out.println(yellowCountBack + " " + yellowCountSides + " " + yellowCountFront);
+				//System.out.println(yellowCountBack + " " + yellowCountSides + " " + yellowCountFront);
 			}
 			
 		}
 		
-		if (goodAngleCount!=0) goodAngle /= goodAngleCount;
+		if (goodAngleCount!=0) {
+			goodAngle /= goodAngleCount;
+			goodAngle +=180;
+			if (goodAngle>360) goodAngle-=360;
+			goodAngle = 360 - goodAngle;
+		}
 		else goodAngle = prevBestAngle;
 		
-		int x = meanX + (int) Math.round(10*Math.cos((goodAngle+180)*2*Math.PI/360));
-		int y = meanY + (int) Math.round(10*Math.sin((goodAngle+180)*2*Math.PI/360));
+		int x = meanX + (int) Math.round(10*Math.cos(goodAngle*2*Math.PI/360));
+		int y = meanY + (int) Math.round(-10*Math.sin(goodAngle*2*Math.PI/360));
 		image.getGraphics().setColor(Color.black);
 		image.getGraphics().drawOval(x-2, y-2, 4,4);
 
