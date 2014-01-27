@@ -1,4 +1,4 @@
-2package sdp.pc.robot.btcomm;
+package sdp.pc.robot.btcomm;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

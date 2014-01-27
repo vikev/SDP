@@ -169,11 +169,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 					blueX += column;
 					blueY += row;
 					numBluePos++;
+					/*
 					if (groupCheckBlue(image, column, row)){
 						Position p = new Position(column,row);
 						bluePoints.add(p);
 						image.setRGB(column, row, Color.WHITE.getRGB());
 					}
+					*/
 				}
 			}
 		}
@@ -345,6 +347,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		Color d = new Color(image.getRGB(column+1, row));
 		if (isBlue(b) && isBlue(c) && isBlue(d)){
 			return true;
+		}
+		else{
+			return false;
 		}
 	}
 	
