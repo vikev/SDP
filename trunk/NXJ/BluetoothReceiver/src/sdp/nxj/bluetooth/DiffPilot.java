@@ -12,7 +12,7 @@ public class DiffPilot {
 		if (distance == 0) {       // interpret a distance of zero to mean
 			pilot.forward();       // drive forward forever
 		} else {
-			pilot.travel(distance);
+			pilot.travel(distance,true);
 		}
 	}
 	
@@ -20,16 +20,16 @@ public class DiffPilot {
 		if (distance == 0) {        // interpret a distance of zero to mean
 			pilot.backward();       // drive backward forever
 		} else {
-			pilot.travel(-distance);
+			pilot.travel(-distance,true);
 		}
 	}
 	
 	public void turnLeft(double distance){
-		pilot.rotate(distance);
+		pilot.rotate(distance,true);
 	}
 	
 	public void turnRight(double distance){
-		pilot.rotate(-distance);
+		pilot.rotate(-distance,true);
 	}
 	
 	public void stopNow(){
