@@ -41,8 +41,8 @@ public class TCPClient {
 
 	public boolean sendCommand(char command, double arg) throws Exception {
 		if (connected) {
-			toServer.print(command);
-			toServer.print(arg);
+			toServer.println(command);
+			toServer.println(arg);
 			return true;
 		} else {
 			if (connect()) {

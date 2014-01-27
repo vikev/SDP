@@ -13,6 +13,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
+import sdp.pc.vision.relay.Driver;
+import sdp.pc.vision.relay.TCPClient;
+
 import au.edu.jcu.v4l4j.FrameGrabber;
 import au.edu.jcu.v4l4j.CaptureCallback;
 import au.edu.jcu.v4l4j.V4L4JConstants;
@@ -56,6 +59,14 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				}
 			}
 		});
+		
+		Driver driver = new Driver(new TCPClient("localhost", 4456));
+		try {
+			driver.turnLeft(900);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -385,7 +396,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 			// Checks if angle is good
 			if (yellowCountBack >= 2 && yellowCountBack <= 4 && 
-					yellowCountSides >= 16 && yellowCountFront >= 16) {
+					yellowCountSides >= 17 && yellowCountFront >= 16) {
 				goodAngle+=angle;
 				goodAngleCount++;
 				System.out.println(yellowCountBack + " " + yellowCountSides + " " + yellowCountFront);
