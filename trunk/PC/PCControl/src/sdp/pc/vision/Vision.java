@@ -338,16 +338,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				c.getGreen()>55 && c.getGreen() < 75);
 	}
 	
-	private boolean groupCheckBlue(BufferedImage image, int row,int column){
-		Color b = new Color(image.getRGB(column-1, row));
-		Color c = new Color(image.getRGB(column, row));
-		Color d = new Color(image.getRGB(column+1, row));
-		if (isBlue(b) && isBlue(c) && isBlue(d)){
-			return true;
-		}
-		return false;
-	}
-	
+
 	double prevBestAngle = 0;
 	/**
      * Finds the orientation of a robot, given a list of the points contained within it's
