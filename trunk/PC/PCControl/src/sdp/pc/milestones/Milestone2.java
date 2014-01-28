@@ -21,16 +21,10 @@ public class Milestone2 {
 			e1.printStackTrace();
 		}
 		Thread.sleep(500);
-		int ballX;
-		int ballY;
-		int yellowX;
-		int yellowY;
-		double yellowOrientation = 25.0;
-		double deltaX;
-		double deltaY;
-		double targetAngle = 0.0;
+		int ballX, ballY, yellowX, yellowY;
+		double yellowOrientation, targetAngle;
+		double deltaX, deltaY;
 		while (true) {
-			System.out.println(yellowOrientation - targetAngle);
 			ballX = state.getBallX();
 			ballY = state.getBallY();
 			yellowX = state.getYellowX();
@@ -39,7 +33,7 @@ public class Milestone2 {
 			deltaX = yellowX - ballX;
 			deltaY = ballY - yellowY;
 			targetAngle = Math.atan(deltaY/deltaX) * 360 / (2*Math.PI);
-			if (yellowOrientation - targetAngle < 10) {
+			if (yellowOrientation - targetAngle < 20) {
 				try {
 					driver.stop();
 				} catch (Exception e) {
@@ -49,7 +43,11 @@ public class Milestone2 {
 				break;
 			}
 			try {
-				driver.turnLeft(5);
+				//if (yellowOrientation - targetAngle > 180) {
+					driver.turnLeft(5);
+				//} else {
+				//	driver.turnRight(5);
+				//}
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();

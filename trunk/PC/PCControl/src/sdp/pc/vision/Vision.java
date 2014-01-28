@@ -348,6 +348,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		if (isBlue(b) && isBlue(c) && isBlue(d)){
 			return true;
 		}
+		return false;
 	}
 	
 	double prevBestAngle = 0;
