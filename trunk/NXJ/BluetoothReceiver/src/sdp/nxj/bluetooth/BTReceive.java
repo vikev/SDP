@@ -6,17 +6,6 @@ import lejos.nxt.LCD;
 import lejos.nxt.comm.BTConnection;
 import lejos.nxt.comm.Bluetooth;
 
-/**
- * Receive data from another NXT, a PC, a phone, 
- * or another bluetooth device.
- * 
- * Waits for a connection, receives an int and returns
- * its negative as a reply, 100 times, and then closes
- * the connection, and waits for a new one.
- * 
- * @author Lawrie Griffiths
- *
- */
 public class BTReceive {
 
 	public static void main(String [] args)  throws Exception 
