@@ -7,6 +7,7 @@ public class Position {
 	private int x;
 	private int y;
 
+	public Position() { this(0, 0); }
 
 	public Position(int x, int y) {
 		this.x = x;
@@ -16,18 +17,13 @@ public class Position {
 	public int getX() {
 		return x;
 	}
-
-	
 	public void setX(int x) {
 		this.x = x;
 	}
 
-
 	public int getY() {
 		return y;
 	}
-
-
 	public void setY(int y) {
 		this.y = y;
 	}
@@ -37,18 +33,16 @@ public class Position {
 		return "(" + x + ", " + y + ")";
 	}
 
-	
+	static final int fix_treshold = 9;
 	public void fixValues(int oldX, int oldY) {
 		// Use old values if nothing found
-		if (this.getX() == 0) {
-			this.setX(oldX);
-		}
-		if (this.getY() == 0) {
-			this.setY(oldY);
-		}
+		if (x == 0)
+			x = oldX;
+		if (y == 0)
+			y = oldY;
 
 		// Use old values if not changed much
-		if (sqrdEuclidDist(this, new Position(oldX, oldY)) < 9) {
+		if (getDistanceSq(new Position(oldX, oldY)) < fix_treshold) {
 			this.setX(oldX);
 			this.setY(oldY);
 		}
@@ -74,7 +68,7 @@ public class Position {
 			for (int i = 0; i < points.size(); ++i) {
 				Position p = points.get(i);
 
-				if (Math.sqrt(sqrdEuclidDist(this, p)) < stdev) {
+				if (Math.sqrt(this.getDistanceSq(p)) < stdev) {
 					newX += p.getX();
 					newY += p.getY();
 					++count;
@@ -93,7 +87,6 @@ public class Position {
 		}
 	}
 
-
 	public static ArrayList<Position> removeOutliers(
 			ArrayList<Position> points, Position centroid) {
 		ArrayList<Position> goodPoints = new ArrayList<Position>();
@@ -104,7 +97,7 @@ public class Position {
 			stdDev *= 1.17;
 			for (int i = 0; i < points.size(); ++i) {
 				Position p = points.get(i);
-				if (Math.sqrt(sqrdEuclidDist(centroid, p)) < stdDev)
+				if (Math.sqrt(p.getDistanceSq(centroid)) < stdDev)
 					goodPoints.add(p);
 			}
 		}
@@ -116,18 +109,24 @@ public class Position {
 			Position centroid) {
 		double variance = 0.0;
 
-		// Standard deviation
 		for (int i = 0; i < points.size(); ++i) {
-			variance += sqrdEuclidDist(points.get(i), centroid);
+			variance += centroid.getDistanceSq(points.get(i));
 		}
 
 		return Math.sqrt(variance / (double) (points.size()));
 	}
 
-	public static int sqrdEuclidDist(Position p1, Position p2) {
-		int xDiff = p2.getX() - p1.getX();
-		int yDiff = p2.getY() - p1.getY();
-
-		return xDiff * xDiff + yDiff * yDiff;
+	public int getDistanceSq(Position p) {
+		return getDistanceSq(p.getX(), p.getY());
+	}
+	
+	public int getDistanceSq(int x, int y) {
+		int dx = x - getX();
+		int dy = y - getY();
+		return dx * dx + dy * dy;
+	}
+	
+	public double getDistance(Position p) {
+		return Math.sqrt(getDistanceSq(p));
 	}
 }

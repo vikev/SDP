@@ -10,14 +10,13 @@ public class Kmeans {
 			Position mean2) {
 		// All the information about this iteration is kept here.
 		Cluster iteration = null;
+		
 		// We set the initial errors to some number that's not going to
 		// interfere with our condition.
-//		double error1new = 200.0;
-//		double error2new = 200.0;
 		Position mean1old = mean1;
 		Position mean2old = mean2;
-		Position mean1new = new Position(0, 0);
-		Position mean2new = new Position(0, 0);
+		Position mean1new = new Position();
+		Position mean2new = new Position();
 		int iterations = 0;
 
 		// We iterate until we converge or until we get small enough of an error
@@ -95,17 +94,9 @@ public class Kmeans {
 	public static double sumSquaredError(ArrayList<Position> points, Position center) {
 		double sumSqErr = 0.0;
 
-		for (int i = 0; i < points.size(); i++) {
-			sumSqErr += getDistance(points.get(i), center);
-		}
+		for (int i = 0; i < points.size(); i++)
+			sumSqErr += center.getDistance(points.get(i));
 		
 		return Math.sqrt(sumSqErr);
-	}
-
-	public static double getDistance(Position p1, Position p2) {
-		int xDiff = p2.getX() - p1.getX();
-		int yDiff = p2.getY() - p1.getY();
-
-		return Math.sqrt(xDiff * xDiff + yDiff * yDiff);
 	}
 }

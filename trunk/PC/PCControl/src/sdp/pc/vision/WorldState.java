@@ -2,13 +2,20 @@ package sdp.pc.vision;
 
 
 public class WorldState {
-
+	final static int playersPerTeam = 2;
+	final static int nTeams = 2;
+	
+	public static final int TEAM_YELLOW = 0;
+	public static final int TEAM_BLUE = 1;
+	
+	
 	private int direction; // 0 = right, 1 = left.
-	private int yellowX;
-	private int yellowY;
-	private int ballX;
-	private int ballY;
-	private double yellowOrientation;
+	
+	private Position ball;
+	
+	private Position[][] teamLoc = new Position[nTeams][playersPerTeam];
+	
+	private double[][] teamFacing = new double[nTeams][playersPerTeam];
 
 	public WorldState() {
 
@@ -16,51 +23,49 @@ public class WorldState {
 		this.direction = 0;
 
 		/* object properties */
-		this.yellowX = 0;
-		this.yellowY = 0;
-		this.ballX = 0;
-		this.ballY = 0;
-		this.yellowOrientation = 0;
-	}
-
-	public int getBallX() {
-		return ballX;
-	}
-
-	public int getBallY() {
-		return ballY;
-	}
-
-	public int getYellowX() {
-		return yellowX;
-	}
-
-	public void setYellowX(int yellowX) {
-		this.yellowX = yellowX;
-	}
-
-	public int getYellowY() {
-		return yellowY;
-	}
-
-	public void setYellowY(int yellowY) {
-		this.yellowY = yellowY;
-	}
-
-	public void setBallX(int ballX) {
-		this.ballX = ballX;
-	}
-
-	public void setBallY(int ballY) {
-		this.ballY = ballY;
+		for(int t = 0; t < nTeams; t++)
+			for(int p = 0; p < playersPerTeam; p++)
+				teamLoc[t][p] = new Position();
 	}
 	
-	public double getYellowOrientation() {
-		return yellowOrientation;
+	public Position getBallPosition() {
+		return ball;
 	}
 
-	public void setYellowOrientation(double yellowOrientation) {
-		this.yellowOrientation = yellowOrientation;
+	/***
+	 * Sets the 
+	 * @param newPos
+	 */
+	public void setBallPosition(Position newPos) {
+		this.ball = newPos;
+	}
+
+	public Position getTeamPosition(int team, int robot) {
+		return teamLoc[team][robot];
+	}
+
+	/***
+	 * Updates the team position of a given robot, part of a given team
+	 * @param team the team of the updated robot
+	 * @param robot the robot to update
+	 * @param newLoc the updated position of the robot
+	 */
+	public void setTeamPosition(int team, int robot, Position newLoc) {
+		this.teamLoc[team][robot] = newLoc;
+	}
+
+	public double getTeamFacing(int team, int robot) {
+		return teamFacing[team][robot];
+	}
+
+	/**
+	 * Updates the facing of a given robot, part of a given team
+	 * @param team the team of the updated robot
+	 * @param robot the robot to update
+	 * @param newFacing the updated angle of facing for the robot
+	 */
+	public void setTeamFacing(int team, int robot, double newFacing) {
+		this.teamFacing[team][robot] = newFacing;
 	}
 
 	public int getDirection() {
