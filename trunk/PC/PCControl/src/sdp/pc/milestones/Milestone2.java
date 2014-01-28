@@ -12,7 +12,7 @@ public class Milestone2 {
 	
 	public static void main (String[] args) throws V4L4JException, InterruptedException {
 		state = new WorldState();
-		new Vision(state);
+		new Vision();
 		Thread.sleep(3000);
 		Driver driver = new Driver(new TCPClient("localhost", 4456)); // Connect
 		try {
@@ -25,11 +25,11 @@ public class Milestone2 {
 		double yellowOrientation, targetAngle;
 		double deltaX, deltaY;
 		while (true) {
-			ballX = state.getBallX();
-			ballY = state.getBallY();
-			yellowX = state.getYellowX();
-			yellowY = state.getYellowY();
-			yellowOrientation = state.getYellowOrientation();
+			ballX = state.getBallPosition().getX();
+			ballY = state.getBallPosition().getY();
+			yellowX = state.getRobotPosition(0, 0).getX();
+			yellowY = state.getRobotPosition(0, 0).getY();
+			yellowOrientation = state.getRobotFacing(0, 0);
 			deltaX = yellowX - ballX;
 			deltaY = ballY - yellowY;
 			targetAngle = Math.atan(deltaY/deltaX) * 360 / (2*Math.PI);

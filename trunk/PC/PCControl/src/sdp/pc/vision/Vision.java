@@ -2,7 +2,6 @@ package sdp.pc.vision;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Point;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -128,8 +127,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		int blueY = 0;
 		int numBluePos = 0;
 		
-		ArrayList<Point> yellowPoints = new ArrayList<Point>();
-		ArrayList<Point> bluePoints = new ArrayList<Point>();
+		ArrayList<Point2> yellowPoints = new ArrayList<Point2>();
+		ArrayList<Point2> bluePoints = new ArrayList<Point2>();
 
 		// Checks every pixel
 		@SuppressWarnings("unused")
@@ -170,7 +169,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 					blueX += column;
 					blueY += row;
 					numBluePos++;
-					Position temp_blue = new Position(column,row);
+					Point2 temp_blue = new Point2(column,row);
 					bluePoints.add(temp_blue);
 					image.setRGB(column, row, Color.BLUE.getRGB());
 					
@@ -228,13 +227,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			yellowOrientation = findOrientation(yellowXPoints, yellowYPoints, yellowX, yellowY, image, true);
 		
 		// Update World State
-		state.setBallPosition(new Position(ballX, ballY));
-		state.setTeamPosition(0, 0, new Position(yellowX, yellowY));
-		state.setTeamFacing(0, 0, yellowOrientation);
+		state.setBallPosition(new Point2(ballX, ballY));
+		state.setRobotPosition(0, 0, new Point2(yellowX, yellowY));
+		state.setRobotFacing(0, 0, yellowOrientation);
 		
 		/* stuffff */
-		Position center = new Position(blueX,blueY);
-		ArrayList<Position> newBlue = center.removeOutliers(bluePoints, center);
+		Point2 center = new Point2(blueX,blueY);
+		ArrayList<Point2> newBlue = center.removeOutliers(bluePoints, center);
 		center.filterPoints(newBlue);
 
 		/* Create graphical representation */
@@ -275,7 +274,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		imageGraphics.drawString("FPS: " + fps, 15, 15);
 		frameGraphics.drawImage(image, 0, 0, width, height, null);
 		int x=1, y=0;
-		Point pos;
+		java.awt.Point pos;
 		
 		// Gives RGB values of the point the cursor is on
 		if (frame.getMousePosition() != null

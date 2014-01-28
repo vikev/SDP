@@ -3,34 +3,34 @@ package sdp.pc.vision;
 import java.util.ArrayList;
 
 public class Cluster {
-	private ArrayList<Position>[] clusters;
-	private Position[] means;
+	private ArrayList<Point2>[] clusters;
+	private Point2[] means;
 
 	@SuppressWarnings("unchecked")
-	public Cluster(ArrayList<Position> cluster1, ArrayList<Position> cluster2,
-			Position mean1, Position mean2) {
+	public Cluster(ArrayList<Point2> cluster1, ArrayList<Point2> cluster2,
+			Point2 mean1, Point2 mean2) {
 		this.clusters = new ArrayList[] { cluster1, cluster2 };
 
-		this.means = new Position[] { mean1, mean2 };
+		this.means = new Point2[] { mean1, mean2 };
 	}
 
 	// set and get the mean.
 
-	public Position getMean(int index) {
+	public Point2 getMean(int index) {
 		return this.means[index];
 	}
 
-	public void setMean(int index, Position mean) {
+	public void setMean(int index, Point2 mean) {
 		this.means[index] = mean;
 	}
 
 	// Set and get where num could be 1 or 2 and letter x or y;
 
-	public ArrayList<Position> getCluster(int index) {
+	public ArrayList<Point2> getCluster(int index) {
 		return this.clusters[index];
 	}
 
-	public void setCluster(int index, ArrayList<Position> cluster) {
+	public void setCluster(int index, ArrayList<Point2> cluster) {
 		this.clusters[index] = cluster;
 	}
 
