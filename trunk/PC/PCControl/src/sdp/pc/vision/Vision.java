@@ -228,8 +228,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		
 		// Update World State
 		state.setBallPosition(new Point2(ballX, ballY));
-		state.setTeamPosition(0, 0, new Point2(yellowX, yellowY));
-		state.setTeamFacing(0, 0, yellowOrientation);
+		state.setRobotPosition(0, 0, new Point2(yellowX, yellowY));
+		state.setRobotFacing(0, 0, yellowOrientation);
 		
 		/* stuffff */
 		Point2 center = new Point2(blueX,blueY);

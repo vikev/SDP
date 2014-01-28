@@ -13,9 +13,9 @@ public class WorldState {
 	
 	private Point2 ball;
 	
-	private Point2[][] teamLoc = new Point2[nTeams][playersPerTeam];
+	private Point2[][] robotLoc = new Point2[nTeams][playersPerTeam];
 	
-	private double[][] teamFacing = new double[nTeams][playersPerTeam];
+	private double[][] robotFacing = new double[nTeams][playersPerTeam];
 
 	public WorldState() {
 
@@ -25,7 +25,7 @@ public class WorldState {
 		/* object properties */
 		for(int t = 0; t < nTeams; t++)
 			for(int p = 0; p < playersPerTeam; p++)
-				teamLoc[t][p] = new Point2();
+				robotLoc[t][p] = new Point2();
 	}
 	
 	public Point2 getBallPosition() {
@@ -40,8 +40,8 @@ public class WorldState {
 		this.ball = newPos;
 	}
 
-	public Point2 getTeamPosition(int team, int robot) {
-		return teamLoc[team][robot];
+	public Point2 getRobotPosition(int team, int robot) {
+		return robotLoc[team][robot];
 	}
 
 	/***
@@ -50,12 +50,12 @@ public class WorldState {
 	 * @param robot the robot to update
 	 * @param newLoc the updated position of the robot
 	 */
-	public void setTeamPosition(int team, int robot, Point2 newLoc) {
-		this.teamLoc[team][robot] = newLoc;
+	public void setRobotPosition(int team, int robot, Point2 newLoc) {
+		this.robotLoc[team][robot] = newLoc;
 	}
 
-	public double getTeamFacing(int team, int robot) {
-		return teamFacing[team][robot];
+	public double getRobotFacing(int team, int robot) {
+		return robotFacing[team][robot];
 	}
 
 	/**
@@ -64,8 +64,8 @@ public class WorldState {
 	 * @param robot the robot to update
 	 * @param newFacing the updated angle of facing for the robot
 	 */
-	public void setTeamFacing(int team, int robot, double newFacing) {
-		this.teamFacing[team][robot] = newFacing;
+	public void setRobotFacing(int team, int robot, double newFacing) {
+		this.robotFacing[team][robot] = newFacing;
 	}
 
 	public int getDirection() {
