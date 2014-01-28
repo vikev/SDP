@@ -4,8 +4,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/bluecove-gpl.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/bluecove.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/pccomm.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/libv4l4j.so"/>
-	<classpathentry exported="true" kind="lib" path="lib/libvideo.so.0"/>
 	<classpathentry exported="true" kind="lib" path="lib/v4l4j.jar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
