@@ -4,18 +4,19 @@ custom = true
 nxj.home=${env.NXJ_HOME}
 
 source.dir = src
-source.include = 
-source.exclude = 
+source.lib = lib
+source.include =
+source.exclude = sdp/pc/vision/**
 source.encoding = utf-8
 source.warn = all,-fallthrough,-deprecation
-source.version = 1.5
-target.version = 1.5
+source.version = 1.7
+target.version = 1.7
 
 build.dir=build
 classes.dir=${build.dir}/classes
 docs.dir=${build.dir}/docs
 
-main.class=sdp.Start
+main.class=sdp.pc.Start
 
 dist.zip = ${build.dir}/dist.zip
 dist.include = 
