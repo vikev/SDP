@@ -33,7 +33,9 @@ public class Milestone2 {
 			deltaX = yellowX - ballX;
 			deltaY = ballY - yellowY;
 			targetAngle = Math.atan(deltaY/deltaX) * 360 / (2*Math.PI);
-			if (yellowOrientation - targetAngle < 20) {
+			System.out.println(targetAngle);
+			double rotateBy = yellowOrientation - targetAngle;
+			if (Math.abs(rotateBy) < 20) {
 				try {
 					driver.stop();
 				} catch (Exception e) {
@@ -43,11 +45,19 @@ public class Milestone2 {
 				break;
 			}
 			try {
-				//if (yellowOrientation - targetAngle > 180) {
-					driver.turnLeft(5);
-				//} else {
-				//	driver.turnRight(5);
-				//}
+				if (rotateBy > 0) {
+					if (rotateBy > 180){
+						driver.turnLeft(5);
+					} else {
+						driver.turnRight(5);
+					}
+				} else {
+					if (-rotateBy > 180){
+						driver.turnRight(5);
+					} else {
+						driver.turnLeft(5);
+					}
+				}
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
