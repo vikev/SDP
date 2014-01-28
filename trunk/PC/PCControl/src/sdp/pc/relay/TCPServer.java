@@ -7,6 +7,7 @@ public class TCPServer {
 	public void run() {
 		try {
 			int serverPort = 4020;
+			@SuppressWarnings("resource")
 			ServerSocket serverSocket = new ServerSocket(serverPort);
 
 			while (true) {
@@ -17,6 +18,7 @@ public class TCPServer {
 				System.out.println("Just connected to "
 						+ server.getRemoteSocketAddress());
 
+				@SuppressWarnings("unused")
 				PrintWriter toClient = new PrintWriter(
 						server.getOutputStream(), true);
 				BufferedReader fromClient = new BufferedReader(

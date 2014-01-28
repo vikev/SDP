@@ -3,7 +3,7 @@ package sdp.pc;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+//import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -13,7 +13,6 @@ import lejos.pc.comm.NXTComm;
 import lejos.pc.comm.NXTCommFactory;
 import lejos.pc.comm.NXTInfo;
 import sdp.pc.robot.btcomm.BTConnection;
-import sdp.pc.robot.pilot.Driver;
 
 public class Start {
 	public static void main(String[] args) {
@@ -25,10 +24,10 @@ public class Start {
 
 		BTConnection conn1 = new BTConnection(nxt1, NXTComm.PACKET);
 		
-		final Driver driver1 = new Driver(conn1);
 
 		try {
 			int serverPort = 4456;
+			@SuppressWarnings("resource")
 			ServerSocket serverSocket = new ServerSocket(serverPort);
 
 			while (true) {
@@ -39,8 +38,8 @@ public class Start {
 				System.out.println("Just connected to "
 						+ server.getRemoteSocketAddress());
 
-				PrintWriter toClient = new PrintWriter(
-						server.getOutputStream(), true);
+//				PrintWriter toClient = new PrintWriter(
+//						server.getOutputStream(), true);
 				BufferedReader fromClient = new BufferedReader(
 						new InputStreamReader(server.getInputStream()));
 				String line = "";

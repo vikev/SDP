@@ -5,7 +5,7 @@ import lejos.robotics.navigation.DifferentialPilot;
 public class DiffPilot {
 	private DifferentialPilot pilot;
 	public DiffPilot(){
-		pilot = new DifferentialPilot(5.5, 12.5, Motor.A, Motor.C, true);
+		pilot = new DifferentialPilot(56, 139, Motor.A, Motor.C, true);
 	}
 	
 	public void driveForward(double distance){
