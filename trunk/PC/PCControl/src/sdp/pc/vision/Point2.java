@@ -1,15 +1,16 @@
 package sdp.pc.vision;
 
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
 
-public class Position {
+public class Point2 {
 	private int x;
 	private int y;
 
-	public Position() { this(0, 0); }
+	public Point2() { this(0, 0); }
 
-	public Position(int x, int y) {
+	public Point2(int x, int y) {
 		this.x = x;
 		this.y = y;
 	}
@@ -42,7 +43,7 @@ public class Position {
 			y = oldY;
 
 		// Use old values if not changed much
-		if (getDistanceSq(new Position(oldX, oldY)) < fix_treshold) {
+		if (getDistanceSq(new Point2(oldX, oldY)) < fix_treshold) {
 			this.setX(oldX);
 			this.setY(oldY);
 		}
@@ -56,7 +57,7 @@ public class Position {
 	 * @param points
 	 *            The set of points
 	 */
-	public void filterPoints(ArrayList<Position> points) {
+	public void filterPoints(ArrayList<Point2> points) {
 		if (points.size() > 0) {
 			double stdev = standardDeviation(points, this);
 
@@ -66,7 +67,7 @@ public class Position {
 
 			// Remove points further than standard deviation
 			for (int i = 0; i < points.size(); ++i) {
-				Position p = points.get(i);
+				Point2 p = points.get(i);
 
 				if (Math.sqrt(this.getDistanceSq(p)) < stdev) {
 					newX += p.getX();
@@ -87,16 +88,16 @@ public class Position {
 		}
 	}
 
-	public static ArrayList<Position> removeOutliers(
-			ArrayList<Position> points, Position centroid) {
-		ArrayList<Position> goodPoints = new ArrayList<Position>();
+	public static ArrayList<Point2> removeOutliers(
+			ArrayList<Point2> points, Point2 centroid) {
+		ArrayList<Point2> goodPoints = new ArrayList<Point2>();
 
 		if (points.size() > 0) {
 			double stdDev = standardDeviation(points, centroid);
 			// Remove points further than 1.17 standard deviations
 			stdDev *= 1.17;
 			for (int i = 0; i < points.size(); ++i) {
-				Position p = points.get(i);
+				Point2 p = points.get(i);
 				if (Math.sqrt(p.getDistanceSq(centroid)) < stdDev)
 					goodPoints.add(p);
 			}
@@ -105,8 +106,8 @@ public class Position {
 		return goodPoints;
 	}
 
-	public static double standardDeviation(ArrayList<Position> points,
-			Position centroid) {
+	public static double standardDeviation(ArrayList<Point2> points,
+			Point2 centroid) {
 		double variance = 0.0;
 
 		for (int i = 0; i < points.size(); ++i) {
@@ -116,17 +117,56 @@ public class Position {
 		return Math.sqrt(variance / (double) (points.size()));
 	}
 
-	public int getDistanceSq(Position p) {
-		return getDistanceSq(p.getX(), p.getY());
+	public double getDistanceSq(Point2 p) {
+		return getDistanceSq(p.x, p.y);
 	}
-	
-	public int getDistanceSq(int x, int y) {
-		int dx = x - getX();
-		int dy = y - getY();
+	public double getDistanceSq(double x, double y) {
+		double dx = x - getX();
+		double dy = y - getY();
 		return dx * dx + dy * dy;
 	}
+
+	public double getDistance(Point2 p) {
+		return Math.sqrt(getDistanceSq(p.x, p.y));
+	}
+	public double getDistance(Point2D.Double p) {
+		return Math.sqrt(getDistanceSq(p.x, p.y));
+	}
 	
-	public double getDistance(Position p) {
-		return Math.sqrt(getDistanceSq(p));
+	public Point2 subtract(Point2 p) {
+		return new Point2(x - p.x, y - p.y);
+	}
+	
+	public Point2 add(Point2 p) {
+		return new Point2(x + p.x, y + p.y);
+	}
+	
+	public Point2D.Double add(Point2D.Double p) {
+		return new Point2D.Double(x + p.x, y + p.y);
+	}
+	
+	public Point2 div(int divisor) {
+		return new Point2(x / divisor, y / divisor);
+	}
+	
+	public Point2 getPerpendicular() {
+		return new Point2(y, x);
+	}
+	
+	public Point2D.Double toDouble() {
+		return new Point2D.Double(x, y);
+	}
+	
+	public static Point2D.Double getLinesIntersection(Point2 la, Point2 las, Point2 lb, Point2 lbs) {
+		double a1 = las.y,
+			   b1 = -las.x,
+			   c1 = a1*la.x+b1*la.y,
+			   a2 = lbs.y,
+			   b2 = -las.x,
+			   c2 = a2*lb.x + b2*lb.y;
+		double delta = a1*b2 - a2*b1;
+		if(delta == 0)
+			return new Point2D.Double();
+		return new Point2D.Double(((b2*c1-b1*c2)/delta), ((a1*c2-a2*c1)/delta));
 	}
 }
