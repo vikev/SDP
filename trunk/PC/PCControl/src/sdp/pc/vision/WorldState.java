@@ -11,9 +11,9 @@ public class WorldState {
 	
 	private int direction; // 0 = right, 1 = left.
 	
-	private Position ball;
+	private Point2 ball;
 	
-	private Position[][] teamLoc = new Position[nTeams][playersPerTeam];
+	private Point2[][] teamLoc = new Point2[nTeams][playersPerTeam];
 	
 	private double[][] teamFacing = new double[nTeams][playersPerTeam];
 
@@ -25,10 +25,10 @@ public class WorldState {
 		/* object properties */
 		for(int t = 0; t < nTeams; t++)
 			for(int p = 0; p < playersPerTeam; p++)
-				teamLoc[t][p] = new Position();
+				teamLoc[t][p] = new Point2();
 	}
 	
-	public Position getBallPosition() {
+	public Point2 getBallPosition() {
 		return ball;
 	}
 
@@ -36,11 +36,11 @@ public class WorldState {
 	 * Sets the 
 	 * @param newPos
 	 */
-	public void setBallPosition(Position newPos) {
+	public void setBallPosition(Point2 newPos) {
 		this.ball = newPos;
 	}
 
-	public Position getTeamPosition(int team, int robot) {
+	public Point2 getTeamPosition(int team, int robot) {
 		return teamLoc[team][robot];
 	}
 
@@ -50,7 +50,7 @@ public class WorldState {
 	 * @param robot the robot to update
 	 * @param newLoc the updated position of the robot
 	 */
-	public void setTeamPosition(int team, int robot, Position newLoc) {
+	public void setTeamPosition(int team, int robot, Point2 newLoc) {
 		this.teamLoc[team][robot] = newLoc;
 	}
 

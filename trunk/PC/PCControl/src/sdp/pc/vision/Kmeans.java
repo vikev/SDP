@@ -6,17 +6,17 @@ public class Kmeans {
 
 	public static final double errortarget = 200.0;
 
-	public static Cluster doKmeans(ArrayList<Position> points, Position mean1,
-			Position mean2) {
+	public static Cluster doKmeans(ArrayList<Point2> points, Point2 mean1,
+			Point2 mean2) {
 		// All the information about this iteration is kept here.
 		Cluster iteration = null;
 		
 		// We set the initial errors to some number that's not going to
 		// interfere with our condition.
-		Position mean1old = mean1;
-		Position mean2old = mean2;
-		Position mean1new = new Position();
-		Position mean2new = new Position();
+		Point2 mean1old = mean1;
+		Point2 mean2old = mean2;
+		Point2 mean1new = new Point2();
+		Point2 mean2new = new Point2();
 		int iterations = 0;
 
 		// We iterate until we converge or until we get small enough of an error
@@ -40,17 +40,17 @@ public class Kmeans {
 	// Position in the returned arraylist will correspond to the nth point in
 	// the original array lists and will be either 1 or 2, depending of the
 	// cluster
-	public static Cluster getClusters(ArrayList<Position> points,
-			Position mean1, Position mean2) {
+	public static Cluster getClusters(ArrayList<Point2> points,
+			Point2 mean1, Point2 mean2) {
 		// Clusters
-		ArrayList<Position> mean1members = new ArrayList<Position>();
-		ArrayList<Position> mean2members = new ArrayList<Position>();
+		ArrayList<Point2> mean1members = new ArrayList<Point2>();
+		ArrayList<Point2> mean2members = new ArrayList<Point2>();
 
 		for (int i = 0; i < points.size(); i++) {
-			Position p = points.get(i);
+			Point2 p = points.get(i);
 
-			double mean1dist = getDistance(p, mean1);
-			double mean2dist = getDistance(p, mean2);
+			double mean1dist = p.getDistance(mean1);
+			double mean2dist = p.getDistance(mean2);
 
 			// Add the points to the appropriate clusters.
 			if (mean1dist < mean2dist)
@@ -59,12 +59,12 @@ public class Kmeans {
 				mean2members.add(p);
 		}
 		// Get the new means using our clusters.
-		Position newmean1;
+		Point2 newmean1;
 		if (mean1members.size() > 0)
 			newmean1 = findMean(mean1members);
 		else
 			newmean1 = mean1;
-		Position newmean2;
+		Point2 newmean2;
 		if (mean2members.size() > 0)
 			newmean2 = findMean(mean2members);
 		else
@@ -75,23 +75,23 @@ public class Kmeans {
 
 	// Get the mean for the given points.
 	// means is an array in the format {xcenter, ycenter};
-	public static Position findMean(ArrayList<Position> points) {
+	public static Point2 findMean(ArrayList<Point2> points) {
 		assert (points.size() > 0) : "Empty points list passed to findMean";
 		
 		int xSum = 0;
 		int ySum = 0;
 		for (int i = 0; i < points.size(); i++) {
-			Position p = points.get(i);
+			Point2 p = points.get(i);
 			xSum += p.getX();
 			ySum += p.getY();
 		}
 		int meanx = xSum / points.size();
 		int meany = ySum / points.size();
 		
-		return new Position(meanx, meany);
+		return new Point2(meanx, meany);
 	}
 
-	public static double sumSquaredError(ArrayList<Position> points, Position center) {
+	public static double sumSquaredError(ArrayList<Point2> points, Point2 center) {
 		double sumSqErr = 0.0;
 
 		for (int i = 0; i < points.size(); i++)
