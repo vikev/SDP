@@ -31,10 +31,16 @@ import au.edu.jcu.v4l4j.exceptions.V4L4JException;
  * 
  */
 public class Vision extends WindowAdapter implements CaptureCallback {
+	
 	// Camera and image parameters
-	private static final int width = 640, height = 480,
-			std = V4L4JConstants.STANDARD_PAL, channel = 0,
-			X_FRAME_OFFSET = 1, Y_FRAME_OFFSET = 25;
+	private static final int 
+		width = 640, 
+		height = 480,
+		std = V4L4JConstants.STANDARD_PAL, 
+		channel = 0,
+		X_FRAME_OFFSET = 1,
+		Y_FRAME_OFFSET = 25;
+	
 	private static String device = "/dev/video0";
 
 	// Other globals
@@ -52,7 +58,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			@Override
 			public void run() {
 				try {
-					new Vision(new WorldState());
+					new Vision();
 				} catch (V4L4JException e) {
 					e.printStackTrace();
 				}
@@ -66,8 +72,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * @throws V4L4JException
 	 *             if any parameter if invalid
 	 */
-	public Vision(WorldState state) throws V4L4JException {
-		this.state = state;
+	public Vision() throws V4L4JException {
+		this.state = new WorldState();
+		
 		try {
 			initFrameGrabber();
 		} catch (V4L4JException e1) {
@@ -89,6 +96,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				before = System.currentTimeMillis(); // for FPS
 				BufferedImage frameImage = frame.getBufferedImage();
 				frame.recycle();
+				
 				processImage(frameImage);
 			}
 		});
@@ -98,13 +106,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	}
 
 	// Used for calculating direction the ball is heading
-	int[] prevFramePosX = new int[10], prevFramePosY = new int[10];
+	int[] prevFramePosX = new int[10], 
+		  prevFramePosY = new int[10];
 
 	/**
-	 * Finds locations of balls and robots and makes the graphical image (still
-	 * largely incomplete; only finds ball at this stage)
-	 * 
-	 * @param image
+	 * Identifies objects of interest (ball, players) in the image
+	 * WIP
+	 * @param image the image to process
 	 */
 	private void processImage(BufferedImage image) {
 
@@ -120,8 +128,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		int blueY = 0;
 		int numBluePos = 0;
 		
-		ArrayList<Position> yellowPoints = new ArrayList<Position>();
-		ArrayList<Position> bluePoints = new ArrayList<Position>();
+		ArrayList<Point> yellowPoints = new ArrayList<Point>();
+		ArrayList<Point> bluePoints = new ArrayList<Point>();
 
 		// Checks every pixel
 		@SuppressWarnings("unused")
@@ -220,11 +228,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			yellowOrientation = findOrientation(yellowXPoints, yellowYPoints, yellowX, yellowY, image, true);
 		
 		// Update World State
-		state.setBallX(ballX);
-		state.setBallY(ballY);
-		state.setYellowX(yellowX);
-		state.setYellowY(yellowY);
-		state.setYellowOrientation(yellowOrientation);
+		state.setBallPosition(new Position(ballX, ballY));
+		state.setTeamPosition(0, 0, new Position(yellowX, yellowY));
+		state.setTeamFacing(0, 0, yellowOrientation);
 		
 		/* stuffff */
 		Position center = new Position(blueX,blueY);
