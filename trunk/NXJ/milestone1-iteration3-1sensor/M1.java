@@ -19,7 +19,7 @@ public class M1 { // All values in centimeters
     public static final int FPS = 100, CLOCK_PERIOD_MS = 1000 / FPS;
     public static final boolean DEBUG = false;
     public static final double WHEEL_DIAM = 5.715, TRACK_BASE = 15.875, 
-    	ROTATE_SPEED = 90.0 / 3.8, TRAVEL_SPEED = 12.24;
+    	ROTATE_SPEED = 90.0 / 4.8, TRAVEL_SPEED = 12.24;
     
 	static DifferentialPilot pilot;
     static String state = "";
@@ -65,9 +65,9 @@ public class M1 { // All values in centimeters
 		System.out.println("ENTER for attacker, BACK for defender");
 		int btn = Button.waitForAnyPress();
 		if(btn==Button.ID_ENTER){
-			minDist = 170.0063+20.0;
+			minDist = 170.0063+30.0;
 		}else{
-			minDist = 151.8337+20.0;
+			minDist = 151.8337+25.0;
 		}
 		
 		LCD.clear();
@@ -99,7 +99,7 @@ public class M1 { // All values in centimeters
             		DistanceTracker.reset();
             	}
                 setState(STATE_RIGHT);
-                pilot.rotateLeft();
+                pilot.rotateRight();
             } else {
                 setState(STATE_FORWARD);
                 pilot.travel(TRAVEL_DIST,true);
