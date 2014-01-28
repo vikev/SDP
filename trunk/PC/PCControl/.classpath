@@ -4,7 +4,11 @@
 	<classpathentry exported="true" kind="lib" path="lib/bluecove-gpl.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/bluecove.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/pccomm.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/v4l4j.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/v4l4j.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="PCControl/lib/native"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
