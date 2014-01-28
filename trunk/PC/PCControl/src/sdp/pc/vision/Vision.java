@@ -163,19 +163,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 					blueY += row;
 					numBluePos++;
 					image.setRGB(column, row, Color.WHITE.getRGB());
-					/*
-					if (groupCheckBlue(image, column, row)){
-						//
-						bluePix++;
-						blueX += column;
-						blueY += row;
-						numBluePos++;
-						//
-						Position p = new Position(column,row);
-						bluePoints.add(p);
-						image.setRGB(column, row, Color.WHITE.getRGB());
-					}
-					*/
 					
 				}
 			}
@@ -351,22 +338,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				c.getGreen()>55 && c.getGreen() < 75);
 	}
 	
-	private boolean groupCheckBlue(BufferedImage image, int row,int column){
-		try{
-			
-			Color c = new Color(image.getRGB(column, row));
-			Color d = new Color(image.getRGB(column+1, row));
-			Color e = new Color(image.getRGB(column, row+1));
-			//Boolean all = isBlue(a) && isBlue(b) && isBlue(c) && isBlue(d) && isBlue(e);
-			Boolean all = isBlue(c) && isBlue(d) && isBlue(e);
-			if (all){
-				return true;
-			}
-		} catch(IndexOutOfBoundsException e){
-			return false;
-		}
-		return false;
-	}
 	
 	double prevBestAngle = 0;
 	/**
