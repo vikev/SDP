@@ -162,7 +162,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 					blueX += column;
 					blueY += row;
 					numBluePos++;
-					image.setRGB(column, row, Color.WHITE.getRGB());
+					Position temp_blue = new Position(column,row);
+					bluePoints.add(temp_blue);
+					image.setRGB(column, row, Color.BLUE.getRGB());
 					
 				}
 			}
@@ -199,7 +201,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		}*/
 		if (numBluePos != 0) {
 			blueX /= numBluePos;
-			blueY /= numBluePos;
+			blueY /= numBluePos;		
 		}
 
 		// Calculates where ball is going
@@ -224,6 +226,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		state.setYellowY(yellowY);
 		state.setYellowOrientation(yellowOrientation);
 		
+		/* stuffff */
+		Position center = new Position(blueX,blueY);
+		ArrayList<Position> newBlue = center.removeOutliers(bluePoints, center);
+		center.filterPoints(newBlue);
 
 		/* Create graphical representation */
 		Graphics imageGraphics = image.getGraphics();
@@ -231,6 +237,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// Ball location (and direction)
 		imageGraphics.setColor(Color.red);
 		imageGraphics.drawLine(0, ballY, 640, ballY);
+		
 		imageGraphics.drawLine(ballX, 0, ballX, 480);
 		imageGraphics.drawLine(ballX, ballY, avgPrevPosX, avgPrevPosY);
 		// Yellow robots locations
@@ -238,7 +245,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		imageGraphics.drawOval(yellowX-15, yellowY-15, 30,30);
 		// Blue robots locations
 		imageGraphics.setColor(Color.blue);
-		imageGraphics.drawOval(blueX-15, blueY-15, 30,30);
+		//imageGraphics.drawOval(blueX-15, blueY-15, 30,30);
+		imageGraphics.drawOval(center.getX()-15, center.getY()-15, 30,30);
 		
 		imageGraphics.drawImage(image, 0, 0, width, height, null);
 		
@@ -333,8 +341,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
      *                      false otherwise.
      */
 	private boolean isBlue(Color c) {
-		return (c.getRed() > 40 && c.getRed() <60 &&
-				c.getBlue() > 80 && c.getBlue() < 120 && 
+		return (c.getRed() > 0 && c.getRed() <60 && 
+				c.getBlue() > 80 && c.getBlue() < 256 && 
 				c.getGreen()>55 && c.getGreen() < 75);
 	}
 	
