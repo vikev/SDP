@@ -40,7 +40,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		X_FRAME_OFFSET = 1,
 		Y_FRAME_OFFSET = 25;
 	
-	private static String device = "/dev/video0";
+	private static final String device = "/dev/video0";
 
 	// Other globals
 	private VideoDevice videoDevice;
@@ -361,6 +361,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	
 
 	double prevBestAngle = 0;
+	
 	/**
      * Finds the orientation of a robot, given a list of the points contained within it's
      * T-shape (in terms of a list of x coordinates and y coordinates), the mean x and
