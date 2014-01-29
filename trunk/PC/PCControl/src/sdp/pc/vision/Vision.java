@@ -40,7 +40,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		X_FRAME_OFFSET = 1,
 		Y_FRAME_OFFSET = 25;
 	
-	private static String device = "/dev/video0";
+	private static final String device = "/dev/video0";
 
 	// Other globals
 	private VideoDevice videoDevice;

@@ -15,15 +15,15 @@ import lejos.pc.comm.NXTInfo;
 import sdp.pc.robot.btcomm.BTConnection;
 
 public class Start {
+	private static final String A_NAME = "SDP 9A", A_MAC = "0016530BB5A3",
+			B_NAME = "SDP 9B", B_MAC = "001653077531";
+			
 	public static void main(String[] args) {
-		 NXTInfo nxt1 = new NXTInfo(NXTCommFactory.BLUETOOTH, "SDP 9B",
-		 "001653077531");
+		NXTInfo nxt1 = new NXTInfo(NXTCommFactory.BLUETOOTH, B_NAME, B_MAC);
 
-		//NXTInfo nxt1 = new NXTInfo(NXTCommFactory.BLUETOOTH, "SDP 9A",
-		//		"0016530BB5A3");
+		//NXTInfo nxt1 = new NXTInfo(NXTCommFactory.BLUETOOTH, A_NAME,A_MAC);
 
 		BTConnection conn1 = new BTConnection(nxt1, NXTComm.PACKET);
-		
 
 		try {
 			int serverPort = 4456;
