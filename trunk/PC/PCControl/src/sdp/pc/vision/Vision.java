@@ -20,6 +20,7 @@ import au.edu.jcu.v4l4j.VideoFrame;
 import au.edu.jcu.v4l4j.exceptions.StateException;
 import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 
+
 /**
  * This code builds a JFrame that shows the feed from the camera and calculates
  * and displays positions of objects on the field. Part of the code is inspired
@@ -118,17 +119,23 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		int ballX = 0;
 		int ballY = 0;
 		int numBallPos = 0;
-		int yellowX = 0;
-		int yellowY = 0;
-		int numYellowPos = 0;
-		ArrayList<Integer> yellowXPoints = new ArrayList<Integer>();
-		ArrayList<Integer> yellowYPoints = new ArrayList<Integer>();
-		int blueX = 0;
-		int blueY = 0;
-		int numBluePos = 0;
+		int yellow1X = 0;
+		int yellow1Y = 0;
+		int numYellow1Pos = 0;
+		int yellow2X = 0;
+		int yellow2Y = 0;
+		int numYellow2Pos = 0;
+		int blue1X = 0;
+		int blue1Y = 0;
+		int numBlue1Pos = 0;
+		int blue2X = 0;
+		int blue2Y = 0;
+		int numBlue2Pos = 0;
 		
-		ArrayList<Point2> yellowPoints = new ArrayList<Point2>();
-		ArrayList<Point2> bluePoints = new ArrayList<Point2>();
+		ArrayList<Point2> yellow1Points = new ArrayList<Point2>();
+		ArrayList<Point2> yellow2Points = new ArrayList<Point2>();
+		ArrayList<Point2> blue1Points = new ArrayList<Point2>();
+		ArrayList<Point2> blue2Points = new ArrayList<Point2>();
 
 		// Checks every pixel
 		int ballPix = 0; int yellowPix=0; 
@@ -153,26 +160,43 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				}
 				
 				// Find Yellow pixels
-				if (isYellow(c)) {
+				// Left side of pitch
+				if (column<320 && isYellow(c)) {
 					yellowPix++;
-					yellowX += column;
-					yellowY += row;
-					numYellowPos++;
-					yellowPoints.add(new Point2(column,row));
+					yellow1X += column;
+					yellow1Y += row;
+					numYellow1Pos++;
+					yellow1Points.add(new Point2(column,row));
 			        image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes yellow pixels orange
-			        yellowXPoints.add(column);
-			        yellowYPoints.add(row);
+				}
+				// Right side of pitch
+				if (column>=320 && isYellow(c)) {
+					yellowPix++;
+					yellow2X += column;
+					yellow2Y += row;
+					numYellow2Pos++;
+					yellow2Points.add(new Point2(column,row));
+			        image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes yellow pixels orange
 				}
 				
 				// Find Blue pixels - sucks atm
-				if (isBlue(c)) {
+				// Left side of pitch
+				if (column<320 && isBlue(c)) {
 					bluePix++;
-					blueX += column;
-					blueY += row;
-					numBluePos++;
-					bluePoints.add(new Point2(column,row));
-					image.setRGB(column, row, Color.BLUE.getRGB());
-					
+					blue1X += column;
+					blue1Y += row;
+					numBlue1Pos++;
+					blue1Points.add(new Point2(column,row));
+					//image.setRGB(column, row, Color.BLUE.getRGB());
+				}
+				// Right side of pitch
+				if (column>=320 && isBlue(c)) {
+					bluePix++;
+					blue2X += column;
+					blue2Y += row;
+					numBlue2Pos++;
+					blue2Points.add(new Point2(column,row));
+					//image.setRGB(column, row, Color.BLUE.getRGB());
 				}
 			}
 		}
@@ -186,40 +210,62 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		}
 		
 		//Get average position of yellow bot
-		if (numYellowPos != 0) {
-			yellowX /= numYellowPos;
-			yellowY /= numYellowPos;
+		// Yellow robot left
+		if (numYellow1Pos != 0) {
+			yellow1X /= numYellow1Pos;
+			yellow1Y /= numYellow1Pos;
 		}
-		Point2 yellowCenter = new Point2(yellowX,yellowY);
-		ArrayList<Point2> newYellow = Point2.removeOutliers(yellowPoints, yellowCenter);
-		yellowCenter.filterPoints(newYellow);
+		Point2 yellow1Center = new Point2(yellow1X,yellow1Y);
+		ArrayList<Point2> newYellow1 = Point2.removeOutliers(yellow1Points, yellow1Center);
+		yellow1Center.filterPoints(newYellow1);
+		// Yellow robot right
+		if (numYellow2Pos != 0) {
+			yellow2X /= numYellow2Pos;
+			yellow2Y /= numYellow2Pos;
+		}
+		Point2 yellow2Center = new Point2(yellow1X,yellow1Y);
+		ArrayList<Point2> newYellow2 = Point2.removeOutliers(yellow2Points, yellow2Center);
+		yellow2Center.filterPoints(newYellow2);
+		
 		
 		//Get average position of blue bot
 		
-		/*ArrayList<Point2> removedPoints = new ArrayList<Point2>();
-		for (Point2 p : bluePoints) {
+		// This next piece of code removes pixels that don't have many neighbours
+		// IMO it makes it slightly more stable (only works for left side of pitch atm)
+		
+		ArrayList<Point2> removedPoints = new ArrayList<Point2>();
+		for (Point2 p : blue1Points) {
 			int score = 0;
 			for (int i=-5; i<5; i++) for (int j=-5; j<5; j++) {
 				Color c = new Color(image.getRGB((int) p.getX()+i,(int)  p.getY()+j));
 				if (isBlue(c))score++;
 			}
-			if (score <= 3) {
+			if (score <= 4) {
 					removedPoints.add(p);
-					blueX -= p.getX();
-					blueY -= p.getY();
-					numBluePos--;
+					blue1X -= p.getX();
+					blue1Y -= p.getY();
+					numBlue1Pos--;
 			}
 			else image.setRGB(p.getX(), p.getY(), Color.BLUE.getRGB());
 		}
-		for (Point2 p : removedPoints) bluePoints.remove(p);*/
+		for (Point2 p : removedPoints) blue1Points.remove(p);
 		
-		if (numBluePos != 0) {
-			blueX /= numBluePos;
-			blueY /= numBluePos;		
+		// Blue robot left
+		if (numBlue1Pos != 0) {
+			blue1X /= numBlue1Pos;
+			blue1Y /= numBlue1Pos;		
 		}
-		Point2 blueCenter = new Point2(blueX,blueY);
-		ArrayList<Point2> newBlue = Point2.removeOutliers(bluePoints, blueCenter);
-		blueCenter.filterPoints(newBlue);
+		Point2 blue1Center = new Point2(blue1X,blue1Y);
+		ArrayList<Point2> newBlue1 = Point2.removeOutliers(blue1Points, blue1Center);
+		blue1Center.filterPoints(newBlue1);
+		// Blue robot right
+		if (numBlue2Pos != 0) {
+			blue2X /= numBlue2Pos;
+			blue2Y /= numBlue2Pos;		
+		}
+		Point2 blue2Center = new Point2(blue2X,blue2Y);
+		ArrayList<Point2> newBlue2 = Point2.removeOutliers(blue2Points, blue2Center);
+		blue2Center.filterPoints(newBlue2);
 
 		// Calculates where ball is going
 		int avgPrevPosX = 0;
@@ -233,17 +279,20 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		avgPrevPosY += 10 * (ballY - avgPrevPosY);
 		
 		double yellowOrientation = 0;
-		if (!yellowXPoints.isEmpty() || !yellowYPoints.isEmpty())
-			yellowOrientation = findOrientation(yellowXPoints, yellowYPoints, yellowX, yellowY, image, true);
 		
 		// Update World State
 		state.setBallPosition(new Point2(ballX, ballY));
-		state.setRobotPosition(0, 0, new Point2(yellowX, yellowY));
+		state.setRobotPosition(0, 0, new Point2(yellow1X, yellow1Y));
 		state.setRobotFacing(0, 0, yellowOrientation);
 
 		/* Create graphical representation */
 		Graphics imageGraphics = image.getGraphics();
 		Graphics frameGraphics = label.getGraphics();
+		
+		// Boundaries
+		imageGraphics.setColor(Color.white);
+		imageGraphics.drawLine(320, 0, 320, 480);
+		
 		// Ball location (and direction)
 		imageGraphics.setColor(Color.red);
 		imageGraphics.drawLine(0, ballY, 640, ballY);
@@ -252,13 +301,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		imageGraphics.drawLine(ballX, ballY, avgPrevPosX, avgPrevPosY);
 		// Yellow robots locations
 		imageGraphics.setColor(Color.yellow);
-		//simageGraphics.drawOval(yellowX-15, yellowY-15, 30,30);
-		imageGraphics.drawOval(yellowCenter.getX()-15, yellowCenter.getY()-15, 30,30);
+		imageGraphics.drawOval(yellow1Center.getX()-15, yellow1Center.getY()-15, 30,30);
+		imageGraphics.drawOval(yellow2Center.getX()-15, yellow2Center.getY()-15, 30,30);
 		
 		// Blue robots locations
 		imageGraphics.setColor(Color.blue);
-		//imageGraphics.drawOval(blueX-15, blueY-15, 30,30);
-		imageGraphics.drawOval(blueCenter.getX()-15, blueCenter.getY()-15, 30,30);
+		imageGraphics.drawOval(blue1Center.getX()-15, blue1Center.getY()-15, 30,30);
+		imageGraphics.drawOval(blue2Center.getX()-15, blue2Center.getY()-15, 30,30);
 		
 		imageGraphics.drawImage(image, 0, 0, width, height, null);
 		
@@ -471,8 +520,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 */
 	private void initFrameGrabber() throws V4L4JException {
 		videoDevice = new VideoDevice(device);
-		frameGrabber = videoDevice.getJPEGFrameGrabber(width, height, channel,
-				std, 80);
+		frameGrabber = videoDevice.getJPEGFrameGrabber(width, height, channel, std, 100);
 		frameGrabber.setCaptureCallback(this);
 		//width = frameGrabber.getWidth();
 		//height = frameGrabber.getHeight();
