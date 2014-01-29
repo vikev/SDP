@@ -112,6 +112,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * WIP
 	 * @param image the image to process
 	 */
+	@SuppressWarnings("unused")
 	private void processImage(BufferedImage image) {
 
 		int ballX = 0;
@@ -130,8 +131,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		ArrayList<Point2> bluePoints = new ArrayList<Point2>();
 
 		// Checks every pixel
-		@SuppressWarnings("unused")
-		int ballPix = 0; int yellowPix=0; int bluePix =0; // for debugging
+		int ballPix = 0; int yellowPix=0; 
+		int bluePix =0; // for debugging
 		
 		// Both loops need to start from table edges rather than image edges (0)
 		for (int row = 80; row < image.getHeight() - 80; row++) { 
@@ -190,7 +191,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			yellowY /= numYellowPos;
 		}
 		Point2 yellowCenter = new Point2(yellowX,yellowY);
-		ArrayList<Point2> newYellow = yellowCenter.removeOutliers(yellowPoints, yellowCenter);
+		ArrayList<Point2> newYellow = Point2.removeOutliers(yellowPoints, yellowCenter);
 		yellowCenter.filterPoints(newYellow);
 		
 		//Get average position of blue bot
@@ -217,7 +218,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			blueY /= numBluePos;		
 		}
 		Point2 blueCenter = new Point2(blueX,blueY);
-		ArrayList<Point2> newBlue = blueCenter.removeOutliers(bluePoints, blueCenter);
+		ArrayList<Point2> newBlue = Point2.removeOutliers(bluePoints, blueCenter);
 		blueCenter.filterPoints(newBlue);
 
 		// Calculates where ball is going
