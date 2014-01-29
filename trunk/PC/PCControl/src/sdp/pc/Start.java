@@ -15,6 +15,7 @@ import lejos.pc.comm.NXTInfo;
 import sdp.pc.robot.btcomm.BTConnection;
 
 public class Start {
+	@SuppressWarnings("unused")
 	private static final String A_NAME = "SDP 9A", A_MAC = "0016530BB5A3",
 			B_NAME = "SDP 9B", B_MAC = "001653077531";
 			
@@ -27,7 +28,6 @@ public class Start {
 
 		try {
 			int serverPort = 4456;
-			@SuppressWarnings("resource")
 			ServerSocket serverSocket = new ServerSocket(serverPort);
 
 			while (true) {
