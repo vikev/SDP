@@ -353,6 +353,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	
 
 	double prevBestAngle = 0;
+	
 	/**
      * Finds the orientation of a robot, given a list of the points contained within it's
      * T-shape (in terms of a list of x coordinates and y coordinates), the mean x and
