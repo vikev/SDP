@@ -95,7 +95,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				before = System.currentTimeMillis(); // for FPS
 				BufferedImage frameImage = frame.getBufferedImage();
 				frame.recycle();
-				
 				processImage(frameImage);
 			}
 		});
@@ -122,7 +121,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		int yellowY = 0;
 		int numYellowPos = 0;
 		ArrayList<Integer> yellowXPoints = new ArrayList<Integer>();
-        ArrayList<Integer> yellowYPoints = new ArrayList<Integer>();
+		ArrayList<Integer> yellowYPoints = new ArrayList<Integer>();
 		int blueX = 0;
 		int blueY = 0;
 		int numBluePos = 0;
@@ -158,9 +157,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 					yellowX += column;
 					yellowY += row;
 					numYellowPos++;
-			        //image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes yellow pixels orange
+					yellowPoints.add(new Point2(column,row));
+			        image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes yellow pixels orange
 			        yellowXPoints.add(column);
-                    yellowYPoints.add(row);
+			        yellowYPoints.add(row);
 				}
 				
 				// Find Blue pixels - sucks atm
@@ -169,8 +169,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 					blueX += column;
 					blueY += row;
 					numBluePos++;
-					Point2 temp_blue = new Point2(column,row);
-					bluePoints.add(temp_blue);
+					bluePoints.add(new Point2(column,row));
 					image.setRGB(column, row, Color.BLUE.getRGB());
 					
 				}
@@ -184,32 +183,42 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			ballX /= numBallPos;
 			ballY /= numBallPos;
 		}
+		
 		//Get average position of yellow bot
 		if (numYellowPos != 0) {
 			yellowX /= numYellowPos;
 			yellowY /= numYellowPos;
 		}
+		Point2 yellowCenter = new Point2(yellowX,yellowY);
+		ArrayList<Point2> newYellow = yellowCenter.removeOutliers(yellowPoints, yellowCenter);
+		yellowCenter.filterPoints(newYellow);
+		
 		//Get average position of blue bot
-		/*int maxScore = 0;
-		for (Point p : bluePoints) {
+		
+		/*ArrayList<Point2> removedPoints = new ArrayList<Point2>();
+		for (Point2 p : bluePoints) {
 			int score = 0;
 			for (int i=-5; i<5; i++) for (int j=-5; j<5; j++) {
-				System.out.println(p.getX());
-				System.out.println(p.getY());
 				Color c = new Color(image.getRGB((int) p.getX()+i,(int)  p.getY()+j));
-				if (isBlue(c)) {
-					score++;
-				}
+				if (isBlue(c))score++;
 			}
-			if (score>maxScore) {
-				maxScore = score;
-				blueX = p.x; blueY = p.y;
+			if (score <= 3) {
+					removedPoints.add(p);
+					blueX -= p.getX();
+					blueY -= p.getY();
+					numBluePos--;
 			}
-		}*/
+			else image.setRGB(p.getX(), p.getY(), Color.BLUE.getRGB());
+		}
+		for (Point2 p : removedPoints) bluePoints.remove(p);*/
+		
 		if (numBluePos != 0) {
 			blueX /= numBluePos;
 			blueY /= numBluePos;		
 		}
+		Point2 blueCenter = new Point2(blueX,blueY);
+		ArrayList<Point2> newBlue = blueCenter.removeOutliers(bluePoints, blueCenter);
+		blueCenter.filterPoints(newBlue);
 
 		// Calculates where ball is going
 		int avgPrevPosX = 0;
@@ -230,11 +239,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		state.setBallPosition(new Point2(ballX, ballY));
 		state.setRobotPosition(0, 0, new Point2(yellowX, yellowY));
 		state.setRobotFacing(0, 0, yellowOrientation);
-		
-		/* stuffff */
-		Point2 center = new Point2(blueX,blueY);
-		ArrayList<Point2> newBlue = center.removeOutliers(bluePoints, center);
-		center.filterPoints(newBlue);
 
 		/* Create graphical representation */
 		Graphics imageGraphics = image.getGraphics();
@@ -247,11 +251,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		imageGraphics.drawLine(ballX, ballY, avgPrevPosX, avgPrevPosY);
 		// Yellow robots locations
 		imageGraphics.setColor(Color.yellow);
-		imageGraphics.drawOval(yellowX-15, yellowY-15, 30,30);
+		//simageGraphics.drawOval(yellowX-15, yellowY-15, 30,30);
+		imageGraphics.drawOval(yellowCenter.getX()-15, yellowCenter.getY()-15, 30,30);
+		
 		// Blue robots locations
 		imageGraphics.setColor(Color.blue);
 		//imageGraphics.drawOval(blueX-15, blueY-15, 30,30);
-		imageGraphics.drawOval(center.getX()-15, center.getY()-15, 30,30);
+		imageGraphics.drawOval(blueCenter.getX()-15, blueCenter.getY()-15, 30,30);
 		
 		imageGraphics.drawImage(image, 0, 0, width, height, null);
 		
@@ -331,7 +337,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
      *                      false otherwise.
      */
     private boolean isYellow(Color c) {
-    	return (c.getRed() > 170 && c.getBlue() < 5 && c.getGreen()>60 && c.getGreen() < 100);
+    	return (c.getRed() > 150 &&
+    			c.getGreen() > 70 && c.getGreen() < 120 &&
+    			c.getBlue() < 40);
     }
     
     /**
@@ -346,9 +354,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
      *                      false otherwise.
      */
 	private boolean isBlue(Color c) {
-		return (c.getRed() > 0 && c.getRed() <60 && 
-				c.getBlue() > 80 && c.getBlue() < 256 && 
-				c.getGreen()>55 && c.getGreen() < 75);
+		return (c.getRed()   > 20 && c.getRed()    < 40 && 
+				c.getGreen() > 70 && c.getGreen() < 80 &&
+				c.getBlue()  > 70 && c.getBlue()  < 120 );
 	}
 	
 
