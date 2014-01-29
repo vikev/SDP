@@ -7,7 +7,6 @@ public class TCPServer {
 	public void run() {
 		try {
 			int serverPort = 4020;
-			@SuppressWarnings("resource")
 			ServerSocket serverSocket = new ServerSocket(serverPort);
 
 			while (true) {

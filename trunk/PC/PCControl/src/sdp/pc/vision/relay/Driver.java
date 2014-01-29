@@ -1,7 +1,5 @@
 package sdp.pc.vision.relay;
 
-import sdp.pc.robot.btcomm.BTConnection;
-
 public class Driver {
 	TCPClient conn;
 
