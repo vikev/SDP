@@ -106,7 +106,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	// Used for calculating direction the ball is heading
 	int[] prevFramePosX = new int[10], 
 		  prevFramePosY = new int[10];
+	
+	Point2[] prevFramePos = new Point2[10];
 
+	Color[][] rgb = new Color[650][490];
+	float[][][] hsb = new float[650][490][3];
+	
 	/**
 	 * Identifies objects of interest (ball, players) in the image
 	 * WIP
@@ -115,17 +120,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	@SuppressWarnings("unused")
 	private void processImage(BufferedImage image) {
 
-		int ballX = 0;
-		int ballY = 0;
-		int numBallPos = 0;
-		int yellowX = 0;
-		int yellowY = 0;
-		int numYellowPos = 0;
-		ArrayList<Integer> yellowXPoints = new ArrayList<Integer>();
-		ArrayList<Integer> yellowYPoints = new ArrayList<Integer>();
-		int blueX = 0;
-		int blueY = 0;
-		int numBluePos = 0;
+		
+		int ballN = 0;
+		Point2 ballPos = new Point2();
+		int yellowN = 0;
+		Point2 yellowPos = new Point2();
+		int blueN = 0;
+		Point2 bluePos = new Point2();
 		
 		ArrayList<Point2> yellowPoints = new ArrayList<Point2>();
 		ArrayList<Point2> bluePoints = new ArrayList<Point2>();
@@ -137,108 +138,78 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// Both loops need to start from table edges rather than image edges (0)
 		for (int row = 80; row < image.getHeight() - 80; row++) { 
 			for (int column = 50; column < image.getWidth() - 50; column++) {
-				// RGB colour scheme
-				Color c = new Color(image.getRGB(column, row));
-				// HSB colour scheme (unused atm)
-				float hsbvals[] = new float[3];
-				Color.RGBtoHSB(c.getRed(), c.getBlue(), c.getGreen(), hsbvals);
+				
+				Point2 p = new Point2(column, row);
+				
+				//update RGB
+				Color cRgb = new Color(image.getRGB(column, row));
+				rgb[row][column] = cRgb;
+				//and HSB vals
+				float[] cHsb = hsb[row][column];
+				Color.RGBtoHSB(cRgb.getRed(), cRgb.getBlue(), cRgb.getGreen(), cHsb);
 
 				// Find "Ball" pixels
-				if (isBall(c)) {
-					//ballPix++;
-					ballX += column;
-					ballY += row;
-					numBallPos++;
+				if (isBall(cRgb)) {
+
+					ballPos = ballPos.add(p);
+					ballN++;
+					
 					//image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes red pixels orange
 				}
 				
 				// Find Yellow pixels
-				if (isYellow(c)) {
-					yellowPix++;
-					yellowX += column;
-					yellowY += row;
-					numYellowPos++;
+				if (isYellow(cRgb)) {
+					yellowPos = yellowPos.add(p);
+					yellowN++;
+					
 					yellowPoints.add(new Point2(column,row));
 			        image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes yellow pixels orange
-			        yellowXPoints.add(column);
-			        yellowYPoints.add(row);
 				}
 				
 				// Find Blue pixels - sucks atm
-				if (isBlue(c)) {
-					bluePix++;
-					blueX += column;
-					blueY += row;
-					numBluePos++;
+				if (isBlue(cRgb)) {
+					bluePos = bluePos.add(p);
+					blueN++;
+					
 					bluePoints.add(new Point2(column,row));
 					image.setRGB(column, row, Color.BLUE.getRGB());
 					
 				}
 			}
 		}
-		
-		//System.out.println("Yellow pixels: " + yellowPix);
-		
+
 		// Get average position of ball
-		if (numBallPos != 0) {
-			ballX /= numBallPos;
-			ballY /= numBallPos;
-		}
+		if (ballN != 0)
+			ballPos = ballPos.div(ballN);
 		
 		//Get average position of yellow bot
-		if (numYellowPos != 0) {
-			yellowX /= numYellowPos;
-			yellowY /= numYellowPos;
-		}
-		Point2 yellowCenter = new Point2(yellowX,yellowY);
-		ArrayList<Point2> newYellow = Point2.removeOutliers(yellowPoints, yellowCenter);
-		yellowCenter.filterPoints(newYellow);
+		if (yellowN != 0)
+			yellowPos = yellowPos.div(yellowN);
+		ArrayList<Point2> newYellow = Point2.removeOutliers(yellowPoints, yellowPos);
+		yellowPos.filterPoints(newYellow);
 		
 		//Get average position of blue bot
-		
-		/*ArrayList<Point2> removedPoints = new ArrayList<Point2>();
-		for (Point2 p : bluePoints) {
-			int score = 0;
-			for (int i=-5; i<5; i++) for (int j=-5; j<5; j++) {
-				Color c = new Color(image.getRGB((int) p.getX()+i,(int)  p.getY()+j));
-				if (isBlue(c))score++;
-			}
-			if (score <= 3) {
-					removedPoints.add(p);
-					blueX -= p.getX();
-					blueY -= p.getY();
-					numBluePos--;
-			}
-			else image.setRGB(p.getX(), p.getY(), Color.BLUE.getRGB());
-		}
-		for (Point2 p : removedPoints) bluePoints.remove(p);*/
-		
-		if (numBluePos != 0) {
-			blueX /= numBluePos;
-			blueY /= numBluePos;		
-		}
-		Point2 blueCenter = new Point2(blueX,blueY);
-		ArrayList<Point2> newBlue = Point2.removeOutliers(bluePoints, blueCenter);
-		blueCenter.filterPoints(newBlue);
+		if(blueN > 0)
+			bluePos = bluePos.div(blueN);
+		ArrayList<Point2> newBlue = Point2.removeOutliers(bluePoints, bluePos);
+		bluePos.filterPoints(newBlue);
 
-		// Calculates where ball is going
-		int avgPrevPosX = 0;
-		for (int i : prevFramePosX) avgPrevPosX+=i;
-		avgPrevPosX/=prevFramePosX.length;
-		int avgPrevPosY = 0;
-		for (int i : prevFramePosY) avgPrevPosY+=i;
-		avgPrevPosY/=prevFramePosY.length;
-	
-		avgPrevPosX += 10 * (ballX - avgPrevPosX);
-		avgPrevPosY += 10 * (ballY - avgPrevPosY);
+		// Calculates where ball is going		
+		Point2 avgPrevPos = new Point2();
+		for (Point2 p : prevFramePos)
+			avgPrevPos = avgPrevPos.add(p);
+		avgPrevPos = avgPrevPos.div(prevFramePos.length);
 		
+		//multiply by 10
+		avgPrevPos = avgPrevPos.subtract(ballPos).mult(10).add(ballPos);
+
+		//TODO: orientation code
 		double yellowOrientation = 0;
-		if (!yellowXPoints.isEmpty() || !yellowYPoints.isEmpty())
-			yellowOrientation = findOrientation(yellowXPoints, yellowYPoints, yellowX, yellowY, image, true);
+
 		
 		// Update World State
-		state.setBallPosition(new Point2(ballX, ballY));
-		state.setRobotPosition(0, 0, new Point2(yellowX, yellowY));
+		state.setBallPosition(ballPos);
+		state.setRobotPosition(0, 0, yellowPos);
 		state.setRobotFacing(0, 0, yellowOrientation);
 
 		/* Create graphical representation */
@@ -246,19 +217,19 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		Graphics frameGraphics = label.getGraphics();
 		// Ball location (and direction)
 		imageGraphics.setColor(Color.red);
-		imageGraphics.drawLine(0, ballY, 640, ballY);
+		imageGraphics.drawLine(0, ballPos.getY(), 640, ballPos.getY());
 		
-		imageGraphics.drawLine(ballX, 0, ballX, 480);
-		imageGraphics.drawLine(ballX, ballY, avgPrevPosX, avgPrevPosY);
+		imageGraphics.drawLine(ballPos.getX(), 0, ballPos.getX(), 480);
+		imageGraphics.drawLine(ballPos.getX(), ballPos.getY(), avgPrevPos.getX(), avgPrevPos.getY());
 		// Yellow robots locations
 		imageGraphics.setColor(Color.yellow);
 		//simageGraphics.drawOval(yellowX-15, yellowY-15, 30,30);
-		imageGraphics.drawOval(yellowCenter.getX()-15, yellowCenter.getY()-15, 30,30);
+		imageGraphics.drawOval(yellowPos.getX()-15, yellowPos.getY()-15, 30,30);
 		
 		// Blue robots locations
 		imageGraphics.setColor(Color.blue);
 		//imageGraphics.drawOval(blueX-15, blueY-15, 30,30);
-		imageGraphics.drawOval(blueCenter.getX()-15, blueCenter.getY()-15, 30,30);
+		imageGraphics.drawOval(bluePos.getX()-15, bluePos.getY()-15, 30,30);
 		
 		imageGraphics.drawImage(image, 0, 0, width, height, null);
 		
@@ -269,8 +240,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		for (int i=prevFramePosY.length-1; i>0 ; i--) {
 			prevFramePosY[i] = prevFramePosY[i-1];
 		}
-		prevFramePosX[0] = ballX;
-		prevFramePosY[0] = ballY;
+		prevFramePosX[0] = ballPos.getX();
+		prevFramePosY[0] = ballPos.getY();
 		
 		/* Used to calculate the FPS. */
 		long after = System.currentTimeMillis();
@@ -309,6 +280,29 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				frameGraphics.drawImage(image, 0, 0, width, height, null);
 			}
 		}
+	}
+
+	private static final int playerRadius = 18;
+	private Point2 findBlackDot(Point2 colorCenter) {
+		int xs = colorCenter.getX() - playerRadius;
+		int ys = colorCenter.getY() - playerRadius;
+		int xe = colorCenter.getX() - playerRadius;
+		int ye = colorCenter.getY() - playerRadius;
+		
+		ArrayList<Point2> pts = new ArrayList<Point2>();
+		float[] cHsb;
+		Color cRgb;
+		for(int ix = xs; ix < xe; ix++ )
+			for(int iy = ys; iy < ye; iy++) {
+				cHsb = hsb[ix][iy];
+				cRgb = rgb[ix][iy];
+				//hsb: s:40, b:25
+				if(cHsb[1] < 0.40f && cHsb[2] < 0.25f)
+					pts.add(new Point2(ix, iy));
+			}
+		
+		Cluster c = Kmeans.doKmeans(pts, colorCenter)[0];	//only 1 cluster
+		return c.getMean();
 	}
 	
 	/**

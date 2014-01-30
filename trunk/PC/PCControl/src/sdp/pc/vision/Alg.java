@@ -34,7 +34,7 @@ public class Alg {
 			minC = new Circle(b[0].toDouble(), 0);
 			break;
 		case 2:
-			minC = new Circle(b[0].add(b[1]).div(2).toDouble(), b[0].getDistance(b[1]) / 2);
+			minC = new Circle(b[0].add(b[1]).div(2).toDouble(), b[0].distance(b[1]) / 2);
 			break;
 		default:
 			return new Circle(b[0], b[1], b[2]);
@@ -42,7 +42,7 @@ public class Alg {
 		
 		//... Now see if all the points in P are enclosed.
 		for(int i = 0; i < n; i++)
-		    if(p.get(i).getDistance(minC.position) > minC.radius )
+		    if(p.get(i).distance(minC.position) > minC.radius )
 			{
 			    //... Compute B <--- B union P[i].
 			    b[m] = new Point2(p.get(i));

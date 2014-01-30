@@ -5,9 +5,10 @@ import java.io.*;
 
 public class TCPServer {
 	public void run() {
+		ServerSocket serverSocket = null;
 		try {
 			int serverPort = 4020;
-			ServerSocket serverSocket = new ServerSocket(serverPort);
+			serverSocket = new ServerSocket(serverPort);
 
 			while (true) {
 				System.out.println("Waiting for client on port "
@@ -32,6 +33,17 @@ public class TCPServer {
 			ex.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		finally {
+			//f*k java
+			if(serverSocket != null)
+				//try in a finally
+				try {
+					serverSocket.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 		}
 	}
 

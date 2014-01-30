@@ -17,10 +17,10 @@ public class Circle {
 		Point2 lc = c.div(2);
 		
 		this.position = a.add(Point2.getLinesIntersection(b, c, lb, lc));
-		this.radius = a.getDistance(position);
+		this.radius = a.distance(position);
 	}
 	
 	public boolean isPointInside(Point2 p) {
-		return p.getDistance(position) <= radius;
+		return p.distance(position) <= radius;
 	}
 }

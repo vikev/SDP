@@ -48,7 +48,7 @@ public class Point2 {
 			y = oldY;
 
 		// Use old values if not changed much
-		if (getDistanceSq(new Point2(oldX, oldY)) < fix_treshold) {
+		if (distanceSq(new Point2(oldX, oldY)) < fix_treshold) {
 			this.setX(oldX);
 			this.setY(oldY);
 		}
@@ -74,7 +74,7 @@ public class Point2 {
 			for (int i = 0; i < points.size(); ++i) {
 				Point2 p = points.get(i);
 
-				if (Math.sqrt(this.getDistanceSq(p)) < stdev) {
+				if (Math.sqrt(this.distanceSq(p)) < stdev) {
 					newX += p.getX();
 					newY += p.getY();
 					++count;
@@ -103,7 +103,7 @@ public class Point2 {
 			stdDev *= 1.17;
 			for (int i = 0; i < points.size(); ++i) {
 				Point2 p = points.get(i);
-				if (Math.sqrt(p.getDistanceSq(centroid)) < stdDev)
+				if (Math.sqrt(p.distanceSq(centroid)) < stdDev)
 					goodPoints.add(p);
 			}
 		}
@@ -116,26 +116,28 @@ public class Point2 {
 		double variance = 0.0;
 
 		for (int i = 0; i < points.size(); ++i) {
-			variance += centroid.getDistanceSq(points.get(i));
+			variance += centroid.distanceSq(points.get(i));
 		}
 
 		return Math.sqrt(variance / (double) (points.size()));
 	}
 
-	public double getDistanceSq(Point2 p) {
-		return getDistanceSq(p.x, p.y);
+	public double distanceSq(Point2 p) {
+		return distanceSq(p.x, p.y);
 	}
-	public double getDistanceSq(double x, double y) {
+	
+	public double distanceSq(double x, double y) {
 		double dx = x - getX();
 		double dy = y - getY();
 		return dx * dx + dy * dy;
 	}
 
-	public double getDistance(Point2 p) {
-		return Math.sqrt(getDistanceSq(p.x, p.y));
+	public double distance(Point2 p) {
+		return Math.sqrt(distanceSq(p.x, p.y));
 	}
-	public double getDistance(Point2D.Double p) {
-		return Math.sqrt(getDistanceSq(p.x, p.y));
+	
+	public double distance(Point2D.Double p) {
+		return Math.sqrt(distanceSq(p.x, p.y));
 	}
 	
 	public Point2 subtract(Point2 p) {
@@ -152,6 +154,10 @@ public class Point2 {
 	
 	public Point2 div(int divisor) {
 		return new Point2(x / divisor, y / divisor);
+	}
+	
+	public Point2 mult(int multiplier) {
+		return new Point2(x * multiplier, y * multiplier);
 	}
 	
 	public Point2 getPerpendicular() {
