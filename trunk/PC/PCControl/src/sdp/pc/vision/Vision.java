@@ -279,6 +279,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		avgPrevPosY += 10 * (ballY - avgPrevPosY);
 		
 		double yellowOrientation = 0;
+		if (!yellow1Points.isEmpty())
+			yellowOrientation = findOrientation1(yellow1X, yellow1Y, image, true);
 		
 		// Update World State
 		state.setBallPosition(new Point2(ballX, ballY));
@@ -428,6 +430,93 @@ public class Vision extends WindowAdapter implements CaptureCallback {
      * @return                  An orientation from -Pi to Pi degrees.
      * @throws NoAngleException
      */
+	
+	public double findOrientation1(int meanX, int meanY, BufferedImage image, boolean showImage) {	
+		double angle;
+		double goodAngle=0;
+		int goodAngleCount=0;
+		
+		for (angle=0 ; angle<360; angle++) {
+			int newCentX = meanX + (int) Math.round(4*Math.cos(angle*2*Math.PI/360));
+			int newCentY = meanY + (int) Math.round(4*Math.sin(angle*2*Math.PI/360));
+			int yellowCountBack=0;
+			int yellowCountSides=0;
+			int yellowCountFront=0;
+		
+		int i=0;
+		// Goes to front of bot
+		while(true) {
+			int x = newCentX + (int) Math.round(i*Math.cos((angle+180)*2*Math.PI/360));
+			int y = newCentY + (int) Math.round(i*Math.sin((angle+180)*2*Math.PI/360));
+			Color c = new Color(image.getRGB(x,y));
+			if (!isYellow(c)) {
+				if (c.getGreen() <= 70) break;
+				yellowCountFront++;
+			}
+			i++;
+		}
+		i=0;
+		// Goes to back of bot
+		while(true) {
+			int x = newCentX + (int) Math.round(i*Math.cos(angle*2*Math.PI/360));
+			int y = newCentY + (int) Math.round(i*Math.sin(angle*2*Math.PI/360));
+			Color c = new Color(image.getRGB(x,y));
+			if (!isYellow(c)) {
+				if (c.getGreen() <= 70) break;
+				yellowCountBack++;
+			}
+			i++;
+		}
+		
+		i=0;
+		// Goes to sides of bot
+		while(true) {
+			int x = newCentX + (int) Math.round(i*Math.cos((angle+90)*2*Math.PI/360));
+			int y = newCentY + (int) Math.round(i*Math.sin((angle+90)*2*Math.PI/360));
+			Color c = new Color(image.getRGB(x,y));
+			if (!isYellow(c)) {
+				if (c.getGreen() <= 70) break;
+				yellowCountSides++;
+			}
+			i++;
+		}
+			
+		if (yellowCountFront < yellowCountBack && yellowCountFront < yellowCountSides)
+		{
+			goodAngle+=angle;
+			goodAngleCount++;
+		}
+		/*else
+		if (yellowCountBack < yellowCountFront && yellowCountBack < yellowCountSides)
+		{
+			goodAngle+=angle;
+			goodAngleCount++;
+		}
+		else
+		if (yellowCountSides < yellowCountFront && yellowCountSides < yellowCountBack)
+		{
+			goodAngle+=(angle+90);
+			goodAngleCount++;
+		}*/
+		
+	}
+		if (goodAngleCount!=0) {
+			goodAngle /= (double)goodAngleCount;
+			//goodAngle +=180;
+			if (goodAngle>360) goodAngle-=360;
+			//goodAngle = 360 - goodAngle;
+		}
+		else goodAngle = prevBestAngle;
+		
+		int x = meanX + (int) Math.round(10*Math.cos(goodAngle*2*Math.PI/360));
+		int y = meanY + (int) Math.round(10*Math.sin(goodAngle*2*Math.PI/360));
+		image.getGraphics().setColor(Color.black);
+		image.getGraphics().drawOval(x-2, y-2, 4,4);
+
+		prevBestAngle = goodAngle;
+		return goodAngle;
+	}
+	
 	public double findOrientation(ArrayList<Integer> xpoints, ArrayList<Integer> ypoints,
             int meanX, int meanY, BufferedImage image, boolean showImage) {
 		double angle;
