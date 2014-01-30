@@ -7,6 +7,7 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -41,6 +42,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		Y_FRAME_OFFSET = 25;
 	
 	private static final String device = "/dev/video0";
+
+	private static final int BALL_PREV_POSITIONS = 10;
 
 	// Other globals
 	private VideoDevice videoDevice;
@@ -104,10 +107,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	}
 
 	// Used for calculating direction the ball is heading
+	LinkedList<Point2> prevFramePos = new LinkedList<Point2>();
+	
 	int[] prevFramePosX = new int[10], 
 		  prevFramePosY = new int[10];
-	
-	Point2[] prevFramePos = new Point2[10];
 
 	Color[][] rgb = new Color[650][490];
 	float[][][] hsb = new float[650][490][3];
@@ -123,13 +126,16 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		
 		int ballN = 0;
 		Point2 ballPos = new Point2();
-		int yellowN = 0;
-		Point2 yellowPos = new Point2();
-		int blueN = 0;
-		Point2 bluePos = new Point2();
+		int[] yellowN = new int[2];
+		Point2[] yellowPos = new Point2[] { new Point2(), new Point2() };
+		int[] blueN = new int[2];
+		Point2[] bluePos = new Point2[] { new Point2(), new Point2() };
 		
-		ArrayList<Point2> yellowPoints = new ArrayList<Point2>();
-		ArrayList<Point2> bluePoints = new ArrayList<Point2>();
+		//generic arrays don't exist in java, apparently
+		@SuppressWarnings("unchecked")
+		ArrayList<Point2>[] yellowPoints = new ArrayList[] { new ArrayList<Point2>(), new ArrayList<Point2>() };
+		@SuppressWarnings("unchecked")
+		ArrayList<Point2>[] bluePoints = new ArrayList[] { new ArrayList<Point2>(), new ArrayList<Point2>() };
 
 		// Checks every pixel
 		int ballPix = 0; int yellowPix=0; 
@@ -140,6 +146,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			for (int column = 50; column < image.getWidth() - 50; column++) {
 				
 				Point2 p = new Point2(column, row);
+				
+				//0 for left, 1 for right
+				int pitchSide = Math.min(column / 320, 1);	
 				
 				//update RGB
 				Color cRgb = new Color(image.getRGB(column, row));
@@ -159,19 +168,19 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				
 				// Find Yellow pixels
 				if (isYellow(cRgb)) {
-					yellowPos = yellowPos.add(p);
-					yellowN++;
+					yellowPos[pitchSide] = yellowPos[pitchSide].add(p);
+					yellowN[pitchSide]++;
 					
-					yellowPoints.add(new Point2(column,row));
+					yellowPoints[pitchSide].add(p);
 			        image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes yellow pixels orange
 				}
 				
 				// Find Blue pixels - sucks atm
 				if (isBlue(cRgb)) {
-					bluePos = bluePos.add(p);
-					blueN++;
+					bluePos[pitchSide] = bluePos[pitchSide].add(p);
+					blueN[pitchSide]++;
 					
-					bluePoints.add(new Point2(column,row));
+					bluePoints[pitchSide].add(p);
 					image.setRGB(column, row, Color.BLUE.getRGB());
 					
 				}
@@ -183,65 +192,72 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			ballPos = ballPos.div(ballN);
 		
 		//Get average position of yellow bot
-		if (yellowN != 0)
-			yellowPos = yellowPos.div(yellowN);
-		ArrayList<Point2> newYellow = Point2.removeOutliers(yellowPoints, yellowPos);
-		yellowPos.filterPoints(newYellow);
-		
-		//Get average position of blue bot
-		if(blueN > 0)
-			bluePos = bluePos.div(blueN);
-		ArrayList<Point2> newBlue = Point2.removeOutliers(bluePoints, bluePos);
-		bluePos.filterPoints(newBlue);
+		for(int i = 0; i < 2; i++) {
+			
+			if (yellowN[i] != 0)
+				yellowPos[i] = yellowPos[i].div(yellowN[i]);
+			ArrayList<Point2> newYellow = Point2.removeOutliers(yellowPoints[i], yellowPos[i]);
+			yellowPos[i].filterPoints(newYellow);
+			
+			//Get average position of blue bot
+			if(blueN[i] > 0)
+				bluePos[i] = bluePos[i].div(blueN[i]);
+			ArrayList<Point2> newBlue = Point2.removeOutliers(bluePoints[i], bluePos[i]);
+			bluePos[i].filterPoints(newBlue);
+		}
 
 		// Calculates where ball is going		
 		Point2 avgPrevPos = new Point2();
 		for (Point2 p : prevFramePos)
 			avgPrevPos = avgPrevPos.add(p);
-		avgPrevPos = avgPrevPos.div(prevFramePos.length);
+		avgPrevPos = avgPrevPos.div(prevFramePos.size());
 		
 		//multiply by 10
 		avgPrevPos = avgPrevPos.subtract(ballPos).mult(10).add(ballPos);
 
 		//TODO: orientation code
-		double yellowOrientation = 0;
+		double[] yellowOrientation = new double[2];
+		double[] blueOrientation = new double[2];
+		for(int i = 0; i < 2; i++) {
+			yellowOrientation[i] = findOrientation1(yellowPos[i], image, true);
+			blueOrientation[i] = findOrientation1(bluePos[i], image, true);
+		}
 
 		
 		// Update World State
 		state.setBallPosition(ballPos);
-		state.setRobotPosition(0, 0, yellowPos);
-		state.setRobotFacing(0, 0, yellowOrientation);
-
+		for(int i = 0; i < 2; i++) {
+			state.setRobotPosition(0, i, yellowPos[i]);
+			state.setRobotFacing(0, i, yellowOrientation[i]);
+		}
+		
 		/* Create graphical representation */
 		Graphics imageGraphics = image.getGraphics();
 		Graphics frameGraphics = label.getGraphics();
+		
 		// Ball location (and direction)
 		imageGraphics.setColor(Color.red);
 		imageGraphics.drawLine(0, ballPos.getY(), 640, ballPos.getY());
 		
 		imageGraphics.drawLine(ballPos.getX(), 0, ballPos.getX(), 480);
 		imageGraphics.drawLine(ballPos.getX(), ballPos.getY(), avgPrevPos.getX(), avgPrevPos.getY());
-		// Yellow robots locations
-		imageGraphics.setColor(Color.yellow);
-		//simageGraphics.drawOval(yellowX-15, yellowY-15, 30,30);
-		imageGraphics.drawOval(yellowPos.getX()-15, yellowPos.getY()-15, 30,30);
 		
-		// Blue robots locations
-		imageGraphics.setColor(Color.blue);
-		//imageGraphics.drawOval(blueX-15, blueY-15, 30,30);
-		imageGraphics.drawOval(bluePos.getX()-15, bluePos.getY()-15, 30,30);
+		// draw robot locations
+		//TODO: draw direction
+		for(int i = 0; i < 2; i++) {
+			imageGraphics.setColor(Color.yellow);
+			imageGraphics.drawOval(yellowPos[i].getX()-15, yellowPos[i].getY()-15, 30,30);
+			
+			imageGraphics.setColor(Color.blue);
+			imageGraphics.drawOval(bluePos[i].getX()-15, bluePos[i].getY()-15, 30,30);
+		}
 		
 		imageGraphics.drawImage(image, 0, 0, width, height, null);
 		
 		// Saves this frame's ball position and shifts previous frames' positions
-		for (int i=prevFramePosX.length-1; i>0 ; i--) {
-			prevFramePosX[i] = prevFramePosX[i-1];
-		}
-		for (int i=prevFramePosY.length-1; i>0 ; i--) {
-			prevFramePosY[i] = prevFramePosY[i-1];
-		}
-		prevFramePosX[0] = ballPos.getX();
-		prevFramePosY[0] = ballPos.getY();
+		prevFramePos.addFirst(ballPos);
+		if(prevFramePos.size() > BALL_PREV_POSITIONS)
+			prevFramePos.removeLast();
 		
 		/* Used to calculate the FPS. */
 		long after = System.currentTimeMillis();
@@ -280,7 +296,106 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				frameGraphics.drawImage(image, 0, 0, width, height, null);
 			}
 		}
+		
+		//dispose of used objects
+		imageGraphics.dispose();
+		frameGraphics.dispose();
 	}
+
+	private double findOrientation1(Point2 p, BufferedImage image,
+			boolean b) {
+		int meanX = p.getX();
+		int meanY = p.getY();
+        double angle;
+        double goodAngle=0;
+        int goodAngleCount=0;
+        
+        for (angle=0 ; angle<360; angle++) {
+                int newCentX = meanX + (int) Math.round(4*Math.cos(angle*2*Math.PI/360));
+                int newCentY = meanY + (int) Math.round(4*Math.sin(angle*2*Math.PI/360));
+                int yellowCountBack=0;
+                int yellowCountSides=0;
+                int yellowCountFront=0;
+        
+        int i=0;
+        // Goes to front of bot
+        while(true) {
+                int x = newCentX + (int) Math.round(i*Math.cos((angle+180)*2*Math.PI/360));
+                int y = newCentY + (int) Math.round(i*Math.sin((angle+180)*2*Math.PI/360));
+                Color c = new Color(image.getRGB(x,y));
+                float hsbvals[] = new float[3];
+                Color.RGBtoHSB(c.getRed(), c.getBlue(), c.getGreen(), hsbvals);
+                if (!isYellow(c)) {
+                        if (c.getGreen() <= 70 && hsbvals[1] <=0.500) break;
+                        yellowCountFront++;
+                }
+                i++;
+        }
+        i=0;
+        // Goes to back of bot
+        while(true) {
+                int x = newCentX + (int) Math.round(i*Math.cos(angle*2*Math.PI/360));
+                int y = newCentY + (int) Math.round(i*Math.sin(angle*2*Math.PI/360));
+                Color c = new Color(image.getRGB(x,y));
+                float hsbvals[] = new float[3];
+                Color.RGBtoHSB(c.getRed(), c.getBlue(), c.getGreen(), hsbvals);
+                if (!isYellow(c)) {
+                        if (c.getGreen() <= 70 && hsbvals[1] <=0.500) break;
+                        yellowCountBack++;
+                }
+                i++;
+        }
+        
+        i=0;
+        // Goes to sides of bot
+        while(true) {
+                int x = newCentX + (int) Math.round(i*Math.cos((angle+90)*2*Math.PI/360));
+                int y = newCentY + (int) Math.round(i*Math.sin((angle+90)*2*Math.PI/360));
+                Color c = new Color(image.getRGB(x,y));
+                float hsbvals[] = new float[3];
+                Color.RGBtoHSB(c.getRed(), c.getBlue(), c.getGreen(), hsbvals);
+                if (!isYellow(c)) {
+                        if (c.getGreen() <= 70 && hsbvals[1] <=0.500) break;
+                        yellowCountSides++;
+                }
+                i++;
+        }
+                
+        if (yellowCountFront < yellowCountBack && yellowCountFront < yellowCountSides)
+        {
+                goodAngle+=angle;
+                goodAngleCount++;
+        }
+        /*else
+        if (yellowCountBack < yellowCountFront && yellowCountBack < yellowCountSides)
+        {
+                goodAngle+=angle;
+                goodAngleCount++;
+        }
+        else
+        if (yellowCountSides < yellowCountFront && yellowCountSides < yellowCountBack)
+        {
+                goodAngle+=(angle+90);
+                goodAngleCount++;
+        }*/
+        
+}
+        if (goodAngleCount!=0) {
+                goodAngle /= (double)goodAngleCount;
+                goodAngle +=180;
+                if (goodAngle>360) goodAngle-=360;
+                goodAngle = 360 - goodAngle;
+        }
+        else goodAngle = prevBestAngle;
+        
+        int x = meanX + (int) Math.round(10*Math.cos(goodAngle*2*Math.PI/360));
+        int y = meanY + (int) Math.round(10*Math.sin(goodAngle*2*Math.PI/360));
+        image.getGraphics().setColor(Color.black);
+        image.getGraphics().drawOval(x-2, y-2, 4,4);
+
+        prevBestAngle = goodAngle;
+        return goodAngle;
+}
 
 	private static final int playerRadius = 18;
 	private Point2 findBlackDot(Point2 colorCenter) {
