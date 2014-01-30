@@ -30,16 +30,12 @@ import au.edu.jcu.v4l4j.exceptions.V4L4JException;
  * 
  */
 public class Vision extends WindowAdapter implements CaptureCallback {
-	
+
 	// Camera and image parameters
-	private static final int 
-		width = 640, 
-		height = 480,
-		std = V4L4JConstants.STANDARD_PAL, 
-		channel = 0,
-		X_FRAME_OFFSET = 1,
-		Y_FRAME_OFFSET = 25;
-	
+	private static final int WIDTH = 640, HEIGHT = 480,
+			VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL, CHANNEL = 0,
+			X_FRAME_OFFSET = 1, Y_FRAME_OFFSET = 25;
+
 	private static final String device = "/dev/video0";
 
 	// Other globals
@@ -47,16 +43,25 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private FrameGrabber frameGrabber;
 	private JLabel label;
 	private JFrame frame;
-	
+
 	private WorldState state;
 
+	static Point2[] prevFramePos = new Point2[10];
+
 	long before = 0; // For FPS
- 
+
 	public static void main(String args[]) {
+		// Initialize prevFramePos:
+		for (int i = 0; i < 10; i++) {
+			prevFramePos[i] = new Point2(0, 0);
+		}
+
+		// Begin:
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				try {
+
 					new Vision();
 				} catch (V4L4JException e) {
 					e.printStackTrace();
@@ -73,7 +78,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 */
 	public Vision() throws V4L4JException {
 		this.state = new WorldState();
-		
+
 		try {
 			initFrameGrabber();
 		} catch (V4L4JException e1) {
@@ -104,76 +109,79 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	}
 
 	// Used for calculating direction the ball is heading
-	int[] prevFramePosX = new int[10], 
-		  prevFramePosY = new int[10];
-	
-	Point2[] prevFramePos = new Point2[10];
+	int[] prevFramePosX = new int[10], prevFramePosY = new int[10];
 
-	Color[][] rgb = new Color[650][490];
-	float[][][] hsb = new float[650][490][3];
-	
+	Color[][] rgb = new Color[700][520];
+	float[][][] hsb = new float[700][520][3];
+
 	/**
-	 * Identifies objects of interest (ball, players) in the image
-	 * WIP
-	 * @param image the image to process
+	 * Identifies objects of interest (ball, players) in the image WIP
+	 * 
+	 * @param image
+	 *            the image to process
 	 */
 	@SuppressWarnings("unused")
 	private void processImage(BufferedImage image) {
 
-		
 		int ballN = 0;
 		Point2 ballPos = new Point2();
 		int yellowN = 0;
 		Point2 yellowPos = new Point2();
 		int blueN = 0;
 		Point2 bluePos = new Point2();
-		
+
 		ArrayList<Point2> yellowPoints = new ArrayList<Point2>();
 		ArrayList<Point2> bluePoints = new ArrayList<Point2>();
 
 		// Checks every pixel
-		int ballPix = 0; int yellowPix=0; 
-		int bluePix =0; // for debugging
-		
+		int ballPix = 0;
+		int yellowPix = 0;
+		int bluePix = 0; // for debugging
+
 		// Both loops need to start from table edges rather than image edges (0)
-		for (int row = 80; row < image.getHeight() - 80; row++) { 
-			for (int column = 50; column < image.getWidth() - 50; column++) {
-				
+		for (int row = 80; row < image.getHeight() - 80; row++) {
+			for (int column = 50; column < image.getWidth() - 55; column++) {
+
 				Point2 p = new Point2(column, row);
-				
-				//update RGB
+
+				// update RGB
 				Color cRgb = new Color(image.getRGB(column, row));
-				rgb[row][column] = cRgb;
-				//and HSB vals
-				float[] cHsb = hsb[row][column];
-				Color.RGBtoHSB(cRgb.getRed(), cRgb.getBlue(), cRgb.getGreen(), cHsb);
+				rgb[column][row] = cRgb;
+				// and HSB vals
+				float[] cHsb = hsb[column][row];
+				Color.RGBtoHSB(cRgb.getRed(), cRgb.getBlue(), cRgb.getGreen(),
+						cHsb);
 
 				// Find "Ball" pixels
 				if (isBall(cRgb)) {
 
 					ballPos = ballPos.add(p);
 					ballN++;
-					
-					//image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes red pixels orange
+
+					// image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes
+					// red pixels orange
 				}
-				
+
 				// Find Yellow pixels
 				if (isYellow(cRgb)) {
 					yellowPos = yellowPos.add(p);
 					yellowN++;
-					
-					yellowPoints.add(new Point2(column,row));
-			        image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes yellow pixels orange
+
+					yellowPoints.add(new Point2(column, row));
+					image.setRGB(column, row, Color.ORANGE.getRGB()); // Makes
+																		// yellow
+																		// pixels
+																		// orange
 				}
-				
+
 				// Find Blue pixels - sucks atm
 				if (isBlue(cRgb)) {
 					bluePos = bluePos.add(p);
 					blueN++;
-					
-					bluePoints.add(new Point2(column,row));
+
+					bluePoints.add(new Point2(column, row));
 					image.setRGB(column, row, Color.BLUE.getRGB());
-					
+
 				}
 			}
 		}
@@ -181,32 +189,32 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// Get average position of ball
 		if (ballN != 0)
 			ballPos = ballPos.div(ballN);
-		
-		//Get average position of yellow bot
+
+		// Get average position of yellow bot
 		if (yellowN != 0)
 			yellowPos = yellowPos.div(yellowN);
-		ArrayList<Point2> newYellow = Point2.removeOutliers(yellowPoints, yellowPos);
+		ArrayList<Point2> newYellow = Point2.removeOutliers(yellowPoints,
+				yellowPos);
 		yellowPos.filterPoints(newYellow);
-		
-		//Get average position of blue bot
-		if(blueN > 0)
+
+		// Get average position of blue bot
+		if (blueN > 0)
 			bluePos = bluePos.div(blueN);
 		ArrayList<Point2> newBlue = Point2.removeOutliers(bluePoints, bluePos);
 		bluePos.filterPoints(newBlue);
 
-		// Calculates where ball is going		
-		Point2 avgPrevPos = new Point2();
+		// Calculates where ball is going
+		Point2 avgPrevPos = new Point2(0, 0);
 		for (Point2 p : prevFramePos)
 			avgPrevPos = avgPrevPos.add(p);
 		avgPrevPos = avgPrevPos.div(prevFramePos.length);
-		
-		//multiply by 10
+
+		// multiply by 10
 		avgPrevPos = avgPrevPos.subtract(ballPos).mult(10).add(ballPos);
 
-		//TODO: orientation code
+		// TODO: orientation code
 		double yellowOrientation = 0;
 
-		
 		// Update World State
 		state.setBallPosition(ballPos);
 		state.setRobotPosition(0, 0, yellowPos);
@@ -218,31 +226,35 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// Ball location (and direction)
 		imageGraphics.setColor(Color.red);
 		imageGraphics.drawLine(0, ballPos.getY(), 640, ballPos.getY());
-		
+
 		imageGraphics.drawLine(ballPos.getX(), 0, ballPos.getX(), 480);
-		imageGraphics.drawLine(ballPos.getX(), ballPos.getY(), avgPrevPos.getX(), avgPrevPos.getY());
+		imageGraphics.drawLine(ballPos.getX(), ballPos.getY(),
+				avgPrevPos.getX(), avgPrevPos.getY());
 		// Yellow robots locations
 		imageGraphics.setColor(Color.yellow);
-		//simageGraphics.drawOval(yellowX-15, yellowY-15, 30,30);
-		imageGraphics.drawOval(yellowPos.getX()-15, yellowPos.getY()-15, 30,30);
-		
+		// simageGraphics.drawOval(yellowX-15, yellowY-15, 30,30);
+		imageGraphics.drawOval(yellowPos.getX() - 15, yellowPos.getY() - 15,
+				30, 30);
+
 		// Blue robots locations
 		imageGraphics.setColor(Color.blue);
-		//imageGraphics.drawOval(blueX-15, blueY-15, 30,30);
-		imageGraphics.drawOval(bluePos.getX()-15, bluePos.getY()-15, 30,30);
-		
-		imageGraphics.drawImage(image, 0, 0, width, height, null);
-		
-		// Saves this frame's ball position and shifts previous frames' positions
-		for (int i=prevFramePosX.length-1; i>0 ; i--) {
-			prevFramePosX[i] = prevFramePosX[i-1];
+		// imageGraphics.drawOval(blueX-15, blueY-15, 30,30);
+		imageGraphics
+				.drawOval(bluePos.getX() - 15, bluePos.getY() - 15, 30, 30);
+
+		imageGraphics.drawImage(image, 0, 0, WIDTH, HEIGHT, null);
+
+		// Saves this frame's ball position and shifts previous frames'
+		// positions
+		for (int i = prevFramePosX.length - 1; i > 0; i--) {
+			prevFramePosX[i] = prevFramePosX[i - 1];
 		}
-		for (int i=prevFramePosY.length-1; i>0 ; i--) {
-			prevFramePosY[i] = prevFramePosY[i-1];
+		for (int i = prevFramePosY.length - 1; i > 0; i--) {
+			prevFramePosY[i] = prevFramePosY[i - 1];
 		}
 		prevFramePosX[0] = ballPos.getX();
 		prevFramePosY[0] = ballPos.getY();
-		
+
 		/* Used to calculate the FPS. */
 		long after = System.currentTimeMillis();
 
@@ -250,200 +262,234 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		float fps = (1.0f) / ((after - before) / 1000.0f);
 		imageGraphics.setColor(Color.white);
 		imageGraphics.drawString("FPS: " + fps, 15, 15);
-		frameGraphics.drawImage(image, 0, 0, width, height, null);
-		int x=1, y=0;
+		frameGraphics.drawImage(image, 0, 0, WIDTH, HEIGHT, null);
+		int x = 1, y = 0;
 		java.awt.Point pos;
-		
+
 		// Gives RGB values of the point the cursor is on
 		if (frame.getMousePosition() != null
 				&& frame.getMousePosition() != null) {
 			pos = frame.getMousePosition();
 			x = (int) Math.round(pos.getX()) - X_FRAME_OFFSET;
 			y = (int) Math.round(pos.getY()) - Y_FRAME_OFFSET;
-			if(x>0 && x<= (width-X_FRAME_OFFSET) && y<= (height-Y_FRAME_OFFSET)){
-				
-	
-				imageGraphics.drawString("Mouse pos: x:" + x + " y:" + y, 15, 30);
-				frameGraphics.drawImage(image, 0, 0, width, height, null);
-				
+			if (x > 0 && x <= (WIDTH - X_FRAME_OFFSET)
+					&& y <= (HEIGHT - Y_FRAME_OFFSET)) {
+
+				imageGraphics.drawString("Mouse pos: x:" + x + " y:" + y, 15,
+						30);
+				frameGraphics.drawImage(image, 0, 0, WIDTH, HEIGHT, null);
+
 				Color c = new Color(image.getRGB(x, y));
-				
+
 				imageGraphics.drawString(
 						"Color: R:" + c.getRed() + " G:" + c.getGreen() + " B:"
 								+ c.getBlue(), 15, 45);
 				float[] hsb = new float[3];
 				Color.RGBtoHSB(c.getRed(), c.getBlue(), c.getGreen(), hsb);
 				imageGraphics.drawString(
-						"HSB: H:" + new DecimalFormat("#.###").format(hsb[0]) + 
-						" S:" + new DecimalFormat("#.###").format(hsb[1]) + 
-						" B:" + new DecimalFormat("#.###").format(hsb[2]), 15, 60);
-				frameGraphics.drawImage(image, 0, 0, width, height, null);
+						"HSB: H:" + new DecimalFormat("#.###").format(hsb[0])
+								+ " S:"
+								+ new DecimalFormat("#.###").format(hsb[1])
+								+ " B:"
+								+ new DecimalFormat("#.###").format(hsb[2]),
+						15, 60);
+				frameGraphics.drawImage(image, 0, 0, WIDTH, HEIGHT, null);
 			}
 		}
 	}
 
 	private static final int playerRadius = 18;
+
+	@SuppressWarnings("unused")
 	private Point2 findBlackDot(Point2 colorCenter) {
 		int xs = colorCenter.getX() - playerRadius;
 		int ys = colorCenter.getY() - playerRadius;
 		int xe = colorCenter.getX() - playerRadius;
 		int ye = colorCenter.getY() - playerRadius;
-		
+
 		ArrayList<Point2> pts = new ArrayList<Point2>();
 		float[] cHsb;
 		Color cRgb;
-		for(int ix = xs; ix < xe; ix++ )
-			for(int iy = ys; iy < ye; iy++) {
+		for (int ix = xs; ix < xe; ix++)
+			for (int iy = ys; iy < ye; iy++) {
 				cHsb = hsb[ix][iy];
 				cRgb = rgb[ix][iy];
-				//hsb: s:40, b:25
-				if(cHsb[1] < 0.40f && cHsb[2] < 0.25f)
+				// hsb: s:40, b:25
+				if (cHsb[1] < 0.40f && cHsb[2] < 0.25f)
 					pts.add(new Point2(ix, iy));
 			}
-		
-		Cluster c = Kmeans.doKmeans(pts, colorCenter)[0];	//only 1 cluster
+
+		Cluster c = Kmeans.doKmeans(pts, colorCenter)[0]; // only 1 cluster
 		return c.getMean();
 	}
-	
+
 	/**
-     * Determines if a pixel is part of the ball, based on input RGB colours
-     * and hsv values.
-     *
-     * @param color         The RGB colours for the pixel.
-     * @param hsbvals       The HSV values for the pixel.
-     *
-     * @return              True if the RGB and HSV values are within the defined
-     *                      thresholds (and thus the pixel is part of the ball),
-     *                      false otherwise.
-     */
-    private boolean isBall(Color c) {
-        return (c.getRed() > 130 && c.getGreen() < 30 && c.getBlue() < 30);
-    }
-	
-    /**
-     * Determines if a pixel is part of the yellow T, based on input RGB colours
-     * and hsv values.
-     *
-     * @param color         The RGB colours for the pixel.
-     * @param hsbvals       The HSV values for the pixel.
-     *
-     * @return              True if the RGB and HSV values are within the defined
-     *                      thresholds (and thus the pixel is part of the yellow T),
-     *                      false otherwise.
-     */
-    private boolean isYellow(Color c) {
-    	return (c.getRed() > 150 &&
-    			c.getGreen() > 70 && c.getGreen() < 120 &&
-    			c.getBlue() < 40);
-    }
-    
-    /**
-     * Determines if a pixel is part of the blue T, based on input RGB colours
-     * and hsv values.
-     *
-     * @param color         The RGB colours for the pixel.
-     * @param hsbvals       The HSV values for the pixel.
-     *
-     * @return              True if the RGB and HSV values are within the defined
-     *                      thresholds (and thus the pixel is part of the blue T),
-     *                      false otherwise.
-     */
-	private boolean isBlue(Color c) {
-		return (c.getRed()   > 20 && c.getRed()    < 40 && 
-				c.getGreen() > 70 && c.getGreen() < 80 &&
-				c.getBlue()  > 70 && c.getBlue()  < 120 );
+	 * Determines if a pixel is part of the ball, based on input RGB colours and
+	 * hsv values.
+	 * 
+	 * @param color
+	 *            The RGB colours for the pixel.
+	 * @param hsbvals
+	 *            The HSV values for the pixel.
+	 * 
+	 * @return True if the RGB and HSV values are within the defined thresholds
+	 *         (and thus the pixel is part of the ball), false otherwise.
+	 */
+	private boolean isBall(Color c) {
+		return (c.getRed() > 130 && c.getGreen() < 30 && c.getBlue() < 30);
 	}
-	
+
+	/**
+	 * Determines if a pixel is part of the yellow T, based on input RGB colours
+	 * and hsv values.
+	 * 
+	 * @param color
+	 *            The RGB colours for the pixel.
+	 * @param hsbvals
+	 *            The HSV values for the pixel.
+	 * 
+	 * @return True if the RGB and HSV values are within the defined thresholds
+	 *         (and thus the pixel is part of the yellow T), false otherwise.
+	 */
+	private boolean isYellow(Color c) {
+		return (c.getRed() > 150 && c.getGreen() > 70 && c.getGreen() < 120 && c
+				.getBlue() < 40);
+	}
+
+	/**
+	 * Determines if a pixel is part of the blue T, based on input RGB colours
+	 * and hsv values.
+	 * 
+	 * @param color
+	 *            The RGB colours for the pixel.
+	 * @param hsbvals
+	 *            The HSV values for the pixel.
+	 * 
+	 * @return True if the RGB and HSV values are within the defined thresholds
+	 *         (and thus the pixel is part of the blue T), false otherwise.
+	 */
+	private boolean isBlue(Color c) {
+		return (c.getRed() > 20 && c.getRed() < 40 && c.getGreen() > 70
+				&& c.getGreen() < 80 && c.getBlue() > 70 && c.getBlue() < 120);
+	}
 
 	double prevBestAngle = 0;
-	
+
 	/**
-     * Finds the orientation of a robot, given a list of the points contained within it's
-     * T-shape (in terms of a list of x coordinates and y coordinates), the mean x and
-     * y coordinates, and the image from which it was taken.
-     *
-     * @param xpoints           The x-coordinates of the points contained within the T-shape.
-     * @param ypoints           The y-coordinates of the points contained within the T-shape.
-     * @param meanX             The mean x-point of the T.
-     * @param meanY             The mean y-point of the T.
-     * @param image             The image from which the points were taken.
-     * @param showImage         A boolean flag - if true a line will be drawn showing
-     *                          the direction of orientation found.
-     *
-     * @return                  An orientation from -Pi to Pi degrees.
-     * @throws NoAngleException
-     */
-	public double findOrientation(ArrayList<Integer> xpoints, ArrayList<Integer> ypoints,
-            int meanX, int meanY, BufferedImage image, boolean showImage) {
+	 * Finds the orientation of a robot, given a list of the points contained
+	 * within it's T-shape (in terms of a list of x coordinates and y
+	 * coordinates), the mean x and y coordinates, and the image from which it
+	 * was taken.
+	 * 
+	 * @param xpoints
+	 *            The x-coordinates of the points contained within the T-shape.
+	 * @param ypoints
+	 *            The y-coordinates of the points contained within the T-shape.
+	 * @param meanX
+	 *            The mean x-point of the T.
+	 * @param meanY
+	 *            The mean y-point of the T.
+	 * @param image
+	 *            The image from which the points were taken.
+	 * @param showImage
+	 *            A boolean flag - if true a line will be drawn showing the
+	 *            direction of orientation found.
+	 * 
+	 * @return An orientation from -Pi to Pi degrees.
+	 * @throws NoAngleException
+	 */
+	public double findOrientation(ArrayList<Integer> xpoints,
+			ArrayList<Integer> ypoints, int meanX, int meanY,
+			BufferedImage image, boolean showImage) {
 		double angle;
-		double goodAngle=0;
-		int goodAngleCount=0;
-		
-		for (angle=0 ; angle<360; angle++) {
-			int newCentX = meanX + (int) Math.round(4*Math.cos(angle*2*Math.PI/360));
-			int newCentY = meanY + (int) Math.round(4*Math.sin(angle*2*Math.PI/360));
-			int yellowCountBack=0;
-			int yellowCountSides=0;
-			int yellowCountFront=0;
-			
+		double goodAngle = 0;
+		int goodAngleCount = 0;
+
+		for (angle = 0; angle < 360; angle++) {
+			int newCentX = meanX
+					+ (int) Math.round(4 * Math.cos(angle * 2 * Math.PI / 360));
+			int newCentY = meanY
+					+ (int) Math.round(4 * Math.sin(angle * 2 * Math.PI / 360));
+			int yellowCountBack = 0;
+			int yellowCountSides = 0;
+			int yellowCountFront = 0;
+
 			// Goes to back of bot
-			for (int i=0; i<20; i++) {
-				int x = newCentX + (int) Math.round(i*Math.cos(angle*2*Math.PI/360));
-				int y = newCentY + (int) Math.round(i*Math.sin(angle*2*Math.PI/360));
-				Color c = new Color(image.getRGB(x,y));
+			for (int i = 0; i < 20; i++) {
+				int x = newCentX
+						+ (int) Math.round(i
+								* Math.cos(angle * 2 * Math.PI / 360));
+				int y = newCentY
+						+ (int) Math.round(i
+								* Math.sin(angle * 2 * Math.PI / 360));
+				Color c = new Color(image.getRGB(x, y));
 				if (isYellow(c)) {
 					yellowCountBack++;
 				}
 			}
 			// Goes to sides of bot
-			for (int i=-20; i<20; i++) {
-				int x = newCentX + (int) Math.round(i*Math.cos((angle+90)*2*Math.PI/360));
-				int y = newCentY + (int) Math.round(i*Math.sin((angle+90)*2*Math.PI/360));
-				Color c = new Color(image.getRGB(x,y));
+			for (int i = -20; i < 20; i++) {
+				int x = newCentX
+						+ (int) Math.round(i
+								* Math.cos((angle + 90) * 2 * Math.PI / 360));
+				int y = newCentY
+						+ (int) Math.round(i
+								* Math.sin((angle + 90) * 2 * Math.PI / 360));
+				Color c = new Color(image.getRGB(x, y));
 				if (isYellow(c)) {
 					yellowCountSides++;
 				}
 			}
-			
+
 			// Goes to front of bot
-			for (int i=0; i<25; i++) {
-				int x = newCentX + (int) Math.round(i*Math.cos((angle+180)*2*Math.PI/360));
-				int y = newCentY + (int) Math.round(i*Math.sin((angle+180)*2*Math.PI/360));
-				Color c = new Color(image.getRGB(x,y));
+			for (int i = 0; i < 25; i++) {
+				int x = newCentX
+						+ (int) Math.round(i
+								* Math.cos((angle + 180) * 2 * Math.PI / 360));
+				int y = newCentY
+						+ (int) Math.round(i
+								* Math.sin((angle + 180) * 2 * Math.PI / 360));
+				Color c = new Color(image.getRGB(x, y));
 				if (isYellow(c)) {
 					yellowCountFront++;
 				}
 			}
 
-			// Checks if angle is good 
-			//(note the thresholds change constantly during a 24-hour cycle due to lighting)
-			if (yellowCountBack >= 2 && yellowCountBack <= 4 && 
-					yellowCountSides >= 20 && yellowCountFront >= 18) {
-				goodAngle+=angle;
+			// Checks if angle is good
+			// (note the thresholds change constantly during a 24-hour cycle due
+			// to lighting)
+			if (yellowCountBack >= 2 && yellowCountBack <= 4
+					&& yellowCountSides >= 20 && yellowCountFront >= 18) {
+				goodAngle += angle;
 				goodAngleCount++;
-				//System.out.println(yellowCountBack + " " + yellowCountSides + " " + yellowCountFront);
+				// System.out.println(yellowCountBack + " " + yellowCountSides +
+				// " " + yellowCountFront);
 			}
-			
+
 		}
-		
-		if (goodAngleCount!=0) {
+
+		if (goodAngleCount != 0) {
 			goodAngle /= goodAngleCount;
-			goodAngle +=180;
-			if (goodAngle>360) goodAngle-=360;
+			goodAngle += 180;
+			if (goodAngle > 360)
+				goodAngle -= 360;
 			goodAngle = 360 - goodAngle;
-		}
-		else goodAngle = prevBestAngle;
-		
-		int x = meanX + (int) Math.round(10*Math.cos(goodAngle*2*Math.PI/360));
-		int y = meanY + (int) Math.round(-10*Math.sin(goodAngle*2*Math.PI/360));
+		} else
+			goodAngle = prevBestAngle;
+
+		int x = meanX
+				+ (int) Math
+						.round(10 * Math.cos(goodAngle * 2 * Math.PI / 360));
+		int y = meanY
+				+ (int) Math.round(-10
+						* Math.sin(goodAngle * 2 * Math.PI / 360));
 		image.getGraphics().setColor(Color.black);
-		image.getGraphics().drawOval(x-2, y-2, 4,4);
+		image.getGraphics().drawOval(x - 2, y - 2, 4, 4);
 
 		prevBestAngle = goodAngle;
 		return goodAngle;
 	}
 
-	
 	/**
 	 * Initialises a FrameGrabber object with the given parameters.
 	 * 
@@ -453,7 +499,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *            The desired capture width.
 	 * @param inHeight
 	 *            The desired capture height.
-	 * @param channel
+	 * @param CHANNEL
 	 *            The capture channel.
 	 * @param videoStandard
 	 *            The capture standard.
@@ -465,12 +511,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 */
 	private void initFrameGrabber() throws V4L4JException {
 		videoDevice = new VideoDevice(device);
-		frameGrabber = videoDevice.getJPEGFrameGrabber(width, height, channel,
-				std, 80);
+		frameGrabber = videoDevice.getJPEGFrameGrabber(WIDTH, HEIGHT, CHANNEL,
+				VIDEO_STANDARD, 80);
 		frameGrabber.setCaptureCallback(this);
-		//width = frameGrabber.getWidth();
-		//height = frameGrabber.getHeight();
-		System.out.println("Starting capture at " + width + "x" + height);
+		// width = frameGrabber.getWidth();
+		// height = frameGrabber.getHeight();
+		System.out.println("Starting capture at " + WIDTH + "x" + HEIGHT);
 	}
 
 	/**
@@ -483,7 +529,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.addWindowListener(this);
 		frame.setVisible(true);
-		frame.setSize(width, height);
+		frame.setSize(WIDTH, HEIGHT);
 	}
 
 	/**
@@ -516,8 +562,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 	@Override
 	public void nextFrame(VideoFrame frame) {
-		label.getGraphics().drawImage(frame.getBufferedImage(), 0, 0, width,
-				height, null);
+		label.getGraphics().drawImage(frame.getBufferedImage(), 0, 0, WIDTH,
+				HEIGHT, null);
 		frame.recycle();
 	}
 }

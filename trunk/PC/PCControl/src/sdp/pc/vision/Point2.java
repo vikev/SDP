@@ -145,7 +145,7 @@ public class Point2 {
 	}
 	
 	public Point2 add(Point2 p) {
-		return new Point2(x + p.x, y + p.y);
+		return new Point2(this.x + p.x, this.y + p.y);
 	}
 	
 	public Point2D.Double add(Point2D.Double p) {
