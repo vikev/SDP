@@ -34,31 +34,29 @@ public class Milestone2 {
 	// WIP Attempts to kick the ball by first navigating to a point
 	// (apprachPoint) from which it can then approach the ball and kick it
 	// towards the target goal
-	// TODO Navigate the robot around the ball when the ball obstructs the
+	// TODO:
+	// * Navigate the robot around the ball when the ball obstructs the
 	// direct path to the approach point.
-	// Look into how to behave if the ball is too close to the white boundary to
-	// get behind it to take a shot at the goal.
-	// Create meaningful exception handling code,
+	// * Look into how to behave if the ball is too close to the white boundary
+	// to get behind it to take a shot at the goal.
+	// * Create meaningful exception handling code,
 	@SuppressWarnings("unused")
 	public static void kickStationaryBall(WorldState state, Driver driver) {
 		int diffX, diffY, cantakeShot, checkX;
 		Point2 ballPosition = state.getBallPosition();
-		Point2 robotPosition = state.getRobotPosition(0, 0); // assume stored
-																// robot
-																// position
-																// refers to
-																// mean position
-																// of all pixels
-																// in the mask
+
+		// assume stored robot position refers to mean position of all pixels
+		// in the mask
+		Point2 robotPosition = state.getRobotPosition(0, 0);
 		Point2 goalCentre = new Point2(250, 250);
 		if (state.targetGoal == 1) {
 			goalCentre = state.getLeftGoalCentre();
 			checkX = robotPosition.getX() - 10;
-			if (ballPosition.getX() >= (checkX)) { // check if the ball will
-													// obstruct a direct path to
-													// the approach point
-				// move to a point where a direct path can be taken to the
-				// approach point
+
+			// check if the ball will obstruct a direct path to the approach
+			// point move to a point where a direct path can be taken to the
+			// approach point
+			if (ballPosition.getX() >= (checkX)) {
 			}
 		} else {
 			goalCentre = state.getLeftGoalCentre();
@@ -68,35 +66,26 @@ public class Milestone2 {
 				// approach point
 			}
 		}
-		if (1 == (cantakeShot = gotoapproachPoint(state, driver))) { // Attempt
-																		// to
-																		// navigate
-																		// to
-																		// the
-																		// approach
-																		// point.
+
+		// Attempt to navigate to the approach point.
+		if (1 == (cantakeShot = gotoapproachPoint(state, driver))) {
 			facePoint(state, driver, goalCentre.getX(), goalCentre.getY());
-			while (Math.abs(ballPosition.getX() - robotPosition.getX()) < 5) { // get
-																				// close
-																				// to
-																				// ball
+			// get close to ball
+			while (Math.abs(ballPosition.getX() - robotPosition.getX()) < 5) {
 				try {
 					driver.forward(1);
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				try {
 					Thread.sleep(50);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 			try {
 				driver.kick(40);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -106,8 +95,9 @@ public class Milestone2 {
 		int diffX, diffY, approachXpoint, approachYpoint;
 		double gradientLineBalltoGoal;
 		Point2 ballPosition = state.getBallPosition();
-		Point2 targetGoalCentre = new Point2(250, 250); // Initialise to an
-														// arbitrary Point
+
+		// Initialise to an arbitrary Point
+		Point2 targetGoalCentre = new Point2(250, 250);
 		if (state.targetGoal == 1) {
 			targetGoalCentre = state.getLeftGoalCentre();
 		} else {
@@ -120,17 +110,18 @@ public class Milestone2 {
 			System.out.println("Ball already in target goal.");
 			return 0;
 		}
-		if (state.targetGoal == 1) { // set approach point X coordinate to
-										// behind both the ball and the target
-										// goal (number 10 is arbitrary)
+
+		// set approach point X coordinate to behind both the ball and the
+		// target goal (number 10 is arbitrary)
+		if (state.targetGoal == 1) {
 			approachXpoint = ballPosition.getX() + 10;
 		} else {
 			approachXpoint = ballPosition.getX() - 10;
 		}
 
-		if (diffY == 0) { // calculate the approach point Y coordinate based on
-							// the gradient of a straight line connecting the
-							// goal centre and the ball
+		// calculate the approach point Y coordinate based on the gradient of a
+		// straight line connecting the goal centre and the ball
+		if (diffY == 0) {
 			approachYpoint = ballPosition.getY();
 		} else {
 			gradientLineBalltoGoal = diffY / diffX;
@@ -138,26 +129,17 @@ public class Milestone2 {
 					* (approachXpoint));
 		}
 		facePoint(state, driver, approachXpoint, approachYpoint);
-		while ((Math.abs(ballPosition.getX() - approachXpoint) < 5)) { // move
-																		// robot
-																		// towards
-																		// approach
-																		// point
-																		// with
-																		// a
-																		// tolerance
-																		// of 5
-																		// pixels
+
+		// move robot towards approach point with a tolerance of 5 pixels
+		while ((Math.abs(ballPosition.getX() - approachXpoint) < 5)) {
 			try {
 				driver.forward(3);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
