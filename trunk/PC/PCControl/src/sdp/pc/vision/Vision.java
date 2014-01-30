@@ -281,6 +281,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		double yellowOrientation = 0;
 		if (!yellow1Points.isEmpty())
 			yellowOrientation = findOrientation1(yellow1X, yellow1Y, image, true);
+		if (!yellow2Points.isEmpty())
+			yellowOrientation = findOrientation1(yellow2X, yellow2Y, image, true);
 		
 		// Update World State
 		state.setBallPosition(new Point2(ballX, ballY));
@@ -449,8 +451,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			int x = newCentX + (int) Math.round(i*Math.cos((angle+180)*2*Math.PI/360));
 			int y = newCentY + (int) Math.round(i*Math.sin((angle+180)*2*Math.PI/360));
 			Color c = new Color(image.getRGB(x,y));
+			float hsbvals[] = new float[3];
+			Color.RGBtoHSB(c.getRed(), c.getBlue(), c.getGreen(), hsbvals);
 			if (!isYellow(c)) {
-				if (c.getGreen() <= 70) break;
+				if (c.getGreen() <= 70 && hsbvals[1] <=0.500) break;
 				yellowCountFront++;
 			}
 			i++;
@@ -461,8 +465,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			int x = newCentX + (int) Math.round(i*Math.cos(angle*2*Math.PI/360));
 			int y = newCentY + (int) Math.round(i*Math.sin(angle*2*Math.PI/360));
 			Color c = new Color(image.getRGB(x,y));
+			float hsbvals[] = new float[3];
+			Color.RGBtoHSB(c.getRed(), c.getBlue(), c.getGreen(), hsbvals);
 			if (!isYellow(c)) {
-				if (c.getGreen() <= 70) break;
+				if (c.getGreen() <= 70 && hsbvals[1] <=0.500) break;
 				yellowCountBack++;
 			}
 			i++;
@@ -474,8 +480,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			int x = newCentX + (int) Math.round(i*Math.cos((angle+90)*2*Math.PI/360));
 			int y = newCentY + (int) Math.round(i*Math.sin((angle+90)*2*Math.PI/360));
 			Color c = new Color(image.getRGB(x,y));
+			float hsbvals[] = new float[3];
+			Color.RGBtoHSB(c.getRed(), c.getBlue(), c.getGreen(), hsbvals);
 			if (!isYellow(c)) {
-				if (c.getGreen() <= 70) break;
+				if (c.getGreen() <= 70 && hsbvals[1] <=0.500) break;
 				yellowCountSides++;
 			}
 			i++;
@@ -502,9 +510,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	}
 		if (goodAngleCount!=0) {
 			goodAngle /= (double)goodAngleCount;
-			//goodAngle +=180;
+			goodAngle +=180;
 			if (goodAngle>360) goodAngle-=360;
-			//goodAngle = 360 - goodAngle;
+			goodAngle = 360 - goodAngle;
 		}
 		else goodAngle = prevBestAngle;
 		
