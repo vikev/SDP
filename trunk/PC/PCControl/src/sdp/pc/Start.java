@@ -12,6 +12,7 @@ import java.net.UnknownHostException;
 import lejos.pc.comm.NXTComm;
 import lejos.pc.comm.NXTCommFactory;
 import lejos.pc.comm.NXTInfo;
+import sdp.pc.common.Constants;
 import sdp.pc.robot.btcomm.BTConnection;
 
 public class Start {
@@ -27,7 +28,7 @@ public class Start {
 		BTConnection conn1 = new BTConnection(nxt1, NXTComm.PACKET);
 
 		try {
-			int serverPort = 4456;
+			int serverPort = Constants.PORT;
 			ServerSocket serverSocket = new ServerSocket(serverPort);
 
 			while (true) {

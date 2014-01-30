@@ -3,11 +3,13 @@ package sdp.pc.relay;
 import java.io.*;
 import java.net.*;
 
+import sdp.pc.common.Constants;
+
 public class TCPClient {
   public void run() {
 	try {
-		int serverPort = 4456;
-		InetAddress host = InetAddress.getByName("localhost"); 
+		int serverPort = Constants.PORT;
+		InetAddress host = InetAddress.getByName(Constants.HOST); 
 		System.out.println("Connecting to server on port " + serverPort); 
 
 		Socket socket = new Socket(host,serverPort); 
