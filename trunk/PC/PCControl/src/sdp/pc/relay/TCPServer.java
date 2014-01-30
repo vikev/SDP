@@ -3,11 +3,13 @@ package sdp.pc.relay;
 import java.net.*;
 import java.io.*;
 
+import sdp.pc.common.Constants;
+
 public class TCPServer {
 	public void run() {
 		ServerSocket serverSocket = null;
 		try {
-			int serverPort = 4020;
+			int serverPort = Constants.PORT; //4020
 			serverSocket = new ServerSocket(serverPort);
 
 			while (true) {

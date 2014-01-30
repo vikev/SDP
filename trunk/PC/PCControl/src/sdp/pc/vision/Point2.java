@@ -110,7 +110,14 @@ public class Point2 {
 
 		return goodPoints;
 	}
-
+	
+	/**
+	 * Gives the standard deviation for a set of points, given their centroid.
+	 * 
+	 * @param points
+	 * @param centroid
+	 * @return 
+	 */
 	public static double standardDeviation(ArrayList<Point2> points,
 			Point2 centroid) {
 		double variance = 0.0;
@@ -118,20 +125,40 @@ public class Point2 {
 		for (int i = 0; i < points.size(); ++i) {
 			variance += centroid.distanceSq(points.get(i));
 		}
-
+		
 		return Math.sqrt(variance / (double) (points.size()));
 	}
-
+	
+	/**
+	 * Gives the SQUARED distance from current point to another point.
+	 * 
+	 * @param p - The point we want to find the distance to.
+	 * @return squared distance between the points.
+	 */
 	public double distanceSq(Point2 p) {
 		return distanceSq(p.x, p.y);
 	}
 	
+	/**
+	 * Gives the SQUARED distance from current point to another point,
+	 * where the second point is given by its X and Y coordinates.
+	 * 
+	 * @param x - X-coordinate of point we want to find distance to.
+	 * @param y - Y-coordinate of point we want to find distance to.
+	 * @return squared distance between the points
+	 */
 	public double distanceSq(double x, double y) {
 		double dx = x - getX();
 		double dy = y - getY();
 		return dx * dx + dy * dy;
 	}
 
+	/**
+	 * Gives the distance from current point to another point.
+	 * 
+	 * @param p - The point we want to find the distance to.
+	 * @return squared distance between the points
+	 */
 	public double distance(Point2 p) {
 		return Math.sqrt(distanceSq(p.x, p.y));
 	}
@@ -140,10 +167,26 @@ public class Point2 {
 		return Math.sqrt(distanceSq(p.x, p.y));
 	}
 	
+	/**
+	 * Subtracts the coordinates of another point from the respective coordinates
+	 * of this point, and returns a new Point2 with these new values.
+	 * 
+	 * @param p - Point2, whose coordinates will be subtracted from this point
+	 * @return a new Point2 with X-coordinate being (this.x - p.x) and Y being
+	 * (this.y-p.y)
+	 */
 	public Point2 subtract(Point2 p) {
 		return new Point2(x - p.x, y - p.y);
 	}
 	
+	/**
+	 * Adds the coordinates of one point to the respective coordinates of 
+	 * another, and returns a new Point2 with the sums as values.
+	 * 
+	 * @param p - another Point2
+	 * @return a new Point2 its X-coordinate is the sum of the the X-coordinates
+	 * of the two given points, and its Y is the sum of the Y's
+	 */
 	public Point2 add(Point2 p) {
 		return new Point2(this.x + p.x, this.y + p.y);
 	}
@@ -152,10 +195,22 @@ public class Point2 {
 		return new Point2D.Double(x + p.x, y + p.y);
 	}
 	
+	/**
+	 * Divides the values of both coordinates of the point by the same number.
+	 * 
+	 * @param divisor
+	 * @return new Point2 with both coordinates divided by 'divisor'
+	 */
 	public Point2 div(int divisor) {
 		return new Point2(x / divisor, y / divisor);
 	}
 	
+	/**
+	 * Multiplies the values of both coordinates of the point by the same number.
+	 * 
+	 * @param multiplier
+	 * @return new Point2 with both coordinates multiplied by 'multiplier'
+	 */
 	public Point2 mult(int multiplier) {
 		return new Point2(x * multiplier, y * multiplier);
 	}

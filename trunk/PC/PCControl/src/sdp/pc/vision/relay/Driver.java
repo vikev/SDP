@@ -13,7 +13,7 @@ public class Driver {
 	}
 
 	/**
-	 * Travel farward that distance. 0 = travel forever.
+	 * Travel forward that distance. 0 = travel forever.
 	 * 
 	 * @param dist
 	 * @throws Exception 

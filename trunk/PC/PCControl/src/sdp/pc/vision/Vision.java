@@ -44,25 +44,22 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private JLabel label;
 	private JFrame frame;
 
-	private WorldState state;
+	private static WorldState state = new WorldState();
 
 	static Point2[] prevFramePos = new Point2[10];
 
 	long before = 0; // For FPS
 
 	public static void main(String args[]) {
-		// Initialize prevFramePos:
-		for (int i = 0; i < 10; i++) {
+		// Initialise prevFramePos:
+		for (int i = 0; i < 10; i++)
 			prevFramePos[i] = new Point2(0, 0);
-		}
-
 		// Begin:
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				try {
-
-					new Vision();
+					new Vision(state);
 				} catch (V4L4JException e) {
 					e.printStackTrace();
 				}
@@ -73,11 +70,14 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	/**
 	 * Builds a WebcamViewer object
 	 * 
+	 * @param state - the WorldState which will be updated with all the
+	 * information from the vision system dynamically.
+	 * 
 	 * @throws V4L4JException
 	 *             if any parameter if invalid
 	 */
-	public Vision() throws V4L4JException {
-		this.state = new WorldState();
+	public Vision(WorldState state) throws V4L4JException {
+		Vision.state = new WorldState();
 
 		try {
 			initFrameGrabber();
@@ -115,12 +115,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	float[][][] hsb = new float[700][520][3];
 
 	/**
-	 * Identifies objects of interest (ball, players) in the image WIP
+	 * Identifies objects of interest (ball, robots) in the image while in play.
+	 * The information from it (positions, orientations, predictions) will 
+	 * be passed to a WorldState object (called state) to be used by other files.
 	 * 
 	 * @param image
 	 *            the image to process
 	 */
-	@SuppressWarnings("unused")
 	private void processImage(BufferedImage image) {
 
 		int ballN = 0;
@@ -129,59 +130,47 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		Point2 yellowPos = new Point2();
 		int blueN = 0;
 		Point2 bluePos = new Point2();
-
 		ArrayList<Point2> yellowPoints = new ArrayList<Point2>();
 		ArrayList<Point2> bluePoints = new ArrayList<Point2>();
 
-		// Checks every pixel
-		int ballPix = 0;
-		int yellowPix = 0;
-		int bluePix = 0; // for debugging
-
-		// Both loops need to start from table edges rather than image edges (0)
+		// Both loops need to start from table edges rather than 
 		for (int row = 80; row < image.getHeight() - 80; row++) {
 			for (int column = 50; column < image.getWidth() - 55; column++) {
-
+				
 				Point2 p = new Point2(column, row);
 
-				// update RGB
+				// Update RGB...
 				Color cRgb = new Color(image.getRGB(column, row));
 				rgb[column][row] = cRgb;
-				// and HSB vals
+				// ...and HSB vals
 				float[] cHsb = hsb[column][row];
 				Color.RGBtoHSB(cRgb.getRed(), cRgb.getBlue(), cRgb.getGreen(),
 						cHsb);
 
 				// Find "Ball" pixels
 				if (isBall(cRgb)) {
-
 					ballPos = ballPos.add(p);
 					ballN++;
-
-					// image.setRGB(column, row, Color.ORANGE.getRGB()); //Makes
-					// red pixels orange
+					// Makes red pixels orange - for debugging
+					// image.setRGB(column, row, Color.ORANGE.getRGB());
 				}
 
 				// Find Yellow pixels
 				if (isYellow(cRgb)) {
 					yellowPos = yellowPos.add(p);
 					yellowN++;
-
 					yellowPoints.add(new Point2(column, row));
-					image.setRGB(column, row, Color.ORANGE.getRGB()); // Makes
-																		// yellow
-																		// pixels
-																		// orange
+					// Makes yellow pixels orange
+					image.setRGB(column, row, Color.ORANGE.getRGB());
 				}
 
-				// Find Blue pixels - sucks atm
+				// Find Blue pixels
 				if (isBlue(cRgb)) {
 					bluePos = bluePos.add(p);
 					blueN++;
-
 					bluePoints.add(new Point2(column, row));
+					// Makes blue pixels bluer 
 					image.setRGB(column, row, Color.BLUE.getRGB());
-
 				}
 			}
 		}
@@ -196,7 +185,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		ArrayList<Point2> newYellow = Point2.removeOutliers(yellowPoints,
 				yellowPos);
 		yellowPos.filterPoints(newYellow);
-
+		
 		// Get average position of blue bot
 		if (blueN > 0)
 			bluePos = bluePos.div(blueN);
@@ -208,8 +197,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		for (Point2 p : prevFramePos)
 			avgPrevPos = avgPrevPos.add(p);
 		avgPrevPos = avgPrevPos.div(prevFramePos.length);
-
-		// multiply by 10
 		avgPrevPos = avgPrevPos.subtract(ballPos).mult(10).add(ballPos);
 
 		// TODO: orientation code
@@ -226,19 +213,16 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// Ball location (and direction)
 		imageGraphics.setColor(Color.red);
 		imageGraphics.drawLine(0, ballPos.getY(), 640, ballPos.getY());
-
 		imageGraphics.drawLine(ballPos.getX(), 0, ballPos.getX(), 480);
 		imageGraphics.drawLine(ballPos.getX(), ballPos.getY(),
 				avgPrevPos.getX(), avgPrevPos.getY());
 		// Yellow robots locations
 		imageGraphics.setColor(Color.yellow);
-		// simageGraphics.drawOval(yellowX-15, yellowY-15, 30,30);
 		imageGraphics.drawOval(yellowPos.getX() - 15, yellowPos.getY() - 15,
 				30, 30);
 
 		// Blue robots locations
 		imageGraphics.setColor(Color.blue);
-		// imageGraphics.drawOval(blueX-15, blueY-15, 30,30);
 		imageGraphics
 				.drawOval(bluePos.getX() - 15, bluePos.getY() - 15, 30, 30);
 
@@ -255,10 +239,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		prevFramePosX[0] = ballPos.getX();
 		prevFramePosY[0] = ballPos.getY();
 
-		/* Used to calculate the FPS. */
-		long after = System.currentTimeMillis();
 
 		/* Display the FPS that the vision system is running at. */
+		long after = System.currentTimeMillis();  // Used to calculate the FPS.
 		float fps = (1.0f) / ((after - before) / 1000.0f);
 		imageGraphics.setColor(Color.white);
 		imageGraphics.drawString("FPS: " + fps, 15, 15);

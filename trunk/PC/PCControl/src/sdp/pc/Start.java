@@ -21,14 +21,16 @@ public class Start {
 			B_NAME = "SDP 9B", B_MAC = "001653077531";
 			
 	public static void main(String[] args) {
-		NXTInfo nxt1 = new NXTInfo(NXTCommFactory.BLUETOOTH, B_NAME, B_MAC);
+		//NXTInfo nxt1 = new NXTInfo(NXTCommFactory.BLUETOOTH, B_NAME, B_MAC);
 
-		//NXTInfo nxt1 = new NXTInfo(NXTCommFactory.BLUETOOTH, A_NAME,A_MAC);
+		NXTInfo nxt1 = new NXTInfo(NXTCommFactory.BLUETOOTH, A_NAME,A_MAC);
 
 		BTConnection conn1 = new BTConnection(nxt1, NXTComm.PACKET);
 
 		try {
-			int serverPort = Constants.PORT;
+			int serverPort = 8765;  // Constants.PORT was always saying
+									// address in use, so I use this for now
+									// (must ask Lubo about it)
 			ServerSocket serverSocket = new ServerSocket(serverPort);
 
 			while (true) {

@@ -11,12 +11,11 @@ import sdp.pc.common.*;
 
 public class Milestone2 {
 
-	private static WorldState state;
+	private static WorldState state = new WorldState();
 
 	public static void main(String[] args) throws V4L4JException,
 			InterruptedException {
-		state = new WorldState();
-		new Vision();
+		new Vision(state);
 		Thread.sleep(3000);
 
 		Driver driver = new Driver(new TCPClient(Constants.HOST,

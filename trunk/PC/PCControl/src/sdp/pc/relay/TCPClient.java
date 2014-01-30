@@ -8,7 +8,7 @@ import sdp.pc.common.Constants;
 public class TCPClient {
   public void run() {
 	try {
-		int serverPort = Constants.PORT;
+		int serverPort = 8765;  // Check "Start.java" serverPort
 		InetAddress host = InetAddress.getByName(Constants.HOST); 
 		System.out.println("Connecting to server on port " + serverPort); 
 
