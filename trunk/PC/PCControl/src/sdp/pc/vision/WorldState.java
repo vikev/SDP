@@ -7,6 +7,9 @@ public class WorldState {
 	
 	public static final int TEAM_YELLOW = 0;
 	public static final int TEAM_BLUE = 1;
+	public static final Point2 leftGoalCentre = new Point2 (77,235); //Taken from image of pitch
+	public static final Point2 rightGoalCentre = new Point2 (589,241);
+	public int targetGoal = 1; // 1 is left goal 0 is right goal
 	
 	
 	private int direction; // 0 = right, 1 = left.
@@ -70,6 +73,18 @@ public class WorldState {
 
 	public int getDirection() {
 		return direction;
+	}
+	public int getTargetGoal(){
+		return targetGoal;
+	}
+	public void setTargetGoal(int newTargetGoal){
+		targetGoal = newTargetGoal;
+	}
+	public Point2 getLeftGoalCentre(){
+		return leftGoalCentre;
+	}
+	public Point2 getRightGoalCentre(){
+		return rightGoalCentre;
 	}
 
 	public void setDirection(int direction) {
