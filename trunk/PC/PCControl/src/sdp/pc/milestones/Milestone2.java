@@ -30,6 +30,7 @@ public class Milestone2 {
 	//TODO Navigate the robot around the ball when the ball obstructs the direct path to the approach point.
 	//Look into how to behave if the ball is too close to the white boundary to get behind it to take a shot at the goal.
 	//Create meaningful exception handling code,
+	@SuppressWarnings("unused")
 	public static void kickStationaryBall(WorldState state, Driver driver){
 		int diffX, diffY, cantakeShot, checkX;
 		Point2 ballPosition = state.getBallPosition();
