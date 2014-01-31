@@ -35,8 +35,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private static final int WIDTH = 640, HEIGHT = 480,
 			VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL, CHANNEL = 0,
 			X_FRAME_OFFSET = 1, Y_FRAME_OFFSET = 25;
+	
+	private static final int PLAYER_RADIUS = 18;
 
-	private static final String device = "/dev/video0";
+	private static final String DEVICE = "/dev/video0";
 
 	// Other globals
 	private VideoDevice videoDevice;
@@ -44,15 +46,23 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private JLabel label;
 	private JFrame frame;
 	private static WorldState state = new WorldState();
-	long before = 0; // For FPS
-	
+	long initialTime; // For FPS calculation
+
 	// Used for calculating direction the ball is heading
 	static Point2[] prevFramePos = new Point2[10];
 
+	/**
+	 * Provides Java application support. On launch, runs a JFrame window which
+	 * displays the video feed with our overlaid data.
+	 * 
+	 * @param args
+	 */
 	public static void main(String args[]) {
+
 		// Initialise prevFramePos:
 		for (int i = 0; i < 10; i++)
 			prevFramePos[i] = new Point2(0, 0);
+
 		// Begin:
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
@@ -69,15 +79,14 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	/**
 	 * Builds a WebcamViewer object
 	 * 
-	 * @param state - the WorldState which will be updated with all the
-	 * information from the vision system dynamically.
+	 * @param state
+	 *            - the WorldState which will be updated with all the
+	 *            information from the vision system dynamically.
 	 * 
 	 * @throws V4L4JException
 	 *             if any parameter if invalid
 	 */
 	public Vision(WorldState state) throws V4L4JException {
-		Vision.state = new WorldState();
-
 		try {
 			initFrameGrabber();
 		} catch (V4L4JException e1) {
@@ -96,7 +105,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			}
 
 			public void nextFrame(VideoFrame frame) {
-				before = System.currentTimeMillis(); // for FPS
+				initialTime = System.currentTimeMillis(); // for FPS
 				BufferedImage frameImage = frame.getBufferedImage();
 				frame.recycle();
 				processImage(frameImage);
@@ -112,8 +121,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 	/**
 	 * Identifies objects of interest (ball, robots) in the image while in play.
-	 * The information from it (positions, orientations, predictions) will 
-	 * be passed to a WorldState object (called state) to be used by other files.
+	 * The information from it (positions, orientations, predictions) will be
+	 * passed to a WorldState object (called state) to be used by other files.
 	 * 
 	 * @param image
 	 *            the image to process
@@ -129,10 +138,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		ArrayList<Point2> yellowPoints = new ArrayList<Point2>();
 		ArrayList<Point2> bluePoints = new ArrayList<Point2>();
 
-		// Both loops need to start from table edges rather than 
+		// Both loops need to start from table edges rather than
 		for (int row = 80; row < image.getHeight() - 80; row++) {
 			for (int column = 50; column < image.getWidth() - 55; column++) {
-				
+
 				Point2 p = new Point2(column, row);
 
 				// Update RGB...
@@ -165,7 +174,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 					bluePos = bluePos.add(p);
 					blueN++;
 					bluePoints.add(new Point2(column, row));
-					// Makes blue pixels bluer 
+					// Makes blue pixels bluer
 					image.setRGB(column, row, Color.BLUE.getRGB());
 				}
 			}
@@ -181,7 +190,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		ArrayList<Point2> newYellow = Point2.removeOutliers(yellowPoints,
 				yellowPos);
 		yellowPos.filterPoints(newYellow);
-		
+
 		// Get average position of blue bot
 		if (blueN > 0)
 			bluePos = bluePos.div(blueN);
@@ -207,15 +216,17 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		state.setRobotPosition(0, 0, yellowPos);
 		state.setRobotFacing(0, 0, yellowOrientation);
 
-		/* Create graphical representation */
+		// Create graphical representation
 		Graphics imageGraphics = image.getGraphics();
 		Graphics frameGraphics = label.getGraphics();
+		
 		// Ball location (and direction)
 		imageGraphics.setColor(Color.red);
 		imageGraphics.drawLine(0, ballPos.getY(), 640, ballPos.getY());
 		imageGraphics.drawLine(ballPos.getX(), 0, ballPos.getX(), 480);
 		imageGraphics.drawLine(ballPos.getX(), ballPos.getY(),
 				avgPrevPos.getX(), avgPrevPos.getY());
+		
 		// Yellow robots locations
 		imageGraphics.setColor(Color.yellow);
 		imageGraphics.drawOval(yellowPos.getX() - 15, yellowPos.getY() - 15,
@@ -230,29 +241,24 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		imageGraphics
 				.drawOval(bluePos.getX() - 15, bluePos.getY() - 15, 30, 30);
 
-		imageGraphics.drawImage(image, 0, 0, WIDTH, HEIGHT, null);
-
 		// Saves this frame's ball position and shifts previous frames'
 		// positions
-		for (int i = prevFramePos.length - 1; i>0; i--) {
+		for (int i = prevFramePos.length - 1; i > 0; i--) {
 			prevFramePos[i] = prevFramePos[i - 1];
 		}
 		prevFramePos[0] = ballPos;
 
-
 		/* Display the FPS that the vision system is running at. */
-		long after = System.currentTimeMillis();  // Used to calculate the FPS.
-		float fps = (1.0f) / ((after - before) / 1000.0f);
+		long after = System.currentTimeMillis(); // Used to calculate the FPS.
+		float fps = (1.0f) / ((after - initialTime) / 1000.0f);
 		imageGraphics.setColor(Color.white);
-		imageGraphics.drawString("FPS: " + fps, 15, 15);
-		frameGraphics.drawImage(image, 0, 0, WIDTH, HEIGHT, null);
+		imageGraphics.drawString("FPS: " + (int) fps, 15, 15);
 		int x = 1, y = 0;
 		java.awt.Point pos;
 
-		// Gives RGB values of the point the cursor is on
-		if (frame.getMousePosition() != null
-				&& frame.getMousePosition() != null) {
-			pos = frame.getMousePosition();
+		// Draw mouse position, RGB, and HSB values to screen
+		pos = frame.getMousePosition();
+		if (pos != null) {
 			x = (int) Math.round(pos.getX()) - X_FRAME_OFFSET;
 			y = (int) Math.round(pos.getY()) - Y_FRAME_OFFSET;
 			if (x > 0 && x <= (WIDTH - X_FRAME_OFFSET)
@@ -260,7 +266,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 				imageGraphics.drawString("Mouse pos: x:" + x + " y:" + y, 15,
 						30);
-				frameGraphics.drawImage(image, 0, 0, WIDTH, HEIGHT, null);
 
 				Color c = new Color(image.getRGB(x, y));
 
@@ -276,12 +281,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 								+ " B:"
 								+ new DecimalFormat("#.###").format(hsb[2]),
 						15, 60);
-				frameGraphics.drawImage(image, 0, 0, WIDTH, HEIGHT, null);
 			}
 		}
+
+		// Finally draw the image to screen
+		frameGraphics.drawImage(image, 0, 0, WIDTH, HEIGHT, null);
 	}
 
-	
 	private static final int playerRadius = 18;	//TODO: find a good val
 	
 	/**
@@ -526,12 +532,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *             If any parameter is invalid.
 	 */
 	private void initFrameGrabber() throws V4L4JException {
-		videoDevice = new VideoDevice(device);
+		videoDevice = new VideoDevice(DEVICE);
 		frameGrabber = videoDevice.getJPEGFrameGrabber(WIDTH, HEIGHT, CHANNEL,
 				VIDEO_STANDARD, 80);
 		frameGrabber.setCaptureCallback(this);
-		// width = frameGrabber.getWidth();
-		// height = frameGrabber.getHeight();
 		System.out.println("Starting capture at " + WIDTH + "x" + HEIGHT);
 	}
 

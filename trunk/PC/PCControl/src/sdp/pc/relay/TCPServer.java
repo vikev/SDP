@@ -9,8 +9,7 @@ public class TCPServer {
 	public void run() {
 		ServerSocket serverSocket = null;
 		try {
-			int serverPort = 4020;
-			serverSocket = new ServerSocket(serverPort);
+			serverSocket = new ServerSocket(Constants.SERVER_PORT);
 
 			while (true) {
 				System.out.println("Waiting for client on port "
@@ -43,7 +42,6 @@ public class TCPServer {
 				try {
 					serverSocket.close();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 		}
