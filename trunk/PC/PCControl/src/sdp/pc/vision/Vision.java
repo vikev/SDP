@@ -43,12 +43,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private FrameGrabber frameGrabber;
 	private JLabel label;
 	private JFrame frame;
-
 	private static WorldState state = new WorldState();
-
-	static Point2[] prevFramePos = new Point2[10];
-
 	long before = 0; // For FPS
+	
+	// Used for calculating direction the ball is heading
+	static Point2[] prevFramePos = new Point2[10];
 
 	/**
 	 * Provides Java application support. On launch, runs a JFrame window which
@@ -116,9 +115,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		frameGrabber.startCapture();
 
 	}
-
-	// Used for calculating direction the ball is heading
-	int[] prevFramePosX = new int[10], prevFramePosY = new int[10];
 
 	Color[][] rgb = new Color[700][520];
 	float[][][] hsb = new float[700][520][3];
@@ -206,7 +202,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		for (Point2 p : prevFramePos)
 			avgPrevPos = avgPrevPos.add(p);
 		avgPrevPos = avgPrevPos.div(prevFramePos.length);
-		avgPrevPos = avgPrevPos.subtract(ballPos).mult(10).add(ballPos);
+		avgPrevPos = avgPrevPos.subtract(ballPos).mult(-5).add(ballPos);
 
 		// TODO: orientation code
 		double yellowOrientation = 0;
@@ -239,14 +235,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 		// Saves this frame's ball position and shifts previous frames'
 		// positions
-		for (int i = prevFramePosX.length - 1; i > 0; i--) {
-			prevFramePosX[i] = prevFramePosX[i - 1];
+		for (int i = prevFramePos.length - 1; i>0; i--) {
+			prevFramePos[i] = prevFramePos[i - 1];
 		}
-		for (int i = prevFramePosY.length - 1; i > 0; i--) {
-			prevFramePosY[i] = prevFramePosY[i - 1];
-		}
-		prevFramePosX[0] = ballPos.getX();
-		prevFramePosY[0] = ballPos.getY();
+		prevFramePos[0] = ballPos;
 
 		/* Display the FPS that the vision system is running at. */
 		long after = System.currentTimeMillis(); // Used to calculate the FPS.

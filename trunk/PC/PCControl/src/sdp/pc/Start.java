@@ -28,9 +28,9 @@ public class Start {
 		BTConnection conn1 = new BTConnection(nxt1, NXTComm.PACKET);
 
 		try {
-			int serverPort = 8765;  // Constants.PORT was always saying
-									// address in use, so I use this for now
-									// (must ask Lubo about it)
+			int serverPort = Constants.PORT;
+			// If you get an "Address already in use" error, change the
+			// port in Constants to some other 4-digit number above 1024
 			ServerSocket serverSocket = new ServerSocket(serverPort);
 
 			while (true) {
