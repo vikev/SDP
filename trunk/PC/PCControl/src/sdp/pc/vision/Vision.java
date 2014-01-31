@@ -141,7 +141,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		double t = (double) (b.getY() - b.getY());
 		return Math.sqrt(s * s + t * t);
 	}
-
+	
+	boolean brightnessCalculated = false;
+	float[] minMaxBrigthness;
 	/**
 	 * Identifies objects of interest (ball, robots) in the image while in play.
 	 * The information from it (positions, orientations, predictions) will be
@@ -160,7 +162,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		Point2 bluePos = new Point2();
 		ArrayList<Point2> yellowPoints = new ArrayList<Point2>();
 		ArrayList<Point2> bluePoints = new ArrayList<Point2>();
-		float[] minMaxBrigthness = findMinMaxBrigthness(image);
+		if (!brightnessCalculated) {
+			minMaxBrigthness = findMinMaxBrigthness(image);
+			brightnessCalculated = true;
+		}
 
 		// Both loops need to start from table edges rather than
 		for (int row = 80; row < image.getHeight() - 80; row++) {
@@ -173,14 +178,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				rgb[column][row] = cRgb;
 				// ...and HSB vals
 				float[] cHsb = hsb[column][row];
-				Color.RGBtoHSB(cRgb.getRed(), cRgb.getBlue(), cRgb.getGreen(),
-						cHsb);
+				Color.RGBtoHSB(cRgb.getRed(), cRgb.getBlue(), cRgb.getGreen(), cHsb);
 	
 				//Scale the values of the pitch
 				float br = hsb[column][row][2];
 				br = (br - minMaxBrigthness[1])/minMaxBrigthness[0];
 				image.setRGB(column, row, Color.HSBtoRGB(hsb[column][row][0], hsb[column][row][1], br));
-
+				
 				for (int i=0; i<3; i++) cHsb[i]*=255;
 
 				// Find "Ball" pixels
