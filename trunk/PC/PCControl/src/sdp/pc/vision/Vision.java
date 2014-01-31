@@ -399,11 +399,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private boolean isBlue(Color c, float[] hsb) {
 		return (c.getRed() > 0 && c.getRed() < 50 
 				&& c.getGreen() > 50 && c.getGreen() < 100
-				&& c.getBlue() > 60 && c.getBlue() < 150
+				&& c.getBlue() > 70 && c.getBlue() < 150
 				&& 110<hsb[0] && hsb[0]<140
-				&& hsb[1]>100
+				&& hsb[1]>120
 				&& 70<hsb[2] && hsb[2]<100);
-		// 110 < Hue < 140 ; Sat > 100 ; 70 < Val < 100;
+		// 110 < Hue < 140 ; Sat > 120 ; 70 < Val < 100;
 	}
 
 	double prevBestAngle = 0;
