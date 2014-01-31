@@ -7,6 +7,7 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -37,6 +38,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private static final int WIDTH = 640, HEIGHT = 480,
 			VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL, CHANNEL = 0,
 			X_FRAME_OFFSET = 1, Y_FRAME_OFFSET = 25;
+
+	private static final int PLAYER_RADIUS = 17;
 
 	private static final String DEVICE = "/dev/video0";
 
@@ -215,6 +218,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 						image.setRGB(column, row, Color.ORANGE.getRGB());
 					}
 				}
+				
 
 				// Find Blue pixels
 				if (isBlue(pixelColorRGB, cHsb)) {
@@ -278,13 +282,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		for (Point2 p : prevFramePos)
 			avgPrevPos = avgPrevPos.add(p);
 		avgPrevPos = avgPrevPos.div(prevFramePos.length);
-		avgPrevPos = avgPrevPos.subtract(ballPos).mult(-5).add(ballPos);
+		avgPrevPos = avgPrevPos.subtract(ballPos).mult(5).add(ballPos);
 
 		// TODO: fix orientation code
 		double yellowOrientation = 0;
 
-		// Point2 blackPos = new Point2();
-		Point2 blackPos = findBlackDot(yellowLeftPos);
+//		Point2 blackPos = new Point2();
+		Point2 blackPos = findBlackDot(image, yellowLeftPos);
 		blackPos = blackPos.subtract(yellowLeftPos).mult(-5).add(yellowLeftPos);
 
 		// Update World State
@@ -433,8 +437,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * @param colorCenter
 	 *            the center of the robot's yellow/blue
 	 */
-	private Point2 findBlackDot(Point2 colorCenter) {
-		// bounding rect to search for black pixels
+	private Point2 findBlackDot(BufferedImage i, Point2 colorCenter) {
+		//bounding rect to search for black pixels
 		int xs = Math.max(0, colorCenter.getX() - PLAYER_RADIUS);
 		int ys = Math.max(0, colorCenter.getY() - PLAYER_RADIUS);
 		int xe = Math.min(WIDTH, colorCenter.getX() + PLAYER_RADIUS);
@@ -456,21 +460,28 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				midHsb[1] += cHsb[1];
 				midHsb[2] += cHsb[2];
 
-				// add if "black"
-				if (isBlack(cRgb, cHsb))
+				//add if "green"
+				if (isGreen(cRgb, cHsb)) {
 					pts.add(new Point2(ix, iy));
+					i.setRGB(ix, iy, Color.pink.getRGB());
+				}
 			}
 
-		// do k-means
-		Cluster c = Kmeans.doKmeans(pts, new Point2(colorCenter))[0]; // only 1
-																		// cluster
-
-		// TODO:
-		// while points > some_treshold and rect > some_rect:
-		// rect /= 2;
-		// pts = pointsIn(rect)
-		// c = Kmeans(pts)
-
+<<<<<<< HEAD
+		//do k-means
+		Cluster c = Kmeans.doKmeans(pts, new Point2(colorCenter))[0]; // only 1 cluster
+		
+		if(pts.size() == 0)
+			return new Point2(colorCenter);
+		
+		List<Point2> hull = Alg.convexHull(pts);
+		
+		//TODO: 
+		//while points > some_treshold and rect > some_rect: 
+		//		rect /= 2;
+		//		pts = pointsIn(rect)
+		//		c = Kmeans(pts)
+		
 		return c.getMean();
 	}
 
@@ -482,9 +493,14 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * @return
 	 */
 	private boolean isBlack(Color rgb, float[] hsb) {
-		return hsb[1] < 0.3f && hsb[2] < 0.3f;
+		return 0.6 < hsb[0] && hsb[0] < 0.67 && hsb[1] > 0.5;
 	}
-
+	
+	private boolean isGreen(Color rgb, float[] hsb) {
+		return 0.2f < hsb[1] && hsb[1] < 0.35f && 
+		0.25f < hsb[2] && hsb[2] < 0.45f &&
+		rgb.getRed() < 80 && rgb.getBlue() < 80 && rgb.getGreen() < 80;
+	}
 	/**
 	 * Determines if a pixel is part of the ball, based on input RGB colours and
 	 * hsv values.
