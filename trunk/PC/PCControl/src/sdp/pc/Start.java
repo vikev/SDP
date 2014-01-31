@@ -41,8 +41,8 @@ public class Start {
 				System.out.println("Just connected to "
 						+ server.getRemoteSocketAddress());
 
-//				PrintWriter toClient = new PrintWriter(
-//						server.getOutputStream(), true);
+				//PrintWriter toClient = new PrintWriter(
+				//		server.getOutputStream(), true);
 				BufferedReader fromClient = new BufferedReader(
 						new InputStreamReader(server.getInputStream()));
 				String line = "";
