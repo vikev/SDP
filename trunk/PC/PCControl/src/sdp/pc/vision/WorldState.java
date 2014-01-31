@@ -5,27 +5,15 @@ import sdp.pc.common.Constants;
 public class WorldState {
 	public static final int PLAYERS_PER_TEAM = 2, TEAM_COUNT = 2,
 			TEAM_YELLOW = 0, TEAM_BLUE = 1;
-	
-<<<<<<< HEAD
+
 	public int targetGoal = Constants.GOAL_LEFT; 
 	private int direction;
 	private Point2 ballLocation;
 	private Point2[][] robotLoc = new Point2[TEAM_COUNT][PLAYERS_PER_TEAM];
 	private double[][] robotFacing = new double[TEAM_COUNT][PLAYERS_PER_TEAM];
-=======
-	public static final int TEAM_YELLOW = 0;
-	public static final int TEAM_BLUE = 1;
 	
 	public static final Point2 leftGoalCentre = new Point2 (77,235); //Taken from image of pitch
 	public static final Point2 rightGoalCentre = new Point2 (589,241); //These are likely to change
-	public int targetGoal = 1; // 1 is left goal 0 is right goal
-	
-	private int direction; // 0 = right, 1 = left.
-	
-	private Point2 ball;
-	private Point2[][] robotLoc = new Point2[nTeams][playersPerTeam];
-	private double[][] robotFacing = new double[nTeams][playersPerTeam];
->>>>>>> 6a94b7c9583196c3ed6657cf9675ec03fb9adcee
 
 	public WorldState() {
 
@@ -58,28 +46,15 @@ public class WorldState {
 	public void setTargetGoal(int newTargetGoal) {
 		targetGoal = newTargetGoal;
 	}
-<<<<<<< HEAD
 
 	public Point2 getLeftGoalCentre() {
 		return Constants.LEFT_GOAL_CENTRE;
-=======
-	
-	public Point2 getLeftGoalCentre(){
-		return leftGoalCentre;
->>>>>>> 6a94b7c9583196c3ed6657cf9675ec03fb9adcee
 	}
 
 	public Point2 getRightGoalCentre() {
 		return Constants.RIGHT_GOAL_CENTRE;
 	}
-<<<<<<< HEAD
 
-	public Point2 getRobotPosition(int team, int robot) {
-		return robotLoc[team][robot];
-	}
-
-=======
-	
 	/**
 	 * Gets the position of the specified robot
 	 * @param team the team of the robot
@@ -96,7 +71,7 @@ public class WorldState {
 	 * @param robot the id of the robot
 	 * @return the orientation of the robot, in ???
 	 */
->>>>>>> 6a94b7c9583196c3ed6657cf9675ec03fb9adcee
+	
 	public double getRobotFacing(int team, int robot) {
 		return robotFacing[team][robot];
 	}

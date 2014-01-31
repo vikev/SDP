@@ -35,6 +35,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private static final int WIDTH = 640, HEIGHT = 480,
 			VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL, CHANNEL = 0,
 			X_FRAME_OFFSET = 1, Y_FRAME_OFFSET = 25;
+	
+	private static final int PLAYER_RADIUS = 18;
 
 	private static final String DEVICE = "/dev/video0";
 
@@ -282,13 +284,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// Finally draw the image to screen
 		frameGraphics.drawImage(image, 0, 0, WIDTH, HEIGHT, null);
 	}
-
-	private static final int playerRadius = 18;
+	
+	@SuppressWarnings("unused")
 	private Point2 findBlackDot(Point2 colorCenter) {
-		int xs = colorCenter.getX() - playerRadius;
-		int ys = colorCenter.getY() - playerRadius;
-		int xe = colorCenter.getX() - playerRadius;
-		int ye = colorCenter.getY() - playerRadius;
+		int xs = colorCenter.getX() - PLAYER_RADIUS;
+		int ys = colorCenter.getY() - PLAYER_RADIUS;
+		int xe = colorCenter.getX() - PLAYER_RADIUS;
+		int ye = colorCenter.getY() - PLAYER_RADIUS;
 
 		ArrayList<Point2> pts = new ArrayList<Point2>();
 		float[] cHsb;
