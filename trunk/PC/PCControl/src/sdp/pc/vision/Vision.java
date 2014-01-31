@@ -12,6 +12,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
+import sdp.pc.common.Constants;
+
 import au.edu.jcu.v4l4j.FrameGrabber;
 import au.edu.jcu.v4l4j.CaptureCallback;
 import au.edu.jcu.v4l4j.V4L4JConstants;
@@ -35,12 +37,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private static final int WIDTH = 640, HEIGHT = 480,
 			VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL, CHANNEL = 0,
 			X_FRAME_OFFSET = 1, Y_FRAME_OFFSET = 25;
-	
-	private static final int PLAYER_RADIUS = 18;
 
 	private static final String DEVICE = "/dev/video0";
-
-	// Other globals
+	
+	private static final double VECTOR_THRESHOLD = 3.0;
+	
 	private VideoDevice videoDevice;
 	private FrameGrabber frameGrabber;
 	private JLabel label;
@@ -118,6 +119,28 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 	Color[][] rgb = new Color[700][520];
 	float[][][] hsb = new float[700][520][3];
+
+	/**
+	 * Checks whether a given point is in the pitch
+	 */
+	private static boolean pointInPitch(Point2 q) {
+		int x = q.getX();
+		int y = q.getY();
+		if (x < Constants.TABLE_MAX_X && x > Constants.TABLE_MIN_X
+				&& y < Constants.TABLE_MAX_Y && y > Constants.TABLE_MIN_Y) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Calculates the length of a line between two points
+	 */
+	private static double lineSize(Point2 a, Point2 b) {
+		double s = (double) (b.getX() - a.getX());
+		double t = (double) (b.getY() - b.getY());
+		return Math.sqrt(s * s + t * t);
+	}
 
 	/**
 	 * Identifies objects of interest (ball, robots) in the image while in play.
@@ -206,8 +229,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 		// TODO: fix orientation code
 		double yellowOrientation = 0;
-		
-//		Point2 blackPos = new Point2();
+
+		// Point2 blackPos = new Point2();
 		Point2 blackPos = findBlackDot(yellowPos);
 		blackPos = blackPos.subtract(yellowPos).mult(-5).add(yellowPos);
 
@@ -219,27 +242,37 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// Create graphical representation
 		Graphics imageGraphics = image.getGraphics();
 		Graphics frameGraphics = label.getGraphics();
-		
+
 		// Ball location (and direction)
-		imageGraphics.setColor(Color.red);
-		imageGraphics.drawLine(0, ballPos.getY(), 640, ballPos.getY());
-		imageGraphics.drawLine(ballPos.getX(), 0, ballPos.getX(), 480);
-		imageGraphics.drawLine(ballPos.getX(), ballPos.getY(),
-				avgPrevPos.getX(), avgPrevPos.getY());
-		
+		if (pointInPitch(ballPos)) {
+			imageGraphics.setColor(Color.red);
+			imageGraphics.drawLine(0, ballPos.getY(), 640, ballPos.getY());
+			imageGraphics.drawLine(ballPos.getX(), 0, ballPos.getX(), 480);
+			if (lineSize(ballPos, avgPrevPos) > VECTOR_THRESHOLD) {
+				imageGraphics.drawLine(ballPos.getX(), ballPos.getY(),
+						avgPrevPos.getX(), avgPrevPos.getY());
+			}
+		}
+
 		// Yellow robots locations
-		imageGraphics.setColor(Color.yellow);
-		imageGraphics.drawOval(yellowPos.getX() - 15, yellowPos.getY() - 15,
-				30, 30);
-		
-		
-		//draw orientation (temp)
-		imageGraphics.drawLine(yellowPos.getX(), yellowPos.getY(), blackPos.getX(), blackPos.getY());
+		if (pointInPitch(yellowPos)) {
+			imageGraphics.setColor(Color.yellow);
+			imageGraphics.drawOval(yellowPos.getX() - 15,
+					yellowPos.getY() - 15, 30, 30);
+		}
+
+		// draw orientation (temp)
+		if (pointInPitch(yellowPos)) {
+			imageGraphics.drawLine(yellowPos.getX(), yellowPos.getY(),
+					blackPos.getX(), blackPos.getY());
+		}
 
 		// Blue robots locations
-		imageGraphics.setColor(Color.blue);
-		imageGraphics
-				.drawOval(bluePos.getX() - 15, bluePos.getY() - 15, 30, 30);
+		if (pointInPitch(bluePos)) {
+			imageGraphics.setColor(Color.blue);
+			imageGraphics.drawOval(bluePos.getX() - 15, bluePos.getY() - 15,
+					30, 30);
+		}
 
 		// Saves this frame's ball position and shifts previous frames'
 		// positions
@@ -288,55 +321,59 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		frameGraphics.drawImage(image, 0, 0, WIDTH, HEIGHT, null);
 	}
 
-	private static final int playerRadius = 18;	//TODO: find a good val
-	
+	private static final int playerRadius = 18; // TODO: find a good val
+
 	/**
-	 * Gets the position of the black dot around some point
-	 * Used to determine a robot's orientation, given its centre point
-	 * @param colorCenter the center of the robot's yellow/blue
+	 * Gets the position of the black dot around some point Used to determine a
+	 * robot's orientation, given its centre point
+	 * 
+	 * @param colorCenter
+	 *            the center of the robot's yellow/blue
 	 */
 	private Point2 findBlackDot(Point2 colorCenter) {
-		//bounding rect to search for black pixels
+		// bounding rect to search for black pixels
 		int xs = Math.max(0, colorCenter.getX() - playerRadius);
 		int ys = Math.max(0, colorCenter.getY() - playerRadius);
 		int xe = Math.min(WIDTH, colorCenter.getX() + playerRadius);
 		int ye = Math.min(HEIGHT, colorCenter.getY() + playerRadius);
 
-		//get all the black points in the bounding rect
+		// get all the black points in the bounding rect
 		ArrayList<Point2> pts = new ArrayList<Point2>();
 		float[] cHsb;
 		float[] midHsb = new float[3];
 		Color cRgb;
 		for (int ix = xs; ix < xe; ix++)
 			for (int iy = ys; iy < ye; iy++) {
-				//get colors
+				// get colors
 				cHsb = hsb[ix][iy];
 				cRgb = rgb[ix][iy];
-				
-				//record average
+
+				// record average
 				midHsb[0] += cHsb[0];
 				midHsb[1] += cHsb[1];
 				midHsb[2] += cHsb[2];
-				
-				//add if "black"
+
+				// add if "black"
 				if (isBlack(cRgb, cHsb))
 					pts.add(new Point2(ix, iy));
 			}
 
-		//do k-means
-		Cluster c = Kmeans.doKmeans(pts, new Point2(colorCenter))[0]; // only 1 cluster
-		
-		//TODO: 
-		//while points > some_treshold and rect > some_rect: 
-		//		rect /= 2;
-		//		pts = pointsIn(rect)
-		//		c = Kmeans(pts)
-		
+		// do k-means
+		Cluster c = Kmeans.doKmeans(pts, new Point2(colorCenter))[0]; // only 1
+																		// cluster
+
+		// TODO:
+		// while points > some_treshold and rect > some_rect:
+		// rect /= 2;
+		// pts = pointsIn(rect)
+		// c = Kmeans(pts)
+
 		return c.getMean();
 	}
-	
+
 	/**
 	 * Checks if a pixel is black, i.e. can be used for orientation detection
+	 * 
 	 * @param rgb
 	 * @param hsb
 	 * @return
