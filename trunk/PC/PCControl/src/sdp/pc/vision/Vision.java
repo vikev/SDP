@@ -174,9 +174,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				float[] cHsb = hsb[column][row];
 				Color.RGBtoHSB(cRgb.getRed(), cRgb.getBlue(), cRgb.getGreen(),
 						cHsb);
+				for (int i=0; i<3; i++) cHsb[i]*=255;
 
 				// Find "Ball" pixels
-				if (isBall(cRgb)) {
+				if (isBall(cRgb, cHsb)) {
 					ballPos = ballPos.add(p);
 					ballN++;
 					// Makes red pixels orange - for debugging
@@ -184,7 +185,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				}
 
 				// Find Yellow pixels
-				if (isYellow(cRgb)) {
+				if (isYellow(cRgb, cHsb)) {
 					yellowPos = yellowPos.add(p);
 					yellowN++;
 					yellowPoints.add(new Point2(column, row));
@@ -193,7 +194,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				}
 
 				// Find Blue pixels
-				if (isBlue(cRgb)) {
+				if (isBlue(cRgb, cHsb)) {
 					bluePos = bluePos.add(p);
 					blueN++;
 					bluePoints.add(new Point2(column, row));
@@ -394,8 +395,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * @return True if the RGB and HSV values are within the defined thresholds
 	 *         (and thus the pixel is part of the ball), false otherwise.
 	 */
-	private boolean isBall(Color c) {
-		return (c.getRed() > 130 && c.getGreen() < 30 && c.getBlue() < 30);
+	private boolean isBall(Color c, float[] hsb) {
+		return (c.getRed() > 125 && c.getGreen() < 40 
+				&& c.getBlue() < 30 && hsb[1] > 140);
+		// Sat > 140
 	}
 
 	/**
@@ -410,9 +413,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * @return True if the RGB and HSV values are within the defined thresholds
 	 *         (and thus the pixel is part of the yellow T), false otherwise.
 	 */
-	private boolean isYellow(Color c) {
-		return (c.getRed() > 150 && c.getGreen() > 70 && c.getGreen() < 120 && c
-				.getBlue() < 40);
+	private boolean isYellow(Color c, float[] hsb) {
+		return (c.getRed() > 130 &&
+				c.getGreen() > 70 && c.getGreen() < 120 && c
+				.getBlue() < 40 && 
+				hsb[0]>200 && hsb[1]>170 && hsb[2]>100);
+		//Hue > 200 ; Sat > 170 ; Value > 100
 	}
 
 	/**
@@ -427,9 +433,14 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * @return True if the RGB and HSV values are within the defined thresholds
 	 *         (and thus the pixel is part of the blue T), false otherwise.
 	 */
-	private boolean isBlue(Color c) {
-		return (c.getRed() > 20 && c.getRed() < 40 && c.getGreen() > 70
-				&& c.getGreen() < 80 && c.getBlue() > 70 && c.getBlue() < 120);
+	private boolean isBlue(Color c, float[] hsb) {
+		return (c.getRed() > 0 && c.getRed() < 50 
+				&& c.getGreen() > 50 && c.getGreen() < 100
+				&& c.getBlue() > 70 && c.getBlue() < 150
+				&& 110<hsb[0] && hsb[0]<140
+				&& hsb[1]>120
+				&& 70<hsb[2] && hsb[2]<100);
+		// 110 < Hue < 140 ; Sat > 120 ; 70 < Val < 100;
 	}
 
 	double prevBestAngle = 0;
@@ -457,7 +468,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * @return An orientation from -Pi to Pi degrees.
 	 * @throws NoAngleException
 	 */
-	public double findOrientation(ArrayList<Integer> xpoints,
+	/*public double findOrientation(ArrayList<Integer> xpoints,
 			ArrayList<Integer> ypoints, int meanX, int meanY,
 			BufferedImage image, boolean showImage) {
 		double angle;
@@ -547,7 +558,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 		prevBestAngle = goodAngle;
 		return goodAngle;
-	}
+	}*/
 
 	/**
 	 * Initialises a FrameGrabber object with the given parameters.
