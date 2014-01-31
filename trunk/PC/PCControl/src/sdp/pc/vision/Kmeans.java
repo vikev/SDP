@@ -104,7 +104,7 @@ public class Kmeans {
 		}
 		//k clusters, i.e. all clusters must move by 1 on average (or less) to terminate
 		//or we must reach the max iterations target
-		while(distChange < k && ++iterations < maxIterations);	
+		while(distChange > k && ++iterations < maxIterations);	
 		
 		return clusters;
 	}
