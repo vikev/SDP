@@ -39,13 +39,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL, CHANNEL = 0,
 			X_FRAME_OFFSET = 1, Y_FRAME_OFFSET = 25;
 
-	private static final int PLAYER_RADIUS = 17;
+	private static final int PLAYER_RADIUS = 18;
 
 	private static final String DEVICE = "/dev/video0";
 
 	private static final double VECTOR_THRESHOLD = 3.0;
-
-	private static final int PLAYER_RADIUS = 18;
 
 	private static boolean brightnessCalculated = false;
 	private static float[] minMaxBrigthness;
@@ -467,7 +465,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				}
 			}
 
-<<<<<<< HEAD
 		//do k-means
 		Cluster c = Kmeans.doKmeans(pts, new Point2(colorCenter))[0]; // only 1 cluster
 		
