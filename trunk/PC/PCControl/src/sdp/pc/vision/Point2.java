@@ -297,4 +297,13 @@ public class Point2 {
 			return new Point2D.Double();
 		return new Point2D.Double(((b2*c1-b1*c2)/delta), ((a1*c2-a2*c1)/delta));
 	}
+	
+	public double angleTo(Point2 p) {
+		return Math.atan2(p.y - y, p.x - x);
+	}
+	
+	public boolean isToLeft(Point2 a, Point2 b) {
+		int dot = ((b.x - a.x)*(y - a.y) - (b.y - a.y)*(x - a.x));
+		return dot > 0 || (dot == 0 && a.distanceSq(b) < a.distanceSq(this));
+	}
 }
