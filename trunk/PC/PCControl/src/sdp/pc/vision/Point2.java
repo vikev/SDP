@@ -8,38 +8,75 @@ public class Point2 {
 	private int x;
 	private int y;
 
+	/**
+	 * Constructs a new point with coordinates (0,0)
+	 */
 	public Point2() { this(0, 0); }
 
+	/**
+	 * Constructs a new point at the given coordinates
+	 */
 	public Point2(int x, int y) {
 		this.x = x;
 		this.y = y;
 	}
 
+	/**
+	 * Constructs a new point given a reference point
+	 * @param p
+	 */
 	public Point2(Point2 p) {
 		this.x = p.x;
 		this.y = p.y;
 	}
 
+	/**
+	 * Gets the x of the point
+	 * @return
+	 */
 	public int getX() {
 		return x;
 	}
+	
+	/**
+	 * Sets the x of the point
+	 * @param x
+	 */
 	public void setX(int x) {
 		this.x = x;
 	}
 
+	/**
+	 * Gets the y of the point
+	 * @return
+	 */
 	public int getY() {
 		return y;
 	}
+	
+	/**
+	 * Sets the y of the point
+	 * @param y
+	 */
 	public void setY(int y) {
 		this.y = y;
 	}
 	
+	/**
+	 * Gets a string representation of the point
+	 */
 	@Override
 	public String toString() {
 		return "(" + x + ", " + y + ")";
 	}
 
 	static final int fix_treshold = 9;
+	
+	/**
+	 * idk
+	 * @param oldX
+	 * @param oldY
+	 */
 	public void fixValues(int oldX, int oldY) {
 		// Use old values if nothing found
 		if (x == 0)
@@ -93,6 +130,12 @@ public class Point2 {
 		}
 	}
 
+	/**
+	 * idk
+	 * @param points
+	 * @param centroid
+	 * @return
+	 */
 	public static ArrayList<Point2> removeOutliers(
 			ArrayList<Point2> points, Point2 centroid) {
 		ArrayList<Point2> goodPoints = new ArrayList<Point2>();
@@ -130,22 +173,20 @@ public class Point2 {
 	}
 	
 	/**
-	 * Gives the SQUARED distance from current point to another point.
-	 * 
-	 * @param p - The point we want to find the distance to.
-	 * @return squared distance between the points.
+	 * Gets the squared distance to the given point
+	 * @param p the point we want to find the distance to
+	 * @return the squared distance to the point
 	 */
 	public double distanceSq(Point2 p) {
 		return distanceSq(p.x, p.y);
 	}
 	
 	/**
-	 * Gives the SQUARED distance from current point to another point,
-	 * where the second point is given by its X and Y coordinates.
-	 * 
-	 * @param x - X-coordinate of point we want to find distance to.
-	 * @param y - Y-coordinate of point we want to find distance to.
-	 * @return squared distance between the points
+	 * Gets the squared distance to the given point 
+	 * represented by x/y coordinates
+	 * @param x the x coordinate of the point
+	 * @param y the y coordinate of the point
+	 * @return the squared distance to the point
 	 */
 	public double distanceSq(double x, double y) {
 		double dx = x - getX();
@@ -154,75 +195,96 @@ public class Point2 {
 	}
 
 	/**
-	 * Gives the distance from current point to another point.
-	 * 
-	 * @param p - The point we want to find the distance to.
-	 * @return squared distance between the points
+	 * Gets the distance to the given point
+	 * @param p the point we want to find the distance to
+	 * @return the distance to the point
 	 */
 	public double distance(Point2 p) {
 		return Math.sqrt(distanceSq(p.x, p.y));
 	}
-	
+
+	/**
+	 * Gets the distance to the given point
+	 * @param p the point we want to find the distance to
+	 * @return the distance to the point
+	 */
 	public double distance(Point2D.Double p) {
 		return Math.sqrt(distanceSq(p.x, p.y));
 	}
 	
 	/**
-	 * Subtracts the coordinates of another point from the respective coordinates
-	 * of this point, and returns a new Point2 with these new values.
-	 * 
-	 * @param p - Point2, whose coordinates will be subtracted from this point
-	 * @return a new Point2 with X-coordinate being (this.x - p.x) and Y being
-	 * (this.y-p.y)
+	 * Gets a point which is the difference between this point and the given point
+	 * @param p the point to subtract from this
+	 * @return a point with coordinates (x-p.x; y-p.y)
 	 */
 	public Point2 subtract(Point2 p) {
 		return new Point2(x - p.x, y - p.y);
 	}
 	
 	/**
-	 * Adds the coordinates of one point to the respective coordinates of 
-	 * another, and returns a new Point2 with the sums as values.
-	 * 
-	 * @param p - another Point2
-	 * @return a new Point2 its X-coordinate is the sum of the the X-coordinates
-	 * of the two given points, and its Y is the sum of the Y's
+	 * Gets a point which is the sum of this point and the given point
+	 * @param p the point to add to this
+	 * @return a point with coordinates (x+p.x; y+p.y)
 	 */
 	public Point2 add(Point2 p) {
 		return new Point2(this.x + p.x, this.y + p.y);
 	}
+
 	
+	/**
+	 * Gets a point which is the sum of this point and the given point
+	 * @param p the point to add to this
+	 * @return a point with coordinates (x+p.x; y+p.y)
+	 */
 	public Point2D.Double add(Point2D.Double p) {
 		return new Point2D.Double(x + p.x, y + p.y);
 	}
 	
 	/**
-	 * Divides the values of both coordinates of the point by the same number.
+	 * Negatively scales (i.e. divides) this point by the given value
 	 * 
-	 * @param divisor
-	 * @return new Point2 with both coordinates divided by 'divisor'
+	 * @param divisor the value to divide by
+	 * @return a point with coordinates (x/p.x; y/p.y)
 	 */
 	public Point2 div(int divisor) {
 		return new Point2(x / divisor, y / divisor);
 	}
-	
+
 	/**
-	 * Multiplies the values of both coordinates of the point by the same number.
+	 * Positively scales (i.e. multiplies) this point by the given value
 	 * 
-	 * @param multiplier
-	 * @return new Point2 with both coordinates multiplied by 'multiplier'
+	 * @param multiplier the value to multiply by
+	 * @return a point with coordinates (x*p.x; y*p.y)
 	 */
 	public Point2 mult(int multiplier) {
 		return new Point2(x * multiplier, y * multiplier);
 	}
 	
+	/**
+	 * Vector operation
+	 * Returns a vector perpendicular to this one
+	 * @return a point with coordinates (y; x)
+	 */
 	public Point2 getPerpendicular() {
 		return new Point2(y, x);
 	}
 	
+	/**
+	 * Gets a Point2D representation of this point
+	 * @return
+	 */
 	public Point2D.Double toDouble() {
 		return new Point2D.Double(x, y);
 	}
 	
+	/**
+	 * Returns the intersection of the two lines defined by the 4 points
+	 * @param la the first point of the first line
+	 * @param las the second point of the first line
+	 * @param lb the first point of the second line
+	 * @param lbs the second point of the second line
+	 * @return the unique point which lies on both (la,las) and (lb,lbs)
+	 */
 	public static Point2D.Double getLinesIntersection(Point2 la, Point2 las, Point2 lb, Point2 lbs) {
 		double a1 = las.y,
 			   b1 = -las.x,

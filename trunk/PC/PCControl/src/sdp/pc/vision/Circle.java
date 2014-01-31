@@ -5,11 +5,37 @@ import java.awt.geom.Point2D;
 public class Circle {
 	public Point2D.Double position;
 	public double radius;
+	
+	/**
+	 * Gets the centre of this circle
+	 */
+	public Point2D.Double getPosition() {
+		return position;
+	}
+	
+	/**
+	 * Gets the radius of this circle 
+	 */
+	public double getRadius() {
+		return radius;
+	}
+	
+	/**
+	 * Constructs a new circle given a centre point and a radius
+	 * @param pos the centre of the circle
+	 * @param radius the radius of the circle
+	 */
 	public Circle(Point2D.Double pos, double radius) {
 		this.position = pos;
 		this.radius = radius;
 	}
 	
+	/**
+	 * Constructs a new circle determined by three points lying on its boundary
+	 * @param a the first point lying on the circle's boundary
+	 * @param b the second point lying on the circle's boundary
+	 * @param c the third point lying on the circle's boundary
+	 */
 	public Circle(Point2 a, Point2 b, Point2 c) {
 		b = b.subtract(a);
 		c = c.subtract(a);
@@ -20,7 +46,12 @@ public class Circle {
 		this.radius = a.distance(position);
 	}
 	
+	/**
+	 * Returns whether the given point is inside this circle
+	 * @param p the point to check
+	 * @return true if the point is inside the circle, false otherwise
+	 */
 	public boolean isPointInside(Point2 p) {
-		return p.distance(position) <= radius;
+		return p.distance(position) < radius;
 	}
 }

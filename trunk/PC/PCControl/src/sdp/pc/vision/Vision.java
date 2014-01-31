@@ -201,6 +201,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 		// TODO: orientation code
 		double yellowOrientation = 0;
+		
+		Point2 blackPos = new Point2();
+//		Point2 blackPos = findBlackDot(yellowPos);
 
 		// Update World State
 		state.setBallPosition(ballPos);
@@ -219,6 +222,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// Yellow robots locations
 		imageGraphics.setColor(Color.yellow);
 		imageGraphics.drawOval(yellowPos.getX() - 15, yellowPos.getY() - 15,
+				30, 30);
+		imageGraphics.drawOval(blackPos.getX() - 15, blackPos.getY() - 15,
 				30, 30);
 
 		// Blue robots locations
@@ -282,8 +287,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	}
 
 	private static final int playerRadius = 18;
-
-	@SuppressWarnings("unused")
 	private Point2 findBlackDot(Point2 colorCenter) {
 		int xs = colorCenter.getX() - playerRadius;
 		int ys = colorCenter.getY() - playerRadius;

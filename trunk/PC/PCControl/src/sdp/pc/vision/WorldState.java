@@ -7,11 +7,13 @@ public class WorldState {
 	
 	public static final int TEAM_YELLOW = 0;
 	public static final int TEAM_BLUE = 1;
+	
 	public static final Point2 leftGoalCentre = new Point2 (77,235); //Taken from image of pitch
 	public static final Point2 rightGoalCentre = new Point2 (589,241); //These are likely to change
 	public int targetGoal = 1; // 1 is left goal 0 is right goal
 	
 	private int direction; // 0 = right, 1 = left.
+	
 	private Point2 ball;
 	private Point2[][] robotLoc = new Point2[nTeams][playersPerTeam];
 	private double[][] robotFacing = new double[nTeams][playersPerTeam];
@@ -41,15 +43,30 @@ public class WorldState {
 	public void setTargetGoal(int newTargetGoal){
 		targetGoal = newTargetGoal;
 	}
+	
 	public Point2 getLeftGoalCentre(){
 		return leftGoalCentre;
 	}
 	public Point2 getRightGoalCentre(){
 		return rightGoalCentre;
 	}
+	
+	/**
+	 * Gets the position of the specified robot
+	 * @param team the team of the robot
+	 * @param robot the id of the robot
+	 * @return the position of the robot
+	 */
 	public Point2 getRobotPosition(int team, int robot) {
 		return robotLoc[team][robot];
 	}
+	
+	/**
+	 * Gets the facing of the specified robot
+	 * @param team the team of the robot
+	 * @param robot the id of the robot
+	 * @return the orientation of the robot, in ???
+	 */
 	public double getRobotFacing(int team, int robot) {
 		return robotFacing[team][robot];
 	}
