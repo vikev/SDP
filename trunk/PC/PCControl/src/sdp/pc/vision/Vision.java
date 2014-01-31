@@ -195,11 +195,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		avgPrevPos = avgPrevPos.div(prevFramePos.length);
 		avgPrevPos = avgPrevPos.subtract(ballPos).mult(-5).add(ballPos);
 
-		// TODO: orientation code
+		// TODO: fix orientation code
 		double yellowOrientation = 0;
 		
-		Point2 blackPos = new Point2();
-//		Point2 blackPos = findBlackDot(yellowPos);
+//		Point2 blackPos = new Point2();
+		Point2 blackPos = findBlackDot(yellowPos);
+		blackPos = blackPos.subtract(yellowPos).mult(-5).add(yellowPos);
 
 		// Update World State
 		state.setBallPosition(ballPos);
@@ -219,8 +220,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		imageGraphics.setColor(Color.yellow);
 		imageGraphics.drawOval(yellowPos.getX() - 15, yellowPos.getY() - 15,
 				30, 30);
-		imageGraphics.drawOval(blackPos.getX() - 15, blackPos.getY() - 15,
-				30, 30);
+		
+		
+		//draw orientation (temp)
+		imageGraphics.drawLine(yellowPos.getX(), yellowPos.getY(), blackPos.getX(), blackPos.getY());
 
 		// Blue robots locations
 		imageGraphics.setColor(Color.blue);
@@ -278,27 +281,62 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		}
 	}
 
-	private static final int playerRadius = 18;
+	
+	private static final int playerRadius = 18;	//TODO: find a good val
+	
+	/**
+	 * Gets the position of the black dot around some point
+	 * Used to determine a robot's orientation, given its centre point
+	 * @param colorCenter the center of the robot's yellow/blue
+	 */
 	private Point2 findBlackDot(Point2 colorCenter) {
-		int xs = colorCenter.getX() - playerRadius;
-		int ys = colorCenter.getY() - playerRadius;
-		int xe = colorCenter.getX() - playerRadius;
-		int ye = colorCenter.getY() - playerRadius;
+		//bounding rect to search for black pixels
+		int xs = Math.max(0, colorCenter.getX() - playerRadius);
+		int ys = Math.max(0, colorCenter.getY() - playerRadius);
+		int xe = Math.min(WIDTH, colorCenter.getX() + playerRadius);
+		int ye = Math.min(HEIGHT, colorCenter.getY() + playerRadius);
 
+		//get all the black points in the bounding rect
 		ArrayList<Point2> pts = new ArrayList<Point2>();
 		float[] cHsb;
+		float[] midHsb = new float[3];
 		Color cRgb;
 		for (int ix = xs; ix < xe; ix++)
 			for (int iy = ys; iy < ye; iy++) {
+				//get colors
 				cHsb = hsb[ix][iy];
 				cRgb = rgb[ix][iy];
-				// hsb: s:40, b:25
-				if (cHsb[1] < 0.40f && cHsb[2] < 0.25f)
+				
+				//record average
+				midHsb[0] += cHsb[0];
+				midHsb[1] += cHsb[1];
+				midHsb[2] += cHsb[2];
+				
+				//add if "black"
+				if (isBlack(cRgb, cHsb))
 					pts.add(new Point2(ix, iy));
 			}
 
-		Cluster c = Kmeans.doKmeans(pts, colorCenter)[0]; // only 1 cluster
+		//do k-means
+		Cluster c = Kmeans.doKmeans(pts, new Point2(colorCenter))[0]; // only 1 cluster
+		
+		//TODO: 
+		//while points > some_treshold and rect > some_rect: 
+		//		rect /= 2;
+		//		pts = pointsIn(rect)
+		//		c = Kmeans(pts)
+		
 		return c.getMean();
+	}
+	
+	/**
+	 * Checks if a pixel is black, i.e. can be used for orientation detection
+	 * @param rgb
+	 * @param hsb
+	 * @return
+	 */
+	private boolean isBlack(Color rgb, float[] hsb) {
+		return hsb[1] < 0.3f && hsb[2] < 0.3f;
 	}
 
 	/**
