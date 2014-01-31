@@ -2,6 +2,9 @@ package sdp.pc.vision;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Alg {
 
@@ -57,4 +60,30 @@ public class Alg {
 	}
 
 	
+	
+	public static List<Point2> convexHull(ArrayList<Point2> pts) {
+		
+		Point2 pHull = pts.get(0);
+		Point2 endPoint;
+		
+		LinkedList<Point2> p = new LinkedList<Point2>();
+		
+		for(Point2 pt : pts)
+			if(pt.getX() < pHull.getX())
+				pHull = pt;
+		
+		do
+		{
+			p.add(pHull);
+			endPoint = pts.get(0);
+			for(int j = 1; j<pts.size(); j++)
+				if(endPoint == pHull || 
+				(pts.get(j).isToLeft(p.getLast(), endPoint)))
+					endPoint = pts.get(j);
+			pHull = endPoint;
+		}
+		while(endPoint != p.get(0));
+		
+		return p;
+	}
 }
