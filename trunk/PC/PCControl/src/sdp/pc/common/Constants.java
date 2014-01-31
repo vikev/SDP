@@ -9,7 +9,7 @@ import sdp.pc.vision.Point2;
  */
 public class Constants {
 	// Socket data
-	public static final int PORT = 1313;
+	public static final int PORT = 4564;
 	public static final int SERVER_PORT = 1999;
 	public static final int CLIENT_PORT = 4456;
 	public static final String HOST = "localhost";
