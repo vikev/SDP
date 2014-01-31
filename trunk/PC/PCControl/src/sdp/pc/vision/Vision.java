@@ -160,6 +160,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		Point2 bluePos = new Point2();
 		ArrayList<Point2> yellowPoints = new ArrayList<Point2>();
 		ArrayList<Point2> bluePoints = new ArrayList<Point2>();
+		float[] minMaxBrigthness = findMinMaxBrigthness(image);
 
 		// Both loops need to start from table edges rather than
 		for (int row = 80; row < image.getHeight() - 80; row++) {
@@ -174,6 +175,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				float[] cHsb = hsb[column][row];
 				Color.RGBtoHSB(cRgb.getRed(), cRgb.getBlue(), cRgb.getGreen(),
 						cHsb);
+	
+				//Scale the values of the pitch
+				float br = hsb[column][row][2];
+				br = (br - minMaxBrigthness[1])/minMaxBrigthness[0];
+				image.setRGB(column, row, Color.HSBtoRGB(hsb[column][row][0], hsb[column][row][1], br));
+
 				for (int i=0; i<3; i++) cHsb[i]*=255;
 
 				// Find "Ball" pixels
@@ -419,6 +426,38 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				.getBlue() < 40 && 
 				hsb[0]>200 && hsb[1]>170 && hsb[2]>100);
 		//Hue > 200 ; Sat > 170 ; Value > 100
+	}
+	
+	/**
+	 * Finds the brightest and darkest points on the image
+	 * 
+	 * @param image
+	 *            The Image to be used for min max brightness foundation
+	 * 
+	 * @return The list of two float HSB values representing the brightest and the darkest values
+	 */
+	private float[] findMinMaxBrigthness(BufferedImage image) {
+		float maxBr = 0;
+		float minBr = 1;
+		
+		for (int row = 0; row < image.getHeight(); row++) {
+			for (int column = 0; column < image.getWidth(); column++) {
+				Color change = new Color(image.getRGB(column, row));
+				float[] cHsb = hsb[column][row];
+				Color.RGBtoHSB(change.getRed(), change.getBlue(), change.getGreen(),
+						cHsb);
+				float br = hsb[column][row][2];
+				if (br >= maxBr) {
+					maxBr = br;
+				}
+					
+				if (br <= minBr) {
+					minBr = br;
+				}
+			}	
+		}
+		float[] values = {maxBr, minBr};
+		return values;
 	}
 
 	/**
