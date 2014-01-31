@@ -31,7 +31,7 @@ public class Constants {
 	public static final int GOAL_LEFT = 0, GOAL_RIGHT = 1;
 	public static final int DIRECTION_LEFT = 0, DIRECTION_RIGHT = 1;
 
-	public static final int TABLE_MIN_X = 60, TABLE_MIN_Y = 100,
-			TABLE_MAX_X = 600, TABLE_MAX_Y = 390;
+	public static final int TABLE_MIN_X = 60, TABLE_MIN_Y = 90,
+			TABLE_MAX_X = 600, TABLE_MAX_Y = 380;
 	public static final int TABLE_CENTRE_X = 330;
 }

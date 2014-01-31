@@ -44,10 +44,16 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 	private static final int PLAYER_RADIUS = 18;
 
+	private static boolean brightnessCalculated = false;
+	private static float[] minMaxBrigthness;
+	private static float[] cHsb;
+
 	private VideoDevice videoDevice;
 	private FrameGrabber frameGrabber;
 	private JLabel label;
 	private JFrame frame;
+	private Color[][] rgb = new Color[700][520];
+	private float[][][] hsb = new float[700][520][3];
 	private static WorldState state = new WorldState();
 	long initialTime; // For FPS calculation
 
@@ -119,9 +125,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 	}
 
-	Color[][] rgb = new Color[700][520];
-	float[][][] hsb = new float[700][520][3];
-
 	/**
 	 * Checks whether a given point is in the pitch
 	 */
@@ -143,9 +146,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		double t = (double) (b.getY() - b.getY());
 		return Math.sqrt(s * s + t * t);
 	}
-	
-	boolean brightnessCalculated = false;
-	float[] minMaxBrigthness;
+
 	/**
 	 * Identifies objects of interest (ball, robots) in the image while in play.
 	 * The information from it (positions, orientations, predictions) will be
@@ -159,12 +160,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// Initialise color recognition values
 		int ballPixCounter = 0;
 		Point2 ballPos = new Point2();
-		int yellowN = 0;
-		Point2 yellowPos = new Point2();
-		int blueN = 0;
-		Point2 bluePos = new Point2();
-		ArrayList<Point2> yellowPoints = new ArrayList<Point2>();
-		ArrayList<Point2> bluePoints = new ArrayList<Point2>();
 		if (!brightnessCalculated) {
 			minMaxBrigthness = findMinMaxBrigthness(image);
 			brightnessCalculated = true;
@@ -185,29 +180,17 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		int blueRightCounter = 0;
 		Point2 blueRightPos = new Point2();
 		ArrayList<Point2> blueRightPoints = new ArrayList<Point2>();
-
+		
 		// Loop through all table values, recognizing pixel regions as necessary
 		for (int row = Constants.TABLE_MIN_Y; row < Constants.TABLE_MAX_Y; row++) {
 			for (int column = Constants.TABLE_MIN_X; column < Constants.TABLE_MAX_X; column++) {
 
 				Point2 p = new Point2(column, row);
 
-				// Update RGB...
-				Color cRgb = new Color(image.getRGB(column, row));
-				rgb[column][row] = cRgb;
-				// ...and HSB vals
-				float[] cHsb = hsb[column][row];
-				Color.RGBtoHSB(cRgb.getRed(), cRgb.getBlue(), cRgb.getGreen(), cHsb);
-	
-				//Scale the values of the pitch
-				float br = hsb[column][row][2];
-				br = (br - minMaxBrigthness[1])/minMaxBrigthness[0];
-				image.setRGB(column, row, Color.HSBtoRGB(hsb[column][row][0], hsb[column][row][1], br));
-				
-				for (int i=0; i<3; i++) cHsb[i]*=255;
+				Color pixelColorRGB = normaliseColor(image, row, column);
 
 				// Find "Ball" pixels
-				if (isBall(cRgb, cHsb)) {
+				if (isBall(pixelColorRGB, cHsb)) {
 					ballPos = ballPos.add(p);
 					ballPixCounter++;
 					// Makes red pixels orange - for debugging
@@ -215,7 +198,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				}
 
 				// Find Yellow pixels
-				if (isYellow(cRgb, cHsb)) {
+				if (isYellow(pixelColorRGB, cHsb)) {
 					if (column < Constants.TABLE_CENTRE_X) {
 						yellowLeftPos = yellowLeftPos.add(p);
 						yellowLeftCounter++;
@@ -234,7 +217,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				}
 
 				// Find Blue pixels
-				if (isBlue(cRgb, cHsb)) {
+				if (isBlue(pixelColorRGB, cHsb)) {
 					if (column < Constants.TABLE_CENTRE_X) {
 						blueLeftPos = blueLeftPos.add(p);
 						blueLeftCounter++;
@@ -360,13 +343,14 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 		// Draw centre line
 		imageGraphics.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
-		imageGraphics.drawLine(Constants.TABLE_CENTRE_X, Constants.TABLE_MIN_Y+1,
-				Constants.TABLE_CENTRE_X, Constants.TABLE_MAX_Y-1);
+		imageGraphics.drawLine(Constants.TABLE_CENTRE_X,
+				Constants.TABLE_MIN_Y + 1, Constants.TABLE_CENTRE_X,
+				Constants.TABLE_MAX_Y - 1);
 
 		// Draw top and bottom line as well
 		imageGraphics.drawLine(Constants.TABLE_MIN_X, Constants.TABLE_MIN_Y,
 				Constants.TABLE_MAX_X, Constants.TABLE_MIN_Y);
-		imageGraphics.drawLine(Constants.TABLE_MIN_X,Constants.TABLE_MAX_Y,
+		imageGraphics.drawLine(Constants.TABLE_MIN_X, Constants.TABLE_MAX_Y,
 				Constants.TABLE_MAX_X, Constants.TABLE_MAX_Y);
 
 		// Saves this frame's ball position and shifts previous frames'
@@ -414,6 +398,32 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 		// Finally draw the image to screen
 		frameGraphics.drawImage(image, 0, 0, WIDTH, HEIGHT, null);
+	}
+
+	private Color normaliseColor(BufferedImage image, int row, int column) {
+		// Normalise color values:
+		// Update RGB handle
+		Color pixelColorRGB = new Color(image.getRGB(column, row));
+		rgb[column][row] = pixelColorRGB;
+		
+		// Update HSB handle
+		cHsb = hsb[column][row];
+		Color.RGBtoHSB(pixelColorRGB.getRed(), pixelColorRGB.getBlue(), pixelColorRGB.getGreen(),
+				cHsb);
+		
+		// Scale the values of the pitch
+		float br = hsb[column][row][2];
+		
+		//hsb is of the form {max, min}
+		br = (br - minMaxBrigthness[1]) / minMaxBrigthness[0];
+		image.setRGB(column, row, Color.HSBtoRGB(hsb[column][row][0],
+				hsb[column][row][1], br));
+
+		for (int i = 0; i < 3; i++)
+			cHsb[i] *= 255;
+		
+		hsb[column][row] = cHsb;
+		return pixelColorRGB;
 	}
 
 	/**
@@ -509,37 +519,40 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				&& c.getBlue() < 40 && hsb[0] > 200 && hsb[1] > 170 && hsb[2] > 100);
 		// Hue > 200 ; Sat > 170 ; Value > 100
 	}
-	
+
 	/**
 	 * Finds the brightest and darkest points on the image
 	 * 
 	 * @param image
 	 *            The Image to be used for min max brightness foundation
 	 * 
-	 * @return The list of two float HSB values representing the brightest and the darkest values
+	 * @return The list of two float HSB values representing the brightest and
+	 *         the darkest values
 	 */
 	private float[] findMinMaxBrigthness(BufferedImage image) {
-		float maxBr = 0;
-		float minBr = 1;
-		
-		for (int row = 0; row < image.getHeight(); row++) {
-			for (int column = 0; column < image.getWidth(); column++) {
+		float maxBr = 0.0f;
+		float minBr = 1.0f;
+
+		for (int row = Constants.TABLE_MIN_Y; 
+				row < Constants.TABLE_MAX_Y; row++) {
+			for (int column = Constants.TABLE_MIN_X; 
+					column < Constants.TABLE_MAX_X; column++) {
+				
 				Color change = new Color(image.getRGB(column, row));
 				float[] cHsb = hsb[column][row];
-				Color.RGBtoHSB(change.getRed(), change.getBlue(), change.getGreen(),
-						cHsb);
+				Color.RGBtoHSB(change.getRed(), change.getBlue(),
+						change.getGreen(), cHsb);
 				float br = hsb[column][row][2];
 				if (br >= maxBr) {
 					maxBr = br;
 				}
-					
+
 				if (br <= minBr) {
 					minBr = br;
 				}
-			}	
+			}
 		}
-		float[] values = {maxBr, minBr};
-		return values;
+		return new float[] { maxBr, minBr };
 	}
 
 	/**
