@@ -40,20 +40,20 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL, CHANNEL = 0,
 			X_FRAME_OFFSET = 1, Y_FRAME_OFFSET = 25;
 	private static final String DEVICE = "/dev/video0";
-	private VideoDevice videoDevice;
-	private FrameGrabber frameGrabber;
 
 	private static final int PLAYER_RADIUS = 18;
 	private static final double VECTOR_THRESHOLD = 3.0;
-
-	private JLabel label;
-	private JFrame frame;
 	private static Color[][] rgb = new Color[700][520];
 	private static float[][][] hsb = new float[700][520][3];
 	private static float[] cHsb;
 	private static ArrayList<Point2> pitchPoints = new ArrayList<Point2>();
 	private static WorldState state = new WorldState();
-	long initialTime; // For FPS calculation
+
+	private JLabel label;
+	private JFrame frame;
+	private long initialTime; // For FPS calculation
+	private VideoDevice videoDevice;
+	private FrameGrabber frameGrabber;
 
 	// Used for normalisation (first float is max brightness, second is min
 	// brightness)
@@ -133,6 +133,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		frameGrabber.startCapture();
 	}
 
+	/**
+	 * Expensive method used to build a convex hull around white points (our
+	 * table border due to the white tape); only needs to occur once during
+	 * initialisation and results in a list of Point2s.
+	 */
 	private static void preprocess(BufferedImage image) {
 		preprocessed++;
 
@@ -410,6 +415,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		frameGraphics.drawImage(image, 0, 0, WIDTH, HEIGHT, null);
 	}
 
+	/**
+	 * Given a yellow/blue robot centroid, finds the darkest region nearby
+	 * (cheaply), circles it, and draws a line through the facing angle,
+	 * returning the facing angle in degrees.
+	 * 
+	 * Author s1143704
+	 */
 	private double findOrientation(Point2 centroid, Graphics gfx) {
 		double angBest = 0.0;
 		if (Alg.pointInPitch(centroid)) {
@@ -433,23 +445,65 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 									.sin(angBest)));
 			drawCircle(pt, gfx, Constants.GRAY_BLEND,
 					Constants.ROBOT_HEAD_RADIUS);
-			gfx.drawLine(
-					centroid.getX(),
-					centroid.getY(),
-					(int)(centroid.getX() - Constants.HEAD_ENUM_RADIUS*2.0
+			gfx.drawLine(centroid.getX(), centroid.getY(),
+					(int) (centroid.getX() - Constants.HEAD_ENUM_RADIUS * 2.0
 							* Math.cos(angBest)),
-					(int)(centroid.getY() - Constants.HEAD_ENUM_RADIUS*2.0
+					(int) (centroid.getY() - Constants.HEAD_ENUM_RADIUS * 2.0
 							* Math.sin(angBest)));
 		}
 		return (angBest + Math.PI) * 180.0 / Math.PI;
 	}
 
+	/**
+	 * Abstraction of Graphics.drawOval which simplifies our circle drawing
+	 */
 	private void drawCircle(Point2 centrePt, Graphics gfx, Color c, int radius) {
 		gfx.setColor(c);
 		gfx.drawOval(centrePt.getX() - radius, centrePt.getY() - radius,
 				radius * 2, radius * 2);
 	}
 
+	/**
+	 * Finds the brightest and darkest points on the image
+	 * 
+	 * @param image
+	 *            The Image to be used for min max brightness foundation
+	 * 
+	 * @return The list of two float HSB values representing the brightest and
+	 *         the darkest values
+	 */
+	private static float[] findMinMaxBrigthness(BufferedImage image) {
+		float maxBr = 0.0f;
+		float minBr = 1.0f;
+
+		/*
+		 * for (int row = Constants.TABLE_MIN_Y; row < Constants.TABLE_MAX_Y;
+		 * row++) { for (int column = Constants.TABLE_MIN_X; column <
+		 * Constants.TABLE_MAX_X; column++) {
+		 */
+		for (Point2 p : pitchPoints) {
+			int column = p.getX();
+			int row = p.getY();
+			Color change = new Color(image.getRGB(column, row));
+			float[] cHsb = hsb[column][row];
+			Color.RGBtoHSB(change.getRed(), change.getBlue(),
+					change.getGreen(), cHsb);
+			float br = hsb[column][row][2];
+			if (br >= maxBr) {
+				maxBr = br;
+			}
+
+			if (br <= minBr) {
+				minBr = br;
+			}
+		}
+		return new float[] { maxBr, minBr };
+	}
+
+	/**
+	 * Uses the HSB colour space to normalise all colours in our desired region
+	 * by brightness
+	 */
 	private static Color normaliseColor(BufferedImage image, int row, int column) {
 		// Normalise color values:
 		// Update RGB handle
@@ -589,43 +643,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	}
 
 	/**
-	 * Finds the brightest and darkest points on the image
-	 * 
-	 * @param image
-	 *            The Image to be used for min max brightness foundation
-	 * 
-	 * @return The list of two float HSB values representing the brightest and
-	 *         the darkest values
-	 */
-	private static float[] findMinMaxBrigthness(BufferedImage image) {
-		float maxBr = 0.0f;
-		float minBr = 1.0f;
-
-		/*
-		 * for (int row = Constants.TABLE_MIN_Y; row < Constants.TABLE_MAX_Y;
-		 * row++) { for (int column = Constants.TABLE_MIN_X; column <
-		 * Constants.TABLE_MAX_X; column++) {
-		 */
-		for (Point2 p : pitchPoints) {
-			int column = p.getX();
-			int row = p.getY();
-			Color change = new Color(image.getRGB(column, row));
-			float[] cHsb = hsb[column][row];
-			Color.RGBtoHSB(change.getRed(), change.getBlue(),
-					change.getGreen(), cHsb);
-			float br = hsb[column][row][2];
-			if (br >= maxBr) {
-				maxBr = br;
-			}
-
-			if (br <= minBr) {
-				minBr = br;
-			}
-		}
-		return new float[] { maxBr, minBr };
-	}
-
-	/**
 	 * Determines if a pixel is part of the blue T, based on input RGB colours
 	 * and hsv values.
 	 * 
@@ -643,32 +660,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				&& 110 < hsb[0] && hsb[0] < 140 && hsb[1] > 120 && 70 < hsb[2] && hsb[2] < 100);
 		// 110 < Hue < 140 ; Sat > 120 ; 70 < Val < 100;
 	}
-
-	double prevBestAngle = 0;
-
-	/**
-	 * Finds the orientation of a robot, given a list of the points contained
-	 * within it's T-shape (in terms of a list of x coordinates and y
-	 * coordinates), the mean x and y coordinates, and the image from which it
-	 * was taken.
-	 * 
-	 * @param xpoints
-	 *            The x-coordinates of the points contained within the T-shape.
-	 * @param ypoints
-	 *            The y-coordinates of the points contained within the T-shape.
-	 * @param meanX
-	 *            The mean x-point of the T.
-	 * @param meanY
-	 *            The mean y-point of the T.
-	 * @param image
-	 *            The image from which the points were taken.
-	 * @param showImage
-	 *            A boolean flag - if true a line will be drawn showing the
-	 *            direction of orientation found.
-	 * 
-	 * @return An orientation from -Pi to Pi degrees.
-	 * @throws NoAngleException
-	 */
 
 	/**
 	 * Initialises a FrameGrabber object with the given parameters.
@@ -733,11 +724,17 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		frame.dispose();
 	}
 
+	/**
+	 * Inherited method for V4L exceptions
+	 */
 	@Override
 	public void exceptionReceived(V4L4JException e) {
 		e.printStackTrace();
 	}
 
+	/**
+	 * Inherited method for drawing next frame
+	 */
 	@Override
 	public void nextFrame(VideoFrame frame) {
 		label.getGraphics().drawImage(frame.getBufferedImage(), 0, 0, WIDTH,
