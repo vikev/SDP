@@ -9,9 +9,9 @@ import sdp.pc.vision.Point2;
  */
 public class Constants {
 	// Socket data
-	public static final int PORT = 4544;
-	public static final int SERVER_PORT = 1999;
-	public static final int CLIENT_PORT = 4456;
+	public static final int PORT = 1313;
+	public static final int SERVER_PORT = 1414;
+	public static final int CLIENT_PORT = 1515;
 	public static final String HOST = "localhost";
 
 	// Arbitrary point values taken from image of pitch; these are likely to
@@ -36,5 +36,7 @@ public class Constants {
 	public static final int TABLE_CENTRE_X = 330;*/
 	public static final int TABLE_MIN_X = 1, TABLE_MIN_Y = 1,
 	TABLE_MAX_X = 639, TABLE_MAX_Y = 479;
-public static final int TABLE_CENTRE_X = 330;
+	public static final int TABLE_CENTRE_X = 330;
+	
+	public static final int ROBOT_CIRCLE_RADIUS = 15;
 }
