@@ -1,5 +1,7 @@
 package sdp.pc.common;
 
+import java.awt.Color;
+
 import sdp.pc.vision.Point2;
 
 /**
@@ -31,12 +33,16 @@ public class Constants {
 	public static final int GOAL_LEFT = 0, GOAL_RIGHT = 1;
 	public static final int DIRECTION_LEFT = 0, DIRECTION_RIGHT = 1;
 
-	/*public static final int TABLE_MIN_X = 60, TABLE_MIN_Y = 90,
-			TABLE_MAX_X = 600, TABLE_MAX_Y = 380;
-	public static final int TABLE_CENTRE_X = 330;*/
 	public static final int TABLE_MIN_X = 1, TABLE_MIN_Y = 1,
-	TABLE_MAX_X = 639, TABLE_MAX_Y = 479;
+			TABLE_MAX_X = 639, TABLE_MAX_Y = 479;
 	public static final int TABLE_CENTRE_X = 330;
-	
-	public static final int ROBOT_CIRCLE_RADIUS = 15;
+
+	public static final int ROBOT_CIRCLE_RADIUS = 15, ROBOT_HEAD_RADIUS = 3,
+			HEAD_ARC_FIDELITY = 36;
+
+	public static final Color GRAY_BLEND = new Color(1.0f, 1.0f, 1.0f, 0.5f),
+			BLUE_BLEND = new Color(0.0f,0.0f,1.0f,0.5f),
+			YELLOW_BLEND = new Color(1.0f,1.0f,0.0f,0.5f);
+
+	public static final double HEAD_ENUM_RADIUS = 12.0;
 }
