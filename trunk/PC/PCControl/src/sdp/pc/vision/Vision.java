@@ -27,10 +27,12 @@ import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 /**
  * This code builds a JFrame that shows the feed from the camera and calculates
  * and displays positions of objects on the field. Part of the code is inspired
- * from group 1 of SDP 2013. Most important method is processImage - don't touch
- * stuff like initGui unless need be
+ * from group 1 of SDP 2013. 
  * 
- * @author Borislav Ikonomov, Group 8, SDP 2014
+ * For programmers: the bulk of the work is done by the method 'processImage'.
+ * Don't touch stuff like initGui unless need be.
+ * 
+ * @author Group 8, SDP 2014
  * 
  */
 public class Vision extends WindowAdapter implements CaptureCallback {
@@ -71,12 +73,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * @param args
 	 */
 	public static void main(String args[]) {
-
-		// Initialise prevFramePos:
-		for (int i = 0; i < 10; i++)
-			prevFramePos[i] = new Point2(0, 0);
-
-		// Begin:
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -100,6 +96,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *             if any parameter if invalid
 	 */
 	public Vision(WorldState state) throws V4L4JException {
+		// Initialise prevFramePos:
+		for (int i = 0; i < 10; i++)
+			prevFramePos[i] = new Point2(0, 0);
+
+		
 		try {
 			initFrameGrabber();
 		} catch (V4L4JException e1) {
@@ -121,12 +122,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				initialTime = System.currentTimeMillis(); // for FPS
 				BufferedImage frameImage = frame.getBufferedImage();
 				frame.recycle();
-				if (preprocessed < 25)
-					preprocessed++;
-				else if (preprocessed == 25)
-					preprocess(frameImage);
-				else
-					processImage(frameImage);
+				if (preprocessed < 25) 			// This part here makes sure that
+					preprocessed++;				// 'preprocess' is only called once at
+				else if (preprocessed == 25)    // the start; but also that at least
+					preprocess(frameImage);		// a few frames pass before it is called
+				else							// (since the very first few frames are
+					processImage(frameImage);   // always distorted and bad)
 			}
 		});
 
@@ -135,8 +136,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 	/**
 	 * Expensive method used to build a convex hull around white points (our
-	 * table border due to the white tape); only needs to occur once during
-	 * initialisation and results in a list of Point2s.
+	 * table border due to the white tape). Also, calculates the brightest and least 
+	 * brightest points to be used for brightness normalisation.
+	 * 
+	 * Only needs to occur once during initialisation; stores the brightness values in
+	 * minMaxBrightness, and the points that belong to the pitch in pitchPoints.
+	 * 
+	 * @param image - image on which to base the pre-processing
 	 */
 	private static void preprocess(BufferedImage image) {
 		preprocessed++;
@@ -362,12 +368,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				Constants.TABLE_MIN_Y + 1, Constants.TABLE_CENTRE_X,
 				Constants.TABLE_MAX_Y - 1);
 
-		// Draw top and bottom line as well
-		// imageGraphics.drawLine(Constants.TABLE_MIN_X, Constants.TABLE_MIN_Y,
-		// Constants.TABLE_MAX_X, Constants.TABLE_MIN_Y);
-		// imageGraphics.drawLine(Constants.TABLE_MIN_X, Constants.TABLE_MAX_Y,
-		// Constants.TABLE_MAX_X, Constants.TABLE_MAX_Y);
-
 		// Saves this frame's ball position and shifts previous frames'
 		// positions
 		for (int i = prevFramePos.length - 1; i > 0; i--) {
@@ -426,7 +426,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		double angBest = 0.0;
 		if (Alg.pointInPitch(centroid)) {
 			double r = 0;
-			double brBest = 255.0;
+			double brBest = 1.0;
 			for (int i = 0; i < Constants.HEAD_ARC_FIDELITY; i++) {
 				r += 2.0 * Math.PI / Constants.HEAD_ARC_FIDELITY;
 				int row = centroid.getY()
@@ -464,23 +464,19 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	}
 
 	/**
-	 * Finds the brightest and darkest points on the image
+	 * Finds the brightest and darkest points on the image. Used for brightness
+	 * normalisation (in normaliseColor).
 	 * 
 	 * @param image
 	 *            The Image to be used for min max brightness foundation
 	 * 
 	 * @return The list of two float HSB values representing the brightest and
-	 *         the darkest values
+	 *         the darkest values (format {max, min})
 	 */
 	private static float[] findMinMaxBrigthness(BufferedImage image) {
 		float maxBr = 0.0f;
 		float minBr = 1.0f;
 
-		/*
-		 * for (int row = Constants.TABLE_MIN_Y; row < Constants.TABLE_MAX_Y;
-		 * row++) { for (int column = Constants.TABLE_MIN_X; column <
-		 * Constants.TABLE_MAX_X; column++) {
-		 */
 		for (Point2 p : pitchPoints) {
 			int column = p.getX();
 			int row = p.getY();
@@ -502,7 +498,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 	/**
 	 * Uses the HSB colour space to normalise all colours in our desired region
-	 * by brightness
+	 * by brightness, i.e. used to scale the brightness of every pixel on the pitch
+	 * so that the whole range of brightnesses is from 0.0 to 1.0.
 	 */
 	private static Color normaliseColor(BufferedImage image, int row, int column) {
 		// Normalise color values:
@@ -522,9 +519,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		br = (br - minMaxBrightness[1]) / minMaxBrightness[0];
 		image.setRGB(column, row,
 				Color.HSBtoRGB(hsb[column][row][0], hsb[column][row][1], br));
-
-		for (int i = 0; i < 3; i++)
-			cHsb[i] *= 255;
 
 		hsb[column][row] = cHsb;
 		return pixelColorRGB;
@@ -597,15 +591,26 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private boolean isBlack(Color rgb, float[] hsb) {
 		return 0.6 < hsb[0] && hsb[0] < 0.67 && hsb[1] > 0.5;
 	}
-
-	private static boolean isWhite(Color rgb, float[] hsb) {
-		return hsb[2] > 125 && rgb.getGreen() < 150;
-	}
-
+	
 	private boolean isGreen(Color rgb, float[] hsb) {
 		return 0.2f < hsb[1] && hsb[1] < 0.35f && 0.25f < hsb[2]
 				&& hsb[2] < 0.45f && rgb.getRed() < 80 && rgb.getBlue() < 80
 				&& rgb.getGreen() < 80;
+	}
+
+	/**
+	 * Determines if a pixel is from the white tape on the pitch. Used to calculate 
+	 * the smallest possible polygon that captures the entire pitch.  
+	 * 
+	 * @param color
+	 *            The RGB colours for the pixel.
+	 * @param hsb
+	 *            The HSV values for the pixel.
+	 	 * @return True if the RGB and HSV values are within the defined thresholds
+	 *         (and thus the pixel is part of white tape), false otherwise.
+	 */
+	private static boolean isWhite(Color rgb, float[] hsb) {
+		return hsb[2] > 0.3;
 	}
 
 	/**
@@ -614,15 +619,14 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * 
 	 * @param color
 	 *            The RGB colours for the pixel.
-	 * @param hsbvals
+	 * @param hsb
 	 *            The HSV values for the pixel.
 	 * 
 	 * @return True if the RGB and HSV values are within the defined thresholds
 	 *         (and thus the pixel is part of the ball), false otherwise.
 	 */
 	private boolean isBall(Color c, float[] hsb) {
-		return (c.getRed() > 125 && c.getGreen() < 50 && c.getBlue() < 50 && hsb[1] > 140);
-		// Sat > 140
+		return (c.getRed() > 125 && c.getGreen() < 50 && c.getBlue() < 50 && hsb[1] > 0.5f);
 	}
 
 	/**
@@ -631,15 +635,15 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * 
 	 * @param color
 	 *            The RGB colours for the pixel.
-	 * @param hsbvals
+	 * @param hsb
 	 *            The HSV values for the pixel.
 	 * 
 	 * @return True if the RGB and HSV values are within the defined thresholds
 	 *         (and thus the pixel is part of the yellow T), false otherwise.
 	 */
 	private boolean isYellow(Color c, float[] hsb) {
-		return (c.getRed() > 130 && c.getGreen() > 70 && c.getGreen() < 120 && c
-				.getBlue() < 40);
+		return (c.getRed() > 140 && c.getGreen() > 70 && c.getGreen() < 120 
+				&& c.getBlue() < 50 && hsb[1] > 0.6f && hsb[2] > 0.25f);
 	}
 
 	/**
@@ -648,7 +652,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * 
 	 * @param color
 	 *            The RGB colours for the pixel.
-	 * @param hsbvals
+	 * @param hsb
 	 *            The HSV values for the pixel.
 	 * 
 	 * @return True if the RGB and HSV values are within the defined thresholds
@@ -656,9 +660,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 */
 	private boolean isBlue(Color c, float[] hsb) {
 		return (c.getRed() > 0 && c.getRed() < 50 && c.getGreen() > 50
-				&& c.getGreen() < 100 && c.getBlue() > 70 && c.getBlue() < 150
-				&& 110 < hsb[0] && hsb[0] < 140 && hsb[1] > 120 && 70 < hsb[2] && hsb[2] < 100);
-		// 110 < Hue < 140 ; Sat > 120 ; 70 < Val < 100;
+				&& c.getGreen() < 100 && c.getBlue() > 75 && c.getBlue() < 150
+				&& 0.4f < hsb[0] && hsb[0] < 0.55f && hsb[1] > 0.45f && 0.2f < hsb[2] && hsb[2] < 0.5f);
 	}
 
 	/**

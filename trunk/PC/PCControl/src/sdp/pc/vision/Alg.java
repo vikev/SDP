@@ -73,7 +73,12 @@ public class Alg {
 	}
 
 	/**
-	 * Calculates the length of a line between two points
+	 * Calculates the length of a line between two points, 
+	 * i.e. the distance between the points
+	 * 
+	 * @param a - the first point
+	 * @param b - the second point
+	 * @return distance between a and b
 	 */
 	public static double lineSize(Point2 a, Point2 b) {
 		double s = (double) (b.getX() - a.getX());
@@ -82,7 +87,13 @@ public class Alg {
 	}
 
 	
-	
+	/**
+	 * Given any set of points, returns a linked list containing the edges of the
+	 * smallest convex polygon that can be fit around the given set of points.
+	 * 
+	 * @param pts
+	 * @return a LinkedList of Point2's, containing the edges of the surrounding polygon
+	 */
 	public static LinkedList<Point2> convexHull(ArrayList<Point2> pts) {
 		
 		Point2 pHull = pts.get(0);
