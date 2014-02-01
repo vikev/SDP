@@ -1,21 +1,13 @@
 package sdp.pc.relay;
 
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.geom.AffineTransform;
-import java.awt.image.ColorModel;
 import java.io.*;
 import java.net.*;
 
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 
 import sdp.pc.common.Constants;
-import sun.misc.Signal;
-import sun.misc.SignalHandler;
 
 public class TCPClient {
 	public void run() {

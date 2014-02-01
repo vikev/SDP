@@ -7,6 +7,7 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -38,26 +39,26 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private static final int WIDTH = 640, HEIGHT = 480,
 			VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL, CHANNEL = 0,
 			X_FRAME_OFFSET = 1, Y_FRAME_OFFSET = 25;
-
-	private static final int PLAYER_RADIUS = 18;
-
 	private static final String DEVICE = "/dev/video0";
-
-	private static final double VECTOR_THRESHOLD = 3.0;
-
-	private static boolean brightnessCalculated = false;
-	private static float[] minMaxBrigthness;
-	private static float[] cHsb;
-
 	private VideoDevice videoDevice;
 	private FrameGrabber frameGrabber;
+	
+	private static final int PLAYER_RADIUS = 18;
+	private static final double VECTOR_THRESHOLD = 3.0;
+
 	private JLabel label;
 	private JFrame frame;
-	private Color[][] rgb = new Color[700][520];
-	private float[][][] hsb = new float[700][520][3];
+	private static Color[][] rgb = new Color[700][520];
+	private static float[][][] hsb = new float[700][520][3];
+	private static float[] cHsb;
+	private static ArrayList<Point2> pitchPoints = new ArrayList<Point2>();
 	private static WorldState state = new WorldState();
 	long initialTime; // For FPS calculation
-
+	
+	// Used for normalisation (first float is max brightness, second is min brightness)
+	private static float[] minMaxBrightness = {1.0f,0.0f};
+	// Used to denote if video feed has been pre-processed
+	private static int preprocessed = 0; // 'Int' so that system can wait a few frames first 
 	// Used for calculating direction the ball is heading
 	static Point2[] prevFramePos = new Point2[10];
 
@@ -113,39 +114,46 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				System.err.println("Unable to capture frame:");
 				e.printStackTrace();
 			}
-
+			
 			public void nextFrame(VideoFrame frame) {
 				initialTime = System.currentTimeMillis(); // for FPS
 				BufferedImage frameImage = frame.getBufferedImage();
 				frame.recycle();
-				processImage(frameImage);
+				if (preprocessed<25) preprocessed++;
+				else if (preprocessed==25) preprocess(frameImage);
+				else processImage(frameImage);
 			}
 		});
-
+		
 		frameGrabber.startCapture();
-
 	}
+	
+	private static void preprocess(BufferedImage image) {
+		preprocessed++;
+		
+		ArrayList<Point2> whitePoints = new ArrayList<Point2>();
+		// Find borders
+		for (int row = Constants.TABLE_MIN_Y; row < Constants.TABLE_MAX_Y; row++) {
+			for (int column = Constants.TABLE_MIN_X; column < Constants.TABLE_MAX_X; column++) {
 
-	/**
-	 * Checks whether a given point is in the pitch
-	 */
-	private static boolean pointInPitch(Point2 q) {
-		int x = q.getX();
-		int y = q.getY();
-		if (x < Constants.TABLE_MAX_X && x > Constants.TABLE_MIN_X
-				&& y < Constants.TABLE_MAX_Y && y > Constants.TABLE_MIN_Y) {
-			return true;
+				//Color pixelColorRGB = new Color(image.getRGB(column, row));
+				Color pixelColorRGB = normaliseColor(image, row, column);
+				Point2 p = new Point2(column, row);
+				if (isWhite(pixelColorRGB, cHsb)) {
+					whitePoints.add(p);
+				}
+			}
 		}
-		return false;
-	}
 
-	/**
-	 * Calculates the length of a line between two points
-	 */
-	private static double lineSize(Point2 a, Point2 b) {
-		double s = (double) (b.getX() - a.getX());
-		double t = (double) (b.getY() - b.getY());
-		return Math.sqrt(s * s + t * t);
+		LinkedList<Point2> borders = Alg.convexHull(whitePoints);
+		for (int row = Constants.TABLE_MIN_Y; row < Constants.TABLE_MAX_Y; row++) {
+			for (int column = Constants.TABLE_MIN_X; column < Constants.TABLE_MAX_X; column++) {
+				Point2 p = new Point2(column, row);
+				if (Alg.isInHull(borders, p)) pitchPoints.add(p);
+			}
+		}
+		
+		minMaxBrightness = findMinMaxBrigthness(image);
 	}
 
 	/**
@@ -159,12 +167,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private void processImage(BufferedImage image) {
 
 		// Initialise color recognition values
-		int ballPixCounter = 0;
+		int ballCounter = 0;
 		Point2 ballPos = new Point2();
-		if (!brightnessCalculated) {
-			minMaxBrigthness = findMinMaxBrigthness(image);
-			brightnessCalculated = true;
-		}
 
 		int yellowLeftCounter = 0;
 		Point2 yellowLeftPos = new Point2();
@@ -183,65 +187,64 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		ArrayList<Point2> blueRightPoints = new ArrayList<Point2>();
 		
 		// Loop through all table values, recognizing pixel regions as necessary
-		for (int row = Constants.TABLE_MIN_Y; row < Constants.TABLE_MAX_Y; row++) {
-			for (int column = Constants.TABLE_MIN_X; column < Constants.TABLE_MAX_X; column++) {
+		for (Point2 p : pitchPoints) {
+			int column = p.getX();
+			int row = p.getY();
 
-				Point2 p = new Point2(column, row);
+			//Color pixelColorRGB = new Color(image.getRGB(column, row));
+			Color pixelColorRGB = normaliseColor(image, row, column);
 
-				Color pixelColorRGB = normaliseColor(image, row, column);
+			// Find "Ball" pixels
+			if (isBall(pixelColorRGB, cHsb)) {
+				ballPos = ballPos.add(p);
+				ballCounter++;
+				// Makes red pixels orange - for debugging
+				// image.setRGB(column, row, Color.ORANGE.getRGB());
+			}
 
-				// Find "Ball" pixels
-				if (isBall(pixelColorRGB, cHsb)) {
-					ballPos = ballPos.add(p);
-					ballPixCounter++;
-					// Makes red pixels orange - for debugging
-					// image.setRGB(column, row, Color.ORANGE.getRGB());
+			// Find Yellow pixels
+			if (isYellow(pixelColorRGB, cHsb)) {
+				if (column < Constants.TABLE_CENTRE_X) {
+					yellowLeftPos = yellowLeftPos.add(p);
+					yellowLeftCounter++;
+					yellowLeftPoints.add(new Point2(column, row));
+
+					// Makes yellow pixels orange
+					image.setRGB(column, row, Color.ORANGE.getRGB());
+				} else {
+					yellowRightPos = yellowRightPos.add(p);
+					yellowRightCounter++;
+					yellowRightPoints.add(new Point2(column, row));
+
+					// Makes yellow pixels orange
+					image.setRGB(column, row, Color.ORANGE.getRGB());
 				}
+			}
 
-				// Find Yellow pixels
-				if (isYellow(pixelColorRGB, cHsb)) {
-					if (column < Constants.TABLE_CENTRE_X) {
-						yellowLeftPos = yellowLeftPos.add(p);
-						yellowLeftCounter++;
-						yellowLeftPoints.add(new Point2(column, row));
 
-						// Makes yellow pixels orange
-						image.setRGB(column, row, Color.ORANGE.getRGB());
-					} else {
-						yellowRightPos = yellowRightPos.add(p);
-						yellowRightCounter++;
-						yellowRightPoints.add(new Point2(column, row));
+			// Find Blue pixels
+			if (isBlue(pixelColorRGB, cHsb)) {
+				if (column < Constants.TABLE_CENTRE_X) {
+					blueLeftPos = blueLeftPos.add(p);
+					blueLeftCounter++;
+					blueLeftPoints.add(new Point2(column, row));
 
-						// Makes yellow pixels orange
-						image.setRGB(column, row, Color.ORANGE.getRGB());
-					}
-				}
-				
+					// Makes blue pixels more blue
+					image.setRGB(column, row, Color.BLUE.getRGB());
+				} else {
+					blueRightPos = blueRightPos.add(p);
+					blueRightCounter++;
+					blueRightPoints.add(new Point2(column, row));
 
-				// Find Blue pixels
-				if (isBlue(pixelColorRGB, cHsb)) {
-					if (column < Constants.TABLE_CENTRE_X) {
-						blueLeftPos = blueLeftPos.add(p);
-						blueLeftCounter++;
-						blueLeftPoints.add(new Point2(column, row));
-
-						// Makes blue pixels more blue
-						image.setRGB(column, row, Color.BLUE.getRGB());
-					} else {
-						blueRightPos = blueRightPos.add(p);
-						blueRightCounter++;
-						blueRightPoints.add(new Point2(column, row));
-
-						// Makes blue pixels more blue
-						image.setRGB(column, row, Color.BLUE.getRGB());
-					}
+					// Makes blue pixels more blue
+					image.setRGB(column, row, Color.BLUE.getRGB());
 				}
 			}
 		}
-
+		
 		// Get average position of ball
-		if (ballPixCounter > 0)
-			ballPos = ballPos.div(ballPixCounter);
+		if (ballCounter > 0)
+			ballPos = ballPos.div(ballCounter);
 
 		// Get average position of left yellow bot
 		if (yellowLeftCounter > 0) {
@@ -280,7 +283,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		for (Point2 p : prevFramePos)
 			avgPrevPos = avgPrevPos.add(p);
 		avgPrevPos = avgPrevPos.div(prevFramePos.length);
-		avgPrevPos = avgPrevPos.subtract(ballPos).mult(5).add(ballPos);
+		avgPrevPos = avgPrevPos.subtract(ballPos).mult(-5).add(ballPos);
 
 		// TODO: fix orientation code
 		double yellowOrientation = 0;
@@ -299,31 +302,31 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		Graphics frameGraphics = label.getGraphics();
 
 		// Ball location (and direction)
-		if (pointInPitch(ballPos)) {
+		if (Alg.pointInPitch(ballPos)) {
 			imageGraphics.setColor(Color.red);
 			imageGraphics.drawLine(0, ballPos.getY(), 640, ballPos.getY());
 			imageGraphics.drawLine(ballPos.getX(), 0, ballPos.getX(), 480);
-			if (lineSize(ballPos, avgPrevPos) > VECTOR_THRESHOLD) {
+			if (Alg.lineSize(ballPos, avgPrevPos) > VECTOR_THRESHOLD) {
 				imageGraphics.drawLine(ballPos.getX(), ballPos.getY(),
 						avgPrevPos.getX(), avgPrevPos.getY());
 			}
 		}
 
 		// Yellow robots locations
-		if (pointInPitch(yellowLeftPos)) {
+		if (Alg.pointInPitch(yellowLeftPos)) {
 			imageGraphics.setColor(Color.yellow);
 			imageGraphics.drawOval(yellowLeftPos.getX() - 15,
 					yellowLeftPos.getY() - 15, 30, 30);
 		}
 
-		if (pointInPitch(yellowRightPos)) {
+		if (Alg.pointInPitch(yellowRightPos)) {
 			imageGraphics.setColor(Color.yellow);
 			imageGraphics.drawOval(yellowRightPos.getX() - 15,
 					yellowRightPos.getY() - 15, 30, 30);
 		}
 
 		// draw orientation (temp)
-		if (pointInPitch(yellowLeftPos)) {
+		if (Alg.pointInPitch(yellowLeftPos)) {
 			imageGraphics.drawLine(yellowLeftPos.getX(), yellowLeftPos.getY(),
 					blackPos.getX(), blackPos.getY());
 		}
@@ -331,13 +334,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// TODO: Implement blackpos for all bots
 
 		// Blue robots locations
-		if (pointInPitch(blueLeftPos)) {
+		if (Alg.pointInPitch(blueLeftPos)) {
 			imageGraphics.setColor(Color.blue);
 			imageGraphics.drawOval(blueLeftPos.getX() - 15,
 					blueLeftPos.getY() - 15, 30, 30);
 		}
 
-		if (pointInPitch(blueRightPos)) {
+		if (Alg.pointInPitch(blueRightPos)) {
 			imageGraphics.setColor(Color.blue);
 			imageGraphics.drawOval(blueRightPos.getX() - 15,
 					blueRightPos.getY() - 15, 30, 30);
@@ -402,7 +405,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		frameGraphics.drawImage(image, 0, 0, WIDTH, HEIGHT, null);
 	}
 
-	private Color normaliseColor(BufferedImage image, int row, int column) {
+	private static Color normaliseColor(BufferedImage image, int row, int column) {
 		// Normalise color values:
 		// Update RGB handle
 		Color pixelColorRGB = new Color(image.getRGB(column, row));
@@ -417,7 +420,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		float br = hsb[column][row][2];
 		
 		//hsb is of the form {max, min}
-		br = (br - minMaxBrigthness[1]) / minMaxBrigthness[0];
+		br = (br - minMaxBrightness[1]) / minMaxBrightness[0];
 		image.setRGB(column, row, Color.HSBtoRGB(hsb[column][row][0],
 				hsb[column][row][1], br));
 
@@ -471,6 +474,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		if(pts.size() == 0)
 			return new Point2(colorCenter);
 		
+		@SuppressWarnings("unused")
 		List<Point2> hull = Alg.convexHull(pts);
 		
 		//TODO: 
@@ -489,8 +493,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * @param hsb
 	 * @return
 	 */
+	@SuppressWarnings("unused")
 	private boolean isBlack(Color rgb, float[] hsb) {
 		return 0.6 < hsb[0] && hsb[0] < 0.67 && hsb[1] > 0.5;
+	}
+	
+	private static boolean isWhite(Color rgb, float[] hsb) {
+		return hsb[0]>225 && hsb[2]>120;
 	}
 	
 	private boolean isGreen(Color rgb, float[] hsb) {
@@ -511,7 +520,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the ball), false otherwise.
 	 */
 	private boolean isBall(Color c, float[] hsb) {
-		return (c.getRed() > 125 && c.getGreen() < 40 && c.getBlue() < 30 && hsb[1] > 140);
+		return (c.getRed() > 125 && c.getGreen() < 50 && c.getBlue() < 50 && hsb[1] > 140);
 		// Sat > 140
 	}
 
@@ -542,27 +551,28 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * @return The list of two float HSB values representing the brightest and
 	 *         the darkest values
 	 */
-	private float[] findMinMaxBrigthness(BufferedImage image) {
+	private static float[] findMinMaxBrigthness(BufferedImage image) {
 		float maxBr = 0.0f;
 		float minBr = 1.0f;
 
-		for (int row = Constants.TABLE_MIN_Y; 
+		/*for (int row = Constants.TABLE_MIN_Y; 
 				row < Constants.TABLE_MAX_Y; row++) {
 			for (int column = Constants.TABLE_MIN_X; 
-					column < Constants.TABLE_MAX_X; column++) {
-				
-				Color change = new Color(image.getRGB(column, row));
-				float[] cHsb = hsb[column][row];
-				Color.RGBtoHSB(change.getRed(), change.getBlue(),
-						change.getGreen(), cHsb);
-				float br = hsb[column][row][2];
-				if (br >= maxBr) {
-					maxBr = br;
-				}
+					column < Constants.TABLE_MAX_X; column++) {*/
+		for (Point2 p : pitchPoints) {
+			int column = p.getX();
+			int row = p.getY();
+			Color change = new Color(image.getRGB(column, row));
+			float[] cHsb = hsb[column][row];
+			Color.RGBtoHSB(change.getRed(), change.getBlue(),
+					change.getGreen(), cHsb);
+			float br = hsb[column][row][2];
+			if (br >= maxBr) {
+				maxBr = br;
+			}
 
-				if (br <= minBr) {
-					minBr = br;
-				}
+			if (br <= minBr) {
+				minBr = br;
 			}
 		}
 		return new float[] { maxBr, minBr };

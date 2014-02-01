@@ -2,9 +2,9 @@ package sdp.pc.vision;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
+
+import sdp.pc.common.Constants;
 
 public class Alg {
 
@@ -58,10 +58,32 @@ public class Alg {
 
 
 	}
+	
+	/**
+	 * Checks whether a given point is in the pitch
+	 */
+	public static boolean pointInPitch(Point2 q) {
+		int x = q.getX();
+		int y = q.getY();
+		if (x < Constants.TABLE_MAX_X && x > Constants.TABLE_MIN_X
+				&& y < Constants.TABLE_MAX_Y && y > Constants.TABLE_MIN_Y) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Calculates the length of a line between two points
+	 */
+	public static double lineSize(Point2 a, Point2 b) {
+		double s = (double) (b.getX() - a.getX());
+		double t = (double) (b.getY() - b.getY());
+		return Math.sqrt(s * s + t * t);
+	}
 
 	
 	
-	public static List<Point2> convexHull(ArrayList<Point2> pts) {
+	public static LinkedList<Point2> convexHull(ArrayList<Point2> pts) {
 		
 		Point2 pHull = pts.get(0);
 		Point2 endPoint;
@@ -86,4 +108,31 @@ public class Alg {
 		
 		return p;
 	}
+	
+	/**
+	 * Checks if a point is inside a convex polygon, where the polygon is given by a 
+	 * linked list containing its border points (this is usually calculated with 
+	 * the convexHull method). 
+	 * Method taken from an answer in Stack Overflow.
+	 * 
+	 * @param borderPoints - points on the polygon's border
+	 * @param point
+	 * @return true if the point is within the polygon, false otherwise
+	 */
+	public static boolean isInHull(LinkedList<Point2> borderPoints, Point2 point) {
+		int i;
+		int j;
+		boolean result = false;
+		for (i = 0, j = borderPoints.size() - 1; i < borderPoints.size(); j = i++) {
+			if ((borderPoints.get(i).getY() > point.getY()) != (borderPoints.get(j).getY() > point.getY()) 
+				&& (point.getX() < (borderPoints.get(j).getX() - borderPoints.get(i).getX()) * 
+				(point.getY() - borderPoints.get(i).getY()) / (borderPoints.get(j).getY()-borderPoints.get(i).getY())
+				+ borderPoints.get(i).getX())) {
+				result = !result;
+			}
+		}
+		return result;
+	}
+	
+	
 }

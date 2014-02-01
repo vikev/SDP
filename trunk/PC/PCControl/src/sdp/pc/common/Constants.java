@@ -9,7 +9,7 @@ import sdp.pc.vision.Point2;
  */
 public class Constants {
 	// Socket data
-	public static final int PORT = 4564;
+	public static final int PORT = 4544;
 	public static final int SERVER_PORT = 1999;
 	public static final int CLIENT_PORT = 4456;
 	public static final String HOST = "localhost";
@@ -31,7 +31,10 @@ public class Constants {
 	public static final int GOAL_LEFT = 0, GOAL_RIGHT = 1;
 	public static final int DIRECTION_LEFT = 0, DIRECTION_RIGHT = 1;
 
-	public static final int TABLE_MIN_X = 60, TABLE_MIN_Y = 90,
+	/*public static final int TABLE_MIN_X = 60, TABLE_MIN_Y = 90,
 			TABLE_MAX_X = 600, TABLE_MAX_Y = 380;
-	public static final int TABLE_CENTRE_X = 330;
+	public static final int TABLE_CENTRE_X = 330;*/
+	public static final int TABLE_MIN_X = 1, TABLE_MIN_Y = 1,
+	TABLE_MAX_X = 639, TABLE_MAX_Y = 479;
+public static final int TABLE_CENTRE_X = 330;
 }
