@@ -342,13 +342,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		if (Alg.pointInPitch(blueLeftPos)) {
 			drawCircle(blueLeftPos, imageGraphics, Constants.BLUE_BLEND,
 					Constants.ROBOT_CIRCLE_RADIUS);
-			findOrientation(blueLeftPos,imageGraphics);
+			findOrientation(blueLeftPos, imageGraphics);
 		}
 
 		if (Alg.pointInPitch(blueRightPos)) {
 			drawCircle(blueRightPos, imageGraphics, Constants.BLUE_BLEND,
 					Constants.ROBOT_CIRCLE_RADIUS);
-			findOrientation(blueRightPos,imageGraphics);
+			findOrientation(blueRightPos, imageGraphics);
 		}
 
 		// Draw centre line
@@ -433,8 +433,15 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 									.sin(angBest)));
 			drawCircle(pt, gfx, Constants.GRAY_BLEND,
 					Constants.ROBOT_HEAD_RADIUS);
+			gfx.drawLine(
+					centroid.getX(),
+					centroid.getY(),
+					(int)(centroid.getX() - Constants.HEAD_ENUM_RADIUS*2.0
+							* Math.cos(angBest)),
+					(int)(centroid.getY() - Constants.HEAD_ENUM_RADIUS*2.0
+							* Math.sin(angBest)));
 		}
-		return (angBest+Math.PI)*180.0/Math.PI;
+		return (angBest + Math.PI) * 180.0 / Math.PI;
 	}
 
 	private void drawCircle(Point2 centrePt, Graphics gfx, Color c, int radius) {
