@@ -20,12 +20,12 @@ public class Milestone3 {
 
 	private static WorldState state = new WorldState();
 
-	public static void main(String[] args) throws V4L4JException, InterruptedException {
+	public static void main(String[] args) throws Exception {
 		Vision vision = new Vision(state);
 		Thread.sleep(3000);
 
-		Driver driver = new Driver(new TCPClient(Constants.HOST,
-				Constants.ATTACKER_PORT));
+		Driver driver = new Driver(new TCPClient(ChooseRobot.dialog()));
+
 		try {
 			driver.stop();
 		} catch (Exception e1) {
@@ -49,12 +49,14 @@ public class Milestone3 {
 	public static void kickStationaryBall(WorldState state, Vision vision, Driver driver) {
 		int diffX, diffY, cantakeShot, checkX;
 		Point2 ballPosition = state.getBallPosition();
-		System.out.println(ballPosition);
+		System.out.println("ballAt " + ballPosition);
 
 		// assume stored robot position refers to mean position of all pixels
 		// in the mask
 		Point2 robotPosition = state.getRobotPosition(0, 0);
+		System.out.println("robot at" + robotPosition);
 		Point2 goalCentre = new Point2(250, 250);
+		System.out.println("goal centre at" + goalCentre);
 		if (state.targetGoal == 1) {
 			goalCentre = state.getLeftGoalCentre();
 			checkX = robotPosition.getX() - 10;
@@ -154,15 +156,28 @@ public class Milestone3 {
 
 	public static void facePoint(WorldState state, Driver driver,
 			int Xcoordinate, int Ycoordinate) {
-		int deltaY, deltaX;
+		double deltaY, deltaX;
 		Point2 robotPosition = state.getRobotPosition(0, 0);
+		System.out.println("robotPosition");
+		System.out.println(robotPosition);
 		Point2 ballPosition = state.getBallPosition();
+		System.out.println("ball position");
+		System.out.println(ballPosition);
 		double robotOrientation = state.getRobotFacing(0, 0);
+		System.out.println("robotOrientation");
+		System.out.println(robotOrientation);
 		deltaX = robotPosition.getX() - ballPosition.getX();
+		System.out.println("deltaX");
+		System.out.println(deltaX);
 		deltaY = ballPosition.getY() - robotPosition.getY();
+		System.out.println("deltaY");
+		System.out.println(deltaY);
 		double targetAngle = Math.atan(deltaY / deltaX) * 360 / (2 * Math.PI);
+		System.out.println("targetAngle");
 		System.out.println(targetAngle);
 		double rotateBy = robotOrientation - targetAngle;
+		System.out.println("Rotate by:");
+		System.out.println(rotateBy);
 		while (Math.abs(rotateBy) > 20) {
 			try {
 				if (rotateBy > 0) {
@@ -175,9 +190,16 @@ public class Milestone3 {
 					if (-rotateBy > 180) {
 						driver.turnRight(5);
 					} else {
+						System.out.println("Here");
 						driver.turnLeft(5);
 					}
 				}
+				break;
+				//try {
+				//    Thread.sleep(1000);
+				//} catch(InterruptedException ex) {
+				//    Thread.currentThread().interrupt();
+				//}
 			} catch (Exception e1) {
 				System.out
 						.println("Exception encountered while trying to turn to face point "
