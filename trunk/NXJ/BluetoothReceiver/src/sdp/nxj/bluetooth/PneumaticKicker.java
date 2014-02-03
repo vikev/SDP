@@ -1,5 +1,4 @@
 package sdp.nxj.bluetooth;
-import lejos.nxt.Motor;
 import lejos.nxt.MotorPort;
 import lejos.nxt.addon.RCXMotor;
 
