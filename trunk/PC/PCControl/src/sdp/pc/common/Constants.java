@@ -10,10 +10,13 @@ import sdp.pc.vision.Point2;
  * @author unknown
  */
 public class Constants {
+	// Robot codes
+	public static final int ATTACKER = 1;
+	public static final int DEFENDER = 2;
+	
 	// Socket data
-	public static final int PORT = 1313;
-	public static final int SERVER_PORT = 1414;
-	public static final int CLIENT_PORT = 1515;
+	public static final int ATTACKER_PORT = 1313;
+	public static final int DEFENDER_PORT = 5612;
 	public static final String HOST = "localhost";
 
 	// Arbitrary point values taken from image of pitch; these are likely to
@@ -32,6 +35,8 @@ public class Constants {
 	// related to Constants
 	public static final int GOAL_LEFT = 0, GOAL_RIGHT = 1;
 	public static final int DIRECTION_LEFT = 0, DIRECTION_RIGHT = 1;
+	public static final int ROBOT_YELLOW_LEFT = 0, ROBOT_BLUE_LEFT = 1,
+			ROBOT_YELLOW_RIGHT = 2, ROBOT_BLUE_RIGHT = 3;
 
 	public static final int TABLE_MIN_X = 1, TABLE_MIN_Y = 1,
 			TABLE_MAX_X = 639, TABLE_MAX_Y = 479;
@@ -41,8 +46,8 @@ public class Constants {
 			HEAD_ARC_FIDELITY = 36;
 
 	public static final Color GRAY_BLEND = new Color(1.0f, 1.0f, 1.0f, 0.5f),
-			BLUE_BLEND = new Color(0.0f,0.0f,1.0f,0.5f),
-			YELLOW_BLEND = new Color(1.0f,1.0f,0.0f,0.5f);
+			BLUE_BLEND = new Color(0.0f, 0.0f, 1.0f, 0.5f),
+			YELLOW_BLEND = new Color(1.0f, 1.0f, 0.0f, 0.5f);
 
 	public static final double HEAD_ENUM_RADIUS = 12.0;
 }

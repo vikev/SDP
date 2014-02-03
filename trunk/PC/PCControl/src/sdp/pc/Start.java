@@ -11,6 +11,7 @@ import java.net.UnknownHostException;
 import lejos.pc.comm.NXTComm;
 import lejos.pc.comm.NXTCommFactory;
 import lejos.pc.comm.NXTInfo;
+import sdp.pc.common.ChooseRobot;
 import sdp.pc.common.Constants;
 import sdp.pc.robot.btcomm.BTConnection;
 
@@ -20,17 +21,31 @@ public class Start {
 	private static final String A_NAME = "SDP 9A", A_MAC = "0016530BB5A3",
 			B_NAME = "SDP 9B", B_MAC = "001653077531";
 
-	public static void main(String[] args) {
-
+	public static void main(String[] args) throws Exception {
 		ServerSocket serverSocket = null;
-		NXTInfo nxt1 = new NXTInfo(NXTCommFactory.BLUETOOTH, B_NAME, B_MAC);
+		NXTInfo nxt = null;
+		NXTInfo defender = new NXTInfo(NXTCommFactory.BLUETOOTH, B_NAME, B_MAC);
+		NXTInfo attacker = new NXTInfo(NXTCommFactory.BLUETOOTH, A_NAME, A_MAC);
+		int port;
 
-		//NXTInfo nxt1 = new NXTInfo(NXTCommFactory.BLUETOOTH, A_NAME, A_MAC);
+		switch (ChooseRobot.dialog()) {
+		case Constants.ATTACKER:
+			nxt = attacker;
+			port = Constants.ATTACKER_PORT;
+			break;
+		case Constants.DEFENDER:
+			nxt = defender;
+			port = Constants.DEFENDER_PORT;
+			break;
+		default:
+			Exception e = new Exception("Couldn't select a robot...");
+			throw e;
+		}
 
-		BTConnection conn1 = new BTConnection(nxt1, NXTComm.PACKET);
+		BTConnection conn1 = new BTConnection(nxt, NXTComm.PACKET);
 
 		try {
-			serverSocket = new ServerSocket(Constants.PORT);
+			serverSocket = new ServerSocket(port);
 			// If you get an "Address already in use" error, change the
 			// port in Constants to some other 4-digit number above 1024
 			String input = "";
