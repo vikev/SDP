@@ -23,9 +23,9 @@ public class Start {
 	public static void main(String[] args) {
 
 		ServerSocket serverSocket = null;
-		// NXTInfo nxt1 = new NXTInfo(NXTCommFactory.BLUETOOTH, B_NAME, B_MAC);
+		NXTInfo nxt1 = new NXTInfo(NXTCommFactory.BLUETOOTH, B_NAME, B_MAC);
 
-		NXTInfo nxt1 = new NXTInfo(NXTCommFactory.BLUETOOTH, A_NAME, A_MAC);
+		//NXTInfo nxt1 = new NXTInfo(NXTCommFactory.BLUETOOTH, A_NAME, A_MAC);
 
 		BTConnection conn1 = new BTConnection(nxt1, NXTComm.PACKET);
 

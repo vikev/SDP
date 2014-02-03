@@ -13,20 +13,19 @@ public class Milestone2 {
 
 	private static WorldState state = new WorldState();
 
-	public static void main(String[] args) throws V4L4JException,
-			InterruptedException {
-		new Vision(state);
+	public static void main(String[] args) throws V4L4JException, InterruptedException {
+		Vision vision = new Vision(state);
 		Thread.sleep(3000);
 
 		Driver driver = new Driver(new TCPClient(Constants.HOST,
-				Constants.CLIENT_PORT));
+				Constants.PORT));
 		try {
 			driver.stop();
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
 		Thread.sleep(500);
-		kickStationaryBall(state, driver);
+		kickStationaryBall(state, vision, driver);
 		System.out.println("Finished attempting to kick ball");
 	}
 
@@ -40,9 +39,10 @@ public class Milestone2 {
 	// to get behind it to take a shot at the goal.
 	// * Create meaningful exception handling code,
 	@SuppressWarnings("unused")
-	public static void kickStationaryBall(WorldState state, Driver driver) {
+	public static void kickStationaryBall(WorldState state, Vision vision, Driver driver) {
 		int diffX, diffY, cantakeShot, checkX;
 		Point2 ballPosition = state.getBallPosition();
+		System.out.println(ballPosition);
 
 		// assume stored robot position refers to mean position of all pixels
 		// in the mask

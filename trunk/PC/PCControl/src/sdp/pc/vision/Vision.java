@@ -100,6 +100,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		for (int i = 0; i < 10; i++)
 			prevFramePos[i] = new Point2(0, 0);
 
+		Vision.state = state;
 		
 		try {
 			initFrameGrabber();
