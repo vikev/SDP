@@ -6,6 +6,44 @@ public class Kmeans {
 
 	private static final int maxIterations = 50;
 	
+
+	/**
+	 * Does a k-means search on the given points with given k
+	 * The initial centers are initialized randomly. 
+	 * @param points the points to do a k-means on
+	 * @param k the amount of clusters
+	 * @return a partitioning of the points in k clusters
+	 */
+	public static Cluster[] doKmeans(ArrayList<Point2> points, int k) {
+		int maxX = Integer.MIN_VALUE,
+			maxY = Integer.MIN_VALUE,
+			minX = Integer.MAX_VALUE,
+			minY = Integer.MAX_VALUE;
+		for(Point2 p : points) {
+			if(p.getX() < minX)
+				minX = p.getX();
+			if(p.getX() > maxX)
+				maxX = p.getX();
+			if(p.getY() < minY)
+				minY = p.getY();
+			if(p.getY() > maxY)
+				maxY = p.getY();
+		}
+		int dx = maxX - minX;
+		int dy = maxY - minY;
+		Point2[] centers = new Point2[k];
+		for(int i = 0; i < k; i++)
+			centers[i] = new Point2((int)(Math.random() * dx + minX) , (int)(Math.random() * dy + minY));
+		return doKmeans(points, centers);
+	}
+	
+	/**
+	 * Does a k-means search on the given points, with given initial centers
+	 * The k value is determined by the amount of initial centers provided
+	 * @param points the points to do a k-means on
+	 * @param means the initial centers
+	 * @return a partitioning of the points in k clusters
+	 */
 	public static Cluster[] doKmeans(ArrayList<Point2> points, Point2... means) {
 		
 		int k = means.length;
@@ -56,15 +94,17 @@ public class Kmeans {
 			distChange = 0;
 			for(int i = 0; i < k; i++) {
 				int cn = clusters[i].pointsCount();
-				Point2 newMean = newMeans[i].div(cn);
-				distChange += newMean.distance(clusters[i].getMean());
-				clusters[i].setMean(newMean);
+				if(cn > 0) {
+					Point2 newMean = newMeans[i].div(cn);
+					distChange += newMean.distance(clusters[i].getMean());
+					clusters[i].setMean(newMean);
+				}
 			}
 			
 		}
 		//k clusters, i.e. all clusters must move by 1 on average (or less) to terminate
 		//or we must reach the max iterations target
-		while(distChange < k && ++iterations < maxIterations);	
+		while(distChange > k && ++iterations < maxIterations);	
 		
 		return clusters;
 	}
