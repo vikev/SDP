@@ -49,7 +49,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private static Color[][] rgb = new Color[700][520];
 	private static double[][] angleSmoothing = new double[4][ANGLE_SMOOTHING_FRAME_COUNT];
 	private static float[][][] hsb = new float[700][520][3];
-	private static float[] cHsb;
+	private static float[] cHsb = new float[3];
 	private static int angSmoothingWriteIndex = 0;
 	private static int[] pointsCount = new int[4];
 	private static ArrayList<Point2> pitchPoints = new ArrayList<Point2>();
@@ -106,7 +106,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		for (int i = 0; i < 10; i++)
 			prevFramePos[i] = new Point2(0, 0);
 
-		Vision.state = state;	
+		Vision.state = state;
 
 		try {
 			initFrameGrabber();
@@ -160,7 +160,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private static void preprocess(BufferedImage image) {
 		preprocessed++;
 
-
 		ArrayList<Point2> whitePoints = new ArrayList<Point2>();
 
 		// Find borders
@@ -193,6 +192,23 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * The information from it (positions, orientations, predictions) will be
 	 * passed to a WorldState object (called state) to be used by other files.
 	 * 
+	 * I've analysed the performance of running this script using flat
+	 * millisecond durations. Specifically:
+	 * 
+	 * <ul>
+	 * <li>Initialise colour recognition values: 0ms/frame</li>
+	 * <li>Recognise colour regions: 37ms/frame (36 for normalising only, 1 for
+	 * everything else (!)</li>
+	 * <li>Get average positions: 0ms/frame</li>
+	 * <li>Calculate ball direction: 0ms/frame</li>
+	 * <li>Update world state: 0ms/frame</li>
+	 * <li>Create graphical representations: 0ms/frame</li>
+	 * <li>Draw ball location and direction: 0ms/frame</li>
+	 * <li>Shift ball frames: 0ms/frame</li>
+	 * <li>Draw FPS, mouse-position, etc text: 0ms/frame</li>
+	 * <li>Draw final image to screen: 1ms/frame</li>
+	 * </ul>
+	 * 
 	 * @param image
 	 *            the image to process
 	 */
@@ -224,6 +240,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			int row = p.getY();
 
 			// Color pixelColorRGB = new Color(image.getRGB(column, row));
+
 			Color pixelColorRGB = normaliseColor(image, row, column);
 
 			// Find "Ball" pixels
@@ -544,28 +561,43 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * Uses the HSB colour space to normalise all colours in our desired region
 	 * by brightness, i.e. used to scale the brightness of every pixel on the
 	 * pitch so that the whole range of brightnesses is from 0.0 to 1.0.
+	 * 
+	 * We've analysed the performance of this method as well. Below are some
+	 * timestamps in nanoseconds, denoted using %% in a comment
 	 */
 	private static Color normaliseColor(BufferedImage image, int row, int column) {
 		// Normalise colour values:
 		// Update RGB handle
+		
+		// %% 769 nanoseconds:
 		Color pixelColorRGB = new Color(image.getRGB(column, row));
 		rgb[column][row] = pixelColorRGB;
+		// %%
 
 		// Update HSB handle
+		// %% 1118 nanoseconds:
 		cHsb = hsb[column][row];
 		Color.RGBtoHSB(pixelColorRGB.getRed(), pixelColorRGB.getGreen(),
 				pixelColorRGB.getBlue(), cHsb);
+		// %%
 
 		// Scale the values of the pitch
+		// %% 2584 nanoseconds:
 		float br = hsb[column][row][2];
 
 		// hsb is of the form {max, min}
 		br = (br - minMaxBrightness[1]) / minMaxBrightness[0];
-		if (br<0) br=0; if (br>1) br=1;
+		if (br < 0)
+			br = 0;
+		if (br > 1)
+			br = 1;
 		image.setRGB(column, row,
 				Color.HSBtoRGB(hsb[column][row][0], hsb[column][row][1], br));
-
+		// %%
+		
+		// %% 699 nanoseconds:
 		hsb[column][row] = cHsb;
+		// %%
 		return pixelColorRGB;
 	}
 
@@ -654,8 +686,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of white tape), false otherwise.
 	 */
 	private static boolean isWhite(Color rgb, float[] hsb) {
-		return rgb.getRed() > 70 && rgb.getRed() < 130 && 
-		rgb.getGreen() > 70 && rgb.getGreen() < 130 && hsb[2] > 0.4 && hsb[0] < 0.2;
+		return rgb.getRed() > 70 && rgb.getRed() < 130 && rgb.getGreen() > 70
+				&& rgb.getGreen() < 130 && hsb[2] > 0.4 && hsb[0] < 0.2;
 	}
 
 	/**
@@ -704,7 +736,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the blue T), false otherwise.
 	 */
 	private boolean isBlue(Color c, float[] hsb) {
-		return (c.getRed() < 50 && c.getGreen() < 100 && c.getBlue() > 75 
+		return (c.getRed() < 50 && c.getGreen() < 100 && c.getBlue() > 75
 				&& c.getBlue() < 120 && 0.4f < hsb[0] && hsb[0] < 0.6f
 				&& hsb[1] > 0.5f && 0.2f < hsb[2] && hsb[2] < 0.5f);
 	}
