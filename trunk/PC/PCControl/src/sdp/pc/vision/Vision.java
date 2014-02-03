@@ -158,6 +158,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private static void preprocess(BufferedImage image) {
 		preprocessed++;
 
+
 		ArrayList<Point2> whitePoints = new ArrayList<Point2>();
 
 		// Find borders
@@ -227,8 +228,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			if (isBall(pixelColorRGB, cHsb)) {
 				ballPos = ballPos.add(p);
 				ballCounter++;
-				// Makes red pixels orange - for debugging
-				// image.setRGB(column, row, Color.ORANGE.getRGB());
+				// Makes red pixels more red - for debugging
+				image.setRGB(column, row, Color.RED.getRGB());
 			}
 
 			// Find Yellow pixels
@@ -558,6 +559,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 		// hsb is of the form {max, min}
 		br = (br - minMaxBrightness[1]) / minMaxBrightness[0];
+		if (br<0) br=0; if (br>1) br=1;
 		image.setRGB(column, row,
 				Color.HSBtoRGB(hsb[column][row][0], hsb[column][row][1], br));
 
@@ -650,7 +652,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of white tape), false otherwise.
 	 */
 	private static boolean isWhite(Color rgb, float[] hsb) {
-		return hsb[2] > 0.3;
+		return rgb.getRed() > 70 && rgb.getRed() < 130 && 
+		rgb.getGreen() > 70 && rgb.getGreen() < 130 && hsb[2] > 0.4 && hsb[0] < 0.2;
 	}
 
 	/**
@@ -699,10 +702,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the blue T), false otherwise.
 	 */
 	private boolean isBlue(Color c, float[] hsb) {
-		return (c.getRed() > 0 && c.getRed() < 50 && c.getGreen() > 50
-				&& c.getGreen() < 100 && c.getBlue() > 75 && c.getBlue() < 150
-				&& 0.4f < hsb[0] && hsb[0] < 0.55f && hsb[1] > 0.45f
-				&& 0.2f < hsb[2] && hsb[2] < 0.5f);
+		return (c.getRed() < 50 && c.getGreen() < 100 && c.getBlue() > 75 
+				&& c.getBlue() < 120 && 0.4f < hsb[0] && hsb[0] < 0.6f
+				&& hsb[1] > 0.5f && 0.2f < hsb[2] && hsb[2] < 0.5f);
 	}
 
 	/**
