@@ -352,10 +352,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 		// Update World State
 		state.setBallPosition(ballPos);
-		//System.out.println(yellowLeftPos);
 		state.setRobotPosition(0, 0, yellowLeftPos);
-		System.out.println("yellowOrientation");
-		System.out.println(yellowOrientation);
 		state.setRobotFacing(0, 0, yellowOrientation);
 
 		// Ball location (and direction)

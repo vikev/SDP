@@ -166,13 +166,9 @@ public class Milestone3 {
 		double robotOrientation = state.getRobotFacing(0, 0);
 		System.out.println("robotOrientation");
 		System.out.println(robotOrientation);
-		deltaX = robotPosition.getX() - ballPosition.getX();
-		System.out.println("deltaX");
-		System.out.println(deltaX);
-		deltaY = ballPosition.getY() - robotPosition.getY();
-		System.out.println("deltaY");
-		System.out.println(deltaY);
-		double targetAngle = Math.atan(deltaY / deltaX) * 360 / (2 * Math.PI);
+		deltaX = Math.abs(robotPosition.getX() - ballPosition.getX());
+		deltaY = Math.abs(ballPosition.getY() - robotPosition.getY());
+		double targetAngle = 360 - (Math.atan(deltaY / deltaX) * 360 / (2 * Math.PI));
 		System.out.println("targetAngle");
 		System.out.println(targetAngle);
 		double rotateBy = robotOrientation - targetAngle;
@@ -182,16 +178,16 @@ public class Milestone3 {
 			try {
 				if (rotateBy > 0) {
 					if (rotateBy > 180) {
-						driver.turnLeft(5);
-					} else {
 						driver.turnRight(5);
+					} else {
+						driver.turnLeft(5);
 					}
 				} else {
 					if (-rotateBy > 180) {
-						driver.turnRight(5);
+						driver.turnLeft(5);
 					} else {
 						System.out.println("Here");
-						driver.turnLeft(5);
+						driver.turnRight(5);
 					}
 				}
 				break;
