@@ -6,6 +6,17 @@ import lejos.nxt.LCD;
 import lejos.nxt.comm.BTConnection;
 import lejos.nxt.comm.Bluetooth;
 
+/**
+ * Receive data from another NXT, a PC, a phone, 
+ * or another bluetooth device.
+ * 
+ * Waits for a connection, receives an int and returns
+ * its negative as a reply, 100 times, and then closes
+ * the connection, and waits for a new one.
+ * 
+ * @author Lawrie Griffiths
+ *
+ */
 public class BTReceive {
 
 	public static void main(String [] args)  throws Exception 
@@ -15,6 +26,11 @@ public class BTReceive {
 		String connected = "Connected";
         String waiting = "Waiting...";
         String closing = "Closing...";
+        
+        Kicker kicker;
+        PneumaticKicker pneumaticKicker = new PneumaticKicker();
+        pneumaticKicker.setDaemon(true);
+        
         
 		while (true)
 		{
@@ -51,10 +67,16 @@ public class BTReceive {
 				case 'r':
 					pilot.turnRight(distance); 
 					break;
-				case 'k':
-					Kicker.kick(distance);
 				case 's':
 					pilot.stopNow();   // stop robot immediately
+					break;
+				case 'k':
+					kicker = new Kicker(distance);
+					kicker.setDaemon(true);
+					kicker.start();
+					break;
+				case 'p':
+					pneumaticKicker.start();
 					break;
 				}
 				}catch(Exception e){
