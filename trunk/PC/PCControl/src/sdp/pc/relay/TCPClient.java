@@ -7,8 +7,6 @@ import java.net.*;
 
 import javax.swing.JFrame;
 
-import lejos.pc.comm.NXTInfo;
-
 import sdp.pc.common.ChooseRobot;
 import sdp.pc.common.Constants;
 
