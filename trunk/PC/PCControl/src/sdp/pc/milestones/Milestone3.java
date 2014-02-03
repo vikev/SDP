@@ -20,12 +20,11 @@ public class Milestone3 {
 
 	private static WorldState state = new WorldState();
 
-	public static void main(String[] args) throws V4L4JException, InterruptedException {
+	public static void main(String[] args) throws Exception {
 		Vision vision = new Vision(state);
 		Thread.sleep(3000);
 
-		Driver driver = new Driver(new TCPClient(Constants.HOST,
-				Constants.ATTACKER_PORT));
+		Driver driver = new Driver(new TCPClient(ChooseRobot.dialog()));
 		try {
 			driver.stop();
 		} catch (Exception e1) {
