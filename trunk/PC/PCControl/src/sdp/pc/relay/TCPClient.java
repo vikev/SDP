@@ -7,13 +7,16 @@ import java.net.*;
 
 import javax.swing.JFrame;
 
+import lejos.pc.comm.NXTInfo;
+
+import sdp.pc.common.ChooseRobot;
 import sdp.pc.common.Constants;
 
 public class TCPClient {
-	public void run() {
+
+	public void run(int serverPort, final int robot) {
 
 		try {
-			int serverPort = Constants.PORT;
 			InetAddress host = InetAddress.getByName(Constants.HOST);
 			System.out.println("Connecting to server on port " + serverPort);
 
@@ -34,28 +37,39 @@ public class TCPClient {
 				public void keyPressed(KeyEvent e) {
 					int code = e.getKeyCode();
 					System.out.println(code);
+					/* Turn left - arrow left */
 					if (code == 37) {
 						toServer.println("l");
-						toServer.println(10);
+						toServer.println(0);
 					}
+					/* Forwards - arrow up */
 					if (code == 38) {
 						toServer.println("f");
 						toServer.println(0);
 					}
+					/* Turn right - arrow right */
 					if (code == 39) {
 						toServer.println("r");
-						toServer.println(10);
-					}
+						toServer.println(0);
+					}/* Backwards - arrow down */
 					if (code == 40) {
 						toServer.println("b");
 						toServer.println(0);
-					}
-					if(code==83){
+					}/* Stop when s is pressed */
+					if (code == 83) {
 						toServer.println("s");
 						toServer.println(0);
 					}
-					if(code==32){
-						toServer.println("p");
+					/* Kcik - spacebar */
+					if (code == 32) {
+						switch (robot) {
+						case Constants.ATTACKER:
+							toServer.println("p");
+							break;
+						case Constants.DEFENDER:
+							toServer.println("k");
+							break;
+						}
 						toServer.println(0);
 					}
 				}
@@ -84,8 +98,23 @@ public class TCPClient {
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
+		int port;
+		int robot;
+		switch (ChooseRobot.dialog()) {
+		case Constants.ATTACKER:
+			robot = Constants.ATTACKER;
+			port = Constants.ATTACKER_PORT;
+			break;
+		case Constants.DEFENDER:
+			port = Constants.DEFENDER_PORT;
+			robot = Constants.DEFENDER;
+			break;
+		default:
+			Exception e = new Exception("Couldn't select a robot...");
+			throw e;
+		}
 		TCPClient client = new TCPClient();
-		client.run();
+		client.run(port, robot);
 	}
 }

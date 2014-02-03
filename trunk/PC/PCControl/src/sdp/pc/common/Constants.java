@@ -10,10 +10,13 @@ import sdp.pc.vision.Point2;
  * @author unknown
  */
 public class Constants {
+	// Robot codes
+	public static final int ATTACKER = 1;
+	public static final int DEFENDER = 2;
+	
 	// Socket data
-	public static final int PORT = 1313;
-	public static final int SERVER_PORT = 1414;
-	public static final int CLIENT_PORT = 1515;
+	public static final int ATTACKER_PORT = 1313;
+	public static final int DEFENDER_PORT = 5612;
 	public static final String HOST = "localhost";
 
 	// Arbitrary point values taken from image of pitch; these are likely to
