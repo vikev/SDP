@@ -319,9 +319,14 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			avgPrevPos = avgPrevPos.add(p);
 		avgPrevPos = avgPrevPos.div(prevFramePos.length);
 		avgPrevPos = avgPrevPos.subtract(ballPos).mult(-5).add(ballPos);
+		
+		// Create graphical representation
+		Graphics imageGraphics = image.getGraphics();
+		Graphics frameGraphics = label.getGraphics();
 
 		// TODO: fix orientation code
-		double yellowOrientation = 0;
+		double yellowOrientation = findOrientation(yellowLeftPos, imageGraphics,
+				Constants.ROBOT_YELLOW_LEFT);
 
 		// Point2 blackPos = new Point2();
 		// Point2 blackPos = findBlackDot(image, yellowLeftPos);
@@ -330,12 +335,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 		// Update World State
 		state.setBallPosition(ballPos);
+		//System.out.println(yellowLeftPos);
 		state.setRobotPosition(0, 0, yellowLeftPos);
+		System.out.println("yellowOrientation");
+		System.out.println(yellowOrientation);
 		state.setRobotFacing(0, 0, yellowOrientation);
-
-		// Create graphical representation
-		Graphics imageGraphics = image.getGraphics();
-		Graphics frameGraphics = label.getGraphics();
 
 		// Ball location (and direction)
 		if (Alg.pointInPitch(ballPos)) {
@@ -495,6 +499,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 					(int) (centroid.getY() - Constants.HEAD_ENUM_RADIUS * 2.0
 							* Math.sin(angBest)));
 		}
+		if (angBest>Math.PI) return (angBest - Math.PI) * 180.0 / Math.PI; 
 		return (angBest + Math.PI) * 180.0 / Math.PI;
 	}
 
