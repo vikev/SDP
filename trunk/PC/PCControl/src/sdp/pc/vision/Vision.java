@@ -27,7 +27,7 @@ import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 /**
  * This code builds a JFrame that shows the feed from the camera and calculates
  * and displays positions of objects on the field. Part of the code is inspired
- * from group 1 of SDP 2013. 
+ * from group 1 of SDP 2013.
  * 
  * For programmers: the bulk of the work is done by the method 'processImage'.
  * Don't touch stuff like initGui unless need be.
@@ -40,14 +40,18 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	// Camera and image parameters
 	private static final int WIDTH = 640, HEIGHT = 480,
 			VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL, CHANNEL = 0,
-			X_FRAME_OFFSET = 1, Y_FRAME_OFFSET = 25;
-	private static final String DEVICE = "/dev/video0";
+			X_FRAME_OFFSET = 1, Y_FRAME_OFFSET = 25, PLAYER_RADIUS = 18,
+			ANGLE_SMOOTHING_FRAME_COUNT = 3, MIN_POINTS_BOT = 10;
 
-	private static final int PLAYER_RADIUS = 18;
+	private static final String DEVICE = "/dev/video0";
 	private static final double VECTOR_THRESHOLD = 3.0;
+
 	private static Color[][] rgb = new Color[700][520];
+	private static double[][] angleSmoothing = new double[4][ANGLE_SMOOTHING_FRAME_COUNT];
 	private static float[][][] hsb = new float[700][520][3];
 	private static float[] cHsb;
+	private static int angSmoothingWriteIndex = 0;
+	private static int[] pointsCount = new int[4];
 	private static ArrayList<Point2> pitchPoints = new ArrayList<Point2>();
 	private static WorldState state = new WorldState();
 
@@ -60,9 +64,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	// Used for normalisation (first float is max brightness, second is min
 	// brightness)
 	private static float[] minMaxBrightness = { 1.0f, 0.0f };
-	// Used to denote if video feed has been pre-processed
-	private static int preprocessed = 0; // 'Int' so that system can wait a few
-											// frames first
+
+	// Used to denote if video feed has been pre-processed; using integer
+	// so we can count frames and ignore the first few
+	private static int preprocessed = 0;
+
 	// Used for calculating direction the ball is heading
 	static Point2[] prevFramePos = new Point2[10];
 
@@ -100,7 +106,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		for (int i = 0; i < 10; i++)
 			prevFramePos[i] = new Point2(0, 0);
 
-		
 		try {
 			initFrameGrabber();
 		} catch (V4L4JException e1) {
@@ -122,12 +127,16 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				initialTime = System.currentTimeMillis(); // for FPS
 				BufferedImage frameImage = frame.getBufferedImage();
 				frame.recycle();
-				if (preprocessed < 25) 			// This part here makes sure that
-					preprocessed++;				// 'preprocess' is only called once at
-				else if (preprocessed == 25)    // the start; but also that at least
-					preprocess(frameImage);		// a few frames pass before it is called
-				else							// (since the very first few frames are
-					processImage(frameImage);   // always distorted and bad)
+
+				// Ensure the pre-process is only ran once during
+				// initialisation; but ignore first few frames (which are always
+				// highly distorted)
+				if (preprocessed < 25)
+					preprocessed++;
+				else if (preprocessed == 25)
+					preprocess(frameImage);
+				else
+					processImage(frameImage);
 			}
 		});
 
@@ -136,18 +145,21 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 	/**
 	 * Expensive method used to build a convex hull around white points (our
-	 * table border due to the white tape). Also, calculates the brightest and least 
-	 * brightest points to be used for brightness normalisation.
+	 * table border due to the white tape). Also, calculates the brightest and
+	 * least brightest points to be used for brightness normalisation.
 	 * 
-	 * Only needs to occur once during initialisation; stores the brightness values in
-	 * minMaxBrightness, and the points that belong to the pitch in pitchPoints.
+	 * Only needs to occur once during initialisation; stores the brightness
+	 * values in minMaxBrightness, and the points that belong to the pitch in
+	 * pitchPoints.
 	 * 
-	 * @param image - image on which to base the pre-processing
+	 * @param image
+	 *            - image on which to base the pre-processing
 	 */
 	private static void preprocess(BufferedImage image) {
 		preprocessed++;
 
 		ArrayList<Point2> whitePoints = new ArrayList<Point2>();
+
 		// Find borders
 		for (int row = Constants.TABLE_MIN_Y; row < Constants.TABLE_MAX_Y; row++) {
 			for (int column = Constants.TABLE_MIN_X; column < Constants.TABLE_MAX_X; column++) {
@@ -203,7 +215,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		Point2 blueRightPos = new Point2();
 		ArrayList<Point2> blueRightPoints = new ArrayList<Point2>();
 
-		// Loop through all table values, recognizing pixel regions as necessary
+		// Loop through all table values, recognising pixel regions as necessary
 		for (Point2 p : pitchPoints) {
 			int column = p.getX();
 			int row = p.getY();
@@ -267,6 +279,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			yellowLeftPos = yellowLeftPos.div(yellowLeftCounter);
 			ArrayList<Point2> newYellow = Point2.removeOutliers(
 					yellowLeftPoints, yellowLeftPos);
+			pointsCount[Constants.ROBOT_YELLOW_LEFT] = newYellow.size();
 			yellowLeftPos.filterPoints(newYellow);
 		}
 
@@ -275,6 +288,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			blueLeftPos = blueLeftPos.div(blueLeftCounter);
 			ArrayList<Point2> newBlue = Point2.removeOutliers(blueLeftPoints,
 					blueLeftPos);
+			pointsCount[Constants.ROBOT_BLUE_LEFT] = newBlue.size();
 			blueLeftPos.filterPoints(newBlue);
 		}
 
@@ -283,6 +297,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			yellowRightPos = yellowRightPos.div(yellowRightCounter);
 			ArrayList<Point2> newYellow2 = Point2.removeOutliers(
 					yellowRightPoints, yellowRightPos);
+			pointsCount[Constants.ROBOT_YELLOW_RIGHT] = newYellow2.size();
 			yellowRightPos.filterPoints(newYellow2);
 		}
 
@@ -291,6 +306,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			blueRightPos = blueRightPos.div(blueRightCounter);
 			ArrayList<Point2> newBlue2 = Point2.removeOutliers(blueRightPoints,
 					blueRightPos);
+			pointsCount[Constants.ROBOT_BLUE_RIGHT] = newBlue2.size();
 			blueRightPos.filterPoints(newBlue2);
 		}
 
@@ -305,8 +321,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		double yellowOrientation = 0;
 
 		// Point2 blackPos = new Point2();
-		Point2 blackPos = findBlackDot(image, yellowLeftPos);
-		blackPos = blackPos.subtract(yellowLeftPos).mult(-5).add(yellowLeftPos);
+		// Point2 blackPos = findBlackDot(image, yellowLeftPos);
+		// blackPos =
+		// blackPos.subtract(yellowLeftPos).mult(-5).add(yellowLeftPos);
 
 		// Update World State
 		state.setBallPosition(ballPos);
@@ -329,16 +346,20 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		}
 
 		// Yellow robots locations
-		if (Alg.pointInPitch(yellowLeftPos)) {
+		if (Alg.pointInPitch(yellowLeftPos)
+				&& pointsCount[Constants.ROBOT_YELLOW_LEFT] >= MIN_POINTS_BOT) {
 			drawCircle(yellowLeftPos, imageGraphics, Constants.YELLOW_BLEND,
 					Constants.ROBOT_CIRCLE_RADIUS);
-			findOrientation(yellowLeftPos, imageGraphics);
+			findOrientation(yellowLeftPos, imageGraphics,
+					Constants.ROBOT_YELLOW_LEFT);
 		}
 
-		if (Alg.pointInPitch(yellowRightPos)) {
+		if (Alg.pointInPitch(yellowRightPos)
+				&& pointsCount[Constants.ROBOT_YELLOW_RIGHT] >= MIN_POINTS_BOT) {
 			drawCircle(yellowRightPos, imageGraphics, Constants.YELLOW_BLEND,
 					Constants.ROBOT_CIRCLE_RADIUS);
-			findOrientation(yellowRightPos, imageGraphics);
+			findOrientation(yellowRightPos, imageGraphics,
+					Constants.ROBOT_YELLOW_RIGHT);
 		}
 
 		// draw orientation (temp)
@@ -350,17 +371,24 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// TODO: Implement blackpos for all bots
 
 		// Blue robots locations
-		if (Alg.pointInPitch(blueLeftPos)) {
+		if (Alg.pointInPitch(blueLeftPos)
+				&& pointsCount[Constants.ROBOT_BLUE_LEFT] >= MIN_POINTS_BOT) {
 			drawCircle(blueLeftPos, imageGraphics, Constants.BLUE_BLEND,
 					Constants.ROBOT_CIRCLE_RADIUS);
-			findOrientation(blueLeftPos, imageGraphics);
+			findOrientation(blueLeftPos, imageGraphics,
+					Constants.ROBOT_BLUE_LEFT);
 		}
 
-		if (Alg.pointInPitch(blueRightPos)) {
+		if (Alg.pointInPitch(blueRightPos)
+				&& pointsCount[Constants.ROBOT_BLUE_RIGHT] >= MIN_POINTS_BOT) {
 			drawCircle(blueRightPos, imageGraphics, Constants.BLUE_BLEND,
 					Constants.ROBOT_CIRCLE_RADIUS);
-			findOrientation(blueRightPos, imageGraphics);
+			findOrientation(blueRightPos, imageGraphics,
+					Constants.ROBOT_BLUE_RIGHT);
 		}
+
+		angSmoothingWriteIndex++;
+		angSmoothingWriteIndex %= ANGLE_SMOOTHING_FRAME_COUNT;
 
 		// Draw centre line
 		imageGraphics.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
@@ -388,8 +416,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		if (pos != null) {
 			x = (int) Math.round(pos.getX()) - X_FRAME_OFFSET;
 			y = (int) Math.round(pos.getY()) - Y_FRAME_OFFSET;
-			if (x > 0 && x <= (WIDTH - X_FRAME_OFFSET)
-					&& y <= (HEIGHT - Y_FRAME_OFFSET)) {
+			if (Alg.pointInPitch(new Point2(x, y))) {
 
 				imageGraphics.drawString("Mouse pos: x:" + x + " y:" + y, 15,
 						30);
@@ -422,9 +449,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * 
 	 * Author s1143704
 	 */
-	private double findOrientation(Point2 centroid, Graphics gfx) {
+	private double findOrientation(Point2 centroid, Graphics gfx, int iden) {
 		double angBest = 0.0;
 		if (Alg.pointInPitch(centroid)) {
+
+			// Get best angle
 			double r = 0;
 			double brBest = 1.0;
 			for (int i = 0; i < Constants.HEAD_ARC_FIDELITY; i++) {
@@ -433,11 +462,23 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 						+ (int) (Constants.HEAD_ENUM_RADIUS * Math.sin(r));
 				int column = centroid.getX()
 						+ (int) (Constants.HEAD_ENUM_RADIUS * Math.cos(r));
-				if (hsb[column][row][2] < brBest) {
-					brBest = hsb[column][row][2];
-					angBest = r;
+				if (Alg.pointInPitch(new Point2(column, row))) {
+					if (hsb[column][row][2] < brBest) {
+						brBest = hsb[column][row][2];
+						angBest = r;
+					}
 				}
 			}
+
+			// Smooth angle
+			angleSmoothing[iden][angSmoothingWriteIndex] = angBest;
+			angBest = 0;
+			for (int j = 0; j < ANGLE_SMOOTHING_FRAME_COUNT; j++) {
+				angBest += angleSmoothing[iden][j];
+			}
+			angBest /= ANGLE_SMOOTHING_FRAME_COUNT;
+
+			// Draw to screen
 			Point2 pt = new Point2(centroid.getX()
 					+ (int) (Constants.HEAD_ENUM_RADIUS * Math.cos(angBest)),
 					centroid.getY()
@@ -498,11 +539,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 	/**
 	 * Uses the HSB colour space to normalise all colours in our desired region
-	 * by brightness, i.e. used to scale the brightness of every pixel on the pitch
-	 * so that the whole range of brightnesses is from 0.0 to 1.0.
+	 * by brightness, i.e. used to scale the brightness of every pixel on the
+	 * pitch so that the whole range of brightnesses is from 0.0 to 1.0.
 	 */
 	private static Color normaliseColor(BufferedImage image, int row, int column) {
-		// Normalise color values:
+		// Normalise colour values:
 		// Update RGB handle
 		Color pixelColorRGB = new Color(image.getRGB(column, row));
 		rgb[column][row] = pixelColorRGB;
@@ -529,8 +570,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * robot's orientation, given its centre point
 	 * 
 	 * @param colorCenter
-	 *            the center of the robot's yellow/blue
+	 *            the centre of the robot's yellow/blue
 	 */
+	@SuppressWarnings("unused")
 	private Point2 findBlackDot(BufferedImage i, Point2 colorCenter) {
 		// bounding rect to search for black pixels
 		int xs = Math.max(0, colorCenter.getX() - PLAYER_RADIUS);
@@ -561,14 +603,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				}
 			}
 
-		// do k-means
-		Cluster c = Kmeans.doKmeans(pts, new Point2(colorCenter))[0]; // only 1
-																		// cluster
+		// do k-means (one cluster only)
+		Cluster c = Kmeans.doKmeans(pts, new Point2(colorCenter))[0];
 
 		if (pts.size() == 0)
 			return new Point2(colorCenter);
 
-		@SuppressWarnings("unused")
 		List<Point2> hull = Alg.convexHull(pts);
 
 		// TODO:
@@ -591,7 +631,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private boolean isBlack(Color rgb, float[] hsb) {
 		return 0.6 < hsb[0] && hsb[0] < 0.67 && hsb[1] > 0.5;
 	}
-	
+
 	private boolean isGreen(Color rgb, float[] hsb) {
 		return 0.2f < hsb[1] && hsb[1] < 0.35f && 0.25f < hsb[2]
 				&& hsb[2] < 0.45f && rgb.getRed() < 80 && rgb.getBlue() < 80
@@ -599,14 +639,14 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	}
 
 	/**
-	 * Determines if a pixel is from the white tape on the pitch. Used to calculate 
-	 * the smallest possible polygon that captures the entire pitch.  
+	 * Determines if a pixel is from the white tape on the pitch. Used to
+	 * calculate the smallest possible polygon that captures the entire pitch.
 	 * 
 	 * @param color
 	 *            The RGB colours for the pixel.
 	 * @param hsb
 	 *            The HSV values for the pixel.
-	 	 * @return True if the RGB and HSV values are within the defined thresholds
+	 * @return True if the RGB and HSV values are within the defined thresholds
 	 *         (and thus the pixel is part of white tape), false otherwise.
 	 */
 	private static boolean isWhite(Color rgb, float[] hsb) {
@@ -642,7 +682,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the yellow T), false otherwise.
 	 */
 	private boolean isYellow(Color c, float[] hsb) {
-		return (c.getRed() > 140 && c.getGreen() > 70 && c.getGreen() < 120 
+		return (c.getRed() > 140 && c.getGreen() > 70 && c.getGreen() < 120
 				&& c.getBlue() < 50 && hsb[1] > 0.6f && hsb[2] > 0.25f);
 	}
 
@@ -661,7 +701,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private boolean isBlue(Color c, float[] hsb) {
 		return (c.getRed() > 0 && c.getRed() < 50 && c.getGreen() > 50
 				&& c.getGreen() < 100 && c.getBlue() > 75 && c.getBlue() < 150
-				&& 0.4f < hsb[0] && hsb[0] < 0.55f && hsb[1] > 0.45f && 0.2f < hsb[2] && hsb[2] < 0.5f);
+				&& 0.4f < hsb[0] && hsb[0] < 0.55f && hsb[1] > 0.45f
+				&& 0.2f < hsb[2] && hsb[2] < 0.5f);
 	}
 
 	/**
