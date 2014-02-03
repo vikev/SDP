@@ -16,7 +16,7 @@ import sdp.pc.common.*;
  * @author s1117764
  * 
  */
-public class Milestone2 {
+public class Milestone3 {
 
 	private static WorldState state = new WorldState();
 
