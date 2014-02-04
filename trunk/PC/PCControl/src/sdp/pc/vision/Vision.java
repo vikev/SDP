@@ -398,7 +398,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		Graphics frameGraphics = label.getGraphics();
 
 		// TODO: fix orientation code
-		double yellowOrientation = findOrientation(yellowLeftPos, imageGraphics,
+		double yellowOrientation = findOrientation(image, yellowLeftPos, imageGraphics,
 				Constants.ROBOT_YELLOW_LEFT);
 
 		// Point2 blackPos = new Point2();
@@ -427,7 +427,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				&& pointsCount[Constants.ROBOT_YELLOW_LEFT] >= MIN_POINTS_BOT) {
 			drawCircle(yellowLeftPos, imageGraphics, Constants.YELLOW_BLEND,
 					Constants.ROBOT_CIRCLE_RADIUS);
-			findOrientation(yellowLeftPos, imageGraphics,
+			findOrientation(image, yellowLeftPos, imageGraphics,
 					Constants.ROBOT_YELLOW_LEFT);
 		}
 
@@ -435,7 +435,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				&& pointsCount[Constants.ROBOT_YELLOW_RIGHT] >= MIN_POINTS_BOT) {
 			drawCircle(yellowRightPos, imageGraphics, Constants.YELLOW_BLEND,
 					Constants.ROBOT_CIRCLE_RADIUS);
-			findOrientation(yellowRightPos, imageGraphics,
+			findOrientation(image, yellowRightPos, imageGraphics,
 					Constants.ROBOT_YELLOW_RIGHT);
 		}
 
@@ -452,7 +452,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				&& pointsCount[Constants.ROBOT_BLUE_LEFT] >= MIN_POINTS_BOT) {
 			drawCircle(blueLeftPos, imageGraphics, Constants.BLUE_BLEND,
 					Constants.ROBOT_CIRCLE_RADIUS);
-			findOrientation(blueLeftPos, imageGraphics,
+			findOrientation(image, blueLeftPos, imageGraphics,
 					Constants.ROBOT_BLUE_LEFT);
 		}
 
@@ -460,7 +460,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				&& pointsCount[Constants.ROBOT_BLUE_RIGHT] >= MIN_POINTS_BOT) {
 			drawCircle(blueRightPos, imageGraphics, Constants.BLUE_BLEND,
 					Constants.ROBOT_CIRCLE_RADIUS);
-			findOrientation(blueRightPos, imageGraphics,
+			findOrientation(image, blueRightPos, imageGraphics,
 					Constants.ROBOT_BLUE_RIGHT);
 		}
 
@@ -526,11 +526,31 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * 
 	 * Author s1143704
 	 */
-	private double findOrientation(Point2 centroid, Graphics gfx, int iden) {
+	private double findOrientation(BufferedImage image, Point2 centroid, Graphics gfx, int iden) {
+
+		// Point here is to find the smallest polygon that covers the green plate
+		// so as to only look within it (turns out the method is pretty fast)
+		ArrayList<Point2> greenPoints = new ArrayList<Point2>();
+		for (int i=-25; i<25; i++) for (int j=-25; j<25; j++) {
+			int column = centroid.getX()+i;
+			int row    = centroid.getY()+j;
+			if (Alg.pointInPitch(new Point2(column,row))) {
+					Color pixelColorRGB = new Color(image.getRGB(column, row));
+					cHsb = hsb[column][row];
+					if (isGreen(pixelColorRGB, cHsb)) {
+						image.setRGB(column, row, Color.GREEN.getRGB());
+						greenPoints.add(new Point2(column, row));
+					}
+			}
+		}
+		LinkedList<Point2> hull = new LinkedList<Point2>();
+		if (!greenPoints.isEmpty()) {
+			hull = Alg.convexHull(greenPoints);  // Contains border of green plate
+		}
+		
+		// Get best angle
 		double angBest = 0.0;
 		if (Alg.pointInPitch(centroid)) {
-
-			// Get best angle
 			double r = 0;
 			double brBest = 1.0;
 			for (int i = 0; i < Constants.HEAD_ARC_FIDELITY; i++) {
@@ -540,7 +560,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				int column = centroid.getX()
 						+ (int) (Constants.HEAD_ENUM_RADIUS * Math.cos(r));
 				if (Alg.pointInPitch(new Point2(column, row))) {
-					if (hsb[column][row][2] < brBest) {
+					// TODO: implement next if-clause better
+					if (hsb[column][row][2] < brBest && Alg.isInHull(hull, new Point2(column,row))) {
 						brBest = hsb[column][row][2];
 						angBest = r;
 					}
@@ -726,10 +747,21 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		return 0.6 < hsb[0] && hsb[0] < 0.67 && hsb[1] > 0.5;
 	}
 
+	/**
+	 * Determines if a pixel is from the green plates that hold the yellow and
+	 * blue i's. Used to calculate the polygons that determine the plates
+	 * in order to look for the black dot within them.
+	 * 
+	 * @param rgb
+	 * 			The RGB colours for the pixel.
+	 * @param hsb
+	 * 			The HSV values for the pixel.
+	 * @return True if the RGB and HSV values are within the defined thresholds
+	 *         (and thus the pixel is part of the green plates), false otherwise.
+	 */
 	private boolean isGreen(Color rgb, float[] hsb) {
-		return 0.2f < hsb[1] && hsb[1] < 0.35f && 0.25f < hsb[2]
-				&& hsb[2] < 0.45f && rgb.getRed() < 80 && rgb.getBlue() < 80
-				&& rgb.getGreen() < 80;
+		return 0.4f < hsb[1] && hsb[1] < 0.8f && hsb[1] > 0.6f
+				&& 0.2f < hsb[2] && hsb[2] < 0.5f;
 	}
 
 	/**
@@ -777,8 +809,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the yellow T), false otherwise.
 	 */
 	private boolean isYellow(Color c, float[] hsb) {
-		return (c.getRed() > 140 && c.getGreen() > 70 && c.getGreen() < 120
-				&& c.getBlue() < 50 && hsb[1] > 0.6f && hsb[2] > 0.25f);
+		return (c.getRed() > 140 && c.getGreen() > 60 && c.getGreen() < 120
+				&& c.getBlue() < 50 && hsb[1] > 0.6f && hsb[2] > 0.3f);
 	}
 
 	/**
@@ -794,8 +826,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the blue T), false otherwise.
 	 */
 	private boolean isBlue(Color c, float[] hsb) {
-		return (c.getRed() < 50 && c.getGreen() < 100 && c.getBlue() > 75
-				&& c.getBlue() < 120 && 0.4f < hsb[0] && hsb[0] < 0.6f
+		return (c.getRed() < 50 && c.getGreen() < 100 && c.getBlue() > 70
+				&& c.getBlue() < 120 && 0.4f < hsb[0] && hsb[0] < 0.7f
 				&& hsb[1] > 0.5f && 0.2f < hsb[2] && hsb[2] < 0.5f);
 	}
 
