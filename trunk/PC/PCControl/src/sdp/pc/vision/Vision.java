@@ -2,6 +2,8 @@ package sdp.pc.vision;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -71,6 +73,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 	// Used for calculating direction the ball is heading
 	static Point2[] prevFramePos = new Point2[10];
+	
+	// Added in to help split up into sections
+	Point2 leftTop = new Point2(0,0);
+	Point2 leftBottom = new Point2(0,0);
+	Point2 rightTop = new Point2(0,0);
+	Point2 rightBottom = new Point2(0,0);
+	Boolean sectionsDone = false;
 
 	/**
 	 * Provides Java application support. On launch, runs a JFrame window which
@@ -289,7 +298,52 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				}
 			}
 		}
-
+		
+		// Mouse Listener 
+		frame.addMouseListener(new MouseAdapter() {
+				java.awt.Point pos2; 
+				@Override
+			    public void mousePressed(MouseEvent e) {
+					System.out.println("Mouse Clicked");
+			 		pos2 = frame.getMousePosition();
+			 		System.out.println(pos2.toString());
+					if (pos2 != null) {
+						int x = (int) Math.round(pos2.getX()) - X_FRAME_OFFSET;
+						int y = (int) Math.round(pos2.getY()) - Y_FRAME_OFFSET;
+						if(leftTop == new Point2(0,0)){
+							System.out.println("left top set.");
+							leftTop = new Point2(x,y);
+							
+						}
+						else if(leftBottom == new Point2(0,0)){
+							System.out.println("left bottom set.");
+							leftBottom = new Point2(x,y);
+						}
+						else if(rightTop == new Point2(0,0)){
+							System.out.println("right top set.");
+							rightTop= new Point2(x,y);
+						}
+						else if(rightBottom == new Point2(0,0)){
+							System.out.println("right bottom set.");
+							rightBottom = new Point2(x,y);
+						}
+						else{
+							sectionsDone = true;
+						}
+						
+					}
+			     }
+			  });		
+		
+		if (sectionsDone == true){
+			// imageGraphics.drawLine(x1, y1, x2, y2);
+			Graphics imageGraphics = image.getGraphics();
+			//Graphics frameGraphics = label.getGraphics();
+			imageGraphics.setColor(Color.white);
+			imageGraphics.drawLine(leftTop.getX(), leftTop.getY(),leftBottom.getX(), leftBottom.getY());
+			imageGraphics.drawLine(rightTop.getX(), rightTop.getY(),rightBottom.getX(), rightBottom.getY());
+			
+		}
 		// Get average position of ball
 		if (ballCounter > 0)
 			ballPos = ballPos.div(ballCounter);
