@@ -152,6 +152,42 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		});
 
 		frameGrabber.startCapture();
+		// Mouse Listener 
+		frame.addMouseListener(new MouseAdapter() {
+				java.awt.Point pos2; 
+				@Override
+			    public void mousePressed(MouseEvent e) {
+					System.out.println("Mouse Clicked");
+			 		pos2 = frame.getMousePosition();
+			 		System.out.println(pos2.toString());
+					if (pos2 != null) {
+						int x = (int) Math.round(pos2.getX()) - X_FRAME_OFFSET;
+						int y = (int) Math.round(pos2.getY()) - Y_FRAME_OFFSET;
+						
+						if(leftTop.getX() == 0 && leftTop.getY() == 0){
+							System.out.println("left top set.");
+							leftTop = new Point2(x,y);
+							
+						}
+						else if(leftBottom.getX() == 0 && leftBottom.getY() ==0 ){
+							System.out.println("left bottom set.");
+							leftBottom = new Point2(x,y);
+						}
+						else if(rightTop.getX() == 0 && rightTop.getY() == 0){
+							System.out.println("right top set.");
+							rightTop= new Point2(x,y);
+						}
+						else if(rightBottom.getX() == 0 && rightBottom.getY() == 0){
+							System.out.println("right bottom set.");
+							rightBottom = new Point2(x,y);
+						}
+						else{
+							sectionsDone = true;
+						}
+						
+					}
+			     }
+			  });		
 	}
 
 	/**
@@ -299,41 +335,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			}
 		}
 		
-		// Mouse Listener 
-		frame.addMouseListener(new MouseAdapter() {
-				java.awt.Point pos2; 
-				@Override
-			    public void mousePressed(MouseEvent e) {
-					System.out.println("Mouse Clicked");
-			 		pos2 = frame.getMousePosition();
-			 		System.out.println(pos2.toString());
-					if (pos2 != null) {
-						int x = (int) Math.round(pos2.getX()) - X_FRAME_OFFSET;
-						int y = (int) Math.round(pos2.getY()) - Y_FRAME_OFFSET;
-						if(leftTop == new Point2(0,0)){
-							System.out.println("left top set.");
-							leftTop = new Point2(x,y);
-							
-						}
-						else if(leftBottom == new Point2(0,0)){
-							System.out.println("left bottom set.");
-							leftBottom = new Point2(x,y);
-						}
-						else if(rightTop == new Point2(0,0)){
-							System.out.println("right top set.");
-							rightTop= new Point2(x,y);
-						}
-						else if(rightBottom == new Point2(0,0)){
-							System.out.println("right bottom set.");
-							rightBottom = new Point2(x,y);
-						}
-						else{
-							sectionsDone = true;
-						}
-						
-					}
-			     }
-			  });		
+		
 		
 		if (sectionsDone == true){
 			// imageGraphics.drawLine(x1, y1, x2, y2);
