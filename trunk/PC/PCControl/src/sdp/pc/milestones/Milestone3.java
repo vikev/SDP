@@ -186,11 +186,9 @@ public class Milestone3 {
 					if (-rotateBy > 180) {
 						driver.turnLeft(5);
 					} else {
-						System.out.println("Here");
 						driver.turnRight(5);
 					}
 				}
-				break;
 				//try {
 				//    Thread.sleep(1000);
 				//} catch(InterruptedException ex) {
