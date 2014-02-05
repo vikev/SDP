@@ -24,12 +24,17 @@ public class Constants {
 	private static final int LEFT_GOAL_CENTRE_X = 77, LEFT_GOAL_CENTRE_Y = 235;
 	private static final int RIGHT_GOAL_CENTRE_X = 589,
 			RIGHT_GOAL_CENTRE_Y = 241;
-
+	
 	// Points which can be referenced
 	public static final Point2 LEFT_GOAL_CENTRE = new Point2(
 			LEFT_GOAL_CENTRE_X, LEFT_GOAL_CENTRE_Y);
 	public static final Point2 RIGHT_GOAL_CENTRE = new Point2(
 			RIGHT_GOAL_CENTRE_X, RIGHT_GOAL_CENTRE_Y);
+	
+	public static final int ATTACKER_LENGTH = 20;		//*Currently not actual measurements* Approximate measurements of robots in pixels (could change to centimetres if we can work
+	public static final int ATTACKER_WIDTH = 20;		//out a centimetre -> pixel conversion which would be specific to the camera being used)
+	public static final int DEFENDER_LENGTH = 20;
+	public static final int DEFENDER_WIDTH = 20;
 
 	// Directions and targets, should probably use an Enum, but I think this is
 	// related to Constants
