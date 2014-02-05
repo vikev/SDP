@@ -8,7 +8,11 @@ public class Point2 {
 
 	private int x;
 	private int y;
-
+	
+	public static boolean hueEpsilon(float hue, float target, float epsilon){
+		return (Math.abs(hue-target)<epsilon);
+	}
+	
 	/**
 	 * Constructs a new point at the given coordinates
 	 */
@@ -33,6 +37,15 @@ public class Point2 {
 	public Point2(Point2 p) {
 		this.x = p.x;
 		this.y = p.y;
+	}
+
+	/**
+	 * Returns a new instance of the point given (copies x,y)
+	 * 
+	 * @return
+	 */
+	public Point2 copy() {
+		return new Point2(this.x, this.y);
 	}
 
 	/**
@@ -307,13 +320,13 @@ public class Point2 {
 		return new Point2D.Double(((b2 * c1 - b1 * c2) / delta), ((a1 * c2 - a2
 				* c1) / delta));
 	}
-	
+
 	public double angleTo(Point2 p) {
 		return Math.atan2(p.y - y, p.x - x);
 	}
-	
+
 	public boolean isToLeft(Point2 a, Point2 b) {
-		int dot = ((b.x - a.x)*(y - a.y) - (b.y - a.y)*(x - a.x));
+		int dot = ((b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x));
 		return dot > 0 || (dot == 0 && a.distanceSq(b) < a.distanceSq(this));
 	}
 }

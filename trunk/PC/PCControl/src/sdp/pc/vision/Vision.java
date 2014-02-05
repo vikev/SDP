@@ -2,8 +2,6 @@ package sdp.pc.vision;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -38,12 +36,11 @@ import au.edu.jcu.v4l4j.exceptions.V4L4JException;
  * 
  */
 public class Vision extends WindowAdapter implements CaptureCallback {
-
 	// Camera and image parameters
 	private static final int WIDTH = 640, HEIGHT = 480,
 			VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL, CHANNEL = 0,
-			X_FRAME_OFFSET = 1, Y_FRAME_OFFSET = 25, PLAYER_RADIUS = 18,
-			ANGLE_SMOOTHING_FRAME_COUNT = 3, MIN_POINTS_BOT = 10;
+			PLAYER_RADIUS = 18, ANGLE_SMOOTHING_FRAME_COUNT = 3,
+			MIN_POINTS_BOT = 10, FRAME_IGNORE_COUNT = 50;
 
 	private static final String DEVICE = "/dev/video0";
 	private static final double VECTOR_THRESHOLD = 3.0;
@@ -56,12 +53,16 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private static int[] pointsCount = new int[4];
 	private static ArrayList<Point2> pitchPoints = new ArrayList<Point2>();
 	private static WorldState state = new WorldState();
+	public static Point2 requestedData = new Point2(-1, -1);
+	private static Point2 circlePt = new Point2(-1, -1);
 
-	private JLabel label;
-	private JFrame frame;
+	private static JLabel label;
+	public static JFrame frame;
 	private long initialTime; // For FPS calculation
-	private VideoDevice videoDevice;
-	private FrameGrabber frameGrabber;
+	private static VideoDevice videoDevice;
+	private static FrameGrabber frameGrabber;
+	private boolean hullCalculated = false;
+	public static boolean edgesCalibrated = false;
 
 	// Used for normalisation (first float is max brightness, second is min
 	// brightness)
@@ -69,17 +70,17 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 	// Used to denote if video feed has been pre-processed; using integer
 	// so we can count frames and ignore the first few
-	private static int preprocessed = 0;
+	private static int keyframe = 0;
 
 	// Used for calculating direction the ball is heading
 	static Point2[] prevFramePos = new Point2[10];
-	
+
 	// Added in to help split up into sections
-	Point2 leftTop = new Point2(0,0);
-	Point2 leftBottom = new Point2(0,0);
-	Point2 rightTop = new Point2(0,0);
-	Point2 rightBottom = new Point2(0,0);
-	Boolean sectionsDone = false;
+	public static Point2 leftTop = new Point2(0, 0);
+	public static Point2 leftBottom = new Point2(0, 0);
+	public static Point2 rightTop = new Point2(0, 0);
+	public static Point2 rightBottom = new Point2(0, 0);
+	public static boolean sectionsDone = false;
 
 	/**
 	 * Provides Java application support. On launch, runs a JFrame window which
@@ -111,7 +112,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *             if any parameter if invalid
 	 */
 	public Vision(WorldState state) throws V4L4JException {
-		// Initialise prevFramePos:
+		// Initialise prevFramePos to avoid null pointer exception:
 		for (int i = 0; i < 10; i++)
 			prevFramePos[i] = new Point2(0, 0);
 
@@ -142,52 +143,22 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				// Ensure the pre-process is only ran once during
 				// initialisation; but ignore first few frames (which are always
 				// highly distorted)
-				if (preprocessed < 25)
-					preprocessed++;
-				else if (preprocessed == 25)
-					preprocess(frameImage);
-				else
-					processImage(frameImage);
+				processImage(frameImage);
+
+				if (!hullCalculated) {
+					keyframe++;
+					if (keyframe >= FRAME_IGNORE_COUNT && edgesCalibrated) {
+						hullCalculated = true;
+						preprocess(frameImage);
+					}
+				}
 			}
 		});
 
 		frameGrabber.startCapture();
-		// Mouse Listener 
-		frame.addMouseListener(new MouseAdapter() {
-				java.awt.Point pos2; 
-				@Override
-			    public void mousePressed(MouseEvent e) {
-					System.out.println("Mouse Clicked");
-			 		pos2 = frame.getMousePosition();
-			 		System.out.println(pos2.toString());
-					if (pos2 != null) {
-						int x = (int) Math.round(pos2.getX()) - X_FRAME_OFFSET;
-						int y = (int) Math.round(pos2.getY()) - Y_FRAME_OFFSET;
-						
-						if(leftTop.getX() == 0 && leftTop.getY() == 0){
-							System.out.println("left top set.");
-							leftTop = new Point2(x,y);
-							
-						}
-						else if(leftBottom.getX() == 0 && leftBottom.getY() ==0 ){
-							System.out.println("left bottom set.");
-							leftBottom = new Point2(x,y);
-						}
-						else if(rightTop.getX() == 0 && rightTop.getY() == 0){
-							System.out.println("right top set.");
-							rightTop= new Point2(x,y);
-						}
-						else if(rightBottom.getX() == 0 && rightBottom.getY() == 0){
-							System.out.println("right bottom set.");
-							rightBottom = new Point2(x,y);
-						}
-						else{
-							sectionsDone = true;
-						}
-						
-					}
-			     }
-			  });		
+
+		// Mouse Listener
+		frame.addMouseListener(new Calibration());
 	}
 
 	/**
@@ -203,13 +174,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *            - image on which to base the pre-processing
 	 */
 	private static void preprocess(BufferedImage image) {
-		preprocessed++;
+		keyframe++;
 
 		ArrayList<Point2> whitePoints = new ArrayList<Point2>();
 
 		// Find borders
-		for (int row = Constants.TABLE_MIN_Y; row < Constants.TABLE_MAX_Y; row++) {
-			for (int column = Constants.TABLE_MIN_X; column < Constants.TABLE_MAX_X; column++) {
+		for (int row = leftTop.getY(); row < rightBottom.getY(); row++) {
+			for (int column = leftTop.getX(); column < rightBottom.getX(); column++) {
 
 				// Color pixelColorRGB = new Color(image.getRGB(column, row));
 				Color pixelColorRGB = normaliseColor(image, row, column);
@@ -221,8 +192,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		}
 
 		LinkedList<Point2> borders = Alg.convexHull(whitePoints);
-		for (int row = Constants.TABLE_MIN_Y; row < Constants.TABLE_MAX_Y; row++) {
-			for (int column = Constants.TABLE_MIN_X; column < Constants.TABLE_MAX_X; column++) {
+		for (int row = leftTop.getY(); row < rightBottom.getY(); row++) {
+			for (int column = leftTop.getX(); column < rightBottom.getX(); column++) {
 				Point2 p = new Point2(column, row);
 				if (Alg.isInHull(borders, p))
 					pitchPoints.add(p);
@@ -334,18 +305,19 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				}
 			}
 		}
-		
-		
-		
-		if (sectionsDone == true){
+
+		if (sectionsDone == true) {
 			// imageGraphics.drawLine(x1, y1, x2, y2);
 			Graphics imageGraphics = image.getGraphics();
-			//Graphics frameGraphics = label.getGraphics();
+			// Graphics frameGraphics = label.getGraphics();
 			imageGraphics.setColor(Color.white);
-			imageGraphics.drawLine(leftTop.getX(), leftTop.getY(),leftBottom.getX(), leftBottom.getY());
-			imageGraphics.drawLine(rightTop.getX(), rightTop.getY(),rightBottom.getX(), rightBottom.getY());
-			
+			imageGraphics.drawLine(leftTop.getX(), leftTop.getY(),
+					leftBottom.getX(), leftBottom.getY());
+			imageGraphics.drawLine(rightTop.getX(), rightTop.getY(),
+					rightBottom.getX(), rightBottom.getY());
+
 		}
+
 		// Get average position of ball
 		if (ballCounter > 0)
 			ballPos = ballPos.div(ballCounter);
@@ -392,14 +364,14 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			avgPrevPos = avgPrevPos.add(p);
 		avgPrevPos = avgPrevPos.div(prevFramePos.length);
 		avgPrevPos = avgPrevPos.subtract(ballPos).mult(-5).add(ballPos);
-		
+
 		// Create graphical representation
 		Graphics imageGraphics = image.getGraphics();
 		Graphics frameGraphics = label.getGraphics();
 
 		// TODO: fix orientation code
-		double yellowOrientation = findOrientation(image, yellowLeftPos, imageGraphics,
-				Constants.ROBOT_YELLOW_LEFT);
+		double yellowOrientation = findOrientation(image, yellowLeftPos,
+				imageGraphics, Constants.ROBOT_YELLOW_LEFT);
 
 		// Point2 blackPos = new Point2();
 		// Point2 blackPos = findBlackDot(image, yellowLeftPos);
@@ -464,6 +436,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 					Constants.ROBOT_BLUE_RIGHT);
 		}
 
+		if (Alg.pointInPitch(circlePt)) {
+			drawCircle(circlePt, imageGraphics, Constants.GRAY_BLEND,
+					Constants.ROBOT_HEAD_RADIUS);
+		}
+
 		angSmoothingWriteIndex++;
 		angSmoothingWriteIndex %= ANGLE_SMOOTHING_FRAME_COUNT;
 
@@ -472,6 +449,17 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		imageGraphics.drawLine(Constants.TABLE_CENTRE_X,
 				Constants.TABLE_MIN_Y + 1, Constants.TABLE_CENTRE_X,
 				Constants.TABLE_MAX_Y - 1);
+
+		Point2 dPt = new Point2(requestedData.getX(), requestedData.getY());
+		if (Alg.pointInPitch(dPt)) {
+			circlePt = requestedData.copy();
+			Color s = rgb[requestedData.getX()][requestedData.getY()];
+			System.out.println("RGB: " + s.getRed() + " " + s.getGreen() + " "
+					+ s.getBlue());
+			float[] h = hsb[requestedData.getX()][requestedData.getY()];
+			System.out.println("HSB: " + h[0] + " " + h[1] + " " + h[2]);
+			requestedData = new Point2(-1, -1);
+		}
 
 		// Saves this frame's ball position and shifts previous frames'
 		// positions
@@ -491,8 +479,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// Draw mouse position, RGB, and HSB values to screen
 		pos = frame.getMousePosition();
 		if (pos != null) {
-			x = (int) Math.round(pos.getX()) - X_FRAME_OFFSET;
-			y = (int) Math.round(pos.getY()) - Y_FRAME_OFFSET;
+			x = (int) Math.round(pos.getX()) - Constants.X_FRAME_OFFSET;
+			y = (int) Math.round(pos.getY()) - Constants.Y_FRAME_OFFSET;
 			if (Alg.pointInPitch(new Point2(x, y))) {
 
 				imageGraphics.drawString("Mouse pos: x:" + x + " y:" + y, 15,
@@ -526,28 +514,32 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * 
 	 * Author s1143704
 	 */
-	private double findOrientation(BufferedImage image, Point2 centroid, Graphics gfx, int iden) {
+	private double findOrientation(BufferedImage image, Point2 centroid,
+			Graphics gfx, int iden) {
 
-		// Point here is to find the smallest polygon that covers the green plate
+		// Point here is to find the smallest polygon that covers the green
+		// plate
 		// so as to only look within it (turns out the method is pretty fast)
 		ArrayList<Point2> greenPoints = new ArrayList<Point2>();
-		for (int i=-25; i<25; i++) for (int j=-25; j<25; j++) {
-			int column = centroid.getX()+i;
-			int row    = centroid.getY()+j;
-			if (Alg.pointInPitch(new Point2(column,row))) {
+		for (int i = -25; i < 25; i++)
+			for (int j = -25; j < 25; j++) {
+				int column = centroid.getX() + i;
+				int row = centroid.getY() + j;
+				if (Alg.pointInPitch(new Point2(column, row))) {
 					Color pixelColorRGB = new Color(image.getRGB(column, row));
 					cHsb = hsb[column][row];
 					if (isGreen(pixelColorRGB, cHsb)) {
 						image.setRGB(column, row, Color.GREEN.getRGB());
 						greenPoints.add(new Point2(column, row));
 					}
+				}
 			}
-		}
 		LinkedList<Point2> hull = new LinkedList<Point2>();
 		if (!greenPoints.isEmpty()) {
-			hull = Alg.convexHull(greenPoints);  // Contains border of green plate
+			hull = Alg.convexHull(greenPoints); // Contains border of green
+												// plate
 		}
-		
+
 		// Get best angle
 		double angBest = 0.0;
 		if (Alg.pointInPitch(centroid)) {
@@ -561,7 +553,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 						+ (int) (Constants.HEAD_ENUM_RADIUS * Math.cos(r));
 				if (Alg.pointInPitch(new Point2(column, row))) {
 					// TODO: implement next if-clause better
-					if (hsb[column][row][2] < brBest && Alg.isInHull(hull, new Point2(column,row))) {
+					if (hsb[column][row][2] < brBest
+							&& Alg.isInHull(hull, new Point2(column, row))) {
 						brBest = hsb[column][row][2];
 						angBest = r;
 					}
@@ -590,7 +583,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 					(int) (centroid.getY() - Constants.HEAD_ENUM_RADIUS * 2.0
 							* Math.sin(angBest)));
 		}
-		if (angBest>Math.PI) return (angBest - Math.PI) * 180.0 / Math.PI; 
+		if (angBest > Math.PI)
+			return (angBest - Math.PI) * 180.0 / Math.PI;
 		return (angBest + Math.PI) * 180.0 / Math.PI;
 	}
 
@@ -647,7 +641,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private static Color normaliseColor(BufferedImage image, int row, int column) {
 		// Normalise colour values:
 		// Update RGB handle
-		
+
 		// %% 769 nanoseconds:
 		Color pixelColorRGB = new Color(image.getRGB(column, row));
 		rgb[column][row] = pixelColorRGB;
@@ -673,7 +667,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		image.setRGB(column, row,
 				Color.HSBtoRGB(hsb[column][row][0], hsb[column][row][1], br));
 		// %%
-		
+
 		// %% 699 nanoseconds:
 		hsb[column][row] = cHsb;
 		// %%
@@ -749,19 +743,21 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 	/**
 	 * Determines if a pixel is from the green plates that hold the yellow and
-	 * blue i's. Used to calculate the polygons that determine the plates
-	 * in order to look for the black dot within them.
+	 * blue i's. Used to calculate the polygons that determine the plates in
+	 * order to look for the black dot within them.
 	 * 
 	 * @param rgb
-	 * 			The RGB colours for the pixel.
+	 *            The RGB colours for the pixel.
 	 * @param hsb
-	 * 			The HSV values for the pixel.
+	 *            The HSV values for the pixel.
 	 * @return True if the RGB and HSV values are within the defined thresholds
-	 *         (and thus the pixel is part of the green plates), false otherwise.
+	 *         (and thus the pixel is part of the green plates), false
+	 *         otherwise.
 	 */
 	private boolean isGreen(Color rgb, float[] hsb) {
-		return 0.4f < hsb[1] && hsb[1] < 0.8f && hsb[1] > 0.6f
-				&& 0.2f < hsb[2] && hsb[2] < 0.5f;
+		boolean h = Point2.hueEpsilon(hsb[0], 0.35f, 0.08f);
+		return h && 0.5f < hsb[1] && hsb[1] < 0.8f && 0.2f < hsb[2]
+				&& hsb[2] < 0.5f;
 	}
 
 	/**
@@ -826,9 +822,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the blue T), false otherwise.
 	 */
 	private boolean isBlue(Color c, float[] hsb) {
+		boolean h = Point2.hueEpsilon(hsb[0], 0.52f, 0.05f);
 		return (c.getRed() < 50 && c.getGreen() < 100 && c.getBlue() > 70
-				&& c.getBlue() < 120 && 0.4f < hsb[0] && hsb[0] < 0.7f
-				&& hsb[1] > 0.5f && 0.2f < hsb[2] && hsb[2] < 0.5f);
+				&& c.getBlue() < 120 && h && hsb[1] > 0.45f && hsb[1] < 0.7f
+				&& 0.2f < hsb[2] && hsb[2] < 0.55f);
 	}
 
 	/**

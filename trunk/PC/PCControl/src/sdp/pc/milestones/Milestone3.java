@@ -1,6 +1,5 @@
 package sdp.pc.milestones;
 
-import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 
 import sdp.pc.vision.Point2;
 import sdp.pc.vision.Vision;
@@ -10,8 +9,8 @@ import sdp.pc.vision.relay.TCPClient;
 import sdp.pc.common.*;
 
 /**
- * This class should be reimplemented to use ChooseRobot and TCPClient like code
- * insted of Driver.
+ * This class should be re-implemented to use ChooseRobot and TCPClient like
+ * code instead of Driver.
  * 
  * @author s1117764
  * 
@@ -46,7 +45,8 @@ public class Milestone3 {
 	// to get behind it to take a shot at the goal.
 	// * Create meaningful exception handling code,
 	@SuppressWarnings("unused")
-	public static void kickStationaryBall(WorldState state, Vision vision, Driver driver) {
+	public static void kickStationaryBall(WorldState state, Vision vision,
+			Driver driver) {
 		int diffX, diffY, cantakeShot, checkX;
 		Point2 ballPosition = state.getBallPosition();
 		System.out.println("ballAt " + ballPosition);
@@ -189,11 +189,11 @@ public class Milestone3 {
 						driver.turnRight(5);
 					}
 				}
-				//try {
-				//    Thread.sleep(1000);
-				//} catch(InterruptedException ex) {
-				//    Thread.currentThread().interrupt();
-				//}
+				// try {
+				// Thread.sleep(1000);
+				// } catch(InterruptedException ex) {
+				// Thread.currentThread().interrupt();
+				// }
 			} catch (Exception e1) {
 				System.out
 						.println("Exception encountered while trying to turn to face point "

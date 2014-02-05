@@ -95,29 +95,32 @@ public class Alg {
 	 * @return a LinkedList of Point2's, containing the edges of the surrounding polygon
 	 */
 	public static LinkedList<Point2> convexHull(ArrayList<Point2> pts) {
-		
-		Point2 pHull = pts.get(0);
-		Point2 endPoint;
-		
-		LinkedList<Point2> p = new LinkedList<Point2>();
-		
-		for(Point2 pt : pts)
-			if(pt.getX() < pHull.getX())
-				pHull = pt;
-		
-		do
-		{
-			p.add(pHull);
-			endPoint = pts.get(0);
-			for(int j = 1; j<pts.size(); j++)
-				if(endPoint == pHull || 
-				(pts.get(j).isToLeft(p.getLast(), endPoint)))
-					endPoint = pts.get(j);
-			pHull = endPoint;
+		if(pts.size()>0){
+			Point2 pHull = pts.get(0);
+			Point2 endPoint;
+			
+			LinkedList<Point2> p = new LinkedList<Point2>();
+			
+			for(Point2 pt : pts)
+				if(pt.getX() < pHull.getX())
+					pHull = pt;
+			
+			do
+			{
+				p.add(pHull);
+				endPoint = pts.get(0);
+				for(int j = 1; j<pts.size(); j++)
+					if(endPoint == pHull || 
+					(pts.get(j).isToLeft(p.getLast(), endPoint)))
+						endPoint = pts.get(j);
+				pHull = endPoint;
+			}
+			while(endPoint != p.get(0));
+			
+			return p;
 		}
-		while(endPoint != p.get(0));
-		
-		return p;
+		System.out.println("Empty hull!");
+		return new LinkedList<Point2>();
 	}
 	
 	/**
