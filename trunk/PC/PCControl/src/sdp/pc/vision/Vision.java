@@ -40,9 +40,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	// Camera and image parameters
 	private static final int WIDTH = 640, HEIGHT = 480,
 			VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL, CHANNEL = 0,
-			PLAYER_RADIUS = 18, ANGLE_SMOOTHING_FRAME_COUNT = 3,
-			MIN_POINTS_BOT = 10, FRAME_IGNORE_COUNT = 50;
-			X_FRAME_OFFSET = 1, Y_FRAME_OFFSET = 25, PLAYER_RADIUS = 18,
+			PLAYER_RADIUS = 18, FRAME_IGNORE_COUNT = 50,
 			ANGLE_SMOOTHING_FRAME_COUNT = 4, MIN_POINTS_BOT = 10;
 
 	private static final String DEVICE = "/dev/video0";
@@ -376,10 +374,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		double yellowOrientation = findOrientation(image, yellowLeftPos,
 				imageGraphics, Constants.ROBOT_YELLOW_LEFT);
 
-		//Point2 blackPos = new Point2();
-		//Point2 blackPos = findBlackDot(image, yellowLeftPos);
-		//blackPos =
-		//blackPos.subtract(yellowLeftPos).mult(-5).add(yellowLeftPos);
+		// Point2 blackPos = new Point2();
+		// Point2 blackPos = findBlackDot(image, yellowLeftPos);
+		// blackPos =
+		// blackPos.subtract(yellowLeftPos).mult(-5).add(yellowLeftPos);
 
 		// Update World State
 		state.setBallPosition(ballPos);
@@ -762,9 +760,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		boolean h = Point2.hueEpsilon(hsb[0], 0.35f, 0.08f);
 		return h && 0.5f < hsb[1] && hsb[1] < 0.8f && 0.2f < hsb[2]
 				&& hsb[2] < 0.5f;
-		return rgb.getRed() < 50 && rgb.getGreen() > 70 
-				&&  hsb[0] < 0.5f && 0.4f < hsb[1] && hsb[1] < 0.8f
-				&& 0.0f < hsb[2] && hsb[2] < 0.5f;
 	}
 
 	/**
@@ -833,7 +828,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		return (c.getRed() < 50 && c.getGreen() < 100 && c.getBlue() > 70
 				&& c.getBlue() < 120 && h && hsb[1] > 0.45f && hsb[1] < 0.7f
 				&& 0.2f < hsb[2] && hsb[2] < 0.55f);
-		}
+	}
 
 	/**
 	 * Initialises a FrameGrabber object with the given parameters.
