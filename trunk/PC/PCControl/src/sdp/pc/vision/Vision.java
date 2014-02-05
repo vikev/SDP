@@ -43,7 +43,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private static final int WIDTH = 640, HEIGHT = 480,
 			VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL, CHANNEL = 0,
 			X_FRAME_OFFSET = 1, Y_FRAME_OFFSET = 25, PLAYER_RADIUS = 18,
-			ANGLE_SMOOTHING_FRAME_COUNT = 3, MIN_POINTS_BOT = 10;
+			ANGLE_SMOOTHING_FRAME_COUNT = 4, MIN_POINTS_BOT = 10;
 
 	private static final String DEVICE = "/dev/video0";
 	private static final double VECTOR_THRESHOLD = 3.0;
@@ -401,10 +401,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		double yellowOrientation = findOrientation(image, yellowLeftPos, imageGraphics,
 				Constants.ROBOT_YELLOW_LEFT);
 
-		// Point2 blackPos = new Point2();
-		// Point2 blackPos = findBlackDot(image, yellowLeftPos);
-		// blackPos =
-		// blackPos.subtract(yellowLeftPos).mult(-5).add(yellowLeftPos);
+		//Point2 blackPos = new Point2();
+		//Point2 blackPos = findBlackDot(image, yellowLeftPos);
+		//blackPos =
+		//blackPos.subtract(yellowLeftPos).mult(-5).add(yellowLeftPos);
 
 		// Update World State
 		state.setBallPosition(ballPos);
@@ -744,7 +744,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 */
 	@SuppressWarnings("unused")
 	private boolean isBlack(Color rgb, float[] hsb) {
-		return 0.6 < hsb[0] && hsb[0] < 0.67 && hsb[1] > 0.5;
+		return rgb.getRed() < 0 && rgb.getGreen() < 100 && rgb.getBlue() < 50
+				&& hsb[0] > 0.3f && hsb[1] < 0.7f && hsb[2] < 0.4f;
 	}
 
 	/**
@@ -760,8 +761,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the green plates), false otherwise.
 	 */
 	private boolean isGreen(Color rgb, float[] hsb) {
-		return 0.4f < hsb[1] && hsb[1] < 0.8f && hsb[1] > 0.6f
-				&& 0.2f < hsb[2] && hsb[2] < 0.5f;
+		return rgb.getRed() < 50 && rgb.getGreen() > 70 
+				&&  hsb[0] < 0.5f && 0.4f < hsb[1] && hsb[1] < 0.8f
+				&& 0.0f < hsb[2] && hsb[2] < 0.5f;
 	}
 
 	/**
@@ -826,7 +828,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the blue T), false otherwise.
 	 */
 	private boolean isBlue(Color c, float[] hsb) {
-		return (c.getRed() < 50 && c.getGreen() < 100 && c.getBlue() > 70
+		return (c.getRed() < 50 && c.getGreen() < 100 && c.getBlue() > 65
 				&& c.getBlue() < 120 && 0.4f < hsb[0] && hsb[0] < 0.7f
 				&& hsb[1] > 0.5f && 0.2f < hsb[2] && hsb[2] < 0.5f);
 	}
