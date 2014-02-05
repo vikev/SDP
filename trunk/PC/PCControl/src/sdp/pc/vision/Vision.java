@@ -519,8 +519,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			Graphics gfx, int iden) {
 
 		// Point here is to find the smallest polygon that covers the green
-		// plate
-		// so as to only look within it (turns out the method is pretty fast)
+		// plate so as to only look within it (turns out the method is pretty
+		// fast)
 		ArrayList<Point2> greenPoints = new ArrayList<Point2>();
 		for (int i = -25; i < 25; i++)
 			for (int j = -25; j < 25; j++) {
@@ -537,8 +537,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			}
 		LinkedList<Point2> hull = new LinkedList<Point2>();
 		if (!greenPoints.isEmpty()) {
-			hull = Alg.convexHull(greenPoints); // Contains border of green
-												// plate
+
+			// Contains border of green plate
+			hull = Alg.convexHull(greenPoints);
 		}
 
 		// Get best angle
@@ -825,9 +826,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 */
 	private boolean isBlue(Color c, float[] hsb) {
 		boolean h = Point2.hueEpsilon(hsb[0], 0.52f, 0.05f);
-		return (c.getRed() < 50 && c.getGreen() < 100 && c.getBlue() > 70
-				&& c.getBlue() < 120 && h && hsb[1] > 0.45f && hsb[1] < 0.7f
-				&& 0.2f < hsb[2] && hsb[2] < 0.55f);
+		boolean b = Point2.hueEpsilon(hsb[2], 0.33f, 0.04f);
+		boolean rgb = c.getRed() < 50 && c.getGreen() < 100 && c.getBlue() > 70;
+		return rgb && c.getBlue() < 120 && h && hsb[1] > 0.45f && hsb[1] < 0.7f
+				&& b;
 	}
 
 	/**
