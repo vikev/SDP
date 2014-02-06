@@ -381,6 +381,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 		// Update World State
 		state.setBallPosition(ballPos);
+		state.setBallFacing(Math.atan2(ballPos.getY() - avgPrevPos.getY(),
+				ballPos.getX() - avgPrevPos.getX())* 180 / Math.PI);
 		state.setRobotPosition(0, 0, yellowLeftPos);
 		state.setRobotFacing(0, 0, yellowOrientation);
 
@@ -400,19 +402,21 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				&& pointsCount[Constants.ROBOT_YELLOW_LEFT] >= MIN_POINTS_BOT) {
 			drawCircle(yellowLeftPos, imageGraphics, Constants.YELLOW_BLEND,
 					Constants.ROBOT_CIRCLE_RADIUS);
-			//findOrientation(image, yellowLeftPos, imageGraphics,
-				//Constants.ROBOT_YELLOW_LEFT);
-			findOrientationByDot(yellowLeftPos.getX(),yellowLeftPos.getY(),image,true);
+			// findOrientation(image, yellowLeftPos, imageGraphics,
+			// Constants.ROBOT_YELLOW_LEFT);
+			findOrientationByDot(yellowLeftPos.getX(), yellowLeftPos.getY(),
+					image, true);
 		}
 
 		if (Alg.pointInPitch(yellowRightPos)
 				&& pointsCount[Constants.ROBOT_YELLOW_RIGHT] >= MIN_POINTS_BOT) {
 			drawCircle(yellowRightPos, imageGraphics, Constants.YELLOW_BLEND,
-					
-					Constants.ROBOT_CIRCLE_RADIUS);
-			//findOrientation(image, yellowRightPos, imageGraphics,
-				//Constants.ROBOT_YELLOW_RIGHT);
-			findOrientationByDot(yellowRightPos.getX(),yellowRightPos.getY(),image,true);
+
+			Constants.ROBOT_CIRCLE_RADIUS);
+			// findOrientation(image, yellowRightPos, imageGraphics,
+			// Constants.ROBOT_YELLOW_RIGHT);
+			findOrientationByDot(yellowRightPos.getX(), yellowRightPos.getY(),
+					image, true);
 		}
 
 		// draw orientation (temp)
@@ -428,18 +432,20 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				&& pointsCount[Constants.ROBOT_BLUE_LEFT] >= MIN_POINTS_BOT) {
 			drawCircle(blueLeftPos, imageGraphics, Constants.BLUE_BLEND,
 					Constants.ROBOT_CIRCLE_RADIUS);
-			//findOrientation(image, blueLeftPos, imageGraphics,
-				//Constants.ROBOT_BLUE_LEFT);
-			findOrientationByDot(blueLeftPos.getX(),blueLeftPos.getY(),image,true);
+			// findOrientation(image, blueLeftPos, imageGraphics,
+			// Constants.ROBOT_BLUE_LEFT);
+			findOrientationByDot(blueLeftPos.getX(), blueLeftPos.getY(), image,
+					true);
 		}
 
 		if (Alg.pointInPitch(blueRightPos)
 				&& pointsCount[Constants.ROBOT_BLUE_RIGHT] >= MIN_POINTS_BOT) {
 			drawCircle(blueRightPos, imageGraphics, Constants.BLUE_BLEND,
 					Constants.ROBOT_CIRCLE_RADIUS);
-			//findOrientation(image, blueRightPos, imageGraphics,
-				//Constants.ROBOT_BLUE_RIGHT);
-			findOrientationByDot(blueRightPos.getX(),blueRightPos.getY(),image,true);
+			// findOrientation(image, blueRightPos, imageGraphics,
+			// Constants.ROBOT_BLUE_RIGHT);
+			findOrientationByDot(blueRightPos.getX(), blueRightPos.getY(),
+					image, true);
 		}
 
 		if (Alg.pointInPitch(circlePt)) {
@@ -520,9 +526,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * 
 	 * Author s1143704
 	 */
-	
-	private void findOrientationByDot(int meanX, int meanY, BufferedImage image, boolean showImage) {	
-		
+
+	private void findOrientationByDot(int meanX, int meanY,
+			BufferedImage image, boolean showImage) {
+
 		// Point here is to find the smallest polygon that covers the green
 		// plate so as to only look within it (turns out the method is pretty
 		// fast)
@@ -544,39 +551,38 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		if (!greenPoints.isEmpty()) {
 			hull = Alg.convexHull(greenPoints);
 		}
-		int pxC=0;
-		int pxX = 0,pxY = 0;
+		int pxC = 0;
+		int pxX = 0, pxY = 0;
 		for (int i = -25; i < 25; i++)
 			for (int j = -25; j < 25; j++) {
 				int column = meanX + i;
 				int row = meanY + j;
-				
+
 				if (Alg.isInHull(hull, new Point2(column, row))) {
 					Color pixelColorRGB = new Color(image.getRGB(column, row));
 					if (isBlack(pixelColorRGB, hsb[column][row])) {
 						pxC++;
-						pxX+=column;
-						pxY+=row;
+						pxX += column;
+						pxY += row;
 					}
 				}
-					
+
 			}
-		
-		if (pxC!=0)
-		{
-			pxX/=pxC;
-			pxY/=pxC;
+
+		if (pxC != 0) {
+			pxX /= pxC;
+			pxY /= pxC;
 		}
-				
+
 		Point2 pt = new Point2(pxX, pxY);
 		drawCircle(pt, image.getGraphics(), Constants.GRAY_BLEND,
 				Constants.ROBOT_HEAD_RADIUS);
 		image.getGraphics().drawLine(meanX, meanY, pxX, pxY);
-	
+
 	}
-	
-	
-	private double findOrientation(BufferedImage image, Point2 centroid, Graphics gfx, int iden) {
+
+	private double findOrientation(BufferedImage image, Point2 centroid,
+			Graphics gfx, int iden) {
 
 		// Point here is to find the smallest polygon that covers the green
 		// plate so as to only look within it (turns out the method is pretty
@@ -631,19 +637,17 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			}
 			angBest /= ANGLE_SMOOTHING_FRAME_COUNT;
 
-			/*// Draw to screen
-			Point2 pt = new Point2(centroid.getX()
-					+ (int) (Constants.HEAD_ENUM_RADIUS * Math.cos(angBest)),
-					centroid.getY()
-							+ (int) (Constants.HEAD_ENUM_RADIUS * Math
-									.sin(angBest)));
-			drawCircle(pt, gfx, Constants.GRAY_BLEND,
-					Constants.ROBOT_HEAD_RADIUS);
-			gfx.drawLine(centroid.getX(), centroid.getY(),
-					(int) (centroid.getX() - Constants.HEAD_ENUM_RADIUS * 2.0
-							* Math.cos(angBest)),
-					(int) (centroid.getY() - Constants.HEAD_ENUM_RADIUS * 2.0
-							* Math.sin(angBest)));*/
+			/*
+			 * // Draw to screen Point2 pt = new Point2(centroid.getX() + (int)
+			 * (Constants.HEAD_ENUM_RADIUS * Math.cos(angBest)), centroid.getY()
+			 * + (int) (Constants.HEAD_ENUM_RADIUS * Math .sin(angBest)));
+			 * drawCircle(pt, gfx, Constants.GRAY_BLEND,
+			 * Constants.ROBOT_HEAD_RADIUS); gfx.drawLine(centroid.getX(),
+			 * centroid.getY(), (int) (centroid.getX() -
+			 * Constants.HEAD_ENUM_RADIUS * 2.0 Math.cos(angBest)), (int)
+			 * (centroid.getY() - Constants.HEAD_ENUM_RADIUS * 2.0
+			 * Math.sin(angBest)));
+			 */
 		}
 		if (angBest > Math.PI)
 			return (angBest - Math.PI) * 180.0 / Math.PI;
@@ -798,12 +802,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * @param hsb
 	 * @return
 	 */
-	//@SuppressWarnings("unused")
+	// @SuppressWarnings("unused")
 	private boolean isBlack(Color c, float[] hsb) {
 		boolean h = Alg.withinBounds(hsb[0], 0.2f, 0.25f);
 		boolean s = Alg.withinBounds(hsb[1], 0.2f, 0.25f);
 		boolean b = Alg.withinBounds(hsb[2], 0.2f, 0.25f);
-		boolean rgb = c.getRed() < 70 && c.getGreen() < 100 && c.getBlue() < 70; 
+		boolean rgb = c.getRed() < 70 && c.getGreen() < 100 && c.getBlue() < 70;
 		return rgb && h && s && b;
 	}
 
@@ -825,7 +829,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		boolean s = Alg.withinBounds(hsb[1], 0.70f, 0.15f);
 		boolean b = Alg.withinBounds(hsb[2], 0.30f, 0.10f);
 		boolean rgb = c.getRed() < 40 && c.getGreen() > 60 && c.getBlue() < 60;
-		return rgb &&  h && s && b;
+		return rgb && h && s && b;
 	}
 
 	/**
@@ -844,7 +848,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		boolean b = Alg.withinBounds(hsb[0], 0.2f, 0.2f);
 		boolean rgb = c.getRed() > 90 && c.getRed() < 130 && c.getGreen() > 70
 				&& c.getGreen() < 130;
-		return  rgb && h && b;
+		return rgb && h && b;
 	}
 
 	/**
@@ -881,8 +885,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		boolean h = Alg.withinBounds(hsb[0], 0.08f, 0.08f);
 		boolean s = Alg.withinBounds(hsb[1], 0.85f, 0.20f);
 		boolean b = Alg.withinBounds(hsb[2], 0.5f, 0.25f);
-		boolean rgb = c.getRed() > 120 && c.getGreen() > 60 
-					  && c.getGreen() < 120 && c.getBlue() < 30;
+		boolean rgb = c.getRed() > 120 && c.getGreen() > 60
+				&& c.getGreen() < 120 && c.getBlue() < 30;
 		return rgb && h && s && b;
 	}
 
@@ -903,7 +907,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		boolean s = Alg.withinBounds(hsb[1], 0.58f, 0.08f);
 		boolean b = Alg.withinBounds(hsb[2], 0.33f, 0.04f);
 		boolean rgb = c.getRed() < 50 && c.getGreen() < 100 && c.getBlue() > 70
-					  && c.getBlue() < 120;
+				&& c.getBlue() < 120;
 		return rgb && h && s && b;
 	}
 

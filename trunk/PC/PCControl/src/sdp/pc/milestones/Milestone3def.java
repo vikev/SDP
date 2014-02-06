@@ -25,26 +25,25 @@ public class Milestone3def {
 			e1.printStackTrace();
 		}
 		Thread.sleep(500);
-		defenceBall(state, vision, driver);
-		System.out.println("Finished attempting to defend the ball");
-	}
-
-	public static void defenceBall(WorldState state, Vision vision,
-			Driver driver) {
-		Point2 ballPosition = state.getBallPosition();
-		System.out.println("Ball is at: " + ballPosition);
-		
-		//At the beginning make sure that robot is facing by 270 degrees
 		while (true) {
 			Scanner reader = new Scanner(System.in);
 			System.out.println("Enter the first number");
 			//get user input for a
 			int a = reader.nextInt();
 			if (a == 0) {
-				rotatePerpendicular(state, vision, driver);
+				defendBall(state, vision, driver);
+				System.out.println("Finished attempting to defend the ball");
 			}
 		}
+	}
+
+	public static void defendBall(WorldState state, Vision vision,
+			Driver driver) {
+		Point2 ballPosition = state.getBallPosition();
+		System.out.println("Ball is at: " + ballPosition);
 		
+		//At the beginning make sure that robot is facing perpendicular to edges
+		rotatePerpendicular(state, vision, driver);
 	}
 	
 	public static void rotatePerpendicular(WorldState state, Vision vision,

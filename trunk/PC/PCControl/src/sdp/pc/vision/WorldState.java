@@ -14,6 +14,7 @@ public class WorldState {
 	public int targetGoal = Constants.GOAL_LEFT;
 	private int direction;
 	private Point2 ballLocation;
+	private double ballFacing;
 	private Point2[][] robotLoc = new Point2[TEAM_COUNT][PLAYERS_PER_TEAM];
 	private double[][] robotFacing = new double[TEAM_COUNT][PLAYERS_PER_TEAM];
 
@@ -39,6 +40,10 @@ public class WorldState {
 	// Getter Methods
 	public Point2 getBallPosition() {
 		return ballLocation;
+	}
+	
+	public double getBallFacing() {
+		return ballFacing;
 	}
 
 	public int getDirection() {
@@ -101,6 +106,16 @@ public class WorldState {
 	 */
 	public void setBallPosition(Point2 newPos) {
 		this.ballLocation = newPos;
+	}
+	
+	/***
+	 * Updates the facing of the ball.
+	 * 
+	 * @param newFacing
+	 *            - the new facing of the ball in degrees and null if ball is not moving.
+	 */
+	public void setBallFacing(double newFacing) {
+		this.ballFacing = newFacing;
 	}
 
 	/***
