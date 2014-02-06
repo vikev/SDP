@@ -112,7 +112,7 @@ public class WorldState {
 	 * Updates the facing of the ball.
 	 * 
 	 * @param newFacing
-	 *            - the new facing of the ball in degrees and null if ball is not moving.
+	 *            - the new facing of the ball in degrees and -1 if ball is not moving.
 	 */
 	public void setBallFacing(double newFacing) {
 		this.ballFacing = newFacing;
