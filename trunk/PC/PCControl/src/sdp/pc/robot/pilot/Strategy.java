@@ -11,14 +11,18 @@ import sdp.pc.vision.relay.TCPClient;
 
 public class Strategy extends WorldState{
 	
+	Driver driver;
 	public Strategy() throws Exception
 	{
-		Driver driver = new Driver(new TCPClient(ChooseRobot.dialog()));
+		driver = new Driver(new TCPClient(ChooseRobot.dialog()));
 	}
 	
 	public void robotFallen(int pilot)
 	{
-		if ()
+		if (true) 
+		{
+			
+		}
 	}
 
 }
