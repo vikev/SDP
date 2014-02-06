@@ -2,25 +2,31 @@ package sdp.pc.vision;
 
 import sdp.pc.common.Constants;
 
+/**
+ * Class for recording and maintaining the positions and facing angles of
+ * objects in "world". Must be instantiated.
+ * 
+ */
 public class WorldState {
 	public static final int PLAYERS_PER_TEAM = 2, TEAM_COUNT = 2,
 			TEAM_YELLOW = 0, TEAM_BLUE = 1;
 
-	public int targetGoal = Constants.GOAL_LEFT; 
+	public int targetGoal = Constants.GOAL_LEFT;
 	private int direction;
 	private Point2 ballLocation;
 	private Point2[][] robotLoc = new Point2[TEAM_COUNT][PLAYERS_PER_TEAM];
 	private double[][] robotFacing = new double[TEAM_COUNT][PLAYERS_PER_TEAM];
-	
-	public static final Point2 leftGoalCentre = new Point2 (77,235); //Taken from image of pitch
-	public static final Point2 rightGoalCentre = new Point2 (589,241); //These are likely to change
+
+	// Taken from image of pitch; these are likely to change
+	public static final Point2 leftGoalCentre = new Point2(77, 235);
+	public static final Point2 rightGoalCentre = new Point2(589, 241);
 
 	public WorldState() {
 
 		// Set initial direction
-		if(targetGoal == Constants.GOAL_LEFT){
+		if (targetGoal == Constants.GOAL_LEFT) {
 			this.direction = Constants.DIRECTION_LEFT;
-		}else{
+		} else {
 			this.direction = Constants.DIRECTION_RIGHT;
 		}
 
@@ -30,7 +36,7 @@ public class WorldState {
 				robotLoc[t][p] = new Point2();
 	}
 
-	/* Getter Methods */
+	// Getter Methods
 	public Point2 getBallPosition() {
 		return ballLocation;
 	}
@@ -43,10 +49,6 @@ public class WorldState {
 		return targetGoal;
 	}
 
-	public void setTargetGoal(int newTargetGoal) {
-		targetGoal = newTargetGoal;
-	}
-
 	public Point2 getLeftGoalCentre() {
 		return Constants.LEFT_GOAL_CENTRE;
 	}
@@ -56,22 +58,37 @@ public class WorldState {
 	}
 
 	/**
+	 * Method for choosing a new target goal
+	 * 
+	 * @param newTargetGoal
+	 */
+	public void setTargetGoal(int newTargetGoal) {
+		targetGoal = newTargetGoal;
+	}
+
+	/**
 	 * Gets the position of the specified robot
-	 * @param team the team of the robot, 0 for yellow and 1 for blue
-	 * @param robot the id of the robot, 0 for left one and 1 foe the right one
+	 * 
+	 * @param team
+	 *            the team of the robot, 0 for yellow and 1 for blue
+	 * @param robot
+	 *            the id of the robot, 0 for left one and 1 foe the right one
 	 * @return the position of the robot
 	 */
 	public Point2 getRobotPosition(int team, int robot) {
 		return robotLoc[team][robot];
 	}
-	
+
 	/**
 	 * Gets the facing of the specified robot
-	 * @param team the team of the robot, 0 for yellow and 1 for blue
-	 * @param robot the id of the robot, 0 for left one and 1 for the right one
+	 * 
+	 * @param team
+	 *            the team of the robot, 0 for yellow and 1 for blue
+	 * @param robot
+	 *            the id of the robot, 0 for left one and 1 for the right one
 	 * @return the orientation of the robot, in ???
 	 */
-	
+
 	public double getRobotFacing(int team, int robot) {
 		return robotFacing[team][robot];
 	}
