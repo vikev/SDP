@@ -810,6 +810,15 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * @param hsb
 	 * @return
 	 */
+<<<<<<< Updated upstream
+	// @SuppressWarnings("unused")
+	private boolean isBlack(Color c, float[] hsb) {
+		boolean h = Alg.withinBounds(hsb[0], 0.2f, 0.25f);
+		boolean s = Alg.withinBounds(hsb[1], 0.2f, 0.25f);
+		boolean b = Alg.withinBounds(hsb[2], 0.2f, 0.25f);
+		boolean rgb = c.getRed() < 70 && c.getGreen() < 100 && c.getBlue() < 70;
+		return rgb && h && s && b;
+=======
 	private boolean isBlack(Color c, float[] hsb) {
 		return hsb[0] <= thresh.getGrey_h_high() && hsb[0] >= thresh.getGrey_h_low() &&
         hsb[1] <= thresh.getGrey_s_high() &&  hsb[1] >= thresh.getGrey_s_low() &&
@@ -817,6 +826,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
         c.getRed() <= thresh.getGrey_r_high() &&  c.getRed() >= thresh.getGrey_r_low() &&
         c.getGreen() <= thresh.getGrey_g_high() && c.getGreen() >= thresh.getGrey_g_low() &&
         c.getBlue() <= thresh.getGrey_b_high() && c.getBlue() >= thresh.getGrey_b_low();
+>>>>>>> Stashed changes
 	}
 
 	/**
@@ -833,12 +843,20 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         otherwise.
 	 */
 	private boolean isGreen(Color c, float[] hsb) {
+<<<<<<< Updated upstream
+		boolean h = Alg.withinBounds(hsb[0], 0.35f, 0.08f);
+		boolean s = Alg.withinBounds(hsb[1], 0.70f, 0.15f);
+		boolean b = Alg.withinBounds(hsb[2], 0.30f, 0.10f);
+		boolean rgb = c.getRed() < 40 && c.getGreen() > 60 && c.getBlue() < 60;
+		return rgb && h && s && b;
+=======
 		return hsb[0] <= thresh.getGreen_h_high() && hsb[0] >= thresh.getGreen_h_low() &&
         hsb[1] <= thresh.getGreen_s_high() &&  hsb[1] >= thresh.getGreen_s_low() &&
         hsb[2] <= thresh.getGreen_v_high() &&  hsb[2] >= thresh.getGreen_v_low() &&
         c.getRed() <= thresh.getGreen_r_high() &&  c.getRed() >= thresh.getGreen_r_low() &&
         c.getGreen() <= thresh.getGreen_g_high() && c.getGreen() >= thresh.getGreen_g_low() &&
         c.getBlue() <= thresh.getGreen_b_high() && c.getBlue() >= thresh.getGreen_b_low();
+>>>>>>> Stashed changes
 	}
 
 	/**
@@ -894,12 +912,21 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the yellow T), false otherwise.
 	 */
 	private boolean isYellow(Color c, float[] hsb) {
+<<<<<<< Updated upstream
+		boolean h = Alg.withinBounds(hsb[0], 0.08f, 0.08f);
+		boolean s = Alg.withinBounds(hsb[1], 0.85f, 0.20f);
+		boolean b = Alg.withinBounds(hsb[2], 0.5f, 0.25f);
+		boolean rgb = c.getRed() > 120 && c.getGreen() > 60
+				&& c.getGreen() < 120 && c.getBlue() < 30;
+		return rgb && h && s && b;
+=======
 		return hsb[0] <= thresh.getYellow_h_high() && hsb[0] >= thresh.getYellow_h_low() &&
         hsb[1] <= thresh.getYellow_s_high() &&  hsb[1] >= thresh.getYellow_s_low() &&
         hsb[2] <= thresh.getYellow_v_high() &&  hsb[2] >= thresh.getYellow_v_low() &&
         c.getRed() <= thresh.getYellow_r_high() &&  c.getRed() >= thresh.getYellow_r_low() &&
         c.getGreen() <= thresh.getYellow_g_high() && c.getGreen() >= thresh.getYellow_g_low() &&
         c.getBlue() <= thresh.getYellow_b_high() && c.getBlue() >= thresh.getYellow_b_low();
+>>>>>>> Stashed changes
 	}
 
 	/**
@@ -915,12 +942,21 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the blue T), false otherwise.
 	 */
 	private boolean isBlue(Color c, float[] hsb) {
+<<<<<<< Updated upstream
+		boolean h = Alg.withinBounds(hsb[0], 0.52f, 0.05f);
+		boolean s = Alg.withinBounds(hsb[1], 0.58f, 0.08f);
+		boolean b = Alg.withinBounds(hsb[2], 0.33f, 0.04f);
+		boolean rgb = c.getRed() < 50 && c.getGreen() < 100 && c.getBlue() > 70
+				&& c.getBlue() < 120;
+		return rgb && h && s && b;
+=======
 		return hsb[0] <= thresh.getBlue_h_high() && hsb[0] >= thresh.getBlue_h_low() &&
         hsb[1] <= thresh.getBlue_s_high() &&  hsb[1] >= thresh.getBlue_s_low() &&
         hsb[2] <= thresh.getBlue_v_high() &&  hsb[2] >= thresh.getBlue_v_low() &&
         c.getRed() <= thresh.getBlue_r_high() &&  c.getRed() >= thresh.getBlue_r_low() &&
         c.getGreen() <= thresh.getBlue_g_high() && c.getGreen() >= thresh.getBlue_g_low() &&
         c.getBlue() <= thresh.getBlue_b_high() && c.getBlue() >= thresh.getBlue_b_low();
+>>>>>>> Stashed changes
 	}
 
 	/**
