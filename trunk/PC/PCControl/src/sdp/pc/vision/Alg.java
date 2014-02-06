@@ -85,6 +85,20 @@ public class Alg {
 		double t = (double) (b.getY() - b.getY());
 		return Math.sqrt(s * s + t * t);
 	}
+	
+	/**
+	 * Checks if the given value is within a certain range (epsilon) of the
+	 * target value. To be used for pixel thresholding.
+	 * 
+	 * @param hue - the value we want to check
+	 * @param target - the target value, i.e. middle of the range
+	 * @param epsilon - the range around the target value
+	 * @return True if 'value' is within 'epsilon'-range of 'target',
+	 * 		   false otherwise
+	 */
+	public static boolean withinBounds(float value, float target, float epsilon){
+		return (Math.abs(value-target)<epsilon);
+	}
 
 	
 	/**

@@ -9,10 +9,6 @@ public class Point2 {
 	private int x;
 	private int y;
 	
-	public static boolean hueEpsilon(float hue, float target, float epsilon){
-		return (Math.abs(hue-target)<epsilon);
-	}
-	
 	/**
 	 * Constructs a new point at the given coordinates
 	 */

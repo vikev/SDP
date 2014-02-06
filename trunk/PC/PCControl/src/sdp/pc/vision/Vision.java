@@ -758,9 +758,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         otherwise.
 	 */
 	private boolean isGreen(Color rgb, float[] hsb) {
-		boolean h = Point2.hueEpsilon(hsb[0], 0.35f, 0.08f);
-		return h && 0.5f < hsb[1] && hsb[1] < 0.8f && 0.2f < hsb[2]
-				&& hsb[2] < 0.5f;
+		boolean h = Alg.withinBounds(hsb[0], 0.35f, 0.08f);
+		return rgb.getRed() < 40 && rgb.getGreen() > 60 && rgb.getBlue() < 60
+				&&  h && 0.4f < hsb[1] && hsb[1] < 0.8f
+				&& 0.1f < hsb[2] && hsb[2] < 0.4f;
 	}
 
 	/**
@@ -792,7 +793,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the ball), false otherwise.
 	 */
 	private boolean isBall(Color c, float[] hsb) {
-		return (c.getRed() > 125 && c.getGreen() < 50 && c.getBlue() < 50 && hsb[1] > 0.5f);
+		return (c.getRed() > 130 && c.getGreen() < 50 && c.getBlue() < 50 && hsb[1] > 0.5f);
 	}
 
 	/**
@@ -825,8 +826,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the blue T), false otherwise.
 	 */
 	private boolean isBlue(Color c, float[] hsb) {
-		boolean h = Point2.hueEpsilon(hsb[0], 0.52f, 0.05f);
-		boolean b = Point2.hueEpsilon(hsb[2], 0.33f, 0.04f);
+		boolean h = Alg.withinBounds(hsb[0], 0.52f, 0.05f);
+		boolean b = Alg.withinBounds(hsb[2], 0.33f, 0.04f);
 		boolean rgb = c.getRed() < 50 && c.getGreen() < 100 && c.getBlue() > 70;
 		return rgb && c.getBlue() < 120 && h && hsb[1] > 0.45f && hsb[1] < 0.7f
 				&& b;
