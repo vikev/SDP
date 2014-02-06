@@ -7,6 +7,7 @@ import sdp.pc.vision.WorldState;
 import sdp.pc.vision.relay.Driver;
 import sdp.pc.vision.relay.TCPClient;
 import sdp.pc.common.*;
+import java.util.Scanner;
 
 public class Milestone3def {
 
@@ -34,11 +35,19 @@ public class Milestone3def {
 		System.out.println("Ball is at: " + ballPosition);
 		
 		//At the beginning make sure that robot is facing by 270 degrees
-		rotateToRight(state, vision, driver);
+		while (true) {
+			Scanner reader = new Scanner(System.in);
+			System.out.println("Enter the first number");
+			//get user input for a
+			int a = reader.nextInt();
+			if (a == 0) {
+				rotatePerpendicular(state, vision, driver);
+			}
+		}
 		
 	}
 	
-	public static void rotateToRight(WorldState state, Vision vision,
+	public static void rotatePerpendicular(WorldState state, Vision vision,
 			Driver driver) {
 		
 		Point2 robotPosition = state.getRobotPosition(0, 0);
@@ -47,23 +56,64 @@ public class Milestone3def {
 		double robotFacing = state.getRobotFacing(0, 0);
 		System.out.println("Initial robot facing angle: " + robotFacing);
 		
-		if (robotFacing > 90 & robotFacing < 270) {
-			try {
-				driver.turnRight(270 - robotFacing);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		double rotateBy;
+		boolean rotateDown = false;
+		
+		if (robotFacing > 0 & robotFacing < 180) {
+			rotateBy = robotFacing - 90;
+			rotateDown = true;
 		} else {
+			rotateBy = robotFacing - 270;
+		}
+		
+		while (Math.abs(rotateBy) > 10) {
+			if (rotateDown) {
+				if (robotFacing < 90) {
+					try {
+						driver.turnRight(5);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} else {
+					try {
+						driver.turnLeft(5);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			} else {
+				if (robotFacing < 270) {
+					try {
+						driver.turnRight(5);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} else {
+					try {
+						driver.turnLeft(5);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
 			try {
-				driver.turnLeft(270 - robotFacing);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+			robotFacing = state.getRobotFacing(0, 0);
+			
+			if (robotFacing > 0 & robotFacing < 180) {
+				rotateBy = robotFacing - 90;
+			} else {
+				rotateBy = robotFacing - 270;
+			} 
 		}
 		double shit = 270 - robotFacing;
 		System.out.println("Turned by: " + shit);
 	}
-	
 }
