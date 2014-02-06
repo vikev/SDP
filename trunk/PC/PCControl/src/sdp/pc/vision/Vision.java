@@ -739,9 +739,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * @return
 	 */
 	@SuppressWarnings("unused")
-	private boolean isBlack(Color rgb, float[] hsb) {
-		return rgb.getRed() < 0 && rgb.getGreen() < 100 && rgb.getBlue() < 50
-				&& hsb[0] > 0.3f && hsb[1] < 0.7f && hsb[2] < 0.4f;
+	private boolean isBlack(Color c, float[] hsb) {
+		boolean h = Alg.withinBounds(hsb[0], 0.2f, 0.2f);
+		boolean s = Alg.withinBounds(hsb[1], 0.2f, 0.2f);
+		boolean b = Alg.withinBounds(hsb[2], 0.2f, 0.2f);
+		boolean rgb = c.getRed() < 70 && c.getGreen() < 100 && c.getBlue() < 70; 
+		return rgb && h && s && b;
 	}
 
 	/**
@@ -757,11 +760,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the green plates), false
 	 *         otherwise.
 	 */
-	private boolean isGreen(Color rgb, float[] hsb) {
+	private boolean isGreen(Color c, float[] hsb) {
 		boolean h = Alg.withinBounds(hsb[0], 0.35f, 0.08f);
-		return rgb.getRed() < 40 && rgb.getGreen() > 60 && rgb.getBlue() < 60
-				&&  h && 0.4f < hsb[1] && hsb[1] < 0.8f
-				&& 0.1f < hsb[2] && hsb[2] < 0.4f;
+		boolean s = Alg.withinBounds(hsb[1], 0.70f, 0.15f);
+		boolean b = Alg.withinBounds(hsb[2], 0.30f, 0.10f);
+		boolean rgb = c.getRed() < 40 && c.getGreen() > 60 && c.getBlue() < 60;
+		return rgb &&  h && s && b;
 	}
 
 	/**
@@ -775,9 +779,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * @return True if the RGB and HSV values are within the defined thresholds
 	 *         (and thus the pixel is part of white tape), false otherwise.
 	 */
-	private static boolean isWhite(Color rgb, float[] hsb) {
-		return rgb.getRed() > 70 && rgb.getRed() < 130 && rgb.getGreen() > 70
-				&& rgb.getGreen() < 130 && hsb[2] > 0.4 && hsb[0] < 0.2;
+	private static boolean isWhite(Color c, float[] hsb) {
+		boolean h = Alg.withinBounds(hsb[0], 0.05f, 0.05f);
+		boolean b = Alg.withinBounds(hsb[0], 0.2f, 0.2f);
+		boolean rgb = c.getRed() > 90 && c.getRed() < 130 && c.getGreen() > 70
+				&& c.getGreen() < 130;
+		return  rgb && h && b;
 	}
 
 	/**
@@ -793,7 +800,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the ball), false otherwise.
 	 */
 	private boolean isBall(Color c, float[] hsb) {
-		return (c.getRed() > 130 && c.getGreen() < 50 && c.getBlue() < 50 && hsb[1] > 0.5f);
+		boolean s = Alg.withinBounds(hsb[1], 0.75f, 0.25f);
+		boolean rgb = c.getRed() > 130 && c.getGreen() < 50 && c.getBlue() < 50;
+		return rgb && s;
 	}
 
 	/**
@@ -809,8 +818,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the yellow T), false otherwise.
 	 */
 	private boolean isYellow(Color c, float[] hsb) {
-		return (c.getRed() > 140 && c.getGreen() > 60 && c.getGreen() < 120
-				&& c.getBlue() < 50 && hsb[1] > 0.6f && hsb[2] > 0.3f);
+		boolean h = Alg.withinBounds(hsb[0], 0.08f, 0.08f);
+		boolean s = Alg.withinBounds(hsb[1], 0.85f, 0.20f);
+		boolean b = Alg.withinBounds(hsb[2], 0.5f, 0.25f);
+		boolean rgb = c.getRed() > 120 && c.getGreen() > 60 
+					  && c.getGreen() < 120 && c.getBlue() < 30;
+		return rgb && h && s && b;
 	}
 
 	/**
@@ -827,10 +840,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 */
 	private boolean isBlue(Color c, float[] hsb) {
 		boolean h = Alg.withinBounds(hsb[0], 0.52f, 0.05f);
+		boolean s = Alg.withinBounds(hsb[1], 0.58f, 0.08f);
 		boolean b = Alg.withinBounds(hsb[2], 0.33f, 0.04f);
-		boolean rgb = c.getRed() < 50 && c.getGreen() < 100 && c.getBlue() > 70;
-		return rgb && c.getBlue() < 120 && h && hsb[1] > 0.45f && hsb[1] < 0.7f
-				&& b;
+		boolean rgb = c.getRed() < 50 && c.getGreen() < 100 && c.getBlue() > 70
+					  && c.getBlue() < 120;
+		return rgb && h && s && b;
 	}
 
 	/**

@@ -44,7 +44,7 @@ public class Constants {
 			ROBOT_YELLOW_RIGHT = 2, ROBOT_BLUE_RIGHT = 3;
 
 	public static final int TABLE_MIN_X = 1, TABLE_MIN_Y = 1,
-			TABLE_MAX_X = 639, TABLE_MAX_Y = 479, TABLE_CENTRE_X = 330, 
+			TABLE_MAX_X = 639, TABLE_MAX_Y = 479, TABLE_CENTRE_X = 320, 
 			X_FRAME_OFFSET = 1, Y_FRAME_OFFSET = 25;
 
 	public static final int ROBOT_CIRCLE_RADIUS = 15, ROBOT_HEAD_RADIUS = 3,
