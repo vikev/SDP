@@ -8,13 +8,14 @@ import sdp.pc.common.Constants;
  * 
  */
 public class WorldState {
-	public static final int PLAYERS_PER_TEAM = 2, TEAM_COUNT = 2,
-			TEAM_YELLOW = 0, TEAM_BLUE = 1;
+	public static final int PLAYERS_PER_TEAM = 2, TEAM_COUNT = 2;
 
 	public int targetGoal = Constants.GOAL_LEFT;
 	private int direction;
 	private Point2 ballLocation;
-	private double ballFacing;
+	private Point2 ballVelocity;
+	private double ballFacing, ballSpeed;
+	
 	private Point2[][] robotLoc = new Point2[TEAM_COUNT][PLAYERS_PER_TEAM];
 	private double[][] robotFacing = new double[TEAM_COUNT][PLAYERS_PER_TEAM];
 
@@ -37,38 +38,49 @@ public class WorldState {
 				robotLoc[t][p] = new Point2();
 	}
 
-	// Getter Methods
-	public Point2 getBallPosition() {
-		return ballLocation;
-	}
-	
+
 	public double getBallFacing() {
 		return ballFacing;
 	}
-
-	public int getDirection() {
-		return direction;
+	public double getBallSpeed() {
+		return ballSpeed;
 	}
 
-	public int getTargetGoal() {
-		return targetGoal;
-	}
-
+	//const getters
 	public Point2 getLeftGoalCentre() {
 		return Constants.LEFT_GOAL_CENTRE;
 	}
-
 	public Point2 getRightGoalCentre() {
 		return Constants.RIGHT_GOAL_CENTRE;
 	}
 
 	/**
+	 * ???
+	 * @return
+	 */
+	public int getTargetGoal() {
+		return targetGoal;
+	}
+	/**
 	 * Method for choosing a new target goal
-	 * 
+	 * ???
 	 * @param newTargetGoal
 	 */
 	public void setTargetGoal(int newTargetGoal) {
 		targetGoal = newTargetGoal;
+	}
+
+	/**
+	 * Gets the current position of the ball
+	 */
+	public Point2 getBallPosition() {
+		return ballLocation;
+	}
+	/**
+	 * Sets the current position of the ball
+	 */
+	public void setBallPosition(Point2 newPos) {
+		this.ballLocation = newPos;
 	}
 
 	/**
@@ -83,41 +95,6 @@ public class WorldState {
 	public Point2 getRobotPosition(int team, int robot) {
 		return robotLoc[team][robot];
 	}
-
-	/**
-	 * Gets the facing of the specified robot
-	 * 
-	 * @param team
-	 *            the team of the robot, 0 for yellow and 1 for blue
-	 * @param robot
-	 *            the id of the robot, 0 for left one and 1 for the right one
-	 * @return the orientation of the robot, in ???
-	 */
-
-	public double getRobotFacing(int team, int robot) {
-		return robotFacing[team][robot];
-	}
-
-	/***
-	 * Updates the position of the ball.
-	 * 
-	 * @param newPos
-	 *            - the new position of the ball.
-	 */
-	public void setBallPosition(Point2 newPos) {
-		this.ballLocation = newPos;
-	}
-	
-	/***
-	 * Updates the facing of the ball.
-	 * 
-	 * @param newFacing
-	 *            - the new facing of the ball in degrees and null if ball is not moving.
-	 */
-	public void setBallFacing(double newFacing) {
-		this.ballFacing = newFacing;
-	}
-
 	/***
 	 * Updates the team position of a given robot, part of a given team.
 	 * 
@@ -133,6 +110,18 @@ public class WorldState {
 	}
 
 	/**
+	 * Gets the facing of the specified robot
+	 * 
+	 * @param team
+	 *            the team of the robot, 0 for yellow and 1 for blue
+	 * @param robot
+	 *            the id of the robot, 0 for left one and 1 for the right one
+	 * @return the orientation of the robot, in ???
+	 */
+	public double getRobotFacing(int team, int robot) {
+		return robotFacing[team][robot];
+	}
+	/**
 	 * Updates the facing of a given robot, part of a given team.
 	 * 
 	 * @param team
@@ -147,12 +136,34 @@ public class WorldState {
 	}
 
 	/**
-	 * Set the direction our team is supposed to shoot towards.
-	 * 
-	 * @param direction
+	 * Gets the direction our team is supposed to shoot towards
+	 * @return
+	 */
+	public int getDirection() {
+		return direction;
+	}
+	/**
+	 * Sets the direction our team is supposed to shoot towards
 	 */
 	public void setDirection(int direction) {
 		this.direction = direction;
+	}
+	
+	/**
+	 * Sets the current velocity of the ball
+	 */
+
+	public void setBallVelocity(Point2 ballVelocity) {
+		this.ballVelocity = ballVelocity;
+		this.ballSpeed = ballVelocity.length();
+		this.ballFacing = ballVelocity.angle();
+	}
+	/**
+	 * Gets the current velocity of the ball
+	 */
+
+	public Point2 getBallVelocity() {
+		return ballVelocity;
 	}
 
 }

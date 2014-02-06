@@ -40,8 +40,21 @@ public class Constants {
 	// related to Constants
 	public static final int GOAL_LEFT = 0, GOAL_RIGHT = 1;
 	public static final int DIRECTION_LEFT = 0, DIRECTION_RIGHT = 1;
-	public static final int ROBOT_YELLOW_LEFT = 0, ROBOT_BLUE_LEFT = 1,
-			ROBOT_YELLOW_RIGHT = 2, ROBOT_BLUE_RIGHT = 3;
+	public static final int 
+		TEAM_YELLOW = 0, 
+		TEAM_BLUE = 1,
+		
+		ROBOT_LEFT = 0,
+		ROBOT_RIGHT = 1,
+
+		ROBOT_YELLOW_LEFT = ROBOT_ID(ROBOT_LEFT, TEAM_YELLOW),	//0
+		ROBOT_BLUE_LEFT = ROBOT_ID(ROBOT_LEFT, TEAM_BLUE),		//1
+		ROBOT_YELLOW_RIGHT = ROBOT_ID(ROBOT_RIGHT, TEAM_YELLOW),//2
+		ROBOT_BLUE_RIGHT = ROBOT_ID(ROBOT_RIGHT, TEAM_BLUE);	//3
+	
+	public static final int ROBOT_ID(int robot, int team) {
+		return robot * 2 + team;
+	}
 
 	public static final int TABLE_MIN_X = 1, TABLE_MIN_Y = 1,
 			TABLE_MAX_X = 639, TABLE_MAX_Y = 479, TABLE_CENTRE_X = 320, 

@@ -4,10 +4,10 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
 public class Point2 {
+	public static final Point2 Empty = new Point2(0,0);
 	private static final double STD_DEV_THRESHOLD = 1.17;
 
-	private int x;
-	private int y;
+	public int x, y;
 	
 	/**
 	 * Constructs a new point at the given coordinates
@@ -108,7 +108,7 @@ public class Point2 {
 			for (int i = 0; i < points.size(); ++i) {
 				Point2 p = points.get(i);
 
-				if (Math.sqrt(this.distanceSq(p)) < stdev) {
+				if (this.distance(p) < stdev) {
 					newX += p.getX();
 					newY += p.getY();
 					++count;
@@ -220,6 +220,19 @@ public class Point2 {
 	}
 
 	/**
+	 * Gets the distance to the given point
+	 * 
+	 * @param x
+	 *            the x coordinate of the point
+	 * @param y
+	 *            the y coordinate of the point
+	 * @return the distance to the point
+	 */
+	public double distance(int x, int y) {
+		return Math.sqrt(distanceSq(x, y));
+	}
+
+	/**
 	 * Gets a point which is the difference between this point and the given
 	 * point
 	 * 
@@ -324,5 +337,21 @@ public class Point2 {
 	public boolean isToLeft(Point2 a, Point2 b) {
 		int dot = ((b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x));
 		return dot > 0 || (dot == 0 && a.distanceSq(b) < a.distanceSq(this));
+	}
+
+	/**
+	 * Gets the distance from the origin (0,0) to this point
+	 * i.e. the length of this vector. 
+	 */
+	public double length() {
+		return Point2.Empty.distance(this);
+	}
+
+	/**
+	 * Gets the angle from the origin (0,0) to this point
+	 * i.e. the angle of this vector
+	 */
+	public double angle() {
+		return Point2.Empty.angleTo(this);
 	}
 }
