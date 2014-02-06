@@ -57,8 +57,8 @@ public class WorldState {
 
 	/**
 	 * Gets the position of the specified robot
-	 * @param team the team of the robot
-	 * @param robot the id of the robot
+	 * @param team the team of the robot, 0 for yellow and 1 for blue
+	 * @param robot the id of the robot, 0 for left one and 1 foe the right one
 	 * @return the position of the robot
 	 */
 	public Point2 getRobotPosition(int team, int robot) {
@@ -67,8 +67,8 @@ public class WorldState {
 	
 	/**
 	 * Gets the facing of the specified robot
-	 * @param team the team of the robot
-	 * @param robot the id of the robot
+	 * @param team the team of the robot, 0 for yellow and 1 for blue
+	 * @param robot the id of the robot, 0 for left one and 1 for the right one
 	 * @return the orientation of the robot, in ???
 	 */
 	
