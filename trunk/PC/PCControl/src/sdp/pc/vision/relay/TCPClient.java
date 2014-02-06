@@ -3,6 +3,8 @@ package sdp.pc.vision.relay;
 import java.io.*;
 import java.net.*;
 
+import sdp.pc.common.Constants;
+
 public class TCPClient {
 	private PrintWriter toServer;
 	private BufferedReader fromServer;
@@ -10,10 +12,30 @@ public class TCPClient {
 	private boolean connected = false;
 	private String serverAddress;
 	private int serverPort;
+	private int robotId;
 
-	public TCPClient(String serverAddress, int serverPort) {
-		this.serverAddress = serverAddress;
-		this.serverPort = serverPort;
+	/**
+	 * @param robotId
+	 *            Id of the robot - either Constants.ATTACKER or
+	 *            Constants.DEFENDER
+	 * @throws Exception
+	 *             Thrown if the id is wrong.
+	 */
+	public TCPClient(int robotId) throws Exception {
+		this.robotId = robotId;
+		switch (robotId) {
+		case Constants.ATTACKER:
+			this.serverAddress = Constants.HOST;
+			this.serverPort = Constants.ATTACKER_PORT;
+			break;
+		case Constants.DEFENDER:
+			this.serverAddress = Constants.HOST;
+			this.serverPort = Constants.DEFENDER_PORT;
+			break;
+		default:
+			Exception up = new Exception("Wrong input parameter(robot id)");
+			throw up;
+		}
 	}
 
 	public boolean connect() {
@@ -51,7 +73,7 @@ public class TCPClient {
 				Exception e = new Exception(
 						"Couldn't establish a connection to " + serverAddress
 								+ ":" + serverPort + "!!!");
-				throw(e);
+				throw (e);
 			}
 		}
 	}
@@ -67,5 +89,12 @@ public class TCPClient {
 			e.printStackTrace();
 		}
 		connected = false;
+	}
+
+	/**
+	 * Returns the robot's id: Either Constants.ATTACKER or Constants.DEFENDER
+	 */
+	public int getRobotId() {
+		return robotId;
 	}
 }
