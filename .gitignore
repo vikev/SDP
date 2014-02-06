@@ -3,6 +3,5 @@
 *.nxj
 bin
 .gitignore~
-pitch0
 *.java~
 *.tex~
