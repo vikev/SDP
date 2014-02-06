@@ -42,6 +42,17 @@ public class Milestone3def {
 		Point2 ballPosition = state.getBallPosition();
 		System.out.println("Ball is at: " + ballPosition);
 		
+		double ballFacing = state.getBallFacing();
+		System.out.println("Ball facing: " + ballFacing);
+		
+		/** Two states:
+		* Ball is not moving:
+		* 	1. rotate perpendicular to edges
+		* 	2. cut off the direction of attacking robot
+		* Ball is moving:
+		* 	1. cut off the ball
+		*/
+		
 		//At the beginning make sure that robot is facing perpendicular to edges
 		rotatePerpendicular(state, vision, driver);
 	}
