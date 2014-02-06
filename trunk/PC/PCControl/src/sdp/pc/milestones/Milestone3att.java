@@ -28,6 +28,12 @@ public class Milestone3att {
 
 	private static WorldState state = new WorldState();
 
+	/**
+	 * Main method for m3att. Performs a kick on a stationary ball and exits.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		Vision vision = new Vision(state);
 		Thread.sleep(3000);
@@ -44,15 +50,22 @@ public class Milestone3att {
 		System.out.println("Finished attempting to kick ball");
 	}
 
-	// WIP Attempts to kick the ball by first navigating to a point
-	// (apprachPoint) from which it can then approach the ball and kick it
-	// towards the target goal
-	// TODO:
-	// * Navigate the robot around the ball when the ball obstructs the
-	// direct path to the approach point.
-	// * Look into how to behave if the ball is too close to the white boundary
-	// to get behind it to take a shot at the goal.
-	// * Create meaningful exception handling code,
+	/**
+	 * WIP Attempts to kick the ball by first navigating to a point
+	 * (apprachPoint) from which it can then approach the ball and kick it
+	 * towards the target goal.
+	 * 
+	 * TODO:
+	 * <ul>
+	 * <li>Navigate the robot around the ball when the ball obstructs the direct
+	 * path to the approach point.</li>
+	 * <li>Look into how to behave if the ball is too close to the white
+	 * boundary to get behind it to take a shot at the goal. -> Calculate an
+	 * angle to bounce off the wall in this case, and adjust your approach angle
+	 * accordingly -Blake</li>
+	 * <li>Create meaningful exception handling code</li>
+	 * </ul>
+	 **/
 	@SuppressWarnings("unused")
 	public static void kickStationaryBall(WorldState state, Vision vision,
 			Driver driver) {
@@ -108,6 +121,13 @@ public class Milestone3att {
 		}
 	}
 
+	/**
+	 * Orders the attacking robot to go to the approach point (auxillary method)
+	 * 
+	 * @param state
+	 * @param driver
+	 * @return
+	 */
 	public static int gotoapproachPoint(WorldState state, Driver driver) {
 		int diffX, diffY, approachXpoint, approachYpoint;
 		double gradientLineBalltoGoal;
