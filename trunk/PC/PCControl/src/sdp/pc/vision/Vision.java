@@ -1,24 +1,17 @@
 package sdp.pc.vision;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
-
-import sdp.pc.common.Constants;
 
 import au.edu.jcu.v4l4j.FrameGrabber;
 import au.edu.jcu.v4l4j.CaptureCallback;
@@ -42,42 +35,29 @@ import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 public class Vision extends WindowAdapter implements CaptureCallback {
 
 	// Camera and image parameters
-	private static final int WIDTH = 640, HEIGHT = 480,
-			VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL, CHANNEL = 0,
-			PLAYER_RADIUS = 18,
-			ANGLE_SMOOTHING_FRAME_COUNT = 4, MIN_POINTS_BOT = 10;
+	static final int WIDTH = 640;
+
+	static final int HEIGHT = 480;
+
+	private static final int VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL, CHANNEL = 0, ANGLE_SMOOTHING_FRAME_COUNT = 4;
 
 	private static final String DEVICE = "/dev/video0";
-	private static final double VECTOR_THRESHOLD = 3.0;
 
-	private static Color[][] rgb = new Color[700][520];
-	private static double[][] angleSmoothing = new double[4][ANGLE_SMOOTHING_FRAME_COUNT];
-	private static float[][][] hsb = new float[700][520][3];
-	private static float[] cHsb = new float[3];
 	private static int angSmoothingWriteIndex = 0;
-	private static int[] pointsCount = new int[4];
-	private static ArrayList<Point2> pitchPoints = new ArrayList<Point2>();
 	private static WorldState state = new WorldState();
-	private static WorldStateThread stateUpdater;
+	private static WorldStateListener stateListener;
+	private static Thread stateUpdaterThread;
 	public static Point2 requestedData = new Point2(-1, -1);
-	private static Point2 circlePt = new Point2(-1, -1);
 	private static PitchConstants pitchConsts = new PitchConstants(0);
 	private static ThresholdsState thresh = new ThresholdsState();
 
 	private static JLabel label;
 	public static JFrame frame;
-	private long initialTime; // For FPS calculation
+
+	protected WorldStatePainter statePainter;
 	private static VideoDevice videoDevice;
 	private static FrameGrabber frameGrabber;
 	public static boolean edgesCalibrated = false;
-
-	// Used for normalisation (first float is max brightness, second is min
-	// brightness)
-	private static float[] minMaxBrightness = { 1.0f, 0.0f };
-
-	// Used to denote if video feed has been pre-processed; using integer
-	// so we can count frames and ignore the first few
-	private static int keyframe = 0;
 
 	// Used for calculating direction the ball is heading
 	static Point2[] prevFramePos = new Point2[10];
@@ -123,10 +103,19 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		for (int i = 0; i < 10; i++)
 			prevFramePos[i] = new Point2(0, 0);
 
+		//set state
 		Vision.state = state;
-		Vision.stateUpdater = new WorldStateUpdater(100, state);
-		stateUpdater.start();
 		
+		//create state listener
+		stateListener = new WorldStateUpdater(60, state);
+		Vision.stateUpdaterThread = new Thread(stateListener);
+		Vision.stateUpdaterThread.setDaemon(true);
+		stateUpdaterThread.start();
+		
+		//create state painter
+		statePainter = new WorldStatePainter(stateListener, state);
+		
+		//load constants
 		pitchConsts.loadConstants("pitch0");
 		pitchConsts.uploadConstants(thresh);
 		Colors.setTreshold(thresh);
@@ -147,213 +136,36 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				System.err.println("Unable to capture frame:");
 				e.printStackTrace();
 			}
-
+			BufferedImage buffer = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
 			public void nextFrame(VideoFrame frame) {
-				initialTime = System.currentTimeMillis(); // for FPS
 				BufferedImage frameImage = frame.getBufferedImage();
 				frame.recycle();
 				
-				//get the surface graphics
-				Graphics g = label.getGraphics();
+				stateListener.setCurrentImage(frameImage);
 				
-				//draw the original image
-				g.drawImage(frameImage, 0, 0, WIDTH, HEIGHT, null);
-
-				//draw world state overlay
-				drawWorld(g);
+				//copy the new image to the buffer
+				Graphics bg = buffer.getGraphics();
+				bg.drawImage(frameImage, 0, 0, WIDTH, HEIGHT, null);
+				bg.dispose();
 				
+				//draw the overlay
+				Point2 mousePos = new Point2(Vision.frame.getContentPane().getMousePosition());//.subtractBorders();
+				statePainter.drawWorld(buffer, mousePos);
+				
+				//copy the result to the screen
+				Graphics labelG = label.getGraphics();
+				labelG.drawImage(buffer, 0, 0, WIDTH, HEIGHT, null);
+				labelG.dispose();
 			}
 		});
 
 		frameGrabber.startCapture();
 
 		// Mouse Listener
-		frame.addMouseListener(new Calibration());
-	}
-
-	/**
-	 * Identifies objects of interest (ball, robots) in the image while in play.
-	 * The information from it (positions, orientations, predictions) will be
-	 * passed to a WorldState object (called state) to be used by other files.
-	 * 
-	 * I've analysed the performance of running this script using flat
-	 * millisecond durations. Specifically:
-	 * 
-	 * <ul>
-	 * <li>Initialise colour recognition values: 0ms/frame</li>
-	 * <li>Recognise colour regions: 37ms/frame (36 for normalising only, 1 for
-	 * everything else (!)</li>
-	 * <li>Get average positions: 0ms/frame</li>
-	 * <li>Calculate ball direction: 0ms/frame</li>
-	 * <li>Update world state: 0ms/frame</li>
-	 * <li>Create graphical representations: 0ms/frame</li>
-	 * <li>Draw ball location and direction: 0ms/frame</li>
-	 * <li>Shift ball frames: 0ms/frame</li>
-	 * <li>Draw FPS, mouse-position, etc text: 0ms/frame</li>
-	 * <li>Draw final image to screen: 1ms/frame</li>
-	 * </ul>
-	 * 
-	 * @param image
-	 *            the image to process
-	 */
-	private void drawWorld(Graphics g) {
-
-		//ball location and velocity
-		Point2 ballPos = state.getBallPosition();
-		Point2 ballVelocity = state.getBallVelocity();
-	
-		if (Alg.pointInPitch(ballPos)) {
-			g.setColor(Color.red);
-			g.drawLine(0, ballPos.getY(), 640, ballPos.getY());
-			g.drawLine(ballPos.getX(), 0, ballPos.getX(), 480);
-			
-			//draw velocity if large enough
-			if (ballVelocity.length() > VECTOR_THRESHOLD) {
-				Point2 velocityPos = ballPos.add(ballVelocity);
-				g.drawLine(ballPos.getX(), ballPos.getY(),
-						velocityPos.getX(), velocityPos.getY());
-			}
-		}
-
-		// robots locations
-		for(int team = 0; team < 2; team++)
-			for(int robot = 0; robot < 2; robot++) {
-				
-				Point2 pos = state.getRobotPosition(team, robot);
-				
-				if (Alg.pointInPitch(pos)
-						&& pointsCount[Constants.ROBOT_YELLOW_LEFT] >= MIN_POINTS_BOT) {	//TODO: Update for all bots
-					drawCircle(pos, g, Constants.YELLOW_BLEND,
-							Constants.ROBOT_CIRCLE_RADIUS);
-
-					//TODO: Move to logic
-//					findOrientationByDot(pos.getX(), pos.getY(),
-//							image, true);
-				}
-			}
-
-		// ???
-		if (Alg.pointInPitch(circlePt)) {
-			drawCircle(circlePt, g, Constants.GRAY_BLEND,
-					Constants.ROBOT_HEAD_RADIUS);
-		}
-
-		// ???
-		angSmoothingWriteIndex++;
-		angSmoothingWriteIndex %= ANGLE_SMOOTHING_FRAME_COUNT;
-
-		// Draw centre line
-		g.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
-		g.drawLine(Constants.TABLE_CENTRE_X,
-				Constants.TABLE_MIN_Y + 1, Constants.TABLE_CENTRE_X,
-				Constants.TABLE_MAX_Y - 1);
-
-		// ???
-		Point2 dPt = new Point2(requestedData.getX(), requestedData.getY());
-		if (Alg.pointInPitch(dPt)) {
-			circlePt = requestedData.copy();
-			Color s = rgb[requestedData.getX()][requestedData.getY()];
-			System.out.println("RGB: " + s.getRed() + " " + s.getGreen() + " "
-					+ s.getBlue());
-			float[] h = hsb[requestedData.getX()][requestedData.getY()];
-			System.out.println("HSB: " + h[0] + " " + h[1] + " " + h[2]);
-			requestedData = new Point2(-1, -1);
-		}
-
-		//TODO: remove
-		// Saves this frame's ball position and shifts previous frames'
-		// positions
-		for (int i = prevFramePos.length - 1; i > 0; i--) {
-			prevFramePos[i] = prevFramePos[i - 1];
-		}
-		prevFramePos[0] = ballPos;
-
-		// Display the FPS we run at
-		long after = System.currentTimeMillis(); // Used to calculate the FPS.
-		float drawFps = (1.0f) / ((after - initialTime) / 1000.0f);
-		double worldFps = stateUpdater.getCurrentFps();
-		
-		g.setColor(Color.white);
-		g.drawString("Draw FPS: " + (int) drawFps, 15, 15);
-		g.drawString("World FPS: " + (int) worldFps, 15, 30);
-
-		// Draw mouse position, RGB, and HSB values to screen
-		java.awt.Point pos = frame.getMousePosition();
-		
-		if (pos != null) {
-			int x = (int) Math.round(pos.getX()) - Constants.X_FRAME_OFFSET;
-			int y = (int) Math.round(pos.getY()) - Constants.Y_FRAME_OFFSET;
-			
-			if (Alg.pointInPitch(new Point2(x, y))) {
-				Color c = new Color(stateUpdater.getCurrentImage().getRGB(x, y));
-				float[] hsb = new float[3];
-				Color.RGBtoHSB(c.getRed(), c.getBlue(), c.getGreen(), hsb);
-				
-				g.drawString("Mouse pos: x:" + x + " y:" + y, 15,
-						30);
-
-				g.drawString(
-						"Color: R:" + c.getRed() + " G:" + c.getGreen() + " B:"
-								+ c.getBlue(), 15, 45);
-				g.drawString(
-						"HSB: H:" + new DecimalFormat("#.###").format(hsb[0])
-								+ " S:"
-								+ new DecimalFormat("#.###").format(hsb[1])
-								+ " B:"
-								+ new DecimalFormat("#.###").format(hsb[2]),
-						15, 60);
-			}
-		}
-
-		// Finally draw the image to screen
+		frame.addMouseListener(new Calibration(stateListener));
 	}
 
 
-	/**
-	 * Abstraction of Graphics.drawOval which simplifies our circle drawing
-	 */
-	private void drawCircle(Point2 centrePt, Graphics gfx, Color c, int radius) {
-		gfx.setColor(c);
-		gfx.drawOval(centrePt.getX() - radius, centrePt.getY() - radius,
-				radius * 2, radius * 2);
-	}
-
-	/**
-	 * Finds the brightest and darkest points on the image. Used for brightness
-	 * normalisation (in normaliseColor).
-	 * 
-	 * @param image
-	 *            The Image to be used for min max brightness foundation
-	 * 
-	 * @return The list of two float HSB values representing the brightest and
-	 *         the darkest values (format {max, min})
-	 */
-	private static float[] findMinMaxBrigthness(BufferedImage image) {
-		float maxBr = 0.0f;
-		float minBr = 1.0f;
-
-		for (Point2 p : pitchPoints) {
-			int column = p.getX();
-			int row = p.getY();
-			Color change = new Color(image.getRGB(column, row));
-			float[] cHsb = hsb[column][row];
-			Color.RGBtoHSB(change.getRed(), change.getBlue(),
-					change.getGreen(), cHsb);
-			float br = hsb[column][row][2];
-			if (br >= maxBr) {
-				maxBr = br;
-			}
-
-			if (br <= minBr) {
-				minBr = br;
-			}
-		}
-		return new float[] { maxBr, minBr };
-	}
-
-
-
-	
 	/**
 	 * Initialises a FrameGrabber object with the given parameters.
 	 * 

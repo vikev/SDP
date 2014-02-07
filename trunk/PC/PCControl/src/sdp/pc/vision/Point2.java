@@ -1,5 +1,6 @@
 package sdp.pc.vision;
 
+import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
@@ -7,7 +8,7 @@ public class Point2 {
 	public static final Point2 Empty = new Point2(0,0);
 	private static final double STD_DEV_THRESHOLD = 1.17;
 
-	public int x, y;
+	public int x = 0, y = 0;
 	
 	/**
 	 * Constructs a new point at the given coordinates
@@ -20,10 +21,7 @@ public class Point2 {
 	/**
 	 * Constructs a new point with coordinates (0,0)
 	 */
-	public Point2() {
-		this.x = 0;
-		this.y = 0;
-	}
+	public Point2() { }
 
 	/**
 	 * Constructs a copy of a point
@@ -33,6 +31,13 @@ public class Point2 {
 	public Point2(Point2 p) {
 		this.x = p.x;
 		this.y = p.y;
+	}
+
+	public Point2(Point p) {
+		if(p != null) {
+			this.x = p.x;
+			this.y = p.y;
+		}
 	}
 
 	/**
@@ -353,5 +358,15 @@ public class Point2 {
 	 */
 	public double angle() {
 		return Point2.Empty.angleTo(this);
+	}
+
+	/**
+	 * Calculates a polar offset from a point. 
+	 * @param dist the distance to the new point
+	 * @param angle the angle to the new point
+	 * @return a unique point specified by dist/angle
+	 */
+	public Point2 polarOffset(int dist, double angle) {
+		return new Point2((int)(x + Math.cos(angle) * dist), (int)(y + Math.sin(angle) * dist));
 	}
 }

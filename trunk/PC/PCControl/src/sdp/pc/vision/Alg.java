@@ -171,13 +171,11 @@ public class Alg {
 		int j;
 		boolean result = false;
 		for (i = 0, j = borderPoints.size() - 1; i < borderPoints.size(); j = i++) {
-			if ((borderPoints.get(i).getY() > y) != (borderPoints
-					.get(j).getY() > y)
-					&& (x < (borderPoints.get(j).getX() - borderPoints
-							.get(i).getX())
-							* (y - borderPoints.get(i).getY())
-							/ (borderPoints.get(j).getY() - borderPoints.get(i)
-									.getY()) + borderPoints.get(i).getX())) {
+			if ((borderPoints.get(i).y > y) != (borderPoints.get(j).y > y)
+					&& (x < (borderPoints.get(j).x - borderPoints.get(i).x)
+							* (y - borderPoints.get(i).y)
+							/ (borderPoints.get(j).y - borderPoints.get(i).y) 
+							+ borderPoints.get(i).x)) {
 				result = !result;
 			}
 		}
