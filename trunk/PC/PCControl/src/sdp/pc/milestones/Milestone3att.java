@@ -35,7 +35,15 @@ public class Milestone3att {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		Vision vision = new Vision(state);
+		/*Point2 ballPosition = new Point2(388,312);	//calculateAngle method testing
+		Point2 robotPosition = new Point2(396,362);
+		Point2 targetPoint = new Point2(70,234);
+		int[] vectorA = {targetPoint.getX()-ballPosition.getX(),(targetPoint.getY()*(-1) - ballPosition.getY()*(-1))};
+		int[] vectorB = {robotPosition.getX()-ballPosition.getX(),(robotPosition.getY()*(-1) - ballPosition.getY()*(-1))};
+		System.out.println("Vector A Components : " + vectorA[0] + " " + vectorA[1]);
+		System.out.println("Vector B Components : " + vectorB[0] + " " + vectorB[1]);
+		System.out.println("Angle between vectors is : " + calculateAngle(vectorA, vectorB));
+		*/Vision vision = new Vision(state);
 		Thread.sleep(3000);
 		int chosenRobot = ChooseRobot.dialog();
 
@@ -87,18 +95,18 @@ public class Milestone3att {
 					// take shot
 		}
 		
-		int[] vectorBalltoTargetPoint = {
+		int[] vectorBalltoTargetPoint = {			//Y coordinates must be inverted
 				(ballPosition.getX() - targetPoint.getX()),
-				(ballPosition.getY() - targetPoint.getY()) };
+				(ballPosition.getY()*(-1)) - (targetPoint.getY()*(-1)) };
 		int[] vectorBalltoSelectedRobot = {
 				(ballPosition.getX() - robotPosition.getX()),
-				(ballPosition.getY() - robotPosition.getY()) };
+				(ballPosition.getY()*(-1)) - -(robotPosition.getY()*(-1)) };
 		
-		int angleBetween = calculateAngle(vectorBalltoTargetPoint, vectorBalltoSelectedRobot); //this assumes angle is positive in the clockwise direction
+		double angleBetween = calculateAngle(vectorBalltoTargetPoint, vectorBalltoSelectedRobot); //this assumes angle is positive in the clockwise direction
 		// check if the ball will obstruct a direct path to the approach
 		// point move to a point where a direct path can be taken to the
 		// approach point
-		if (angleBetween > 90 && angleBetween < 270){
+		if ((angleBetween > 90 )){
 			Point2 approachPoint = calculateApproachPoint(ballPosition, targetPoint, state.getTargetGoal());
 			System.out.println("Assigned approach point: " + approachPoint);
 			if ((approachPoint.getX() == 0) && (approachPoint.getY() == 0)){
@@ -122,7 +130,7 @@ public class Milestone3att {
 	}
 	
 	/**
-	 * Chooses a point within the target goal for the ball to be kicked towards (auxillary method)
+	 * Chooses a point within the target goal for the ball to be kicked towards (auxiliary method)
 	 * Currently only picks the target goal's centre point
 	 * @param state
 	 * @return
@@ -135,16 +143,27 @@ public class Milestone3att {
 		return new Point2(0, 0);
 	}
 	
-	/*TODO:
-	 * implement method of calculating angle between two vectors
-	 * may not be needed depending on the kicker that is chosen 
-	*/
-	public static int calculateAngle(int[] vectorA, int[] vectorB){
-		return 100;
+	/**
+	 * Calculates the smallest angle between two vectors (auxiliary method)
+	 * 
+	 * @param vectorA
+	 * @param vectorB
+	 * @return
+	 */
+	public static double calculateAngle(int[] vectorA, int[] vectorB){
+		double vectorAMagnitude =  Math.sqrt((vectorA[0]*vectorA[0]) + (vectorA[1]*vectorA[1]));
+		double vectorBMagnitude = Math.sqrt((vectorB[0]*vectorB[0]) + (vectorB[1]*vectorB[1]));
+		int dotproduct = vectorA[0]*vectorB[0] + vectorA[1]*vectorB[1];
+		double angleRadians = Math.acos(dotproduct/(vectorAMagnitude*vectorBMagnitude));
+		System.out.println("Vector A Magnitude : " + vectorAMagnitude);
+		System.out.println("Vector B Magnitude : " + vectorBMagnitude);
+		System.out.println("Dot product : " + dotproduct);
+		System.out.println("Angle Radians : " + angleRadians);
+		return (angleRadians*(180/Math.PI));
 	}
 	
 	/**
-	 * Calculates the attacking robots approach point to the ball (auxillary method)
+	 * Calculates the attacking robots approach point to the ball (auxiliary method)
 	 * 
 	 * @param ballPosition
 	 * @param ballTargetPoint
@@ -154,7 +173,7 @@ public class Milestone3att {
 	public static Point2 calculateApproachPoint(Point2 ballPosition, Point2 ballTargePoint, int targetGoal){
 		int approachPointX = 0;
 		int approachPointY = 0;
-		int gradientLineBalltoGoal = (-(ballTargePoint.getY() - ballPosition.getY())/ (ballTargePoint.getX() - ballPosition.getX()));
+		int gradientLineBalltoGoal = ((ballTargePoint.getY()*(-1) - ballPosition.getY()*(-1))/ (ballTargePoint.getX() - ballPosition.getX()));
 		if (targetGoal == Constants.GOAL_LEFT){
 			approachPointX = ballPosition.getX() - Math.max(Constants.ATTACKER_LENGTH, Constants.ATTACKER_LENGTH);
 		}else if (targetGoal == Constants.GOAL_RIGHT){
@@ -170,7 +189,7 @@ public class Milestone3att {
 	 * If the attacker robots orientation deviates from its initial orientation by a set amount then the
 	 * the robot is commanded to stop and the travel is reported back as unsuccessful.
 	 * Then the facePoint method needs to be called externally to correct the robots orientation before this method
-	 * should be called again (auxillary method) 
+	 * should be called again (auxiliary method) 
 	 * @param state
 	 * @param driver
 	 * @return
@@ -190,7 +209,7 @@ public class Milestone3att {
 	}
 	
 	/**
-	 * Rotates the attacking robot to face the given coordinates (auxillary method)
+	 * Rotates the attacking robot to face the given coordinates (auxiliary method)
 	 * 
 	 * @param state
 	 * @param driver

@@ -13,9 +13,9 @@ import java.util.LinkedList;
  * @author s1141301
  *
  */
-public abstract class WorldStateThread extends Thread {
+public abstract class WorldStateListener implements Runnable {
 
-	private static final long SLEEP_ACCURACY = 10;
+	private static final long SLEEP_ACCURACY = 5;
 	private final int FRAME_IGNORE_COUNT = 50;
 	private final int BOUNDARY_COUNT = 2;
 
@@ -28,10 +28,14 @@ public abstract class WorldStateThread extends Thread {
 	
 	//preprocessing
 	private boolean preprocessed = false;
+	/**
+	 * Keeps track of the frames skipped so far. Should become equal to FRAME_IGNORE_COUNT 
+	 * before preprocessing should take place
+	 */
 	private int keyframe = 0;
 	
 	//fps measuring
-	private long currentFrameTime;
+	private long currentFrameTime = 1;	//div by zero!
 	private final long targetFrameTime;
 	
 	//boundary for finer table detection
@@ -39,7 +43,20 @@ public abstract class WorldStateThread extends Thread {
 	
 	//protected stuff usable by kidz of the class
 	protected final WorldState state;
-	protected ArrayList<Point2> pitchPoints;
+	protected ArrayList<Point2> pitchPoints = new ArrayList<Point2>();
+	
+	
+	public boolean isPreprocessed() {
+		return preprocessed;
+	}
+	
+	public ArrayList<Point2> getPitchPoints() {
+		return pitchPoints;
+	}
+	
+	/**
+	 * Holds { min-observed-brightness, max-observed-brightness }
+	 */
 	protected float[] minMaxBrightness = new float[] { 1, 0 };
 	
 	/**
@@ -52,8 +69,22 @@ public abstract class WorldStateThread extends Thread {
 			boundaryPoints.add(p);
 		return hasBoundary();
 	}
+
+	public Color getNormalisedRgb(int x, int y) {
+		return currentRgb[x][y];
+	}
 	
-	private boolean hasBoundary() {
+	public Color getRgb(int x, int y) {
+		if(currentImage == null)
+			return null;
+		return new Color(currentImage.getRGB(x, y));
+	}
+	
+	public float[] getNormalisedHsb(int x, int y) {
+		return currentHsb[x][y];
+	}
+	
+	public boolean hasBoundary() {
 		return boundaryPoints.size() == BOUNDARY_COUNT;
 	}
 	
@@ -63,8 +94,7 @@ public abstract class WorldStateThread extends Thread {
 	 * @param targetFps the target FPS
 	 * @param state the WorldState to update
 	 */
-	public WorldStateThread(int targetFps, WorldState state) {
-		this.setDaemon(true);
+	public WorldStateListener(int targetFps, WorldState state) {
 		this.targetFrameTime = 1000 / targetFps;
 		this.state = state;
 	}
@@ -79,7 +109,7 @@ public abstract class WorldStateThread extends Thread {
 	 * Gets the current FPS
 	 */
 	public int getCurrentFps() {
-		return (int)(1000 / currentFrameTime);
+		return (int)(1000.0 / currentFrameTime);
 	}
 	/**
 	 * Gets the current world state
@@ -108,6 +138,8 @@ public abstract class WorldStateThread extends Thread {
 			endT,
 			dt;
 		
+		System.out.println("WorldStateListener: started");
+		
 		//foreva
 		while(true) {
 			startT = System.currentTimeMillis();
@@ -116,30 +148,38 @@ public abstract class WorldStateThread extends Thread {
 			if(currentImage != lastImage && currentImage != null) {
 				
 				//have we done preprocessing?
-				if (!preprocessed)
+				if (!preprocessed) {
 					preprocessImage(currentImage);
+				}
 				else {
 					processImage(currentImage, currentRgb, currentHsb);
 					updateWorld(currentRgb, currentHsb);
 				}
 				lastImage = currentImage;
+
+				//calc sleep time (if needed at all)
+				endT = System.currentTimeMillis();
+				currentFrameTime = Math.max(1, endT - startT);
+				dt = targetFrameTime - currentFrameTime;
+				if(dt > SLEEP_ACCURACY)
+					safeSleep(dt);
 			}
-			
-			//calc sleep time (if needed at all)
-			endT = System.currentTimeMillis();
-			currentFrameTime = endT - startT;
-			dt = targetFrameTime - currentFrameTime;
-			if(dt > SLEEP_ACCURACY)
-				try {
-					Thread.sleep(dt);
-				} catch (InterruptedException e) { 
-					//got interrupted
-					//so what?
-					//just keep running while the app is alive!
-				}
-			
+			else {
+				currentFrameTime = targetFrameTime;
+				safeSleep(targetFrameTime);
+			}
 		}
 		
+	}
+	
+	private static void safeSleep(long ms) {
+		try {
+			Thread.sleep(ms);
+		} catch (InterruptedException e) { 
+			//got interrupted
+			//so what?
+			//just keep running while the app is alive!
+		}
 	}
 	
 	/**
@@ -151,7 +191,6 @@ public abstract class WorldStateThread extends Thread {
 		// initialisation; but ignore first few frames (which are always
 		// highly distorted)
 		if (++keyframe >= FRAME_IGNORE_COUNT && hasBoundary()) {
-			preprocessed = true;
 			
 			//get boundary
 			Point2 pa = boundaryPoints.get(0),
@@ -165,19 +204,20 @@ public abstract class WorldStateThread extends Thread {
 			//get all white pixels
 			ArrayList<Point2> whitePoints = new ArrayList<Point2>();
 			Color cRgb;
-			float[] cHsb = new float[3];
+			float[] cHsb;
 			for (int x = minX; x < maxX; x++) {
 				for (int y = minY; y < maxY; y++) {
 					//get colors
 					cRgb = new Color(img.getRGB(x, y));
+					
+					cHsb = currentHsb[x][y];
 					Color.RGBtoHSB(cRgb.getRed(), cRgb.getGreen(), cRgb.getBlue(), cHsb);
 					
 					//save em (used for normalisation calculation)
 					currentRgb[x][y] = cRgb;
-					currentHsb[x][y] = cHsb;
 					
 					//add to white if white
-					if (Colors.isWhite(cRgb, cHsb) && x < 470) {
+					if (Colors.isWhite(cRgb, cHsb)) {
 						Point2 p = new Point2(x, y);
 						whitePoints.add(p);
 					}
@@ -203,27 +243,27 @@ public abstract class WorldStateThread extends Thread {
 					}
 				}
 			}
+			preprocessed = true;
+			System.out.println("WorldState: preprocessed image, starting capture!");
 		}
 		
 	}
 
 
 	/**
-	 * Processes the image, making sure that every point in pitchPoints
-	 * has its value in cRgb/cHsb corresponding to its actual color value in img
-	 * 
+	 * When overridden in a derived class should process the image, 
+	 * normalising and storing all colours in the provided RGB/HSB matrices
+	 * Implementation should make use of this.minMaxBrightness
 	 * @param img the image to process
-	 * @param pitchPoints the points we are interested in
-	 * @param cRgb the rgb values we've observed
-	 * @param cHsb the hsb values we've observed
+	 * @param cRgb a matrix holding the normalised RGB values
+	 * @param cHsb a matrix holding the normalised HSB values
 	 */
 	protected abstract void processImage(BufferedImage img, Color[][] cRgb, float[][][] cHsb);
 	
 
 	/**
 	 * Overridden in a derived class to support arbitrary updates to some WorldState given a new frame
-	 * @param imageWidth the width of the new frame
-	 * @param imageHeight the height of the new frame
+	 * Implementation should make use of this.state and this.pitchPoints
 	 * @param cRgb the RGB values for the new frame
 	 * @param cHsb the HSB values for the new frame
 	 */

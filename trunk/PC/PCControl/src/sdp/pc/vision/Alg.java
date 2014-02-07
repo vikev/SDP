@@ -69,17 +69,20 @@ public class Alg {
 
 	}
 
+
 	/**
-	 * Checks whether a given point is in the pitch by coordinates
+	 * Checks whether a given point represented by its x/y coordinates is in the pitch
 	 */
-	public static boolean pointInPitch(Point2 q) {
-		int x = q.getX();
-		int y = q.getY();
-		if (x < Constants.TABLE_MAX_X && x > Constants.TABLE_MIN_X
-				&& y < Constants.TABLE_MAX_Y && y > Constants.TABLE_MIN_Y) {
-			return true;
-		}
-		return false;
+	public static boolean pointInPitch(int x, int y) {
+		return x < Constants.TABLE_MAX_X && x >= Constants.TABLE_MIN_X
+		&& y < Constants.TABLE_MAX_Y && y >= Constants.TABLE_MIN_Y;
+	}
+	
+	/**
+	 * Checks whether a given point is in the pitch
+	 */
+	public static boolean pointInPitch(Point2 p) {
+		return pointInPitch(p.x, p.y);
 	}
 
 	/**
@@ -91,6 +94,7 @@ public class Alg {
 	 * @param b
 	 *            - the second point
 	 * @return distance between a and b
+	 * @deprecated Use a.distance(b) instead
 	 */
 	public static double lineSize(Point2 a, Point2 b) {
 		double s = (double) (b.getX() - a.getX());
@@ -162,22 +166,34 @@ public class Alg {
 	 * @param point
 	 * @return true if the point is within the polygon, false otherwise
 	 */
-	public static boolean isInHull(LinkedList<Point2> borderPoints, Point2 point) {
+	public static boolean isInHull(LinkedList<Point2> borderPoints, int x, int y) {
 		int i;
 		int j;
 		boolean result = false;
 		for (i = 0, j = borderPoints.size() - 1; i < borderPoints.size(); j = i++) {
-			if ((borderPoints.get(i).getY() > point.getY()) != (borderPoints
-					.get(j).getY() > point.getY())
-					&& (point.getX() < (borderPoints.get(j).getX() - borderPoints
-							.get(i).getX())
-							* (point.getY() - borderPoints.get(i).getY())
-							/ (borderPoints.get(j).getY() - borderPoints.get(i)
-									.getY()) + borderPoints.get(i).getX())) {
+			if ((borderPoints.get(i).y > y) != (borderPoints.get(j).y > y)
+					&& (x < (borderPoints.get(j).x - borderPoints.get(i).x)
+							* (y - borderPoints.get(i).y)
+							/ (borderPoints.get(j).y - borderPoints.get(i).y) 
+							+ borderPoints.get(i).x)) {
 				result = !result;
 			}
 		}
 		return result;
 	}
 
+	/**
+	 * Checks if a point is inside a convex polygon, where the polygon is given
+	 * by a linked list containing its border points (this is usually calculated
+	 * with the convexHull method). Method taken from an answer in Stack
+	 * Overflow.
+	 * 
+	 * @param borderPoints
+	 *            - points on the polygon's border
+	 * @param point
+	 * @return true if the point is within the polygon, false otherwise
+	 */
+	public static boolean isInHull(LinkedList<Point2> borderPoints, Point2 p) {
+		return isInHull(borderPoints, p.x, p.y);
+	}
 }
