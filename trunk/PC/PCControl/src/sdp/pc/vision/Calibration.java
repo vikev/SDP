@@ -18,13 +18,7 @@ public class Calibration extends MouseAdapter {
 
 			if (Vision.leftTop.getX() == 0 && Vision.leftTop.getY() == 0) {
 				Vision.leftTop = new Point2(x, y);
-
-			} else if (Vision.leftBottom.getX() == 0
-					&& Vision.leftBottom.getY() == 0) {
-				Vision.leftBottom = new Point2(x, y);
-			} else if (Vision.rightTop.getX() == 0
-					&& Vision.rightTop.getY() == 0) {
-				Vision.rightTop = new Point2(x, y);
+				System.out.println("Select lower-right-most boundary point");
 			} else if (Vision.rightBottom.getX() == 0
 					&& Vision.rightBottom.getY() == 0) {
 				Vision.rightBottom = new Point2(x, y);

@@ -64,14 +64,15 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private static Point2 circlePt = new Point2(-1, -1);
 	private static PitchConstants pitchConsts = new PitchConstants(0);
 	private static ThresholdsState thresh = new ThresholdsState();
+	private static int st = 0;
 
 	private static JLabel label;
 	public static JFrame frame;
 	private long initialTime; // For FPS calculation
 	private static VideoDevice videoDevice;
 	private static FrameGrabber frameGrabber;
-	private boolean hullCalculated = false;
-	public static boolean edgesCalibrated = false;
+	public static boolean hullCalculated = false;
+	public static boolean edgesCalibrated;
 
 	// Used for normalisation (first float is max brightness, second is min
 	// brightness)
@@ -86,8 +87,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 	// Added in to help split up into sections
 	public static Point2 leftTop = new Point2(0, 0);
-	public static Point2 leftBottom = new Point2(0, 0);
-	public static Point2 rightTop = new Point2(0, 0);
 	public static Point2 rightBottom = new Point2(0, 0);
 	public static boolean sectionsDone = false;
 
@@ -160,7 +159,17 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 					keyframe++;
 					if (keyframe >= FRAME_IGNORE_COUNT && edgesCalibrated) {
 						hullCalculated = true;
+						System.out
+								.println("Calculating convex hull with absolute boundaries "
+										+ leftTop.toString()
+										+ "; "
+										+ rightBottom.toString());
 						preprocess(frameImage);
+
+					} else if (st == 0 && keyframe < FRAME_IGNORE_COUNT) {
+						System.out
+								.println("Waiting a a few frames before processing convex hull...");
+						st++;
 					}
 				}
 			}
@@ -188,6 +197,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		keyframe++;
 
 		ArrayList<Point2> whitePoints = new ArrayList<Point2>();
+		pitchPoints = new ArrayList<Point2>();
 
 		// Find borders
 		for (int x = 0; x < 1000; x++) {
@@ -329,10 +339,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			Graphics imageGraphics = image.getGraphics();
 			// Graphics frameGraphics = label.getGraphics();
 			imageGraphics.setColor(Color.white);
-			imageGraphics.drawLine(leftTop.getX(), leftTop.getY(),
-					leftBottom.getX(), leftBottom.getY());
-			imageGraphics.drawLine(rightTop.getX(), rightTop.getY(),
-					rightBottom.getX(), rightBottom.getY());
+			// imageGraphics.drawLine(leftTop.getX(), leftTop.getY(),
+			// leftBottom.getX(), leftBottom.getY());
+			// imageGraphics.drawLine(rightTop.getX(), rightTop.getY(),
+			// rightBottom.getX(), rightBottom.getY());
 
 		}
 
@@ -408,7 +418,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			state.setBallFacing(-1);
 		} else {
 			state.setBallFacing(Math.atan2(ballPos.getY() - avgPrevPos.getY(),
-					ballPos.getX() - avgPrevPos.getX())* 180 / Math.PI);
+					ballPos.getX() - avgPrevPos.getX()) * 180 / Math.PI);
 		}
 		state.setRobotPosition(0, 0, yellowLeftPos);
 		state.setRobotFacing(0, 0, yellowOrientation);
@@ -498,12 +508,17 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		Point2 dPt = new Point2(requestedData.getX(), requestedData.getY());
 		if (Alg.pointInPitch(dPt)) {
 			circlePt = requestedData.copy();
-			// Color s = rgb[requestedData.getX()][requestedData.getY()];
-			// System.out.println("RGB: " + s.getRed() + " " + s.getGreen() +
-			// " "
-			// + s.getBlue());
-			float[] h = hsb[requestedData.getX()][requestedData.getY()];
-			System.out.println("HSB: " + h[0] + " " + h[1] + " " + h[2]);
+			Color s = rgb[requestedData.getX()][requestedData.getY()];
+			if (s != null) {
+				System.out.println();
+				System.out.println("Point data at " + requestedData.toString()
+						+ ":");
+				System.out.println("RGB: " + s.getRed() + " " + s.getGreen()
+						+ " " + s.getBlue());
+				float[] h = hsb[requestedData.getX()][requestedData.getY()];
+				System.out.println("HSB: " + h[0] + " " + h[1] + " " + h[2]);
+			}
+
 			requestedData = new Point2(-1, -1);
 		}
 
@@ -564,9 +579,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private void findOrientationByDot(int meanX, int meanY,
 			BufferedImage image, boolean showImage) {
 
-		// Point here is to find the smallest polygon that covers the green
-		// plate so as to only look within it (turns out the method is pretty
-		// fast)
+		// Find the smallest polygon that covers the green plate so as to only
+		// look within it (turns out the method is pretty fast)
 		ArrayList<Point2> greenPoints = new ArrayList<Point2>();
 		for (int i = -25; i < 25; i++)
 			for (int j = -25; j < 25; j++) {
@@ -611,8 +625,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		Point2 pt = new Point2(pxX, pxY);
 		drawCircle(pt, image.getGraphics(), Constants.GRAY_BLEND,
 				Constants.ROBOT_HEAD_RADIUS);
-		image.getGraphics().drawLine(meanX, meanY, pxX, pxY);
-
+		if (Alg.pointInPitch(new Point2(pxX, pxY))) {
+			image.getGraphics().drawLine(meanX, meanY, pxX, pxY);
+		}
 	}
 
 	private double findOrientation(BufferedImage image, Point2 centroid,
@@ -837,12 +852,18 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * @return
 	 */
 	private boolean isBlack(Color c, float[] hsb) {
-		return hsb[0] <= thresh.getGrey_h_high() && hsb[0] >= thresh.getGrey_h_low() &&
-        hsb[1] <= thresh.getGrey_s_high() &&  hsb[1] >= thresh.getGrey_s_low() &&
-        hsb[2] <= thresh.getGrey_v_high() &&  hsb[2] >= thresh.getGrey_v_low() &&
-        c.getRed() <= thresh.getGrey_r_high() &&  c.getRed() >= thresh.getGrey_r_low() &&
-        c.getGreen() <= thresh.getGrey_g_high() && c.getGreen() >= thresh.getGrey_g_low() &&
-        c.getBlue() <= thresh.getGrey_b_high() && c.getBlue() >= thresh.getGrey_b_low();
+		return hsb[0] <= thresh.getGrey_h_high()
+				&& hsb[0] >= thresh.getGrey_h_low()
+				&& hsb[1] <= thresh.getGrey_s_high()
+				&& hsb[1] >= thresh.getGrey_s_low()
+				&& hsb[2] <= thresh.getGrey_v_high()
+				&& hsb[2] >= thresh.getGrey_v_low()
+				&& c.getRed() <= thresh.getGrey_r_high()
+				&& c.getRed() >= thresh.getGrey_r_low()
+				&& c.getGreen() <= thresh.getGrey_g_high()
+				&& c.getGreen() >= thresh.getGrey_g_low()
+				&& c.getBlue() <= thresh.getGrey_b_high()
+				&& c.getBlue() >= thresh.getGrey_b_low();
 	}
 
 	/**
@@ -859,12 +880,18 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         otherwise.
 	 */
 	private boolean isGreen(Color c, float[] hsb) {
-		return hsb[0] <= thresh.getGreen_h_high() && hsb[0] >= thresh.getGreen_h_low() &&
-        hsb[1] <= thresh.getGreen_s_high() &&  hsb[1] >= thresh.getGreen_s_low() &&
-        hsb[2] <= thresh.getGreen_v_high() &&  hsb[2] >= thresh.getGreen_v_low() &&
-        c.getRed() <= thresh.getGreen_r_high() &&  c.getRed() >= thresh.getGreen_r_low() &&
-        c.getGreen() <= thresh.getGreen_g_high() && c.getGreen() >= thresh.getGreen_g_low() &&
-        c.getBlue() <= thresh.getGreen_b_high() && c.getBlue() >= thresh.getGreen_b_low();
+		return hsb[0] <= thresh.getGreen_h_high()
+				&& hsb[0] >= thresh.getGreen_h_low()
+				&& hsb[1] <= thresh.getGreen_s_high()
+				&& hsb[1] >= thresh.getGreen_s_low()
+				&& hsb[2] <= thresh.getGreen_v_high()
+				&& hsb[2] >= thresh.getGreen_v_low()
+				&& c.getRed() <= thresh.getGreen_r_high()
+				&& c.getRed() >= thresh.getGreen_r_low()
+				&& c.getGreen() <= thresh.getGreen_g_high()
+				&& c.getGreen() >= thresh.getGreen_g_low()
+				&& c.getBlue() <= thresh.getGreen_b_high()
+				&& c.getBlue() >= thresh.getGreen_b_low();
 	}
 
 	/**
@@ -899,12 +926,18 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the ball), false otherwise.
 	 */
 	private boolean isBall(Color c, float[] hsb) {
-		return hsb[0] <= thresh.getBall_h_high() && hsb[0] >= thresh.getBall_h_low() &&
-        hsb[1] <= thresh.getBall_s_high() &&  hsb[1] >= thresh.getBall_s_low() &&
-        hsb[2] <= thresh.getBall_v_high() &&  hsb[2] >= thresh.getBall_v_low() &&
-        c.getRed() <= thresh.getBall_r_high() &&  c.getRed() >= thresh.getBall_r_low() &&
-        c.getGreen() <= thresh.getBall_g_high() && c.getGreen() >= thresh.getBall_g_low() &&
-        c.getBlue() <= thresh.getBall_b_high() && c.getBlue() >= thresh.getBall_b_low();
+		return hsb[0] <= thresh.getBall_h_high()
+				&& hsb[0] >= thresh.getBall_h_low()
+				&& hsb[1] <= thresh.getBall_s_high()
+				&& hsb[1] >= thresh.getBall_s_low()
+				&& hsb[2] <= thresh.getBall_v_high()
+				&& hsb[2] >= thresh.getBall_v_low()
+				&& c.getRed() <= thresh.getBall_r_high()
+				&& c.getRed() >= thresh.getBall_r_low()
+				&& c.getGreen() <= thresh.getBall_g_high()
+				&& c.getGreen() >= thresh.getBall_g_low()
+				&& c.getBlue() <= thresh.getBall_b_high()
+				&& c.getBlue() >= thresh.getBall_b_low();
 	}
 
 	/**
@@ -920,12 +953,18 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the yellow T), false otherwise.
 	 */
 	private boolean isYellow(Color c, float[] hsb) {
-		return hsb[0] <= thresh.getYellow_h_high() && hsb[0] >= thresh.getYellow_h_low() &&
-        hsb[1] <= thresh.getYellow_s_high() &&  hsb[1] >= thresh.getYellow_s_low() &&
-        hsb[2] <= thresh.getYellow_v_high() &&  hsb[2] >= thresh.getYellow_v_low() &&
-        c.getRed() <= thresh.getYellow_r_high() &&  c.getRed() >= thresh.getYellow_r_low() &&
-        c.getGreen() <= thresh.getYellow_g_high() && c.getGreen() >= thresh.getYellow_g_low() &&
-        c.getBlue() <= thresh.getYellow_b_high() && c.getBlue() >= thresh.getYellow_b_low();
+		return hsb[0] <= thresh.getYellow_h_high()
+				&& hsb[0] >= thresh.getYellow_h_low()
+				&& hsb[1] <= thresh.getYellow_s_high()
+				&& hsb[1] >= thresh.getYellow_s_low()
+				&& hsb[2] <= thresh.getYellow_v_high()
+				&& hsb[2] >= thresh.getYellow_v_low()
+				&& c.getRed() <= thresh.getYellow_r_high()
+				&& c.getRed() >= thresh.getYellow_r_low()
+				&& c.getGreen() <= thresh.getYellow_g_high()
+				&& c.getGreen() >= thresh.getYellow_g_low()
+				&& c.getBlue() <= thresh.getYellow_b_high()
+				&& c.getBlue() >= thresh.getYellow_b_low();
 	}
 
 	/**
@@ -941,12 +980,18 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the blue T), false otherwise.
 	 */
 	private boolean isBlue(Color c, float[] hsb) {
-		return hsb[0] <= thresh.getBlue_h_high() && hsb[0] >= thresh.getBlue_h_low() &&
-        hsb[1] <= thresh.getBlue_s_high() &&  hsb[1] >= thresh.getBlue_s_low() &&
-        hsb[2] <= thresh.getBlue_v_high() &&  hsb[2] >= thresh.getBlue_v_low() &&
-        c.getRed() <= thresh.getBlue_r_high() &&  c.getRed() >= thresh.getBlue_r_low() &&
-        c.getGreen() <= thresh.getBlue_g_high() && c.getGreen() >= thresh.getBlue_g_low() &&
-        c.getBlue() <= thresh.getBlue_b_high() && c.getBlue() >= thresh.getBlue_b_low();
+		return hsb[0] <= thresh.getBlue_h_high()
+				&& hsb[0] >= thresh.getBlue_h_low()
+				&& hsb[1] <= thresh.getBlue_s_high()
+				&& hsb[1] >= thresh.getBlue_s_low()
+				&& hsb[2] <= thresh.getBlue_v_high()
+				&& hsb[2] >= thresh.getBlue_v_low()
+				&& c.getRed() <= thresh.getBlue_r_high()
+				&& c.getRed() >= thresh.getBlue_r_low()
+				&& c.getGreen() <= thresh.getBlue_g_high()
+				&& c.getGreen() >= thresh.getBlue_g_low()
+				&& c.getBlue() <= thresh.getBlue_b_high()
+				&& c.getBlue() >= thresh.getBlue_b_low();
 	}
 
 	/**
@@ -973,7 +1018,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		frameGrabber = videoDevice.getJPEGFrameGrabber(WIDTH, HEIGHT, CHANNEL,
 				VIDEO_STANDARD, 80);
 		frameGrabber.setCaptureCallback(this);
-		System.out.println("Starting capture at " + WIDTH + "x" + HEIGHT);
+		// System.out.println("Starting capture at " + WIDTH + "x" + HEIGHT);
 	}
 
 	/**
@@ -990,7 +1035,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			}
 		});
 		frame.getContentPane().add(label);
-		frame.getContentPane().add(button,BorderLayout.SOUTH);
+		frame.getContentPane().add(button, BorderLayout.SOUTH);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.addWindowListener(this);
 		frame.setVisible(true);
