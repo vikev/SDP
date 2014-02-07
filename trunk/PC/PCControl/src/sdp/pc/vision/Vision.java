@@ -409,6 +409,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 //				imageGraphics, Constants.ROBOT_YELLOW_LEFT);
 		findOrientationByDot(yellowLeftPos.getX(), yellowLeftPos.getY(), image, true);
 
+//		double yellowOrientation = findOrientation(image, yellowLeftPos,
+//				imageGraphics, Constants.ROBOT_YELLOW_LEFT);
+		
 		// Point2 blackPos = new Point2();
 		// Point2 blackPos = findBlackDot(image, yellowLeftPos);
 		// blackPos =
@@ -416,17 +419,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 		// Update World State
 		state.setBallPosition(ballPos);
-		state.setBallFacing(Math.atan2(ballPos.getY() - avgPrevPos.getY(),
-				ballPos.getX() - avgPrevPos.getX()) * 180 / Math.PI);
-		state.setBallVelocity(new Point2(ballPos.getX() - avgPrevPos.getX(),
-				ballPos.getY() - avgPrevPos.getY()));
 		int ballPosDeltaY = ballPos.getY() - avgPrevPos.getY();
 		int ballPosDeltaX = ballPos.getX() - avgPrevPos.getX();
+		state.setBallVelocity(new Point2(ballPosDeltaX, ballPosDeltaY));
 		if (ballPosDeltaY == 0 & ballPosDeltaX == 0) {
 			state.setBallFacing(-1);
 		} else {
-			state.setBallFacing(Math.atan2(ballPos.getY() - avgPrevPos.getY(),
-					ballPos.getX() - avgPrevPos.getX()) * 180 / Math.PI);
+			state.setBallFacing(Math.atan2(ballPosDeltaX, ballPosDeltaY) * 180 / Math.PI);
 		}
 		state.setRobotPosition(0, 0, yellowLeftPos);
 		
