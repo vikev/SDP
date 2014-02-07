@@ -7,14 +7,20 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
-import au.edu.jcu.v4l4j.FrameGrabber;
+import sdp.pc.common.Constants;
 import au.edu.jcu.v4l4j.CaptureCallback;
+import au.edu.jcu.v4l4j.FrameGrabber;
 import au.edu.jcu.v4l4j.V4L4JConstants;
 import au.edu.jcu.v4l4j.VideoDevice;
 import au.edu.jcu.v4l4j.VideoFrame;
@@ -36,7 +42,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 	// Camera and image parameters
 	static final int WIDTH = 640;
-
 	static final int HEIGHT = 480;
 
 	private static final int VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL, CHANNEL = 0, ANGLE_SMOOTHING_FRAME_COUNT = 4;
@@ -61,13 +66,58 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 	// Used for calculating direction the ball is heading
 	static Point2[] prevFramePos = new Point2[10];
+=======
+	// Vision-specific paramters
+	private static final int WIDTH = 640, HEIGHT = 480,
+			VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL, CHANNEL = 0,
+			PLAYER_RADIUS = 18, FRAME_IGNORE_COUNT = 50,
+			ANGLE_SMOOTHING_FRAME_COUNT = 4, MIN_POINTS_BOT = 10;
+	private static final String DEVICE = "/dev/video0";
+	private static final double VECTOR_THRESHOLD = 5.0;
+
+	private static Color[][] rgb = new Color[700][520];
+	private static double[][] angleSmoothing = new double[4][ANGLE_SMOOTHING_FRAME_COUNT];
+	private static float[][][] hsb = new float[700][520][3];
+	private static float[] cHsb = new float[3];
+	private static int[] pointsCount = new int[4];
+	private static int angSmoothingWriteIndex = 0, stateCounter = 0;;
+	private static Point2 circlePt = new Point2(-1, -1);
+	private static PitchConstants pitchConsts = new PitchConstants(0);
+	private static ThresholdsState thresh = new ThresholdsState();
+	private static JLabel frameLabel;
+	private static VideoDevice videoDevice;
+	private static FrameGrabber frameGrabber;
+
+	// Used for normalisation (first float is max brightness, second is min
+	// brightness)
+	private static float[] minMaxBrightness = { 1.0f, 0.0f };
+
+	// Used to denote if video feed has been pre-processed; using integer
+	// so we can count frames and ignore the first few
+	private static int keyframe = 0;
+
+	// For FPS calculation
+	private static long initialTime;
+
+	public static Point2[][] points = new Point2[1000][1000];
+	public static float fps = 1;
+	public static ArrayList<Point2> pitchPoints = new ArrayList<Point2>();
+	public static WorldState state = new WorldState();
+	public static Point2 requestedData = new Point2(-1, -1);
+	public static JFrame frame;
+	public static HashMap<Integer, Integer> hullPoints = new HashMap<Integer, Integer>();
+	public static boolean hullCalculated = false;
+	public static boolean edgesCalibrated;
+	public static BufferedImage frameImage;
+>>>>>>> f0353d1dedd0e828fab637caa91faa3541463228
 
 	// Added in to help split up into sections
 	public static Point2 leftTop = new Point2(0, 0);
-	public static Point2 leftBottom = new Point2(0, 0);
-	public static Point2 rightTop = new Point2(0, 0);
 	public static Point2 rightBottom = new Point2(0, 0);
 	public static boolean sectionsDone = false;
+
+	// Used for calculating direction the ball is heading
+	public static Point2[] prevFramePos = new Point2[10];
 
 	/**
 	 * Provides Java application support. On launch, runs a JFrame window which
@@ -190,7 +240,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		frameGrabber = videoDevice.getJPEGFrameGrabber(WIDTH, HEIGHT, CHANNEL,
 				VIDEO_STANDARD, 80);
 		frameGrabber.setCaptureCallback(this);
-		System.out.println("Starting capture at " + WIDTH + "x" + HEIGHT);
+		// System.out.println("Starting capture at " + WIDTH + "x" + HEIGHT);
 	}
 
 	/**
@@ -198,17 +248,17 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 */
 	private void initGUI() {
 		frame = new JFrame();
-		label = new JLabel();
-		JButton button = new JButton("New Parameters");
+		frameLabel = new JLabel();
+		JButton button = new JButton("Settings");
 		button.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				new ControlGUI(thresh, pitchConsts);
 			}
 		});
-		frame.getContentPane().add(label);
-		frame.getContentPane().add(button,BorderLayout.SOUTH);
-		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		frame.getContentPane().add(frameLabel);
+		frame.getContentPane().add(button, BorderLayout.SOUTH);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.addWindowListener(this);
 		frame.setVisible(true);
 		frame.setSize(WIDTH, HEIGHT);
@@ -250,8 +300,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 */
 	@Override
 	public void nextFrame(VideoFrame frame) {
-		label.getGraphics().drawImage(frame.getBufferedImage(), 0, 0, WIDTH,
-				HEIGHT, null);
+		frameLabel.getGraphics().drawImage(frame.getBufferedImage(), 0, 0,
+				WIDTH, HEIGHT, null);
 		frame.recycle();
 	}
 }

@@ -398,10 +398,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 		// Update World State
 		state.setBallPosition(ballPos);
+<<<<<<< HEAD
 		state.setBallFacing(Math.atan2(ballPos.getY() - avgPrevPos.getY(),
 				ballPos.getX() - avgPrevPos.getX()) * 180 / Math.PI);
 		state.setBallVelocity(new Point2(ballPos.getX() - avgPrevPos.getX(),
 				ballPos.getY() - avgPrevPos.getY()));
+=======
 		int ballPosDeltaY = ballPos.getY() - avgPrevPos.getY();
 		int ballPosDeltaX = ballPos.getX() - avgPrevPos.getX();
 		if (ballPosDeltaY == 0 & ballPosDeltaX == 0) {
@@ -410,6 +412,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			state.setBallFacing(Math.atan2(ballPos.getY() - avgPrevPos.getY(),
 					ballPos.getX() - avgPrevPos.getX())* 180 / Math.PI);
 		}
+>>>>>>> e3ba160f163c7b53838805fa1553ec68e985b889
 		state.setRobotPosition(0, 0, yellowLeftPos);
 		state.setRobotFacing(0, 0, yellowOrientation);
 

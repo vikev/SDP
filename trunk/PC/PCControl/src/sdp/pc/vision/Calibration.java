@@ -15,7 +15,6 @@ public class Calibration extends MouseAdapter {
 
 	@Override
 	public void mousePressed(MouseEvent e) {
-		
 		pos = Vision.frame.getContentPane().getMousePosition();
 		
 		if (pos != null) {
@@ -23,6 +22,7 @@ public class Calibration extends MouseAdapter {
 				
 				stateListener.addBoundary(new Point2(pos));
 				System.out.println("Boundary added [" + pos.x + ", " + pos.y + "]");
+
 			}
 		}
 	}

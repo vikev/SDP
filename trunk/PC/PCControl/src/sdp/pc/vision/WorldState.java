@@ -15,7 +15,6 @@ public class WorldState {
 	private Point2 ballLocation = new Point2();
 	private Point2 ballVelocity = new Point2();
 	private double ballFacing, ballSpeed;
-	
 	private Point2[][] robotLoc = new Point2[TEAM_COUNT][PLAYERS_PER_TEAM];
 	private double[][] robotFacing = new double[TEAM_COUNT][PLAYERS_PER_TEAM];
 
