@@ -398,8 +398,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		Graphics frameGraphics = frameLabel.getGraphics();
 
 		// TODO: fix orientation code
-		double yellowOrientation = findOrientation(image, yellowLeftPos,
+		//findOrientationByDot(yellowLeftPos.getX(), yellowLeftPos.getY(), image, true);
+		double yellowLeftOrientation = findOrientation(image, yellowLeftPos,
 				imageGraphics, Constants.ROBOT_YELLOW_LEFT);
+		
+		double yellowRightOrientation = findOrientation(image, yellowRightPos,
+				imageGraphics, Constants.ROBOT_YELLOW_RIGHT);
+		
 		
 		// Point2 blackPos = new Point2();
 		// Point2 blackPos = findBlackDot(image, yellowLeftPos);
@@ -410,14 +415,16 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		state.setBallPosition(ballPos);
 		int ballPosDeltaY = ballPos.getY() - avgPrevPos.getY();
 		int ballPosDeltaX = ballPos.getX() - avgPrevPos.getX();
-		state.setBallVelocity(new Point2(ballPosDeltaX, ballPosDeltaY));
-		if (ballPosDeltaY == 0 & ballPosDeltaX == 0) {
+		state.setBallVelocity(new Point2(ballPosDeltaX,ballPosDeltaY));
+		if (ballPosDeltaY < 1 & ballPosDeltaX < 1) {
 			state.setBallFacing(-1);
 		} else {
 			state.setBallFacing(Math.atan2(ballPosDeltaX, ballPosDeltaY) * 180 / Math.PI);
 		}
 		state.setRobotPosition(0, 0, yellowLeftPos);
-		state.setRobotFacing(0, 0, yellowOrientation);
+		state.setRobotFacing(0, 0, yellowLeftOrientation);
+		state.setRobotPosition(0, 1, yellowRightPos);
+		state.setRobotFacing(0, 1, yellowRightOrientation);
 
 		// Ball location (and direction)
 		if (Alg.pointInPitch(ballPos)) {
