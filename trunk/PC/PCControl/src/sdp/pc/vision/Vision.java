@@ -47,13 +47,15 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private static final double VECTOR_THRESHOLD = 3.0;
 
 	private static Color[][] rgb = new Color[700][520];
+	public static Point2[][] points = new Point2[1000][1000];
 	private static double[][] angleSmoothing = new double[4][ANGLE_SMOOTHING_FRAME_COUNT];
 	private static float[][][] hsb = new float[700][520][3];
 	private static float[] cHsb = new float[3];
+	public static float fps;
 	private static int angSmoothingWriteIndex = 0;
 	private static int[] pointsCount = new int[4];
-	private static ArrayList<Point2> pitchPoints = new ArrayList<Point2>();
-	private static WorldState state = new WorldState();
+	public static ArrayList<Point2> pitchPoints = new ArrayList<Point2>();
+	public static WorldState state = new WorldState();
 	public static Point2 requestedData = new Point2(-1, -1);
 	private static Point2 circlePt = new Point2(-1, -1);
 
@@ -180,6 +182,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		ArrayList<Point2> whitePoints = new ArrayList<Point2>();
 
 		// Find borders
+		for (int x = 0; x < 1000; x++) {
+			for (int y = 0; y < 1000; y++) {
+				points[x][y] = new Point2(-1, -1);
+			}
+		}
 		for (int row = leftTop.getY(); row < rightBottom.getY(); row++) {
 			for (int column = leftTop.getX(); column < rightBottom.getX(); column++) {
 
@@ -196,8 +203,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		for (int row = leftTop.getY(); row < rightBottom.getY(); row++) {
 			for (int column = leftTop.getX(); column < rightBottom.getX(); column++) {
 				Point2 p = new Point2(column, row);
+
 				if (Alg.isInHull(borders, p))
 					pitchPoints.add(p);
+				points[column][row] = new Point2(column, row);
 			}
 		}
 
@@ -382,7 +391,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// Update World State
 		state.setBallPosition(ballPos);
 		state.setBallFacing(Math.atan2(ballPos.getY() - avgPrevPos.getY(),
-				ballPos.getX() - avgPrevPos.getX())* 180 / Math.PI);
+				ballPos.getX() - avgPrevPos.getX()) * 180 / Math.PI);
+		state.setBallVelocity(new Point2(ballPos.getX() - avgPrevPos.getX(),
+				ballPos.getY() - avgPrevPos.getY()));
 		state.setRobotPosition(0, 0, yellowLeftPos);
 		state.setRobotFacing(0, 0, yellowOrientation);
 
@@ -391,6 +402,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			imageGraphics.setColor(Color.red);
 			imageGraphics.drawLine(0, ballPos.getY(), 640, ballPos.getY());
 			imageGraphics.drawLine(ballPos.getX(), 0, ballPos.getX(), 480);
+			drawCircle(FutureBall.estimateRealStopPoint(), imageGraphics,
+					Constants.GRAY_BLEND, Constants.ROBOT_HEAD_RADIUS);
+			if (FutureBall.collision.getX() > 0) {
+				drawCircle(FutureBall.collision, imageGraphics,
+						Constants.GRAY_BLEND, 5);
+			}
 			if (Alg.lineSize(ballPos, avgPrevPos) > VECTOR_THRESHOLD) {
 				imageGraphics.drawLine(ballPos.getX(), ballPos.getY(),
 						avgPrevPos.getX(), avgPrevPos.getY());
@@ -457,17 +474,18 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		angSmoothingWriteIndex %= ANGLE_SMOOTHING_FRAME_COUNT;
 
 		// Draw centre line
-		imageGraphics.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
-		imageGraphics.drawLine(Constants.TABLE_CENTRE_X,
-				Constants.TABLE_MIN_Y + 1, Constants.TABLE_CENTRE_X,
-				Constants.TABLE_MAX_Y - 1);
+		// imageGraphics.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
+		// imageGraphics.drawLine(Constants.TABLE_CENTRE_X,
+		// Constants.TABLE_MIN_Y + 1, Constants.TABLE_CENTRE_X,
+		// Constants.TABLE_MAX_Y - 1);
 
 		Point2 dPt = new Point2(requestedData.getX(), requestedData.getY());
 		if (Alg.pointInPitch(dPt)) {
 			circlePt = requestedData.copy();
-			Color s = rgb[requestedData.getX()][requestedData.getY()];
-			System.out.println("RGB: " + s.getRed() + " " + s.getGreen() + " "
-					+ s.getBlue());
+			// Color s = rgb[requestedData.getX()][requestedData.getY()];
+			// System.out.println("RGB: " + s.getRed() + " " + s.getGreen() +
+			// " "
+			// + s.getBlue());
 			float[] h = hsb[requestedData.getX()][requestedData.getY()];
 			System.out.println("HSB: " + h[0] + " " + h[1] + " " + h[2]);
 			requestedData = new Point2(-1, -1);
@@ -482,7 +500,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 		// Display the FPS that the vision system is running at
 		long after = System.currentTimeMillis(); // Used to calculate the FPS.
-		float fps = (1.0f) / ((after - initialTime) / 1000.0f);
+		fps = (1.0f) / ((after - initialTime) / 1000.0f);
 		imageGraphics.setColor(Color.white);
 		imageGraphics.drawString("FPS: " + (int) fps, 15, 15);
 		int x = 1, y = 0;
