@@ -50,20 +50,18 @@ public class FutureBall {
 						pts[i].getY());
 			}
 		}
-		System.out.println(p[0] + p[1]);
+		//System.out.println(p[0] + p[1]);
 	}
 
 	public static Point2 estimateRealStopPoint() {
-		double delX = state.getBallVelocity().getX(), delY = state
-				.getBallVelocity().getY();
+		Point2 vel = state.getBallVelocity(); 
+		double delX = vel.getX(), delY = vel.getY();
 		Point2 pos = state.getBallPosition().copy();
 		double tarX = pos.getX(), tarY = pos.getY();
-		while (Math.abs(delX) > 0.25 || Math.abs(delY) > 0.25) {
-			delX *= 0.6;
-			delY *= 0.6;
-			tarX -= delX;
-			tarY -= delY;
-		}
+		//Changed this with the help of geometric series
+		tarX -= delX*1.5;
+		tarY -= delY*1.5;
+		
 		double distToStop = (new Point2((int) (tarX - pos.getX()),
 				(int) (tarY - pos.getY())).modulus());
 		double sX = pos.getX(), sY = pos.getY();
@@ -85,5 +83,11 @@ public class FutureBall {
 			}
 		}
 		return new Point2((int) tarX, (int) tarY);
+	}
+	//TODO Implement this such that by given the position and facing of the attacker
+	// and the X-value of the defender robot's position
+	// estimateBallPositionWhen returns Y-value where the ball should be when robotPositionX == ballPosition.getX()
+	public static double estimateBallPositionWhen(Point2 attPosition, double attFacing, double robotPositionX) {
+		return 160.0;
 	}
 }
