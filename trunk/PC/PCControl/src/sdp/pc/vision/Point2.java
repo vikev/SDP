@@ -1,14 +1,15 @@
 package sdp.pc.vision;
 
+import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
 public class Point2 {
+	public static final Point2 Empty = new Point2(0,0);
 	private static final double STD_DEV_THRESHOLD = 1.17;
 
-	private int x;
-	private int y;
-
+	public int x = 0, y = 0;
+	
 	/**
 	 * Constructs a new point at the given coordinates
 	 */
@@ -20,15 +21,10 @@ public class Point2 {
 	/**
 	 * Constructs a new point with coordinates (0,0)
 	 */
-	public Point2() {
-		this.x = 0;
-		this.y = 0;
-	}
+	public Point2() { }
 
 	/**
-	 * Constructs a copy of a point
-	 * 
-	 * @param p
+	 * Constructs a copy of the given point
 	 */
 	public Point2(Point2 p) {
 		this.x = p.x;
@@ -36,9 +32,37 @@ public class Point2 {
 	}
 
 	/**
+	 * Constructs a copy of the given point
+	 */
+	public Point2(Point p) {
+		if(p != null) {
+			this.x = p.x;
+			this.y = p.y;
+		}
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if(!(o instanceof Point))
+			return false;
+		Point2 p = (Point2)o;
+		return p.x == x && p.y == y;
+	}
+	
+	@Override
+	public int hashCode() {
+		return x * 1000 + y;
+	}
+	
+	/**
+	 * Returns a copy of the given point
+	 */
+	public Point2 copy() {
+		return new Point2(this.x, this.y);
+	}
+
+	/**
 	 * Gets the x of the point
-	 * 
-	 * @return
 	 */
 	public int getX() {
 		return x;
@@ -46,17 +70,17 @@ public class Point2 {
 
 	/**
 	 * Sets the x of the point
-	 * 
-	 * @param x
 	 */
 	public void setX(int x) {
 		this.x = x;
 	}
+	
+	public double modulus(){
+		return Math.sqrt(this.x*this.x + this.y*this.y);
+	}
 
 	/**
 	 * Gets the y of the point
-	 * 
-	 * @return
 	 */
 	public int getY() {
 		return y;
@@ -64,8 +88,6 @@ public class Point2 {
 
 	/**
 	 * Sets the y of the point
-	 * 
-	 * @param y
 	 */
 	public void setY(int y) {
 		this.y = y;
@@ -99,7 +121,7 @@ public class Point2 {
 			for (int i = 0; i < points.size(); ++i) {
 				Point2 p = points.get(i);
 
-				if (Math.sqrt(this.distanceSq(p)) < stdev) {
+				if (this.distance(p) < stdev) {
 					newX += p.getX();
 					newY += p.getY();
 					++count;
@@ -211,6 +233,19 @@ public class Point2 {
 	}
 
 	/**
+	 * Gets the distance to the given point
+	 * 
+	 * @param x
+	 *            the x coordinate of the point
+	 * @param y
+	 *            the y coordinate of the point
+	 * @return the distance to the point
+	 */
+	public double distance(int x, int y) {
+		return Math.sqrt(distanceSq(x, y));
+	}
+
+	/**
 	 * Gets a point which is the difference between this point and the given
 	 * point
 	 * 
@@ -307,13 +342,39 @@ public class Point2 {
 		return new Point2D.Double(((b2 * c1 - b1 * c2) / delta), ((a1 * c2 - a2
 				* c1) / delta));
 	}
-	
+
 	public double angleTo(Point2 p) {
 		return Math.atan2(p.y - y, p.x - x);
 	}
-	
+
 	public boolean isToLeft(Point2 a, Point2 b) {
-		int dot = ((b.x - a.x)*(y - a.y) - (b.y - a.y)*(x - a.x));
+		int dot = ((b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x));
 		return dot > 0 || (dot == 0 && a.distanceSq(b) < a.distanceSq(this));
+	}
+
+	/**
+	 * Gets the distance from the origin (0,0) to this point
+	 * i.e. the length of this vector. 
+	 */
+	public double length() {
+		return Point2.Empty.distance(this);
+	}
+
+	/**
+	 * Gets the angle from the origin (0,0) to this point
+	 * i.e. the angle of this vector
+	 */
+	public double angle() {
+		return Point2.Empty.angleTo(this);
+	}
+
+	/**
+	 * Calculates a polar offset from a point. 
+	 * @param dist the distance to the new point
+	 * @param angle the angle to the new point
+	 * @return a unique point specified by dist/angle
+	 */
+	public Point2 polarOffset(int dist, double angle) {
+		return new Point2((int)(x + Math.cos(angle) * dist), (int)(y + Math.sin(angle) * dist));
 	}
 }

@@ -34,6 +34,7 @@ public class TCPClient {
 			frame.addKeyListener(new KeyListener() {
 				public void keyPressed(KeyEvent e) {
 					int code = e.getKeyCode();
+					
 					System.out.println(code);
 					/* Turn left - arrow left */
 					if (code == 37) {
@@ -68,16 +69,15 @@ public class TCPClient {
 							toServer.println("k");
 							break;
 						}
-						toServer.println(0);
+						toServer.println(200);
 					}
 				}
 
 				public void keyReleased(KeyEvent e) {
+					
 				}
 
 				public void keyTyped(KeyEvent e) {
-					toServer.println("s");
-					toServer.println(0);
 				}
 			});
 			frame.setVisible(true);

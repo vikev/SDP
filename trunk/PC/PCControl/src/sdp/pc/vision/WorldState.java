@@ -2,25 +2,32 @@ package sdp.pc.vision;
 
 import sdp.pc.common.Constants;
 
+/**
+ * Class for recording and maintaining the positions and facing angles of
+ * objects in "world". Must be instantiated.
+ * 
+ */
 public class WorldState {
-	public static final int PLAYERS_PER_TEAM = 2, TEAM_COUNT = 2,
-			TEAM_YELLOW = 0, TEAM_BLUE = 1;
+	public static final int PLAYERS_PER_TEAM = 2, TEAM_COUNT = 2;
 
-	public int targetGoal = Constants.GOAL_LEFT; 
+	public int targetGoal = Constants.GOAL_LEFT;
 	private int direction;
-	private Point2 ballLocation;
+	private Point2 ballLocation = new Point2();
+	private Point2 ballVelocity = new Point2();
+	private double ballFacing, ballSpeed;
 	private Point2[][] robotLoc = new Point2[TEAM_COUNT][PLAYERS_PER_TEAM];
 	private double[][] robotFacing = new double[TEAM_COUNT][PLAYERS_PER_TEAM];
-	
-	public static final Point2 leftGoalCentre = new Point2 (77,235); //Taken from image of pitch
-	public static final Point2 rightGoalCentre = new Point2 (589,241); //These are likely to change
+
+	// Taken from image of pitch; these are likely to change
+	public static final Point2 leftGoalCentre = new Point2(77, 235);
+	public static final Point2 rightGoalCentre = new Point2(589, 241);
 
 	public WorldState() {
 
 		// Set initial direction
-		if(targetGoal == Constants.GOAL_LEFT){
+		if (targetGoal == Constants.GOAL_LEFT) {
 			this.direction = Constants.DIRECTION_LEFT;
-		}else{
+		} else {
 			this.direction = Constants.DIRECTION_RIGHT;
 		}
 
@@ -30,62 +37,63 @@ public class WorldState {
 				robotLoc[t][p] = new Point2();
 	}
 
-	/* Getter Methods */
-	public Point2 getBallPosition() {
-		return ballLocation;
+
+	public double getBallFacing() {
+		return ballFacing;
+	}
+	public double getBallSpeed() {
+		return ballSpeed;
 	}
 
-	public int getDirection() {
-		return direction;
-	}
-
-	public int getTargetGoal() {
-		return targetGoal;
-	}
-
-	public void setTargetGoal(int newTargetGoal) {
-		targetGoal = newTargetGoal;
-	}
-
+	//const getters
 	public Point2 getLeftGoalCentre() {
 		return Constants.LEFT_GOAL_CENTRE;
 	}
-
 	public Point2 getRightGoalCentre() {
 		return Constants.RIGHT_GOAL_CENTRE;
 	}
 
 	/**
-	 * Gets the position of the specified robot
-	 * @param team the team of the robot
-	 * @param robot the id of the robot
-	 * @return the position of the robot
+	 * ???
+	 * @return
 	 */
-	public Point2 getRobotPosition(int team, int robot) {
-		return robotLoc[team][robot];
+	public int getTargetGoal() {
+		return targetGoal;
 	}
-	
 	/**
-	 * Gets the facing of the specified robot
-	 * @param team the team of the robot
-	 * @param robot the id of the robot
-	 * @return the orientation of the robot, in ???
+	 * Method for choosing a new target goal
+	 * ???
+	 * @param newTargetGoal
 	 */
-	
-	public double getRobotFacing(int team, int robot) {
-		return robotFacing[team][robot];
+	public void setTargetGoal(int newTargetGoal) {
+		targetGoal = newTargetGoal;
 	}
 
-	/***
-	 * Updates the position of the ball.
-	 * 
-	 * @param newPos
-	 *            - the new position of the ball.
+	/**
+	 * Gets the current position of the ball
+	 */
+	public Point2 getBallPosition() {
+		return ballLocation;
+	}
+	/**
+	 * Sets the current position of the ball
 	 */
 	public void setBallPosition(Point2 newPos) {
 		this.ballLocation = newPos;
 	}
 
+	/**
+	 * Gets the position of the specified robot
+	 * 
+	 * @param team
+	 *            the team of the robot, 0 for yellow and 1 for blue
+	 * @param robot
+	 *            the id of the robot, 0 for left one and 1 foe the right one
+	 * @return the position of the robot
+	 */
+	public Point2 getRobotPosition(int team, int robot) {
+		return robotLoc[team][robot];
+	}
 	/***
 	 * Updates the team position of a given robot, part of a given team.
 	 * 
@@ -101,6 +109,18 @@ public class WorldState {
 	}
 
 	/**
+	 * Gets the facing of the specified robot
+	 * 
+	 * @param team
+	 *            the team of the robot, 0 for yellow and 1 for blue
+	 * @param robot
+	 *            the id of the robot, 0 for left one and 1 for the right one
+	 * @return the orientation of the robot, in ???
+	 */
+	public double getRobotFacing(int team, int robot) {
+		return robotFacing[team][robot];
+	}
+	/**
 	 * Updates the facing of a given robot, part of a given team.
 	 * 
 	 * @param team
@@ -115,12 +135,34 @@ public class WorldState {
 	}
 
 	/**
-	 * Set the direction our team is supposed to shoot towards.
-	 * 
-	 * @param direction
+	 * Gets the direction our team is supposed to shoot towards
+	 * @return
+	 */
+	public int getDirection() {
+		return direction;
+	}
+	/**
+	 * Sets the direction our team is supposed to shoot towards
 	 */
 	public void setDirection(int direction) {
 		this.direction = direction;
+	}
+	
+	/**
+	 * Sets the current velocity of the ball
+	 */
+
+	public void setBallVelocity(Point2 ballVelocity) {
+		this.ballVelocity = ballVelocity;
+		this.ballSpeed = ballVelocity.length();
+		this.ballFacing = ballVelocity.angle();
+	}
+	/**
+	 * Gets the current velocity of the ball
+	 */
+
+	public Point2 getBallVelocity() {
+		return ballVelocity;
 	}
 
 }
