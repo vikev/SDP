@@ -35,7 +35,7 @@ public class Milestone3def {
 				System.out.println("Finished attempting to defend the ball");
 			}
 		}
-	}
+	}  
 
 	public static void defendBall(WorldState state, Vision vision,
 			Driver driver) {
@@ -55,6 +55,27 @@ public class Milestone3def {
 		
 		//At the beginning make sure that robot is facing perpendicular to edges
 		rotatePerpendicular(state, vision, driver);
+		
+		if (state.getBallFacing() == -1) {
+			//Get the facing direction of the attacking robot
+			Point2 attPosition = state.getRobotPosition(0, 1);
+			System.out.println("Attacking robot is at: " + attPosition);
+			
+			double attFacing = state.getRobotFacing(0, 1);
+			System.out.println("Attacking robot facing angle: " + attFacing);
+			
+			/**
+			 * By having the direction to which the attacking robot is going to kick
+			 * -- attFacing 
+			 * and position of that robot - attPosition
+			 * predict the position of the ball when ballPosition.getX() == robotPosition.getX()
+			 * and then drive the robot to y = ballPosition.getY()
+			 */
+		} else {
+			/**
+			 * If the ball is already moving - make sure that the robot will cut off it
+			 */
+		}
 	}
 	
 	public static void rotatePerpendicular(WorldState state, Vision vision,

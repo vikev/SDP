@@ -61,6 +61,10 @@ public class Point2 {
 	public void setX(int x) {
 		this.x = x;
 	}
+	
+	public double modulus(){
+		return Math.sqrt(this.x*this.x + this.y*this.y);
+	}
 
 	/**
 	 * Gets the y of the point
