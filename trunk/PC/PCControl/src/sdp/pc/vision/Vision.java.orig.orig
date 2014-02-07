@@ -10,7 +10,6 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,8 +19,9 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
 import sdp.pc.common.Constants;
-import au.edu.jcu.v4l4j.CaptureCallback;
+
 import au.edu.jcu.v4l4j.FrameGrabber;
+import au.edu.jcu.v4l4j.CaptureCallback;
 import au.edu.jcu.v4l4j.V4L4JConstants;
 import au.edu.jcu.v4l4j.VideoDevice;
 import au.edu.jcu.v4l4j.VideoFrame;
@@ -41,26 +41,37 @@ import au.edu.jcu.v4l4j.exceptions.V4L4JException;
  */
 public class Vision extends WindowAdapter implements CaptureCallback {
 
-	// Vision-specific paramters
+	// Camera and image parameters
 	private static final int WIDTH = 640, HEIGHT = 480,
 			VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL, CHANNEL = 0,
 			PLAYER_RADIUS = 18, FRAME_IGNORE_COUNT = 50,
 			ANGLE_SMOOTHING_FRAME_COUNT = 4, MIN_POINTS_BOT = 10;
+
 	private static final String DEVICE = "/dev/video0";
-	private static final double VECTOR_THRESHOLD = 5.0;
+	private static final double VECTOR_THRESHOLD = 3.0;
 
 	private static Color[][] rgb = new Color[700][520];
+	public static Point2[][] points = new Point2[1000][1000];
 	private static double[][] angleSmoothing = new double[4][ANGLE_SMOOTHING_FRAME_COUNT];
 	private static float[][][] hsb = new float[700][520][3];
 	private static float[] cHsb = new float[3];
+	public static float fps;
+	private static int angSmoothingWriteIndex = 0;
 	private static int[] pointsCount = new int[4];
-	private static int angSmoothingWriteIndex = 0, stateCounter = 0;;
+	public static ArrayList<Point2> pitchPoints = new ArrayList<Point2>();
+	public static WorldState state = new WorldState();
+	public static Point2 requestedData = new Point2(-1, -1);
 	private static Point2 circlePt = new Point2(-1, -1);
 	private static PitchConstants pitchConsts = new PitchConstants(0);
 	private static ThresholdsState thresh = new ThresholdsState();
-	private static JLabel frameLabel;
+
+	private static JLabel label;
+	public static JFrame frame;
+	private long initialTime; // For FPS calculation
 	private static VideoDevice videoDevice;
 	private static FrameGrabber frameGrabber;
+	private boolean hullCalculated = false;
+	public static boolean edgesCalibrated = false;
 
 	// Used for normalisation (first float is max brightness, second is min
 	// brightness)
@@ -70,27 +81,15 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	// so we can count frames and ignore the first few
 	private static int keyframe = 0;
 
-	// For FPS calculation
-	private static long initialTime;
-
-	public static Point2[][] points = new Point2[1000][1000];
-	public static float fps = 1;
-	public static ArrayList<Point2> pitchPoints = new ArrayList<Point2>();
-	public static WorldState state = new WorldState();
-	public static Point2 requestedData = new Point2(-1, -1);
-	public static JFrame frame;
-	public static HashMap<Integer, Integer> hullPoints = new HashMap<Integer, Integer>();
-	public static boolean hullCalculated = false;
-	public static boolean edgesCalibrated;
-	public static BufferedImage frameImage;
+	// Used for calculating direction the ball is heading
+	static Point2[] prevFramePos = new Point2[10];
 
 	// Added in to help split up into sections
 	public static Point2 leftTop = new Point2(0, 0);
+	public static Point2 leftBottom = new Point2(0, 0);
+	public static Point2 rightTop = new Point2(0, 0);
 	public static Point2 rightBottom = new Point2(0, 0);
 	public static boolean sectionsDone = false;
-
-	// Used for calculating direction the ball is heading
-	public static Point2[] prevFramePos = new Point2[10];
 
 	/**
 	 * Provides Java application support. On launch, runs a JFrame window which
@@ -149,7 +148,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 			public void nextFrame(VideoFrame frame) {
 				initialTime = System.currentTimeMillis(); // for FPS
-				frameImage = frame.getBufferedImage();
+				BufferedImage frameImage = frame.getBufferedImage();
 				frame.recycle();
 
 				// Ensure the pre-process is only ran once during
@@ -161,18 +160,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 					keyframe++;
 					if (keyframe >= FRAME_IGNORE_COUNT && edgesCalibrated) {
 						hullCalculated = true;
-						System.out
-								.println("Calculating convex hull with absolute boundaries "
-										+ leftTop.toString()
-										+ "; "
-										+ rightBottom.toString());
 						preprocess(frameImage);
-
-					} else if (stateCounter == 0
-							&& keyframe < FRAME_IGNORE_COUNT) {
-						System.out
-								.println("Waiting a a few frames before processing convex hull...");
-						stateCounter++;
 					}
 				}
 			}
@@ -200,8 +188,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		keyframe++;
 
 		ArrayList<Point2> whitePoints = new ArrayList<Point2>();
-		pitchPoints = new ArrayList<Point2>();
-		hullPoints.clear();
 
 		// Find borders
 		for (int x = 0; x < 1000; x++) {
@@ -226,11 +212,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			for (int column = leftTop.getX(); column < rightBottom.getX(); column++) {
 				Point2 p = new Point2(column, row);
 
-				if (Alg.isInHull(borders, p)) {
+				if (Alg.isInHull(borders, p))
 					pitchPoints.add(p);
-					hullPoints.put(p.getX() * 1000 + p.getY(), 0);
-					points[column][row] = new Point2(column, row);
-				}
+				points[column][row] = new Point2(column, row);
 			}
 		}
 
@@ -345,10 +329,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			Graphics imageGraphics = image.getGraphics();
 			// Graphics frameGraphics = label.getGraphics();
 			imageGraphics.setColor(Color.white);
-			// imageGraphics.drawLine(leftTop.getX(), leftTop.getY(),
-			// leftBottom.getX(), leftBottom.getY());
-			// imageGraphics.drawLine(rightTop.getX(), rightTop.getY(),
-			// rightBottom.getX(), rightBottom.getY());
+			imageGraphics.drawLine(leftTop.getX(), leftTop.getY(),
+					leftBottom.getX(), leftBottom.getY());
+			imageGraphics.drawLine(rightTop.getX(), rightTop.getY(),
+					rightBottom.getX(), rightBottom.getY());
 
 		}
 
@@ -397,17 +381,15 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		for (Point2 p : prevFramePos)
 			avgPrevPos = avgPrevPos.add(p);
 		avgPrevPos = avgPrevPos.div(prevFramePos.length);
-		avgPrevPos = avgPrevPos.subtract(ballPos).mult(-100 / (int) fps)
-				.add(ballPos);
+		avgPrevPos = avgPrevPos.subtract(ballPos).mult(-5).add(ballPos);
 
 		// Create graphical representation
 		Graphics imageGraphics = image.getGraphics();
-		Graphics frameGraphics = frameLabel.getGraphics();
+		Graphics frameGraphics = label.getGraphics();
 
 		// TODO: fix orientation code
-//		double yellowOrientation = findOrientation(image, yellowLeftPos,
-//				imageGraphics, Constants.ROBOT_YELLOW_LEFT);
-		findOrientationByDot(yellowLeftPos.getX(), yellowLeftPos.getY(), image, true);
+		double yellowOrientation = findOrientation(image, yellowLeftPos,
+				imageGraphics, Constants.ROBOT_YELLOW_LEFT);
 
 		// Point2 blackPos = new Point2();
 		// Point2 blackPos = findBlackDot(image, yellowLeftPos);
@@ -416,20 +398,23 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 		// Update World State
 		state.setBallPosition(ballPos);
+<<<<<<< HEAD
 		state.setBallFacing(Math.atan2(ballPos.getY() - avgPrevPos.getY(),
 				ballPos.getX() - avgPrevPos.getX()) * 180 / Math.PI);
 		state.setBallVelocity(new Point2(ballPos.getX() - avgPrevPos.getX(),
 				ballPos.getY() - avgPrevPos.getY()));
+=======
 		int ballPosDeltaY = ballPos.getY() - avgPrevPos.getY();
 		int ballPosDeltaX = ballPos.getX() - avgPrevPos.getX();
 		if (ballPosDeltaY == 0 & ballPosDeltaX == 0) {
 			state.setBallFacing(-1);
 		} else {
 			state.setBallFacing(Math.atan2(ballPos.getY() - avgPrevPos.getY(),
-					ballPos.getX() - avgPrevPos.getX()) * 180 / Math.PI);
+					ballPos.getX() - avgPrevPos.getX())* 180 / Math.PI);
 		}
+>>>>>>> e3ba160f163c7b53838805fa1553ec68e985b889
 		state.setRobotPosition(0, 0, yellowLeftPos);
-		
+		state.setRobotFacing(0, 0, yellowOrientation);
 
 		// Ball location (and direction)
 		if (Alg.pointInPitch(ballPos)) {
@@ -438,15 +423,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			imageGraphics.drawLine(ballPos.getX(), 0, ballPos.getX(), 480);
 			drawCircle(FutureBall.estimateRealStopPoint(), imageGraphics,
 					Constants.GRAY_BLEND, Constants.ROBOT_HEAD_RADIUS);
-			if (state.getBallVelocity().modulus() > 10) {
-				if (FutureBall.collision.getX() > 0) {
-					drawCircle(FutureBall.collision, imageGraphics,
-							Constants.GRAY_BLEND, 5);
-				}
-				if (Alg.lineSize(ballPos, avgPrevPos) > VECTOR_THRESHOLD) {
-					imageGraphics.drawLine(ballPos.getX(), ballPos.getY(),
-							avgPrevPos.getX(), avgPrevPos.getY());
-				}
+			if (FutureBall.collision.getX() > 0) {
+				drawCircle(FutureBall.collision, imageGraphics,
+						Constants.GRAY_BLEND, 5);
+			}
+			if (Alg.lineSize(ballPos, avgPrevPos) > VECTOR_THRESHOLD) {
+				imageGraphics.drawLine(ballPos.getX(), ballPos.getY(),
+						avgPrevPos.getX(), avgPrevPos.getY());
 			}
 		}
 
@@ -518,17 +501,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		Point2 dPt = new Point2(requestedData.getX(), requestedData.getY());
 		if (Alg.pointInPitch(dPt)) {
 			circlePt = requestedData.copy();
-			Color s = rgb[requestedData.getX()][requestedData.getY()];
-			if (s != null) {
-				System.out.println();
-				System.out.println("Point data at " + requestedData.toString()
-						+ ":");
-				System.out.println("RGB: " + s.getRed() + " " + s.getGreen()
-						+ " " + s.getBlue());
-				float[] h = hsb[requestedData.getX()][requestedData.getY()];
-				System.out.println("HSB: " + h[0] + " " + h[1] + " " + h[2]);
-			}
-
+			// Color s = rgb[requestedData.getX()][requestedData.getY()];
+			// System.out.println("RGB: " + s.getRed() + " " + s.getGreen() +
+			// " "
+			// + s.getBlue());
+			float[] h = hsb[requestedData.getX()][requestedData.getY()];
+			System.out.println("HSB: " + h[0] + " " + h[1] + " " + h[2]);
 			requestedData = new Point2(-1, -1);
 		}
 
@@ -541,7 +519,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 		// Display the FPS that the vision system is running at
 		long after = System.currentTimeMillis(); // Used to calculate the FPS.
-		fps = Math.max(1.0f, (1.0f) / ((after - initialTime) / 1000.0f));
+		fps = (1.0f) / ((after - initialTime) / 1000.0f);
 		imageGraphics.setColor(Color.white);
 		imageGraphics.drawString("FPS: " + (int) fps, 15, 15);
 		int x = 1, y = 0;
@@ -589,8 +567,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private void findOrientationByDot(int meanX, int meanY,
 			BufferedImage image, boolean showImage) {
 
-		// Find the smallest polygon that covers the green plate so as to only
-		// look within it (turns out the method is pretty fast)
+		// Point here is to find the smallest polygon that covers the green
+		// plate so as to only look within it (turns out the method is pretty
+		// fast)
 		ArrayList<Point2> greenPoints = new ArrayList<Point2>();
 		for (int i = -25; i < 25; i++)
 			for (int j = -25; j < 25; j++) {
@@ -635,89 +614,87 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		Point2 pt = new Point2(pxX, pxY);
 		drawCircle(pt, image.getGraphics(), Constants.GRAY_BLEND,
 				Constants.ROBOT_HEAD_RADIUS);
-		if (Alg.pointInPitch(new Point2(pxX, pxY))) {
-			image.getGraphics().drawLine(meanX, meanY, pxX, pxY);
-		}
+		image.getGraphics().drawLine(meanX, meanY, pxX, pxY);
+
 	}
-	
-	
-//	private double findOrientation(BufferedImage image, Point2 centroid,
-//			Graphics gfx, int iden) {
-//
-//		// Point here is to find the smallest polygon that covers the green
-//		// plate so as to only look within it (turns out the method is pretty
-//		// fast)
-//		ArrayList<Point2> greenPoints = new ArrayList<Point2>();
-//		for (int i = -25; i < 25; i++)
-//			for (int j = -25; j < 25; j++) {
-//				int column = centroid.getX() + i;
-//				int row = centroid.getY() + j;
-//				if (Alg.pointInPitch(new Point2(column, row))) {
-//					Color pixelColorRGB = new Color(image.getRGB(column, row));
-//					cHsb = hsb[column][row];
-//					if (isGreen(pixelColorRGB, cHsb)) {
-//						image.setRGB(column, row, Color.GREEN.getRGB());
-//						greenPoints.add(new Point2(column, row));
-//					}
-//				}
-//			}
-//		LinkedList<Point2> hull = new LinkedList<Point2>();
-//		if (!greenPoints.isEmpty()) {
-//
-//			// Contains border of green plate
-//			hull = Alg.convexHull(greenPoints);
-//		}
-//
-//		// Get best angle
-//		double angBest = 0.0;
-//		if (Alg.pointInPitch(centroid)) {
-//			double r = 0;
-//			double brBest = 1.0;
-//			for (int i = 0; i < Constants.HEAD_ARC_FIDELITY; i++) {
-//				r += 2.0 * Math.PI / Constants.HEAD_ARC_FIDELITY;
-//				int row = centroid.getY()
-//						+ (int) (Constants.HEAD_ENUM_RADIUS * Math.sin(r));
-//				int column = centroid.getX()
-//						+ (int) (Constants.HEAD_ENUM_RADIUS * Math.cos(r));
-//				if (Alg.pointInPitch(new Point2(column, row))) {
-//					// TODO: implement next if-clause better
-//					if (hsb[column][row][2] < brBest
-//							&& Alg.isInHull(hull, new Point2(column, row))) {
-//						brBest = hsb[column][row][2];
-//						angBest = r;
-//					}
-//				}
-//			}
-//
-//			// Smooth angle
-//			angleSmoothing[iden][angSmoothingWriteIndex] = angBest;
-//			angBest = 0;
-//			for (int j = 0; j < ANGLE_SMOOTHING_FRAME_COUNT; j++) {
-//				angBest += angleSmoothing[iden][j];
-//			}
-//			angBest /= ANGLE_SMOOTHING_FRAME_COUNT;
-//
-//			/*
-//			 * // Draw to screen Point2 pt = new Point2(centroid.getX() + (int)
-//			 * (Constants.HEAD_ENUM_RADIUS * Math.cos(angBest)), centroid.getY()
-//			 * + (int) (Constants.HEAD_ENUM_RADIUS * Math .sin(angBest)));
-//			 * drawCircle(pt, gfx, Constants.GRAY_BLEND,
-//			 * Constants.ROBOT_HEAD_RADIUS); gfx.drawLine(centroid.getX(),
-//			 * centroid.getY(), (int) (centroid.getX() -
-//			 * Constants.HEAD_ENUM_RADIUS * 2.0 Math.cos(angBest)), (int)
-//			 * (centroid.getY() - Constants.HEAD_ENUM_RADIUS * 2.0
-//			 * Math.sin(angBest)));
-//			 */
-//		}
-//		if (angBest > Math.PI)
-//			return (angBest - Math.PI) * 180.0 / Math.PI;
-//		return (angBest + Math.PI) * 180.0 / Math.PI;
-//	}
+
+	private double findOrientation(BufferedImage image, Point2 centroid,
+			Graphics gfx, int iden) {
+
+		// Point here is to find the smallest polygon that covers the green
+		// plate so as to only look within it (turns out the method is pretty
+		// fast)
+		ArrayList<Point2> greenPoints = new ArrayList<Point2>();
+		for (int i = -25; i < 25; i++)
+			for (int j = -25; j < 25; j++) {
+				int column = centroid.getX() + i;
+				int row = centroid.getY() + j;
+				if (Alg.pointInPitch(new Point2(column, row))) {
+					Color pixelColorRGB = new Color(image.getRGB(column, row));
+					cHsb = hsb[column][row];
+					if (isGreen(pixelColorRGB, cHsb)) {
+						image.setRGB(column, row, Color.GREEN.getRGB());
+						greenPoints.add(new Point2(column, row));
+					}
+				}
+			}
+		LinkedList<Point2> hull = new LinkedList<Point2>();
+		if (!greenPoints.isEmpty()) {
+
+			// Contains border of green plate
+			hull = Alg.convexHull(greenPoints);
+		}
+
+		// Get best angle
+		double angBest = 0.0;
+		if (Alg.pointInPitch(centroid)) {
+			double r = 0;
+			double brBest = 1.0;
+			for (int i = 0; i < Constants.HEAD_ARC_FIDELITY; i++) {
+				r += 2.0 * Math.PI / Constants.HEAD_ARC_FIDELITY;
+				int row = centroid.getY()
+						+ (int) (Constants.HEAD_ENUM_RADIUS * Math.sin(r));
+				int column = centroid.getX()
+						+ (int) (Constants.HEAD_ENUM_RADIUS * Math.cos(r));
+				if (Alg.pointInPitch(new Point2(column, row))) {
+					// TODO: implement next if-clause better
+					if (hsb[column][row][2] < brBest
+							&& Alg.isInHull(hull, new Point2(column, row))) {
+						brBest = hsb[column][row][2];
+						angBest = r;
+					}
+				}
+			}
+
+			// Smooth angle
+			angleSmoothing[iden][angSmoothingWriteIndex] = angBest;
+			angBest = 0;
+			for (int j = 0; j < ANGLE_SMOOTHING_FRAME_COUNT; j++) {
+				angBest += angleSmoothing[iden][j];
+			}
+			angBest /= ANGLE_SMOOTHING_FRAME_COUNT;
+
+			/*
+			 * // Draw to screen Point2 pt = new Point2(centroid.getX() + (int)
+			 * (Constants.HEAD_ENUM_RADIUS * Math.cos(angBest)), centroid.getY()
+			 * + (int) (Constants.HEAD_ENUM_RADIUS * Math .sin(angBest)));
+			 * drawCircle(pt, gfx, Constants.GRAY_BLEND,
+			 * Constants.ROBOT_HEAD_RADIUS); gfx.drawLine(centroid.getX(),
+			 * centroid.getY(), (int) (centroid.getX() -
+			 * Constants.HEAD_ENUM_RADIUS * 2.0 Math.cos(angBest)), (int)
+			 * (centroid.getY() - Constants.HEAD_ENUM_RADIUS * 2.0
+			 * Math.sin(angBest)));
+			 */
+		}
+		if (angBest > Math.PI)
+			return (angBest - Math.PI) * 180.0 / Math.PI;
+		return (angBest + Math.PI) * 180.0 / Math.PI;
+	}
 
 	/**
 	 * Abstraction of Graphics.drawOval which simplifies our circle drawing
 	 */
-	public static void drawCircle(Point2 centrePt, Graphics gfx, Color c, int radius) {
+	private void drawCircle(Point2 centrePt, Graphics gfx, Color c, int radius) {
 		gfx.setColor(c);
 		gfx.drawOval(centrePt.getX() - radius, centrePt.getY() - radius,
 				radius * 2, radius * 2);
@@ -863,18 +840,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * @return
 	 */
 	private boolean isBlack(Color c, float[] hsb) {
-		return hsb[0] <= thresh.getGrey_h_high()
-				&& hsb[0] >= thresh.getGrey_h_low()
-				&& hsb[1] <= thresh.getGrey_s_high()
-				&& hsb[1] >= thresh.getGrey_s_low()
-				&& hsb[2] <= thresh.getGrey_v_high()
-				&& hsb[2] >= thresh.getGrey_v_low()
-				&& c.getRed() <= thresh.getGrey_r_high()
-				&& c.getRed() >= thresh.getGrey_r_low()
-				&& c.getGreen() <= thresh.getGrey_g_high()
-				&& c.getGreen() >= thresh.getGrey_g_low()
-				&& c.getBlue() <= thresh.getGrey_b_high()
-				&& c.getBlue() >= thresh.getGrey_b_low();
+		return hsb[0] <= thresh.getGrey_h_high() && hsb[0] >= thresh.getGrey_h_low() &&
+        hsb[1] <= thresh.getGrey_s_high() &&  hsb[1] >= thresh.getGrey_s_low() &&
+        hsb[2] <= thresh.getGrey_v_high() &&  hsb[2] >= thresh.getGrey_v_low() &&
+        c.getRed() <= thresh.getGrey_r_high() &&  c.getRed() >= thresh.getGrey_r_low() &&
+        c.getGreen() <= thresh.getGrey_g_high() && c.getGreen() >= thresh.getGrey_g_low() &&
+        c.getBlue() <= thresh.getGrey_b_high() && c.getBlue() >= thresh.getGrey_b_low();
 	}
 
 	/**
@@ -891,18 +862,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         otherwise.
 	 */
 	private boolean isGreen(Color c, float[] hsb) {
-		return hsb[0] <= thresh.getGreen_h_high()
-				&& hsb[0] >= thresh.getGreen_h_low()
-				&& hsb[1] <= thresh.getGreen_s_high()
-				&& hsb[1] >= thresh.getGreen_s_low()
-				&& hsb[2] <= thresh.getGreen_v_high()
-				&& hsb[2] >= thresh.getGreen_v_low()
-				&& c.getRed() <= thresh.getGreen_r_high()
-				&& c.getRed() >= thresh.getGreen_r_low()
-				&& c.getGreen() <= thresh.getGreen_g_high()
-				&& c.getGreen() >= thresh.getGreen_g_low()
-				&& c.getBlue() <= thresh.getGreen_b_high()
-				&& c.getBlue() >= thresh.getGreen_b_low();
+		return hsb[0] <= thresh.getGreen_h_high() && hsb[0] >= thresh.getGreen_h_low() &&
+        hsb[1] <= thresh.getGreen_s_high() &&  hsb[1] >= thresh.getGreen_s_low() &&
+        hsb[2] <= thresh.getGreen_v_high() &&  hsb[2] >= thresh.getGreen_v_low() &&
+        c.getRed() <= thresh.getGreen_r_high() &&  c.getRed() >= thresh.getGreen_r_low() &&
+        c.getGreen() <= thresh.getGreen_g_high() && c.getGreen() >= thresh.getGreen_g_low() &&
+        c.getBlue() <= thresh.getGreen_b_high() && c.getBlue() >= thresh.getGreen_b_low();
 	}
 
 	/**
@@ -937,18 +902,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the ball), false otherwise.
 	 */
 	private boolean isBall(Color c, float[] hsb) {
-		return hsb[0] <= thresh.getBall_h_high()
-				&& hsb[0] >= thresh.getBall_h_low()
-				&& hsb[1] <= thresh.getBall_s_high()
-				&& hsb[1] >= thresh.getBall_s_low()
-				&& hsb[2] <= thresh.getBall_v_high()
-				&& hsb[2] >= thresh.getBall_v_low()
-				&& c.getRed() <= thresh.getBall_r_high()
-				&& c.getRed() >= thresh.getBall_r_low()
-				&& c.getGreen() <= thresh.getBall_g_high()
-				&& c.getGreen() >= thresh.getBall_g_low()
-				&& c.getBlue() <= thresh.getBall_b_high()
-				&& c.getBlue() >= thresh.getBall_b_low();
+		return hsb[0] <= thresh.getBall_h_high() && hsb[0] >= thresh.getBall_h_low() &&
+        hsb[1] <= thresh.getBall_s_high() &&  hsb[1] >= thresh.getBall_s_low() &&
+        hsb[2] <= thresh.getBall_v_high() &&  hsb[2] >= thresh.getBall_v_low() &&
+        c.getRed() <= thresh.getBall_r_high() &&  c.getRed() >= thresh.getBall_r_low() &&
+        c.getGreen() <= thresh.getBall_g_high() && c.getGreen() >= thresh.getBall_g_low() &&
+        c.getBlue() <= thresh.getBall_b_high() && c.getBlue() >= thresh.getBall_b_low();
 	}
 
 	/**
@@ -964,18 +923,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the yellow T), false otherwise.
 	 */
 	private boolean isYellow(Color c, float[] hsb) {
-		return hsb[0] <= thresh.getYellow_h_high()
-				&& hsb[0] >= thresh.getYellow_h_low()
-				&& hsb[1] <= thresh.getYellow_s_high()
-				&& hsb[1] >= thresh.getYellow_s_low()
-				&& hsb[2] <= thresh.getYellow_v_high()
-				&& hsb[2] >= thresh.getYellow_v_low()
-				&& c.getRed() <= thresh.getYellow_r_high()
-				&& c.getRed() >= thresh.getYellow_r_low()
-				&& c.getGreen() <= thresh.getYellow_g_high()
-				&& c.getGreen() >= thresh.getYellow_g_low()
-				&& c.getBlue() <= thresh.getYellow_b_high()
-				&& c.getBlue() >= thresh.getYellow_b_low();
+		return hsb[0] <= thresh.getYellow_h_high() && hsb[0] >= thresh.getYellow_h_low() &&
+        hsb[1] <= thresh.getYellow_s_high() &&  hsb[1] >= thresh.getYellow_s_low() &&
+        hsb[2] <= thresh.getYellow_v_high() &&  hsb[2] >= thresh.getYellow_v_low() &&
+        c.getRed() <= thresh.getYellow_r_high() &&  c.getRed() >= thresh.getYellow_r_low() &&
+        c.getGreen() <= thresh.getYellow_g_high() && c.getGreen() >= thresh.getYellow_g_low() &&
+        c.getBlue() <= thresh.getYellow_b_high() && c.getBlue() >= thresh.getYellow_b_low();
 	}
 
 	/**
@@ -991,18 +944,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *         (and thus the pixel is part of the blue T), false otherwise.
 	 */
 	private boolean isBlue(Color c, float[] hsb) {
-		return hsb[0] <= thresh.getBlue_h_high()
-				&& hsb[0] >= thresh.getBlue_h_low()
-				&& hsb[1] <= thresh.getBlue_s_high()
-				&& hsb[1] >= thresh.getBlue_s_low()
-				&& hsb[2] <= thresh.getBlue_v_high()
-				&& hsb[2] >= thresh.getBlue_v_low()
-				&& c.getRed() <= thresh.getBlue_r_high()
-				&& c.getRed() >= thresh.getBlue_r_low()
-				&& c.getGreen() <= thresh.getBlue_g_high()
-				&& c.getGreen() >= thresh.getBlue_g_low()
-				&& c.getBlue() <= thresh.getBlue_b_high()
-				&& c.getBlue() >= thresh.getBlue_b_low();
+		return hsb[0] <= thresh.getBlue_h_high() && hsb[0] >= thresh.getBlue_h_low() &&
+        hsb[1] <= thresh.getBlue_s_high() &&  hsb[1] >= thresh.getBlue_s_low() &&
+        hsb[2] <= thresh.getBlue_v_high() &&  hsb[2] >= thresh.getBlue_v_low() &&
+        c.getRed() <= thresh.getBlue_r_high() &&  c.getRed() >= thresh.getBlue_r_low() &&
+        c.getGreen() <= thresh.getBlue_g_high() && c.getGreen() >= thresh.getBlue_g_low() &&
+        c.getBlue() <= thresh.getBlue_b_high() && c.getBlue() >= thresh.getBlue_b_low();
 	}
 
 	/**
@@ -1029,7 +976,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		frameGrabber = videoDevice.getJPEGFrameGrabber(WIDTH, HEIGHT, CHANNEL,
 				VIDEO_STANDARD, 80);
 		frameGrabber.setCaptureCallback(this);
-		// System.out.println("Starting capture at " + WIDTH + "x" + HEIGHT);
+		System.out.println("Starting capture at " + WIDTH + "x" + HEIGHT);
 	}
 
 	/**
@@ -1037,17 +984,17 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 */
 	private void initGUI() {
 		frame = new JFrame();
-		frameLabel = new JLabel();
-		JButton button = new JButton("Settings");
+		label = new JLabel();
+		JButton button = new JButton("New Parameters");
 		button.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				new ControlGUI(thresh, pitchConsts);
 			}
 		});
-		frame.getContentPane().add(frameLabel);
-		frame.getContentPane().add(button, BorderLayout.SOUTH);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().add(label);
+		frame.getContentPane().add(button,BorderLayout.SOUTH);
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.addWindowListener(this);
 		frame.setVisible(true);
 		frame.setSize(WIDTH, HEIGHT);
@@ -1089,8 +1036,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 */
 	@Override
 	public void nextFrame(VideoFrame frame) {
-		frameLabel.getGraphics().drawImage(frame.getBufferedImage(), 0, 0,
-				WIDTH, HEIGHT, null);
+		label.getGraphics().drawImage(frame.getBufferedImage(), 0, 0, WIDTH,
+				HEIGHT, null);
 		frame.recycle();
 	}
 }
