@@ -165,10 +165,12 @@ public class Milestone3att {
 	}
 	
 	/**
-	 * Orders the attacking robot to go to travel forwards until
-	 * it is reasonably close (within 5 pixels) to the target point.
-	 * If the robots orientation deviates a set amount then facePoint
-	 * is called to correct the robots course (auxillary method) 
+	 * Orders the attacking robot to travel forwards until
+	 * it is reasonably close (within 5 pixels in its X and Y coordinates) to the target point.
+	 * If the attacker robots orientation deviates from its initial orientation by a set amount then the
+	 * the robot is commanded to stop and the travel is reported back as unsuccessful.
+	 * Then the facePoint method needs to be called externally to correct the robots orientation before this method
+	 * should be called again (auxillary method) 
 	 * @param state
 	 * @param driver
 	 * @return
