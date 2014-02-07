@@ -148,7 +148,7 @@ public class ControlGUI implements ChangeListener {
 	public void initGUI() {
 
 		frame = new JFrame("Control GUI");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
 		frame.setLayout(new FlowLayout());
 
