@@ -5,12 +5,12 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
 public class Point2 {
-	public static final Point2 EMPTY = new Point2(0,0);
-	
+	public static final Point2 EMPTY = new Point2(0, 0);
+
 	private static final double STD_DEV_THRESHOLD = 1.17;
 
 	public int x = 0, y = 0;
-	
+
 	/**
 	 * Constructs a new point at the given coordinates
 	 */
@@ -22,7 +22,8 @@ public class Point2 {
 	/**
 	 * Constructs a new point with coordinates (0,0)
 	 */
-	public Point2() { }
+	public Point2() {
+	}
 
 	/**
 	 * Constructs a copy of the given point
@@ -36,7 +37,7 @@ public class Point2 {
 	 * Constructs a copy of the given point
 	 */
 	public Point2(Point p) {
-		if(p != null) {
+		if (p != null) {
 			this.x = p.x;
 			this.y = p.y;
 		}
@@ -44,17 +45,17 @@ public class Point2 {
 
 	@Override
 	public boolean equals(Object o) {
-		if(!(o instanceof Point || o instanceof Point2))
+		if (!(o instanceof Point || o instanceof Point2))
 			return false;
-		Point2 p = (Point2)o;
+		Point2 p = (Point2) o;
 		return p.x == x && p.y == y;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return x * 1000 + y;
 	}
-	
+
 	/**
 	 * Returns a copy of the given point
 	 */
@@ -75,9 +76,9 @@ public class Point2 {
 	public void setX(int x) {
 		this.x = x;
 	}
-	
-	public double modulus(){
-		return Math.sqrt(this.x*this.x + this.y*this.y);
+
+	public double modulus() {
+		return Math.sqrt(this.x * this.x + this.y * this.y);
 	}
 
 	/**
@@ -343,7 +344,13 @@ public class Point2 {
 		return new Point2D.Double(((b2 * c1 - b1 * c2) / delta), ((a1 * c2 - a2
 				* c1) / delta));
 	}
-
+	
+	/**
+	 * Returns the angle to a given Point2 from <b>this</b> in radians.
+	 * 
+	 * @param p
+	 * @return
+	 */
 	public double angleTo(Point2 p) {
 		return Math.atan2(p.y - y, p.x - x);
 	}
@@ -354,28 +361,32 @@ public class Point2 {
 	}
 
 	/**
-	 * Gets the distance from the origin (0,0) to this point
-	 * i.e. the length of this vector. 
+	 * Gets the distance from the origin (0,0) to this point i.e. the length of
+	 * this vector.
 	 */
 	public double length() {
 		return Point2.EMPTY.distance(this);
 	}
 
 	/**
-	 * Gets the angle from the origin (0,0) to this point
-	 * i.e. the angle of this vector
+	 * Gets the angle from the origin (0,0) to this point i.e. the angle of this
+	 * vector
 	 */
 	public double angle() {
 		return Point2.EMPTY.angleTo(this);
 	}
 
 	/**
-	 * Calculates a polar offset from a point. 
-	 * @param dist the distance to the new point
-	 * @param angle the angle to the new point
+	 * Calculates a polar offset from a point.
+	 * 
+	 * @param dist
+	 *            the distance to the new point
+	 * @param rads
+	 *            the angle to the new point in radians
 	 * @return a unique point specified by dist/angle
 	 */
-	public Point2 polarOffset(int dist, double angle) {
-		return new Point2((int)(x + Math.cos(angle) * dist), (int)(y + Math.sin(angle) * dist));
+	public Point2 polarOffset(int dist, double rads) {
+		return new Point2((int) (x + Math.cos(rads) * dist),
+				(int) (y + Math.sin(rads) * dist));
 	}
 }

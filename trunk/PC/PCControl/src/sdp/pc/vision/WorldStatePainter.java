@@ -31,7 +31,7 @@ public class WorldStatePainter {
 	/**
 	 * the current highlighting mode
 	 */
-	private HighlightMode highlightMode = HighlightMode.None;
+	private HighlightMode highlightMode = HighlightMode.All;
 
 	/**
 	 * The state listener we're attached to so we can use its normalised RGB/HSB
@@ -66,7 +66,7 @@ public class WorldStatePainter {
 	 * @author Ix
 	 */
 	enum HighlightMode {
-		None, White, Yellow, Blue, Green, Black
+		None, All, White, Yellow, Blue, Green, Black
 	}
 
 	/**
@@ -98,9 +98,20 @@ public class WorldStatePainter {
 				return Color.GREEN;
 			return cRgb;
 		case Black:
-			if (Colors.isGreen(cRgb, cHsb))
+			if (Colors.isBlack(cRgb, cHsb))
 				return Color.BLACK;
 			return cRgb;
+		case All:
+			if (Colors.isWhite(cRgb, cHsb))
+				return Color.WHITE;
+			if (Colors.isYellow(cRgb, cHsb))
+				return Color.YELLOW;
+			if (Colors.isBlue(cRgb, cHsb))
+				return Color.BLUE;
+			if (Colors.isGreen(cRgb, cHsb))
+				return Color.GREEN;
+			if (Colors.isBlack(cRgb, cHsb))
+				return Color.BLACK;
 		default: // None or missing entry!
 			return cRgb;
 		}
@@ -165,12 +176,13 @@ public class WorldStatePainter {
 			g.setColor(Color.red);
 			g.drawLine(0, ballPos.getY(), 640, ballPos.getY());
 			g.drawLine(ballPos.getX(), 0, ballPos.getX(), 480);
-		}
-		// draw ball velocity (if above the threshold)
-		if (ballVelocity.length() > BALL_SPEED_THRESHOLD) {
-			Point2 velocityPos = ballPos.add(ballVelocity);
-			g.drawLine(ballPos.getX(), ballPos.getY(), velocityPos.getX(),
-					velocityPos.getY());
+
+			// draw ball velocity (if above the threshold)
+			if (ballVelocity.length() > BALL_SPEED_THRESHOLD) {
+				Point2 velocityPos = ballPos.add(ballVelocity);
+				g.drawLine(ballPos.getX(), ballPos.getY(), velocityPos.getX(),
+						velocityPos.getY());
+			}
 		}
 
 		// loop through all robots
@@ -179,12 +191,18 @@ public class WorldStatePainter {
 				// robot position, facing and nose
 				Point2 robotPos = state.getRobotPosition(team, robot);
 				double robotFacing = state.getRobotFacing(team, robot);
-				Point2 nosePos = robotPos.polarOffset(ROBOT_NOSE, robotFacing);
 
-				// draw robots
-				drawCircle(g, Constants.YELLOW_BLEND, robotPos,
-						Constants.ROBOT_CIRCLE_RADIUS);
-				g.drawLine(robotPos.x, robotPos.y, nosePos.x, nosePos.y);
+				// draw robots, if and only if they are on the table
+				if (!robotPos.equals(Point2.EMPTY)) {
+					drawCircle(g, Constants.YELLOW_BLEND, robotPos,
+							Constants.ROBOT_CIRCLE_RADIUS);
+					if (!(robotFacing == Double.NaN)) {
+						Point2 nosePos = robotPos.polarOffset(ROBOT_NOSE,
+								robotFacing);
+						drawCircle(g,Color.WHITE,nosePos,3);
+						g.drawLine(robotPos.x, robotPos.y, nosePos.x, nosePos.y);
+					}
+				}
 			}
 
 		// TODO: Check all that unknown (???) code below

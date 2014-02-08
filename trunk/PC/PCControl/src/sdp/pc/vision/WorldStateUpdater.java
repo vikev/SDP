@@ -18,6 +18,10 @@ import sdp.pc.common.Constants;
  */
 public class WorldStateUpdater extends WorldStateListener {
 
+	// The length of one side of the square bound around robot means for finding
+	// orientation
+	private static final int ORIENT_SQUARE_SIZE_PX = 50;
+
 	// The minimum points needed to trigger a robot position update
 	public int MINIMUM_ROBOT_POINTS = 10;
 
@@ -174,6 +178,9 @@ public class WorldStateUpdater extends WorldStateListener {
 					// and update the world state
 					state.setRobotPosition(team, robot, newPos);
 					state.setRobotFacing(team, robot, newFacing);
+				} else {
+					state.setRobotPosition(team, robot, Point2.EMPTY);
+					state.setRobotFacing(team, robot, Double.NaN);
 				}
 			}
 	}
@@ -185,7 +192,7 @@ public class WorldStateUpdater extends WorldStateListener {
 	 * Finally returns the angle between the centroid and the black-point-mean
 	 * 
 	 * @author s1143704, s1141301
-	 * @param p
+	 * @param robotCentroid
 	 *            the centroid of the robot
 	 * @param cRgbs
 	 *            the RGB colors of the image
@@ -193,13 +200,14 @@ public class WorldStateUpdater extends WorldStateListener {
 	 *            the HSB colors of the image
 	 * @return the angle the robot is facing
 	 */
-	private double findOrientation(Point2 p, Color[][] cRgbs, float[][][] cHsbs) {
-		int x = p.getX();
-		int y = p.getY();
+	private double findOrientation(Point2 robotCentroid, Color[][] cRgbs,
+			float[][][] cHsbs) {
+		int x = robotCentroid.getX();
+		int y = robotCentroid.getY();
 
-		final int RECT_SIZE = 25;
-		int minX = x - RECT_SIZE, maxX = x + RECT_SIZE, minY = y - RECT_SIZE, maxY = y
-				+ RECT_SIZE;
+		int minX = x - ORIENT_SQUARE_SIZE_PX / 2, maxX = x
+				+ ORIENT_SQUARE_SIZE_PX / 2, minY = y - ORIENT_SQUARE_SIZE_PX
+				/ 2, maxY = y + ORIENT_SQUARE_SIZE_PX / 2;
 
 		Color cRgb;
 		float[] cHsb;
@@ -212,17 +220,23 @@ public class WorldStateUpdater extends WorldStateListener {
 				if (pointInPitch(ip)) {
 					cRgb = cRgbs[x][y];
 					cHsb = cHsbs[x][y];
+					System.out.println(cRgb.toString());
+					System.out.println(cHsb[0] + " " + cHsb[1] + " " + cHsb[2]);
 					if (Colors.isGreen(cRgb, cHsb)) {
+						System.out.println("Found green point");
 						greenPoints.add(ip);
 					}
 				}
 			}
-
-		if (greenPoints.isEmpty())
+		if (greenPoints.isEmpty()) {
+			System.out.println("No green pts :(");
 			return 0; // no green pts :(
+		}
 
 		// calculate the hull of the green points
 		LinkedList<Point2> hull = Alg.convexHull(greenPoints);
+
+		System.out.println("2");
 
 		// now search for black points
 		Point2 blackPos = new Point2();
@@ -237,12 +251,14 @@ public class WorldStateUpdater extends WorldStateListener {
 					}
 			}
 
-		if (blackCount == 0)
+		if (blackCount == 0) {
 			return 0; // no black pts :(
+		}
 
 		blackPos = blackPos.div(blackCount);
 
-		return blackPos.angleTo(p);
+		System.out.println("1");
+		return blackPos.angleTo(robotCentroid);
 	}
 
 	/**
