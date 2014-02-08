@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class ChooseRobot {
-	public static int dialog(){
+	public static int dialog() {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		int robot = 0;
 		String choice = "";
@@ -31,9 +31,9 @@ public class ChooseRobot {
 				System.out
 						.println("Error occured while reading the input. Please try again...");
 			}
-			
+
 		}
-		
+
 		return robot;
 	}
 }

@@ -1,27 +1,28 @@
 package sdp.pc.vision;
+
 /* FROM: https://github.com/ernieyu/Swing-range-slider */
 
 /* The MIT License
 
-Copyright (c) 2010 Ernest Yu. All rights reserved.
+ Copyright (c) 2010 Ernest Yu. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE. */
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE. */
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -41,9 +42,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicSliderUI;
 
 /**
-* UI delegate for the RangeSlider component. RangeSliderUI paints two thumbs,
-* one for the lower value and one for the upper value.
-*/
+ * UI delegate for the RangeSlider component. RangeSliderUI paints two thumbs,
+ * one for the lower value and one for the upper value.
+ */
 class RangeSliderUI extends BasicSliderUI {
 
 	/** Color of selected range. */
@@ -61,7 +62,9 @@ class RangeSliderUI extends BasicSliderUI {
 
 	/**
 	 * Constructs a RangeSliderUI for the specified slider component.
-	 * @param b RangeSlider
+	 * 
+	 * @param b
+	 *            RangeSlider
 	 */
 	public RangeSliderUI(RangeSlider b) {
 		super(b);
@@ -129,9 +132,11 @@ class RangeSliderUI extends BasicSliderUI {
 			if (tickSpacing != 0) {
 				// If it's not on a tick, change the value
 				if ((upperValue - slider.getMinimum()) % tickSpacing != 0) {
-					float temp = (float)(upperValue - slider.getMinimum()) / (float)tickSpacing;
+					float temp = (float) (upperValue - slider.getMinimum())
+							/ (float) tickSpacing;
 					int whichTick = Math.round(temp);
-					snappedValue = slider.getMinimum() + (whichTick * tickSpacing);
+					snappedValue = slider.getMinimum()
+							+ (whichTick * tickSpacing);
 				}
 
 				if (snappedValue != upperValue) {
@@ -143,12 +148,14 @@ class RangeSliderUI extends BasicSliderUI {
 		// Calculate upper thumb location. The thumb is centered over its
 		// value on the track.
 		if (slider.getOrientation() == JSlider.HORIZONTAL) {
-			int upperPosition = xPositionForValue(slider.getValue() + slider.getExtent());
+			int upperPosition = xPositionForValue(slider.getValue()
+					+ slider.getExtent());
 			upperThumbRect.x = upperPosition - (upperThumbRect.width / 2);
 			upperThumbRect.y = trackRect.y;
 
 		} else {
-			int upperPosition = yPositionForValue(slider.getValue() + slider.getExtent());
+			int upperPosition = yPositionForValue(slider.getValue()
+					+ slider.getExtent());
 			upperThumbRect.x = trackRect.x;
 			upperThumbRect.y = upperPosition - (upperThumbRect.height / 2);
 		}
@@ -337,8 +344,10 @@ class RangeSliderUI extends BasicSliderUI {
 
 		upperThumbRect.setLocation(x, y);
 
-		SwingUtilities.computeUnion(upperThumbRect.x, upperThumbRect.y, upperThumbRect.width, upperThumbRect.height, upperUnionRect);
-		slider.repaint(upperUnionRect.x, upperUnionRect.y, upperUnionRect.width, upperUnionRect.height);
+		SwingUtilities.computeUnion(upperThumbRect.x, upperThumbRect.y,
+				upperThumbRect.width, upperThumbRect.height, upperUnionRect);
+		slider.repaint(upperUnionRect.x, upperUnionRect.y,
+				upperUnionRect.width, upperUnionRect.height);
 	}
 
 	/**
@@ -348,10 +357,12 @@ class RangeSliderUI extends BasicSliderUI {
 	public void scrollByBlock(int direction) {
 		synchronized (slider) {
 			int blockIncrement = (slider.getMaximum() - slider.getMinimum()) / 10;
-			if (blockIncrement <= 0 && slider.getMaximum() > slider.getMinimum()) {
+			if (blockIncrement <= 0
+					&& slider.getMaximum() > slider.getMinimum()) {
 				blockIncrement = 1;
 			}
-			int delta = blockIncrement * ((direction > 0) ? POSITIVE_SCROLL : NEGATIVE_SCROLL);
+			int delta = blockIncrement
+					* ((direction > 0) ? POSITIVE_SCROLL : NEGATIVE_SCROLL);
 
 			if (upperThumbSelected) {
 				int oldValue = ((RangeSlider) slider).getUpperValue();
@@ -369,7 +380,8 @@ class RangeSliderUI extends BasicSliderUI {
 	 */
 	public void scrollByUnit(int direction) {
 		synchronized (slider) {
-			int delta = 1 * ((direction > 0) ? POSITIVE_SCROLL : NEGATIVE_SCROLL);
+			int delta = 1 * ((direction > 0) ? POSITIVE_SCROLL
+					: NEGATIVE_SCROLL);
 
 			if (upperThumbSelected) {
 				int oldValue = ((RangeSlider) slider).getUpperValue();
@@ -427,7 +439,8 @@ class RangeSliderUI extends BasicSliderUI {
 			} else {
 				if (thumbRect.contains(currentMouseX, currentMouseY)) {
 					lowerPressed = true;
-				} else if (upperThumbRect.contains(currentMouseX, currentMouseY)) {
+				} else if (upperThumbRect
+						.contains(currentMouseX, currentMouseY)) {
 					upperPressed = true;
 				}
 			}
@@ -501,7 +514,7 @@ class RangeSliderUI extends BasicSliderUI {
 		 * Moves the location of the lower thumb, and sets its corresponding
 		 * value in the slider.
 		 */
-		 private void moveLowerThumb() {
+		private void moveLowerThumb() {
 			int thumbMiddle = 0;
 
 			switch (slider.getOrientation()) {
@@ -510,7 +523,8 @@ class RangeSliderUI extends BasicSliderUI {
 				int thumbTop = currentMouseY - offset;
 				int trackTop = trackRect.y;
 				int trackBottom = trackRect.y + (trackRect.height - 1);
-				int vMax = yPositionForValue(slider.getValue() + slider.getExtent());
+				int vMax = yPositionForValue(slider.getValue()
+						+ slider.getExtent());
 
 				// Apply bounds to thumb position.
 				if (drawInverted()) {
@@ -533,7 +547,8 @@ class RangeSliderUI extends BasicSliderUI {
 				int thumbLeft = currentMouseX - offset;
 				int trackLeft = trackRect.x;
 				int trackRight = trackRect.x + (trackRect.width - 1);
-				int hMax = xPositionForValue(slider.getValue() + slider.getExtent());
+				int hMax = xPositionForValue(slider.getValue()
+						+ slider.getExtent());
 
 				// Apply bounds to thumb position.
 				if (drawInverted()) {
@@ -554,66 +569,67 @@ class RangeSliderUI extends BasicSliderUI {
 			default:
 				return;
 			}
-		 }
+		}
 
-		 /**
-		  * Moves the location of the upper thumb, and sets its corresponding
-		  * value in the slider.
-		  */
-		 private void moveUpperThumb() {
-			 int thumbMiddle = 0;
+		/**
+		 * Moves the location of the upper thumb, and sets its corresponding
+		 * value in the slider.
+		 */
+		private void moveUpperThumb() {
+			int thumbMiddle = 0;
 
-			 switch (slider.getOrientation()) {
-			 case JSlider.VERTICAL:
-				 int halfThumbHeight = thumbRect.height / 2;
-				 int thumbTop = currentMouseY - offset;
-				 int trackTop = trackRect.y;
-				 int trackBottom = trackRect.y + (trackRect.height - 1);
-				 int vMin = yPositionForValue(slider.getValue());
+			switch (slider.getOrientation()) {
+			case JSlider.VERTICAL:
+				int halfThumbHeight = thumbRect.height / 2;
+				int thumbTop = currentMouseY - offset;
+				int trackTop = trackRect.y;
+				int trackBottom = trackRect.y + (trackRect.height - 1);
+				int vMin = yPositionForValue(slider.getValue());
 
-				 // Apply bounds to thumb position.
-				 if (drawInverted()) {
-					 trackTop = vMin;
-				 } else {
-					 trackBottom = vMin;
-				 }
-				 thumbTop = Math.max(thumbTop, trackTop - halfThumbHeight);
-				 thumbTop = Math.min(thumbTop, trackBottom - halfThumbHeight);
+				// Apply bounds to thumb position.
+				if (drawInverted()) {
+					trackTop = vMin;
+				} else {
+					trackBottom = vMin;
+				}
+				thumbTop = Math.max(thumbTop, trackTop - halfThumbHeight);
+				thumbTop = Math.min(thumbTop, trackBottom - halfThumbHeight);
 
-				 setUpperThumbLocation(thumbRect.x, thumbTop);
+				setUpperThumbLocation(thumbRect.x, thumbTop);
 
-				 // Update slider extent.
-				 thumbMiddle = thumbTop + halfThumbHeight;
-				 slider.setExtent(valueForYPosition(thumbMiddle) - slider.getValue());
-				 break;
+				// Update slider extent.
+				thumbMiddle = thumbTop + halfThumbHeight;
+				slider.setExtent(valueForYPosition(thumbMiddle)
+						- slider.getValue());
+				break;
 
-			 case JSlider.HORIZONTAL:
-				 int halfThumbWidth = thumbRect.width / 2;
-				 int thumbLeft = currentMouseX - offset;
-				 int trackLeft = trackRect.x;
-				 int trackRight = trackRect.x + (trackRect.width - 1);
-				 int hMin = xPositionForValue(slider.getValue());
+			case JSlider.HORIZONTAL:
+				int halfThumbWidth = thumbRect.width / 2;
+				int thumbLeft = currentMouseX - offset;
+				int trackLeft = trackRect.x;
+				int trackRight = trackRect.x + (trackRect.width - 1);
+				int hMin = xPositionForValue(slider.getValue());
 
-				 // Apply bounds to thumb position.
-				 if (drawInverted()) {
-					 trackRight = hMin;
-				 } else {
-					 trackLeft = hMin;
-				 }
-				 thumbLeft = Math.max(thumbLeft, trackLeft - halfThumbWidth);
-				 thumbLeft = Math.min(thumbLeft, trackRight - halfThumbWidth);
+				// Apply bounds to thumb position.
+				if (drawInverted()) {
+					trackRight = hMin;
+				} else {
+					trackLeft = hMin;
+				}
+				thumbLeft = Math.max(thumbLeft, trackLeft - halfThumbWidth);
+				thumbLeft = Math.min(thumbLeft, trackRight - halfThumbWidth);
 
-				 setUpperThumbLocation(thumbLeft, thumbRect.y);
+				setUpperThumbLocation(thumbLeft, thumbRect.y);
 
-				 // Update slider extent.
-				 thumbMiddle = thumbLeft + halfThumbWidth;
-				 slider.setExtent(valueForXPosition(thumbMiddle) - slider.getValue());
-				 break;
+				// Update slider extent.
+				thumbMiddle = thumbLeft + halfThumbWidth;
+				slider.setExtent(valueForXPosition(thumbMiddle)
+						- slider.getValue());
+				break;
 
-			 default:
-				 return;
-			 }
-		 }
+			default:
+				return;
+			}
+		}
 	}
 }
-

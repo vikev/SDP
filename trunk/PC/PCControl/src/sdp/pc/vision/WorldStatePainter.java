@@ -199,7 +199,7 @@ public class WorldStatePainter {
 					if (!(robotFacing == Double.NaN)) {
 						Point2 nosePos = robotPos.polarOffset(ROBOT_NOSE,
 								robotFacing);
-						drawCircle(g,Color.WHITE,nosePos,3);
+						drawCircle(g, Color.WHITE, nosePos, 3);
 						g.drawLine(robotPos.x, robotPos.y, nosePos.x, nosePos.y);
 					}
 				}

@@ -28,12 +28,12 @@ import javax.swing.event.ChangeListener;
  */
 public class ControlGUI implements ChangeListener {
 
-	/*
+	/**
 	 * A PitchConstants class used to load/save constants for the pitch.
 	 */
 	private PitchConstants pitchConstants;
 
-	/*
+	/**
 	 * The thresholds state class stores the current state of the thresholds.
 	 */
 	private ThresholdsState thresholdsState;
@@ -44,7 +44,7 @@ public class ControlGUI implements ChangeListener {
 	 */
 	// private WorldState worldState;
 
-	/* The main frame holding the Control GUI. */
+	/** The main frame holding the Control GUI. */
 	private JFrame frame;
 
 	/* Load/Save buttons. */
@@ -382,9 +382,9 @@ public class ControlGUI implements ChangeListener {
 					writer.write(String.valueOf(green_v.getUpperValue()) + "\n");
 
 					/* Absolute Borders */
-					//TODO: test!!!
-					Point2 pa = WorldStateListener.getBoundary(0),
-							pb = WorldStateListener.getBoundary(1);
+					// TODO: test!!!
+					Point2 pa = WorldStateListener.getBoundary(0), pb = WorldStateListener
+							.getBoundary(1);
 					writer.write(String.valueOf(pa.x + "\n"));
 					writer.write(String.valueOf(pa.y + "\n"));
 					writer.write(String.valueOf(pb.x + "\n"));
@@ -470,14 +470,14 @@ public class ControlGUI implements ChangeListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("Select upper-left-most boundary point");
-				
-				//TODO: test!!
+
+				// TODO: test!!
 				WorldStateListener.resetBoundary();
-				
-//				Vision.leftTop = new Point2();
-//				Vision.rightBottom = new Point2();
-//				Vision.edgesCalibrated = false;
-//				Vision.hullCalculated = false;
+
+				// Vision.leftTop = new Point2();
+				// Vision.rightBottom = new Point2();
+				// Vision.edgesCalibrated = false;
+				// Vision.hullCalculated = false;
 			}
 		});
 	}
@@ -867,19 +867,20 @@ public class ControlGUI implements ChangeListener {
 	@Override
 	public void stateChanged(ChangeEvent e) {
 
-		//TODO: add code to switch current overlay highlight as tab pages are changed
-//        if (e.getSource() instanceof JTabbedPane) {
-//            JTabbedPane pane = (JTabbedPane)e.getSource();
-//            int id = pane.getSelectedIndex();
-//            final HighlightMode[] tabModes = new HighlightMode[] {
-//            		HighlightMode.None,
-//            		HighlightMode.None,
-//            		HighlightMode.None,
-//            		HighlightMode.None,
-//            		HighlightMode.None,
-//            };
-//        }
-		
+		// TODO: add code to switch current overlay highlight as tab pages are
+		// changed
+		// if (e.getSource() instanceof JTabbedPane) {
+		// JTabbedPane pane = (JTabbedPane)e.getSource();
+		// int id = pane.getSelectedIndex();
+		// final HighlightMode[] tabModes = new HighlightMode[] {
+		// HighlightMode.None,
+		// HighlightMode.None,
+		// HighlightMode.None,
+		// HighlightMode.None,
+		// HighlightMode.None,
+		// };
+		// }
+
 		/* Update the world state. */
 		/*
 		 * if (pitch_0.isSelected()) { worldState.setPitch(0); } else {

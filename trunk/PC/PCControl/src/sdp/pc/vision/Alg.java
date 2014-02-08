@@ -4,15 +4,15 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-
 /**
  * Class containing various (and arbitrary) algorithms for static analysis of
- * state, video feed, data, etc. 
+ * state, video feed, data, etc.
  */
 public class Alg {
 
-	private Alg() { }	//no instantiation
-	
+	private Alg() {
+	} // no instantiation
+
 	/**
 	 * Computes the smallest circle that contains the given points
 	 * 
@@ -108,8 +108,8 @@ public class Alg {
 	 * the smallest convex polygon that can be fit around those points
 	 * 
 	 * @param pts
-	 * @return a LinkedList of Point2's, containing the vertices of the surrounding
-	 *         polygon
+	 * @return a LinkedList of Point2's, containing the vertices of the
+	 *         surrounding polygon
 	 */
 	public static LinkedList<Point2> convexHull(ArrayList<Point2> pts) {
 		if (pts.size() > 0) {
@@ -139,8 +139,8 @@ public class Alg {
 	}
 
 	/**
-	 * Checks if a point is inside a convex polygon represented by a linked list 
-	 * of its vertices, usually calculated using the convexHull() method. 
+	 * Checks if a point is inside a convex polygon represented by a linked list
+	 * of its vertices, usually calculated using the convexHull() method.
 	 * Implementation taken from an answer in StackOverflow.
 	 * 
 	 * @param borderPoints
@@ -155,7 +155,7 @@ public class Alg {
 			if ((borderPoints.get(i).y > y) != (borderPoints.get(j).y > y)
 					&& (x < (borderPoints.get(j).x - borderPoints.get(i).x)
 							* (y - borderPoints.get(i).y)
-							/ (borderPoints.get(j).y - borderPoints.get(i).y) 
+							/ (borderPoints.get(j).y - borderPoints.get(i).y)
 							+ borderPoints.get(i).x)) {
 				result = !result;
 			}
@@ -164,8 +164,8 @@ public class Alg {
 	}
 
 	/**
-	 * Checks if a point is inside a convex polygon represented by a linked list 
-	 * of its vertices, usually calculated using the convexHull() method. 
+	 * Checks if a point is inside a convex polygon represented by a linked list
+	 * of its vertices, usually calculated using the convexHull() method.
 	 * Implementation taken from an answer in StackOverflow.
 	 * 
 	 * @param borderPoints

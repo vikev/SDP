@@ -5,9 +5,9 @@ import java.awt.Color;
 import sdp.pc.common.Constants;
 
 public class Colors {
-	
+
 	private static ThresholdsState tresholds;
-	
+
 	/**
 	 * Checks if a pixel is black, i.e. can be used for orientation detection
 	 * 
@@ -16,12 +16,18 @@ public class Colors {
 	 * @return
 	 */
 	public static boolean isBlack(Color c, float[] hsb) {
-		return hsb[0] <= tresholds.getGrey_h_high() && hsb[0] >= tresholds.getGrey_h_low() &&
-        hsb[1] <= tresholds.getGrey_s_high() &&  hsb[1] >= tresholds.getGrey_s_low() &&
-        hsb[2] <= tresholds.getGrey_v_high() &&  hsb[2] >= tresholds.getGrey_v_low() &&
-        c.getRed() <= tresholds.getGrey_r_high() &&  c.getRed() >= tresholds.getGrey_r_low() &&
-        c.getGreen() <= tresholds.getGrey_g_high() && c.getGreen() >= tresholds.getGrey_g_low() &&
-        c.getBlue() <= tresholds.getGrey_b_high() && c.getBlue() >= tresholds.getGrey_b_low();
+		return hsb[0] <= tresholds.getGrey_h_high()
+				&& hsb[0] >= tresholds.getGrey_h_low()
+				&& hsb[1] <= tresholds.getGrey_s_high()
+				&& hsb[1] >= tresholds.getGrey_s_low()
+				&& hsb[2] <= tresholds.getGrey_v_high()
+				&& hsb[2] >= tresholds.getGrey_v_low()
+				&& c.getRed() <= tresholds.getGrey_r_high()
+				&& c.getRed() >= tresholds.getGrey_r_low()
+				&& c.getGreen() <= tresholds.getGrey_g_high()
+				&& c.getGreen() >= tresholds.getGrey_g_low()
+				&& c.getBlue() <= tresholds.getGrey_b_high()
+				&& c.getBlue() >= tresholds.getGrey_b_low();
 	}
 
 	/**
@@ -38,12 +44,18 @@ public class Colors {
 	 *         otherwise.
 	 */
 	public static boolean isGreen(Color c, float[] hsb) {
-		return hsb[0] <= tresholds.getGreen_h_high() && hsb[0] >= tresholds.getGreen_h_low() &&
-        hsb[1] <= tresholds.getGreen_s_high() &&  hsb[1] >= tresholds.getGreen_s_low() &&
-        hsb[2] <= tresholds.getGreen_v_high() &&  hsb[2] >= tresholds.getGreen_v_low() &&
-        c.getRed() <= tresholds.getGreen_r_high() &&  c.getRed() >= tresholds.getGreen_r_low() &&
-        c.getGreen() <= tresholds.getGreen_g_high() && c.getGreen() >= tresholds.getGreen_g_low() &&
-        c.getBlue() <= tresholds.getGreen_b_high() && c.getBlue() >= tresholds.getGreen_b_low();
+		return hsb[0] <= tresholds.getGreen_h_high()
+				&& hsb[0] >= tresholds.getGreen_h_low()
+				&& hsb[1] <= tresholds.getGreen_s_high()
+				&& hsb[1] >= tresholds.getGreen_s_low()
+				&& hsb[2] <= tresholds.getGreen_v_high()
+				&& hsb[2] >= tresholds.getGreen_v_low()
+				&& c.getRed() <= tresholds.getGreen_r_high()
+				&& c.getRed() >= tresholds.getGreen_r_low()
+				&& c.getGreen() <= tresholds.getGreen_g_high()
+				&& c.getGreen() >= tresholds.getGreen_g_low()
+				&& c.getBlue() <= tresholds.getGreen_b_high()
+				&& c.getBlue() >= tresholds.getGreen_b_low();
 	}
 
 	/**
@@ -56,12 +68,10 @@ public class Colors {
 	 *         (and thus the pixel is part of white tape), false otherwise.
 	 */
 	public static boolean isWhite(Color c, float[] hsb) {
-//		boolean h = Alg.withinBounds(hsb[0], 0.05f, 0.05f);
-//		boolean b = Alg.withinBounds(hsb[0], 0.2f, 0.2f);
-		boolean rgb = 
-			c.getRed() > 90 && c.getRed() < 170 
-			&& c.getGreen() > 90 && c.getGreen() < 150
-			&& c.getBlue() > 70 && c.getBlue() < 130;
+		// boolean h = Alg.withinBounds(hsb[0], 0.05f, 0.05f);
+		// boolean b = Alg.withinBounds(hsb[0], 0.2f, 0.2f);
+		boolean rgb = c.getRed() > 90 && c.getRed() < 170 && c.getGreen() > 90
+				&& c.getGreen() < 150 && c.getBlue() > 70 && c.getBlue() < 130;
 		return rgb;// & h & b;
 	}
 
@@ -78,12 +88,18 @@ public class Colors {
 	 *         (and thus the pixel is part of the ball), false otherwise.
 	 */
 	public static boolean isBall(Color c, float[] hsb) {
-		return hsb[0] <= tresholds.getBall_h_high() && hsb[0] >= tresholds.getBall_h_low() &&
-        hsb[1] <= tresholds.getBall_s_high() &&  hsb[1] >= tresholds.getBall_s_low() &&
-        hsb[2] <= tresholds.getBall_v_high() &&  hsb[2] >= tresholds.getBall_v_low() &&
-        c.getRed() <= tresholds.getBall_r_high() &&  c.getRed() >= tresholds.getBall_r_low() &&
-        c.getGreen() <= tresholds.getBall_g_high() && c.getGreen() >= tresholds.getBall_g_low() &&
-        c.getBlue() <= tresholds.getBall_b_high() && c.getBlue() >= tresholds.getBall_b_low();
+		return hsb[0] <= tresholds.getBall_h_high()
+				&& hsb[0] >= tresholds.getBall_h_low()
+				&& hsb[1] <= tresholds.getBall_s_high()
+				&& hsb[1] >= tresholds.getBall_s_low()
+				&& hsb[2] <= tresholds.getBall_v_high()
+				&& hsb[2] >= tresholds.getBall_v_low()
+				&& c.getRed() <= tresholds.getBall_r_high()
+				&& c.getRed() >= tresholds.getBall_r_low()
+				&& c.getGreen() <= tresholds.getBall_g_high()
+				&& c.getGreen() >= tresholds.getBall_g_low()
+				&& c.getBlue() <= tresholds.getBall_b_high()
+				&& c.getBlue() >= tresholds.getBall_b_low();
 	}
 
 	/**
@@ -99,12 +115,18 @@ public class Colors {
 	 *         (and thus the pixel is part of the yellow T), false otherwise.
 	 */
 	public static boolean isYellow(Color c, float[] hsb) {
-		return hsb[0] <= tresholds.getYellow_h_high() && hsb[0] >= tresholds.getYellow_h_low() &&
-        hsb[1] <= tresholds.getYellow_s_high() &&  hsb[1] >= tresholds.getYellow_s_low() &&
-        hsb[2] <= tresholds.getYellow_v_high() &&  hsb[2] >= tresholds.getYellow_v_low() &&
-        c.getRed() <= tresholds.getYellow_r_high() &&  c.getRed() >= tresholds.getYellow_r_low() &&
-        c.getGreen() <= tresholds.getYellow_g_high() && c.getGreen() >= tresholds.getYellow_g_low() &&
-        c.getBlue() <= tresholds.getYellow_b_high() && c.getBlue() >= tresholds.getYellow_b_low();
+		return hsb[0] <= tresholds.getYellow_h_high()
+				&& hsb[0] >= tresholds.getYellow_h_low()
+				&& hsb[1] <= tresholds.getYellow_s_high()
+				&& hsb[1] >= tresholds.getYellow_s_low()
+				&& hsb[2] <= tresholds.getYellow_v_high()
+				&& hsb[2] >= tresholds.getYellow_v_low()
+				&& c.getRed() <= tresholds.getYellow_r_high()
+				&& c.getRed() >= tresholds.getYellow_r_low()
+				&& c.getGreen() <= tresholds.getYellow_g_high()
+				&& c.getGreen() >= tresholds.getYellow_g_low()
+				&& c.getBlue() <= tresholds.getYellow_b_high()
+				&& c.getBlue() >= tresholds.getYellow_b_low();
 	}
 
 	/**
@@ -120,20 +142,26 @@ public class Colors {
 	 *         (and thus the pixel is part of the blue T), false otherwise.
 	 */
 	public static boolean isBlue(Color c, float[] hsb) {
-		return hsb[0] <= tresholds.getBlue_h_high() && hsb[0] >= tresholds.getBlue_h_low() &&
-        hsb[1] <= tresholds.getBlue_s_high() &&  hsb[1] >= tresholds.getBlue_s_low() &&
-        hsb[2] <= tresholds.getBlue_v_high() &&  hsb[2] >= tresholds.getBlue_v_low() &&
-        c.getRed() <= tresholds.getBlue_r_high() &&  c.getRed() >= tresholds.getBlue_r_low() &&
-        c.getGreen() <= tresholds.getBlue_g_high() && c.getGreen() >= tresholds.getBlue_g_low() &&
-        c.getBlue() <= tresholds.getBlue_b_high() && c.getBlue() >= tresholds.getBlue_b_low();
+		return hsb[0] <= tresholds.getBlue_h_high()
+				&& hsb[0] >= tresholds.getBlue_h_low()
+				&& hsb[1] <= tresholds.getBlue_s_high()
+				&& hsb[1] >= tresholds.getBlue_s_low()
+				&& hsb[2] <= tresholds.getBlue_v_high()
+				&& hsb[2] >= tresholds.getBlue_v_low()
+				&& c.getRed() <= tresholds.getBlue_r_high()
+				&& c.getRed() >= tresholds.getBlue_r_low()
+				&& c.getGreen() <= tresholds.getBlue_g_high()
+				&& c.getGreen() >= tresholds.getBlue_g_low()
+				&& c.getBlue() <= tresholds.getBlue_b_high()
+				&& c.getBlue() >= tresholds.getBlue_b_low();
 	}
 
 	public static void setTreshold(ThresholdsState tresholds) {
 		Colors.tresholds = tresholds;
 	}
-	
+
 	public static boolean isTeamColor(int team, Color c, float[] hsb) {
-		if(team == Constants.TEAM_BLUE)
+		if (team == Constants.TEAM_BLUE)
 			return isBlue(c, hsb);
 		else
 			return isYellow(c, hsb);

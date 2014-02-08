@@ -3,9 +3,9 @@ package sdp.pc.vision;
 public class FutureBall {
 	public static WorldState state = Vision.state;
 	public static Point2 collision = new Point2(-1, -1);
-	
+
 	public static boolean contains(Point2 q) {
-		//TODO: untested
+		// TODO: untested
 		if (Vision.stateListener.pointInPitch(q)) {
 			return true;
 		}
@@ -47,23 +47,23 @@ public class FutureBall {
 			if (!here == q[i]) {
 				here = !here;
 				p[found] = i;
-				//TODO: untested
-				Vision.frameLabel.getGraphics().drawLine((int)x, (int)y, pts[i].getX(),
-						pts[i].getY());
+				// TODO: untested
+				Vision.frameLabel.getGraphics().drawLine((int) x, (int) y,
+						pts[i].getX(), pts[i].getY());
 			}
 		}
-		//System.out.println(p[0] + p[1]);
+		// System.out.println(p[0] + p[1]);
 	}
 
 	public static Point2 estimateRealStopPoint() {
-		Point2 vel = state.getBallVelocity(); 
+		Point2 vel = state.getBallVelocity();
 		double delX = vel.getX(), delY = vel.getY();
 		Point2 pos = state.getBallPosition().copy();
 		double tarX = pos.getX(), tarY = pos.getY();
-		//Changed this with the help of geometric series
-		tarX -= delX*1.5;
-		tarY -= delY*1.5;
-		
+		// Changed this with the help of geometric series
+		tarX -= delX * 1.5;
+		tarY -= delY * 1.5;
+
 		double distToStop = (new Point2((int) (tarX - pos.getX()),
 				(int) (tarY - pos.getY())).modulus());
 		double sX = pos.getX(), sY = pos.getY();
@@ -74,8 +74,8 @@ public class FutureBall {
 		collision = new Point2(-1, -1);
 		if (state.getBallVelocity().modulus() > 5) {
 			while (collision.getX() == -1 && distToStop > 0) {
-				if (Vision.stateListener.pointInPitch(new Point2((int) sX, (int) sY))
-						&& !contains(new Point2((int) sX, (int) sY))) {
+				if (Vision.stateListener.pointInPitch(new Point2((int) sX,
+						(int) sY)) && !contains(new Point2((int) sX, (int) sY))) {
 					collision = new Point2((int) sX, (int) sY);
 					collide8(sX, sY);
 				}
@@ -86,10 +86,14 @@ public class FutureBall {
 		}
 		return new Point2((int) tarX, (int) tarY);
 	}
-	//TODO Implement this such that by given the position and facing of the attacker
+
+	// TODO Implement this such that by given the position and facing of the
+	// attacker
 	// and the X-value of the defender robot's position
-	// estimateBallPositionWhen returns Y-value where the ball should be when robotPositionX == ballPosition.getX()
-	public static double estimateBallPositionWhen(Point2 attPosition, double attFacing, double robotPositionX) {
+	// estimateBallPositionWhen returns Y-value where the ball should be when
+	// robotPositionX == ballPosition.getX()
+	public static double estimateBallPositionWhen(Point2 attPosition,
+			double attFacing, double robotPositionX) {
 		return 160.0;
 	}
 }

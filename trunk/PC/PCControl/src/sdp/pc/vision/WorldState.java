@@ -37,32 +37,35 @@ public class WorldState {
 				robotLoc[t][p] = new Point2();
 	}
 
-
 	public double getBallFacing() {
 		return ballFacing;
 	}
+
 	public double getBallSpeed() {
 		return ballSpeed;
 	}
 
-	//const getters
+	// const getters
 	public Point2 getLeftGoalCentre() {
 		return Constants.LEFT_GOAL_CENTRE;
 	}
+
 	public Point2 getRightGoalCentre() {
 		return Constants.RIGHT_GOAL_CENTRE;
 	}
 
 	/**
 	 * ???
+	 * 
 	 * @return
 	 */
 	public int getTargetGoal() {
 		return targetGoal;
 	}
+
 	/**
-	 * Method for choosing a new target goal
-	 * ???
+	 * Method for choosing a new target goal ???
+	 * 
 	 * @param newTargetGoal
 	 */
 	public void setTargetGoal(int newTargetGoal) {
@@ -75,6 +78,7 @@ public class WorldState {
 	public Point2 getBallPosition() {
 		return ballLocation;
 	}
+
 	/**
 	 * Sets the current position of the ball
 	 */
@@ -94,6 +98,7 @@ public class WorldState {
 	public Point2 getRobotPosition(int team, int robot) {
 		return robotLoc[team][robot];
 	}
+
 	/***
 	 * Updates the team position of a given robot, part of a given team.
 	 * 
@@ -120,6 +125,7 @@ public class WorldState {
 	public double getRobotFacing(int team, int robot) {
 		return robotFacing[team][robot];
 	}
+
 	/**
 	 * Updates the facing of a given robot, part of a given team.
 	 * 
@@ -136,18 +142,20 @@ public class WorldState {
 
 	/**
 	 * Gets the direction our team is supposed to shoot towards
+	 * 
 	 * @return
 	 */
 	public int getDirection() {
 		return direction;
 	}
+
 	/**
 	 * Sets the direction our team is supposed to shoot towards
 	 */
 	public void setDirection(int direction) {
 		this.direction = direction;
 	}
-	
+
 	/**
 	 * Sets the current velocity of the ball
 	 */
@@ -157,6 +165,7 @@ public class WorldState {
 		this.ballSpeed = ballVelocity.length();
 		this.ballFacing = ballVelocity.angle();
 	}
+
 	/**
 	 * Gets the current velocity of the ball
 	 */

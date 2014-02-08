@@ -12,7 +12,7 @@ import java.util.Scanner;
  */
 public class PitchConstants {
 
-	/* The pitch number. 0 is the main pitch, 1 is the side pitch. */
+	/** The pitch number. 0 is the main pitch, 1 is the side pitch. */
 	private int pitchNum;
 
 	/* Ball */

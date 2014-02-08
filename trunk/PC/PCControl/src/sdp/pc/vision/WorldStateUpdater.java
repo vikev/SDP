@@ -18,36 +18,52 @@ import sdp.pc.common.Constants;
  */
 public class WorldStateUpdater extends WorldStateListener {
 
-	// The length of one side of the square bound around robot means for finding
-	// orientation
+	/**
+	 * The length of one side of the square bound around robot means for finding
+	 * orientation
+	 */
 	private static final int ORIENT_SQUARE_SIZE_PX = 50;
 
-	// The minimum points needed to trigger a robot position update
+	/**
+	 * The minimum points needed to trigger a robot position update
+	 */
 	public int MINIMUM_ROBOT_POINTS = 10;
 
-	// The minimum points needed to trigger a ball position update
+	/**
+	 * The minimum points needed to trigger a ball position update
+	 */
 	public int MINIMUM_BALL_POINTS = 0;
 
-	// The amount of past positions used to interpolate the speed of the ball
+	/**
+	 * The amount of past positions used to interpolate the speed of the ball
+	 */
 	public int PAST_BALL_POSITIONS = 10;
 
 	// used to find them correct robot positions
 	// contain [team][robot]
 
-	// the amount of points observed for each robot
+	/**
+	 * the amount of points observed for each robot
+	 */
 	private int[][] robotPtsCount = new int[2][2];
 
-	// the sum (later average) of the observed points
+	/**
+	 * the sum (later average) of the observed points
+	 */
 	private Point2[][] robotPos = new Point2[2][2];
 
 	@SuppressWarnings("unchecked")
 	// can't create generic arrays
-	// the list of points for each robot
+	/**
+	 *  the list of points for each robot
+	 */
 	private ArrayList<Point2>[][] robotPts = new ArrayList[][] {
 			new ArrayList[] { new ArrayList<Point2>(), new ArrayList<Point2>(), },
 			new ArrayList[] { new ArrayList<Point2>(), new ArrayList<Point2>() } };
 
-	// same but for ball position
+	/**
+	 * the list of points for ball position
+	 */
 	private int ballPtsCount;
 	Point2 ballPos;
 	LinkedList<Point2> ballPastPos = new LinkedList<Point2>();

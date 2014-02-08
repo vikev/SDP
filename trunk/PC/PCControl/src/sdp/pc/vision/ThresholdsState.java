@@ -4,10 +4,10 @@ package sdp.pc.vision;
  * Stores the states of the various thresholds.
  * 
  * @author s0840449
- *
+ * 
  */
 public class ThresholdsState {
-	
+
 	/* Ball. */
 	private int ball_r_low;
 	private int ball_r_high;
@@ -21,7 +21,7 @@ public class ThresholdsState {
 	private double ball_s_high;
 	private double ball_v_low;
 	private double ball_v_high;
-	
+
 	/* Blue Robot. */
 	private int blue_r_low;
 	private int blue_r_high;
@@ -35,7 +35,7 @@ public class ThresholdsState {
 	private double blue_s_high;
 	private double blue_v_low;
 	private double blue_v_high;
-	
+
 	/* Yellow Robot. */
 	private int yellow_r_low;
 	private int yellow_r_high;
@@ -49,7 +49,7 @@ public class ThresholdsState {
 	private double yellow_s_high;
 	private double yellow_v_low;
 	private double yellow_v_high;
-	
+
 	/* Grey Circle. */
 	private int grey_r_low;
 	private int grey_r_high;
@@ -63,7 +63,7 @@ public class ThresholdsState {
 	private double grey_s_high;
 	private double grey_v_low;
 	private double grey_v_high;
-	
+
 	/* Green plates */
 	private int green_r_low;
 	private int green_r_high;
@@ -77,14 +77,14 @@ public class ThresholdsState {
 	private double green_s_high;
 	private double green_v_low;
 	private double green_v_high;
-	
+
 	/* Debug flags. */
 	private boolean ball_debug;
 	private boolean blue_debug;
 	private boolean yellow_debug;
 	private boolean grey_debug;
 	private boolean green_debug;
-	
+
 	/**
 	 * Default constructor.
 	 */
@@ -605,7 +605,7 @@ public class ThresholdsState {
 	public void setGreen_v_high(double greenVHigh) {
 		green_v_high = greenVHigh;
 	}
-	
+
 	public boolean isGreen_debug() {
 		return green_debug;
 	}
