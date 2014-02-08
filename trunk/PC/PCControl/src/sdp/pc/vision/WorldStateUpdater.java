@@ -220,23 +220,17 @@ public class WorldStateUpdater extends WorldStateListener {
 				if (pointInPitch(ip)) {
 					cRgb = cRgbs[x][y];
 					cHsb = cHsbs[x][y];
-					System.out.println(cRgb.toString());
-					System.out.println(cHsb[0] + " " + cHsb[1] + " " + cHsb[2]);
 					if (Colors.isGreen(cRgb, cHsb)) {
-						System.out.println("Found green point");
 						greenPoints.add(ip);
 					}
 				}
 			}
 		if (greenPoints.isEmpty()) {
-			System.out.println("No green pts :(");
 			return 0; // no green pts :(
 		}
 
 		// calculate the hull of the green points
 		LinkedList<Point2> hull = Alg.convexHull(greenPoints);
-
-		System.out.println("2");
 
 		// now search for black points
 		Point2 blackPos = new Point2();
@@ -257,7 +251,6 @@ public class WorldStateUpdater extends WorldStateListener {
 
 		blackPos = blackPos.div(blackCount);
 
-		System.out.println("1");
 		return blackPos.angleTo(robotCentroid);
 	}
 

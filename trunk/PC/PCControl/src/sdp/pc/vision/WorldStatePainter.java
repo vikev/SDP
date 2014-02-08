@@ -1,6 +1,7 @@
 package sdp.pc.vision;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
@@ -24,6 +25,15 @@ public class WorldStatePainter {
 	private static final int ROBOT_NOSE = 10;
 
 	/**
+	 * The offset at which text is drawn from the (0,0) corner
+	 */
+	private static final int TEXT_OFFSET = 15;
+	/**
+	 * The offset at which each successive line is drawn
+	 */
+	private static final int TEXT_HEIGHT = 15;
+	
+	/**
 	 * the timestamp of the last run; used for FPS calculation
 	 */
 	private long lastRun;
@@ -31,7 +41,7 @@ public class WorldStatePainter {
 	/**
 	 * the current highlighting mode
 	 */
-	private HighlightMode highlightMode = HighlightMode.All;
+	private HighlightMode highlightMode = HighlightMode.None;
 
 	/**
 	 * The state listener we're attached to so we can use its normalised RGB/HSB
@@ -136,7 +146,7 @@ public class WorldStatePainter {
 	 */
 	public void drawWorld(BufferedImage image, Point2 mousePos) {
 		Graphics g = image.getGraphics();
-
+		g.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 		// HSB/RGB values used 'at the moment'
 		float[] cHsb = new float[3];
 		Color cRgb;
@@ -144,7 +154,8 @@ public class WorldStatePainter {
 		// if pre-processing is not done yet just colour all 'white' pixels and
 		// return
 		if (!stateListener.isPreprocessed()) {
-			for (int ix /* ix ^^ */= 0; ix < Vision.WIDTH; ix++)
+			g.drawString("Waiting for preprocessor... " + stateListener.getKeyFrames() + "%", TEXT_OFFSET, TEXT_OFFSET);
+			for (int ix = 0; ix < Vision.WIDTH; ix++)
 				for (int iy = 0; iy < Vision.HEIGHT; iy++) {
 					cRgb = new Color(image.getRGB(ix, iy));
 					Color.RGBtoHSB(cRgb.getRed(), cRgb.getGreen(),
@@ -216,22 +227,25 @@ public class WorldStatePainter {
 		g.drawLine(Constants.TABLE_CENTRE_X, Constants.TABLE_MIN_Y + 1,
 				Constants.TABLE_CENTRE_X, Constants.TABLE_MAX_Y - 1);
 
-		// display the FPS we run at
-		long nowRun = System.currentTimeMillis(); // Used to calculate the FPS.
-		long drawFps = (1000 / (nowRun - lastRun));
+		//calculate/get the different FPS
+		long nowRun = System.currentTimeMillis(); 
+		int drawFps = (int) (1000 / (nowRun - lastRun));
 		lastRun = nowRun;
-		double worldFps = stateListener.getCurrentFps();
-		// draw FPS
+		int worldFps = stateListener.getCurrentFps();
+		int clockFps = stateListener.getClockFps();
+		
+		String sPaintFps = String.format("Paint: %2d", drawFps);
+		String sWorldFps = String.format("World: %2d / %2d", worldFps, clockFps);
+		
+		//draw FPS
 		g.setColor(Color.white);
-		// \t character doesn't work (at least on DICE machines; replacing with
-		// spaces
-		g.drawString("Paint: " + (int) drawFps, 15, 15);
-		g.drawString("World: " + (int) worldFps, 15, 30);
+		g.drawString(sPaintFps, TEXT_OFFSET, TEXT_OFFSET);
+		g.drawString(sWorldFps, TEXT_OFFSET, TEXT_OFFSET + TEXT_HEIGHT);
 
 		// display mouse position, RGB, and HSB values to screen (if any)
-		if (mousePos != null && stateListener.pointInPitch(mousePos)) {
+		if (mousePos != null) {
 
-			// String colorTip = "normalised";
+			 String colorTip = "norm";
 			cRgb = stateListener.getNormalisedRgb(mousePos.x, mousePos.y);
 			cHsb = stateListener.getNormalisedHsb(mousePos.x, mousePos.y);
 
@@ -241,7 +255,7 @@ public class WorldStatePainter {
 			// not working, so essentially disabled for now
 			if (cRgb == null) {
 				cRgb = stateListener.getRgb(mousePos.x, mousePos.y);
-				// colorTip = "original";
+				 colorTip = "orig";
 			}
 
 			// no colours at all? all good
@@ -250,17 +264,16 @@ public class WorldStatePainter {
 			// color data displayed on screen is always normalised, so don't
 			// bother with colorTip
 			if (cRgb != null) {
-				String strInfo = String.format("X: %d, Y: %d", mousePos.x,
-						mousePos.y);
-				String strRgb = String.format("RGB: [%d, %d, %d]",
-						cRgb.getRed(), cRgb.getGreen(), cRgb.getBlue());
+				String strPos = String.format("Pos: [%3d, %3d]", mousePos.x, mousePos.y);
+				String strRgb = String.format("RGB: [%4d, %4d, %4d] (%s)",
+						cRgb.getRed(), cRgb.getGreen(), cRgb.getBlue(), colorTip);
 				String strHsb = String.format("HSB: [%.2f, %.2f, %.2f]",
 						cHsb[0], cHsb[1], cHsb[2]);
 
 				// draw text
-				g.drawString(strInfo, 15, 45);
-				g.drawString(strRgb, 15, 60);
-				g.drawString(strHsb, 15, 75);
+				g.drawString(strRgb, TEXT_OFFSET, TEXT_OFFSET + 2 * TEXT_HEIGHT);
+				g.drawString(strHsb, TEXT_OFFSET, TEXT_OFFSET + 3 * TEXT_HEIGHT);
+				g.drawString(strPos, TEXT_OFFSET, TEXT_OFFSET + 4 * TEXT_HEIGHT);
 			}
 		}
 

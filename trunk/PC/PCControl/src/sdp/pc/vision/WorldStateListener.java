@@ -44,7 +44,7 @@ public abstract class WorldStateListener implements Runnable {
 	/**
 	 * the latest frame we observed, hopefully reflecting the world as it is now
 	 */
-	private BufferedImage currentFrame;
+	private volatile BufferedImage currentFrame;
 
 	// colour buffers
 	private Color[][] currentRgb = new Color[700][520];
@@ -55,6 +55,17 @@ public abstract class WorldStateListener implements Runnable {
 	 */
 	private boolean preprocessed = false;
 
+	/**
+	 * The (way too) current FPS
+	 */
+	private int currentFps = 0;
+	
+	/**
+	 * The refresh rate of the engine. 
+	 * Lower values indicate too much processing/world updating
+	 */
+	private int clockFps = 0;
+	
 	/**
 	 * Keeps track of the frames skipped so far. Should become equal to
 	 * FRAME_IGNORE_COUNT before preprocessing takes place
@@ -221,17 +232,31 @@ public abstract class WorldStateListener implements Runnable {
 	}
 
 	/**
+	 * Gets the current progress of skipping frames as a value [0;100)
+	 */
+	public int getKeyFrames() {
+		return 100 * keyframe / FRAME_IGNORE_COUNT;
+	}
+	
+	/**
 	 * Gets the target FPS
 	 */
 	public int getTargetFps() {
 		return (int) (1000 / targetFrameTime);
 	}
-
+	
 	/**
 	 * Gets the current FPS
 	 */
 	public int getCurrentFps() {
-		return (int) (1000.0 / currentFrameTime);
+		return currentFps;
+	}
+	
+	/**
+	 * Gets the current FPS
+	 */
+	public int getClockFps() {
+		return clockFps;
 	}
 
 	/**
@@ -258,6 +283,10 @@ public abstract class WorldStateListener implements Runnable {
 		this.currentFrame = currentFrame;
 	}
 
+	
+	private long lastFrameUpdate;
+	private long lastClockUpdate;
+	
 	/**
 	 * The main function of the listener; Starts listening for image updates
 	 * (ignoring the first couple), and, provided there are boundaries (added
@@ -266,8 +295,7 @@ public abstract class WorldStateListener implements Runnable {
 	 */
 	public void run() {
 
-		long startT, endT, dt;
-
+		long startT, endT, dT;
 		System.out.println("WorldStateListener: started");
 
 		// While the thread is running, process frame based on pre-process
@@ -276,8 +304,7 @@ public abstract class WorldStateListener implements Runnable {
 			startT = System.currentTimeMillis();
 
 			// if we have a valid, changed image
-			if (currentFrame != lastFrame && currentFrame != null) {
-
+			if (currentFrame != lastFrame) {
 				// have we done preprocessing?
 				if (!preprocessed) {
 					preprocessImage(currentFrame);
@@ -285,18 +312,29 @@ public abstract class WorldStateListener implements Runnable {
 					processImage(currentFrame, currentRgb, currentHsb);
 					updateWorld(currentRgb, currentHsb);
 				}
+				
 				lastFrame = currentFrame;
-
-				// calc sleep time (if needed at all)
+				
+				//collect FPS data
 				endT = System.currentTimeMillis();
-				currentFrameTime = Math.max(1, endT - startT);
-				dt = targetFrameTime - currentFrameTime;
-				if (dt > SLEEP_ACCURACY)
-					safeSleep(dt);
-			} else {
-				currentFrameTime = targetFrameTime;
-				safeSleep(targetFrameTime);
+				currentFps = (int) (1000 / Math.max(1, (endT - lastFrameUpdate)));
+				lastFrameUpdate = endT;
 			}
+			else
+				endT = System.currentTimeMillis();
+			
+			//end time
+			
+			
+			//calculate sleep time (if needed at all)
+			clockFps = (int) (1000 / Math.max(1, (startT - lastClockUpdate)));
+			lastClockUpdate = startT;
+			currentFrameTime = endT - startT;
+			dT = targetFrameTime - currentFrameTime;
+			if (dT > SLEEP_ACCURACY)
+				safeSleep(dT);
+			
+			
 		}
 
 	}
@@ -329,8 +367,10 @@ public abstract class WorldStateListener implements Runnable {
 
 			// get boundary
 			Point2 pa = boundaryPoints[0], pb = boundaryPoints[1];
-			int minX = Math.min(pa.x, pb.x), maxX = Math.max(pa.x, pb.x), minY = Math
-					.min(pa.y, pb.y), maxY = Math.max(pa.y, pb.y);
+			int minX = Math.min(pa.x, pb.x), 
+				maxX = Math.max(pa.x, pb.x), 
+				minY = Math.min(pa.y, pb.y), 
+				maxY = Math.max(pa.y, pb.y);
 
 			// get all white pixels
 			ArrayList<Point2> whitePoints = new ArrayList<Point2>();
@@ -338,15 +378,13 @@ public abstract class WorldStateListener implements Runnable {
 			float[] cHsb;
 			for (int x = minX; x < maxX; x++) {
 				for (int y = minY; y < maxY; y++) {
-					// get colors
+					// get colours
 					cRgb = new Color(img.getRGB(x, y));
 
 					cHsb = currentHsb[x][y];
 					Color.RGBtoHSB(cRgb.getRed(), cRgb.getGreen(),
 							cRgb.getBlue(), cHsb);
 
-					// save em (used for normalisation calculation)
-					currentRgb[x][y] = cRgb;
 
 					// add to white if white
 					if (Colors.isWhite(cRgb, cHsb)) {
@@ -374,6 +412,8 @@ public abstract class WorldStateListener implements Runnable {
 						if (b > minMaxBrightness[1]) // max
 							minMaxBrightness[1] = b;
 					}
+					else
+						currentRgb[x][y] = null;
 				}
 			}
 			preprocessed = true;

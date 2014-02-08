@@ -1,5 +1,6 @@
 ## compiled source ##
 *.class
 *.nxj
-*.java~
 *.tex~
+*.orig
+*~

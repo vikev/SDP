@@ -100,7 +100,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		Vision.state = state;
 		
 		//create state listener
-		stateListener = new WorldStateUpdater(60, state);
+		stateListener = new WorldStateUpdater(200, state);
 		Vision.stateUpdaterThread = new Thread(stateListener);
 		Vision.stateUpdaterThread.setDaemon(true);
 		stateUpdaterThread.start();
