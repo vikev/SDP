@@ -11,7 +11,9 @@ public class WorldState {
 	public static final int PLAYERS_PER_TEAM = 2, TEAM_COUNT = 2;
 
 	public int targetGoal = Constants.GOAL_LEFT;
-	private int direction;
+	//private int pitch;
+	//private int ourColor;
+	private int shootingDirection;
 	private Point2 ballLocation = new Point2();
 	private Point2 ballVelocity = new Point2();
 	private double ballFacing, ballSpeed;
@@ -21,14 +23,14 @@ public class WorldState {
 	// Taken from image of pitch; these are likely to change
 	public static final Point2 leftGoalCentre = new Point2(77, 235);
 	public static final Point2 rightGoalCentre = new Point2(589, 241);
-
+	
 	public WorldState() {
 
 		// Set initial direction
 		if (targetGoal == Constants.GOAL_LEFT) {
-			this.direction = Constants.DIRECTION_LEFT;
+			this.shootingDirection = Constants.DIRECTION_LEFT;
 		} else {
-			this.direction = Constants.DIRECTION_RIGHT;
+			this.shootingDirection = Constants.DIRECTION_RIGHT;
 		}
 
 		// Initialise robot locations to null values
@@ -37,32 +39,35 @@ public class WorldState {
 				robotLoc[t][p] = new Point2();
 	}
 
-
 	public double getBallFacing() {
 		return ballFacing;
 	}
+
 	public double getBallSpeed() {
 		return ballSpeed;
 	}
 
-	//const getters
+	// const getters
 	public Point2 getLeftGoalCentre() {
 		return Constants.LEFT_GOAL_CENTRE;
 	}
+
 	public Point2 getRightGoalCentre() {
 		return Constants.RIGHT_GOAL_CENTRE;
 	}
 
 	/**
 	 * ???
+	 * 
 	 * @return
 	 */
 	public int getTargetGoal() {
 		return targetGoal;
 	}
+
 	/**
-	 * Method for choosing a new target goal
-	 * ???
+	 * Method for choosing a new target goal ???
+	 * 
 	 * @param newTargetGoal
 	 */
 	public void setTargetGoal(int newTargetGoal) {
@@ -75,6 +80,7 @@ public class WorldState {
 	public Point2 getBallPosition() {
 		return ballLocation;
 	}
+
 	/**
 	 * Sets the current position of the ball
 	 */
@@ -94,6 +100,7 @@ public class WorldState {
 	public Point2 getRobotPosition(int team, int robot) {
 		return robotLoc[team][robot];
 	}
+
 	/***
 	 * Updates the team position of a given robot, part of a given team.
 	 * 
@@ -120,6 +127,7 @@ public class WorldState {
 	public double getRobotFacing(int team, int robot) {
 		return robotFacing[team][robot];
 	}
+
 	/**
 	 * Updates the facing of a given robot, part of a given team.
 	 * 
@@ -136,18 +144,20 @@ public class WorldState {
 
 	/**
 	 * Gets the direction our team is supposed to shoot towards
+	 * 
 	 * @return
 	 */
 	public int getDirection() {
-		return direction;
+		return shootingDirection;
 	}
+
 	/**
 	 * Sets the direction our team is supposed to shoot towards
 	 */
 	public void setDirection(int direction) {
-		this.direction = direction;
+		this.shootingDirection = direction;
 	}
-	
+
 	/**
 	 * Sets the current velocity of the ball
 	 */
@@ -157,6 +167,7 @@ public class WorldState {
 		this.ballSpeed = ballVelocity.length();
 		this.ballFacing = ballVelocity.angle();
 	}
+
 	/**
 	 * Gets the current velocity of the ball
 	 */

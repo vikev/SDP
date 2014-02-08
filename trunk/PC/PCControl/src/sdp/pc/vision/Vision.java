@@ -38,19 +38,18 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	static final int WIDTH = 640;
 	static final int HEIGHT = 480;
 
-	private static final int 
-//		ANGLE_SMOOTHING_FRAME_COUNT = 4,	// ???
-		VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL, 
-		CHANNEL = 0;
+	private static final int
+	// ANGLE_SMOOTHING_FRAME_COUNT = 4, // ???
+			VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL,
+			CHANNEL = 0;
 	private static final String DEVICE = "/dev/video0";
 
-	
 	static WorldState state = new WorldState();
 	static WorldStateListener stateListener;
 	private static Thread stateUpdaterThread;
 	private WorldStatePainter statePainter;
-	
-//	public static Point2 requestedData = new Point2(-1, -1);
+
+	// public static Point2 requestedData = new Point2(-1, -1);
 	private static PitchConstants pitchConsts = new PitchConstants(0);
 	private static ThresholdsState thresh = new ThresholdsState();
 
@@ -60,12 +59,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private static VideoDevice videoDevice;
 	private static FrameGrabber frameGrabber;
 
-	//TODO: what were those used for?
-//	private static double[][] angleSmoothing = new double[4][ANGLE_SMOOTHING_FRAME_COUNT];
-//	private static int angSmoothingWriteIndex = 0;
+	// TODO: what were those used for?
+	// private static double[][] angleSmoothing = new
+	// double[4][ANGLE_SMOOTHING_FRAME_COUNT];
+	// private static int angSmoothingWriteIndex = 0;
 
-	
-	
 	/**
 	 * Provides Java application support. On launch, runs a JFrame window which
 	 * displays the video feed with our overlaid data.
@@ -96,24 +94,24 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *             if any parameter if invalid
 	 */
 	public Vision(WorldState state) throws V4L4JException {
-		//set state
+		// Set state
 		Vision.state = state;
 		
-		//create state listener
-		stateListener = new WorldStateUpdater(200, state);
+		// Create state listener
+		stateListener = new WorldStateUpdater(60, state);
 		Vision.stateUpdaterThread = new Thread(stateListener);
 		Vision.stateUpdaterThread.setDaemon(true);
 		stateUpdaterThread.start();
-		
-		//create state painter
+
+		// create state painter
 		statePainter = new WorldStatePainter(stateListener, state);
-		
-		//load constants
+
+		// load constants
 		pitchConsts.loadConstants("pitch0");
 		pitchConsts.uploadConstants(thresh);
 		Colors.setTreshold(thresh);
 
-		//initialise the frame fetcher
+		// initialise the frame fetcher
 		try {
 			initFrameGrabber();
 		} catch (V4L4JException e1) {
@@ -123,39 +121,42 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			return;
 		}
 
-		//create the form
+		// create the form
 		initGUI();
 
-		//set the frame callback
+		// set the frame callback
 		frameGrabber.setCaptureCallback(new CaptureCallback() {
-			//used to prevent flickering
-			BufferedImage buffer = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
-			
-			//exception handling
+			// used to prevent flickering
+			BufferedImage buffer = new BufferedImage(WIDTH, HEIGHT,
+					BufferedImage.TYPE_3BYTE_BGR);
+
+			// exception handling
 			public void exceptionReceived(V4L4JException e) {
 				System.err.println("Unable to capture frame:");
 				e.printStackTrace();
 			}
-			
-			//new frame!
+
+			// new frame!
 			public void nextFrame(VideoFrame frame) {
-				//grab the new frame
+				// grab the new frame
 				BufferedImage frameImage = frame.getBufferedImage();
 				frame.recycle();
-				
-				//notify the listener
+
+				// notify the listener
 				stateListener.setCurrentFrame(frameImage);
-				
-				//copy the new frame to the buffer (overwriting anything that was there already)
+
+				// copy the new frame to the buffer (overwriting anything that
+				// was there already)
 				Graphics bg = buffer.getGraphics();
 				bg.drawImage(frameImage, 0, 0, WIDTH, HEIGHT, null);
 				bg.dispose();
-				
-				//draw the world overlay to the buffer
-				Point2 mousePos = new Point2(Vision.frame.getContentPane().getMousePosition());//.subtractBorders();
+
+				// draw the world overlay to the buffer
+				Point2 mousePos = new Point2(Vision.frame.getContentPane()
+						.getMousePosition());// .subtractBorders();
 				statePainter.drawWorld(buffer, mousePos);
-				
-				//draw the result to the frameLabel
+
+				// draw the result to the frameLabel
 				Graphics labelG = frameLabel.getGraphics();
 				labelG.drawImage(buffer, 0, 0, WIDTH, HEIGHT, null);
 				labelG.dispose();
@@ -164,10 +165,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 		frameGrabber.startCapture();
 
-		//add the mouse Listener
+		// add the mouse Listener
 		frame.addMouseListener(new Calibration());
 	}
-
 
 	/**
 	 * Initialises a FrameGrabber object with the given parameters.
@@ -206,7 +206,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		button.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new ControlGUI(thresh, pitchConsts);
+				new ControlGUI(thresh, statePainter, pitchConsts);
 			}
 		});
 		frame.getContentPane().add(frameLabel);

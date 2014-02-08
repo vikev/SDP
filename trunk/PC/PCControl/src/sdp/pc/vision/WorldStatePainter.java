@@ -76,7 +76,7 @@ public class WorldStatePainter {
 	 * @author Ix
 	 */
 	enum HighlightMode {
-		None, All, White, Yellow, Blue, Green, Black
+		None, Red, White, Yellow, Blue, Green, Black, All
 	}
 
 	/**
@@ -94,6 +94,10 @@ public class WorldStatePainter {
 		case White:
 			if (Colors.isWhite(cRgb, cHsb))
 				return Color.WHITE;
+			return cRgb;
+		case Red:
+			if (Colors.isBall(cRgb, cHsb))
+				return Color.RED;
 			return cRgb;
 		case Yellow:
 			if (Colors.isYellow(cRgb, cHsb))
@@ -210,7 +214,7 @@ public class WorldStatePainter {
 					if (!(robotFacing == Double.NaN)) {
 						Point2 nosePos = robotPos.polarOffset(ROBOT_NOSE,
 								robotFacing);
-						drawCircle(g,Color.WHITE,nosePos,3);
+						drawCircle(g, Color.WHITE, nosePos, 3);
 						g.drawLine(robotPos.x, robotPos.y, nosePos.x, nosePos.y);
 					}
 				}
@@ -315,5 +319,9 @@ public class WorldStatePainter {
 	 */
 	public HighlightMode getHighlightMode() {
 		return highlightMode;
+	}
+	
+	public WorldState getWorldState() {
+		return state;
 	}
 }

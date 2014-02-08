@@ -13,7 +13,7 @@ import java.util.Scanner;
 public class Milestone3def {
 
 	private static WorldState state = new WorldState();
-	
+	// Yellow = Team 0; Blue = Team 1
 	private static int DEF_TEAM = 0, ATT_TEAM = 0, ATT_ROBOT = 1,
 			DEF_ROBOT = 0, SAFE_ANGLE = 10, SAFE_DIS = 1000;
 

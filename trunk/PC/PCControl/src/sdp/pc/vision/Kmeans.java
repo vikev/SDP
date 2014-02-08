@@ -8,8 +8,10 @@ import java.util.ArrayList;
  */
 public class Kmeans {
 
-	// Maximum number of iterations to perform KMeans updating before short
-	// circuiting the loop
+	/**
+	 * Maximum number of iterations to perform KMeans updating before short
+	 * circuiting the loop
+	 */
 	private static final int MAX_ITERATIONS = 50;
 
 	/**
@@ -146,16 +148,17 @@ public class Kmeans {
 
 		return new Point2(meanx, meany);
 	}
-	
-	/*
-	 * Doesn't seem to be in use, I believe.
+
+	/**
+	 * TODO: Doesn't seem to be in use, I believe. Remove if that is the case.
 	 */
-//	public static double sumSquaredError(ArrayList<Point2> points, Point2 center) {
-//		double sumSqErr = 0.0;
-//
-//		for (int i = 0; i < points.size(); i++)
-//			sumSqErr += center.distance(points.get(i));
-//
-//		return Math.sqrt(sumSqErr);
-//	}
+	// public static double sumSquaredError(ArrayList<Point2> points, Point2
+	// center) {
+	// double sumSqErr = 0.0;
+	//
+	// for (int i = 0; i < points.size(); i++)
+	// sumSqErr += center.distance(points.get(i));
+	//
+	// return Math.sqrt(sumSqErr);
+	// }
 }

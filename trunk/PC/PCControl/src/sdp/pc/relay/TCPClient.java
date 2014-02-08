@@ -2,8 +2,13 @@ package sdp.pc.relay;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.*;
-import java.net.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 import javax.swing.JFrame;
 
@@ -34,7 +39,7 @@ public class TCPClient {
 			frame.addKeyListener(new KeyListener() {
 				public void keyPressed(KeyEvent e) {
 					int code = e.getKeyCode();
-					
+
 					System.out.println(code);
 					/* Turn left - arrow left */
 					if (code == 37) {
@@ -74,7 +79,7 @@ public class TCPClient {
 				}
 
 				public void keyReleased(KeyEvent e) {
-					
+
 				}
 
 				public void keyTyped(KeyEvent e) {

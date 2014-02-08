@@ -42,11 +42,12 @@ public class BTConnection {
 
 		});
 		conn.connectTo(info, mode);
-//		while (!conn.connectTo(info, mode)) {
-//			System.out.println("Failed to connect to the NXT " + getDeviceName());
-//			System.out.println("Will try again...");
-//		}
-		isConnected=true;
+		// while (!conn.connectTo(info, mode)) {
+		// System.out.println("Failed to connect to the NXT " +
+		// getDeviceName());
+		// System.out.println("Will try again...");
+		// }
+		isConnected = true;
 		dos = new DataOutputStream(conn.getOutputStream());
 		dis = new DataInputStream(conn.getInputStream());
 	}
@@ -59,12 +60,13 @@ public class BTConnection {
 	public String getDeviceName() {
 		return info.name;
 	}
-	
+
 	/**
 	 * Check connection status.
+	 * 
 	 * @return
 	 */
-	public boolean isConnected(){
+	public boolean isConnected() {
 		return isConnected;
 	}
 
@@ -86,7 +88,8 @@ public class BTConnection {
 			dos.close();
 			conn.close();
 		} catch (Exception e) {
-			System.out.println("Couldn't close " + getDeviceName() + " connection.");
+			System.out.println("Couldn't close " + getDeviceName()
+					+ " connection.");
 			System.out.println(e.getMessage());
 		}
 	}

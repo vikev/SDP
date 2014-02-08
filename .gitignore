@@ -2,5 +2,13 @@
 *.class
 *.nxj
 *.tex~
+<<<<<<< HEAD
 *.orig
 *~
+=======
+.gitignore~
+<<<<<<< HEAD
+=======
+bin
+>>>>>>> new_branch_name
+>>>>>>> e63508e29052781e9358ead2ba5a21859344853f

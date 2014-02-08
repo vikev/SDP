@@ -344,7 +344,7 @@ public class Point2 {
 		return new Point2D.Double(((b2 * c1 - b1 * c2) / delta), ((a1 * c2 - a2
 				* c1) / delta));
 	}
-	
+
 	/**
 	 * Returns the angle to a given Point2 from <b>this</b> in radians.
 	 * 
