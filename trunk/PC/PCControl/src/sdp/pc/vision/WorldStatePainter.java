@@ -66,7 +66,7 @@ public class WorldStatePainter {
 	 * @author Ix
 	 */
 	enum HighlightMode {
-		None, White, Yellow, Blue, Green, Black
+		None, White, Yellow, Blue, Green, Black, Red
 	}
 
 	/**
@@ -85,6 +85,10 @@ public class WorldStatePainter {
 			if (Colors.isWhite(cRgb, cHsb))
 				return Color.WHITE;
 			return cRgb;
+		case Red:
+			if (Colors.isBall(cRgb, cHsb))
+				return Color.RED;
+			return cRgb;
 		case Yellow:
 			if (Colors.isYellow(cRgb, cHsb))
 				return Color.YELLOW;
@@ -98,7 +102,7 @@ public class WorldStatePainter {
 				return Color.GREEN;
 			return cRgb;
 		case Black:
-			if (Colors.isGreen(cRgb, cHsb))
+			if (Colors.isBlack(cRgb, cHsb))
 				return Color.BLACK;
 			return cRgb;
 		default: // None or missing entry!
@@ -284,5 +288,9 @@ public class WorldStatePainter {
 	 */
 	public HighlightMode getHighlightMode() {
 		return highlightMode;
+	}
+	
+	public WorldState getWorldState() {
+		return state;
 	}
 }

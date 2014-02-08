@@ -11,7 +11,9 @@ public class WorldState {
 	public static final int PLAYERS_PER_TEAM = 2, TEAM_COUNT = 2;
 
 	public int targetGoal = Constants.GOAL_LEFT;
-	private int direction;
+	//private int pitch;
+	//private int ourColor;
+	private int shootingDirection;
 	private Point2 ballLocation = new Point2();
 	private Point2 ballVelocity = new Point2();
 	private double ballFacing, ballSpeed;
@@ -21,14 +23,14 @@ public class WorldState {
 	// Taken from image of pitch; these are likely to change
 	public static final Point2 leftGoalCentre = new Point2(77, 235);
 	public static final Point2 rightGoalCentre = new Point2(589, 241);
-
+	
 	public WorldState() {
 
 		// Set initial direction
 		if (targetGoal == Constants.GOAL_LEFT) {
-			this.direction = Constants.DIRECTION_LEFT;
+			this.shootingDirection = Constants.DIRECTION_LEFT;
 		} else {
-			this.direction = Constants.DIRECTION_RIGHT;
+			this.shootingDirection = Constants.DIRECTION_RIGHT;
 		}
 
 		// Initialise robot locations to null values
@@ -139,13 +141,13 @@ public class WorldState {
 	 * @return
 	 */
 	public int getDirection() {
-		return direction;
+		return shootingDirection;
 	}
 	/**
 	 * Sets the direction our team is supposed to shoot towards
 	 */
 	public void setDirection(int direction) {
-		this.direction = direction;
+		this.shootingDirection = direction;
 	}
 	
 	/**

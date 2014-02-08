@@ -56,13 +56,13 @@ public class Colors {
 	 *         (and thus the pixel is part of white tape), false otherwise.
 	 */
 	public static boolean isWhite(Color c, float[] hsb) {
-//		boolean h = Alg.withinBounds(hsb[0], 0.05f, 0.05f);
-//		boolean b = Alg.withinBounds(hsb[0], 0.2f, 0.2f);
+		boolean h = Alg.withinBounds(hsb[0], 0.05f, 0.05f);
+		boolean b = Alg.withinBounds(hsb[0], 0.2f, 0.2f);
 		boolean rgb = 
 			c.getRed() > 90 && c.getRed() < 170 
 			&& c.getGreen() > 90 && c.getGreen() < 150
 			&& c.getBlue() > 70 && c.getBlue() < 130;
-		return rgb;// & h & b;
+		return rgb & h & b;
 	}
 
 	/**
