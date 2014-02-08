@@ -144,11 +144,6 @@ public class PitchConstants {
 			loadDefaultConstants();
 			return;
 		}
-		finally {
-			//bin your litter
-			if(scanner != null)
-				scanner.close();
-		}
 
 		assert (scanner != null);
 
@@ -224,12 +219,11 @@ public class PitchConstants {
 		this.green_v_low = scanner.nextInt();
 		this.green_v_high = scanner.nextInt();
 
-
-		//TODO: test!!!
+		// TODO: test!!!
 		Point2 pa = new Point2(scanner.nextInt(), scanner.nextInt());
 		Point2 pb = new Point2(scanner.nextInt(), scanner.nextInt());
-		WorldStateListener.resetBoundary();		//just in case
-		WorldStateListener.addBoundary(pa);		//order doesn't matter
+		WorldStateListener.resetBoundary(); // just in case
+		WorldStateListener.addBoundary(pa); // order doesn't matter
 		WorldStateListener.addBoundary(pb);
 
 		/* Pitch Dimensions */
@@ -238,6 +232,8 @@ public class PitchConstants {
 		this.leftBuffer = scanner.nextInt();
 		this.rightBuffer = scanner.nextInt();
 
+		if (scanner != null)
+			scanner.close();
 	}
 
 	/**

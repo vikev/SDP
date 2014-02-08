@@ -84,6 +84,7 @@ public class Milestone3att {
 		Point2 robotPosition = state.getRobotPosition(0, 0);
 		Point2 ballPosition = state.getBallPosition();
 		Point2 targetPoint = setBallTarget(state);
+		@SuppressWarnings("unused")
 		boolean succesfulTravel = false;
 		//System.out.println("Robot Position :" + robotPosition);
 		//System.out.println("Ball Position :" + ballPosition);

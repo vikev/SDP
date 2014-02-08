@@ -5,7 +5,8 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
 public class Point2 {
-	public static final Point2 Empty = new Point2(0,0);
+	public static final Point2 EMPTY = new Point2(0,0);
+	
 	private static final double STD_DEV_THRESHOLD = 1.17;
 
 	public int x = 0, y = 0;
@@ -43,7 +44,7 @@ public class Point2 {
 
 	@Override
 	public boolean equals(Object o) {
-		if(!(o instanceof Point))
+		if(!(o instanceof Point || o instanceof Point2))
 			return false;
 		Point2 p = (Point2)o;
 		return p.x == x && p.y == y;
@@ -357,7 +358,7 @@ public class Point2 {
 	 * i.e. the length of this vector. 
 	 */
 	public double length() {
-		return Point2.Empty.distance(this);
+		return Point2.EMPTY.distance(this);
 	}
 
 	/**
@@ -365,7 +366,7 @@ public class Point2 {
 	 * i.e. the angle of this vector
 	 */
 	public double angle() {
-		return Point2.Empty.angleTo(this);
+		return Point2.EMPTY.angleTo(this);
 	}
 
 	/**

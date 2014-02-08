@@ -4,7 +4,6 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import sdp.pc.common.Constants;
 
 /**
  * Class containing various (and arbitrary) algorithms for static analysis of
