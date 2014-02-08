@@ -881,13 +881,12 @@ public class ControlGUI implements ChangeListener {
             worldStatePainter.setHighlightMode(tabModes[id]);
         }
 		/* Update the world state. */
-		  /*if (pitch_0.isSelected()) { worldState.setPitch(0); } else {
+		  if (pitch_0.isSelected()) { worldState.setPitch(0); } else {
 		  worldState.setPitch(1); } if(colour_yellow.isSelected()) {
-		  worldState.setColour(0); } else { worldState.setColour(1); }
+		  worldState.setOurColor(0); } else { worldState.setOurColor(1); }
 		  if(direction_right.isSelected()) { worldState.setDirection(0); } else
-		  { worldState.setDirection(1); }*/
+		  { worldState.setDirection(1); }
 		 
-
 		/* Update the ThresholdsState object. */
 		/*
 		 * int index = tabPane.getSelectedIndex();

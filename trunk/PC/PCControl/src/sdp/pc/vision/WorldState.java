@@ -11,9 +11,11 @@ public class WorldState {
 	public static final int PLAYERS_PER_TEAM = 2, TEAM_COUNT = 2;
 
 	public int targetGoal = Constants.GOAL_LEFT;
-	//private int pitch;
-	//private int ourColor;
-	private int shootingDirection;
+	// Next three might need an enum, though we won't really need to ever touch them
+	private int pitch;				// 0 -> Main Pitch; 1 -> Side Pitch
+	private int ourColor;			// 0 -> Yellow; 1 -> Blue
+	private int shootingDirection;  // 0 -> Left; 1 -> Right
+	
 	private Point2 ballLocation = new Point2();
 	private Point2 ballVelocity = new Point2();
 	private double ballFacing, ballSpeed;
@@ -141,18 +143,42 @@ public class WorldState {
 	public void setRobotFacing(int team, int robot, double newFacing) {
 		this.robotFacing[team][robot] = newFacing;
 	}
-
+	
 	/**
-	 * Gets the direction our team is supposed to shoot towards
-	 * 
-	 * @return
+	 * Set which pitch we're playing on (0 is Main, 1 is Side) 
+	 */
+	public void setPitch(int pitch) {
+		this.pitch = pitch;
+	}
+	/**
+	 * Get which pitch we're playing on (0 is Main, 1 is Side) 
+	 */
+	public int getPitch() {
+		return pitch;
+	}
+	
+	/**
+	 * Set our team's colour (0 is yellow, 1 is blue)
+	 */
+	public void setOurColor(int ourColor) {
+		this.ourColor = ourColor;
+	}
+	/**
+	 * Get our team's colour (0 is yellow, 1 is blue)
+	 */
+	public int getOurColor() {
+		return ourColor;
+	}
+	
+	/**
+	 * Gets the direction our team is supposed to shoot towards (0 is left)
 	 */
 	public int getDirection() {
 		return shootingDirection;
 	}
 
 	/**
-	 * Sets the direction our team is supposed to shoot towards
+	 * Sets the direction our team is supposed to shoot towards (0 is left)
 	 */
 	public void setDirection(int direction) {
 		this.shootingDirection = direction;

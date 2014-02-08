@@ -346,13 +346,13 @@ public class Point2 {
 	}
 
 	/**
-	 * Returns the angle to a given Point2 from <b>this</b> in radians.
+	 * Returns the angle to a given Point2 from <b>this</b> in degrees.
 	 * 
 	 * @param p
 	 * @return
 	 */
 	public double angleTo(Point2 p) {
-		return Math.atan2(p.y - y, p.x - x);
+		return Math.atan2(p.y - y, p.x - x)*180/Math.PI;
 	}
 
 	public boolean isToLeft(Point2 a, Point2 b) {
@@ -382,11 +382,11 @@ public class Point2 {
 	 * @param dist
 	 *            the distance to the new point
 	 * @param rads
-	 *            the angle to the new point in radians
+	 *            the angle to the new point in degrees
 	 * @return a unique point specified by dist/angle
 	 */
-	public Point2 polarOffset(int dist, double rads) {
-		return new Point2((int) (x + Math.cos(rads) * dist),
-				(int) (y + Math.sin(rads) * dist));
+	public Point2 polarOffset(int dist, double degs) {
+		return new Point2((int) (x + Math.cos(degs*Math.PI/180) * dist),
+				(int) (y + Math.sin(degs*Math.PI/180) * dist));
 	}
 }

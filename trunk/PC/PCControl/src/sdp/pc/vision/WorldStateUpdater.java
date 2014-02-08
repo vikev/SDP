@@ -259,7 +259,7 @@ public class WorldStateUpdater extends WorldStateListener {
 		}
 		
 		blackPos = blackPos.div(blackCount);
-		return Math.PI + blackPos.angleTo(robotCentroid);  // In radians atm
+		return 180 + blackPos.angleTo(robotCentroid);
 	}
 
 	/**
