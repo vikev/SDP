@@ -4,3 +4,7 @@
 *.java~
 *.tex~
 .gitignore~
+<<<<<<< HEAD
+=======
+bin
+>>>>>>> new_branch_name

@@ -19,6 +19,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import sdp.pc.vision.WorldStatePainter.HighlightMode;
+
 /**
  * Creates and maintains the swing-based Control GUI, which provides both
  * control manipulation (pitch choice, direction, etc) and threshold setting.
@@ -42,7 +44,8 @@ public class ControlGUI implements ChangeListener {
 	 * Stores information about the current world state, such as shooting
 	 * direction, ball location, etc.
 	 */
-	// private WorldState worldState;
+	private WorldState worldState;
+	private WorldStatePainter worldStatePainter;
 
 	/** The main frame holding the Control GUI. */
 	private JFrame frame;
@@ -109,10 +112,6 @@ public class ControlGUI implements ChangeListener {
 	private RangeSlider green_s;
 	private RangeSlider green_v;
 
-	public static void main(String[] args) {
-		new ControlGUI(new ThresholdsState(), new PitchConstants(0));
-	}
-
 	/**
 	 * Default constructor.
 	 * 
@@ -126,15 +125,16 @@ public class ControlGUI implements ChangeListener {
 	 *            A PitchConstants object to allow saving/loading of data.
 	 */
 	public ControlGUI(ThresholdsState thresholdsState,
-			PitchConstants pitchConstants) {
+			WorldStatePainter worldStatePainter, PitchConstants pitchConstants) {
 
 		/* All three state objects must not be null. */
 		assert (thresholdsState != null);
-		// assert (worldState != null);
+		assert (worldStatePainter != null);
 		assert (pitchConstants != null);
 
 		this.thresholdsState = thresholdsState;
-		// this.worldState = worldState;
+		this.worldStatePainter = worldStatePainter;
+		this.worldState = worldStatePainter.getWorldState();
 		this.pitchConstants = pitchConstants;
 
 		this.initGUI();
@@ -382,9 +382,8 @@ public class ControlGUI implements ChangeListener {
 					writer.write(String.valueOf(green_v.getUpperValue()) + "\n");
 
 					/* Absolute Borders */
-					// TODO: test!!!
-					Point2 pa = WorldStateListener.getBoundary(0), pb = WorldStateListener
-							.getBoundary(1);
+					Point2 pa = WorldStateListener.getBoundary(0),
+							pb = WorldStateListener.getBoundary(1);
 					writer.write(String.valueOf(pa.x + "\n"));
 					writer.write(String.valueOf(pa.y + "\n"));
 					writer.write(String.valueOf(pb.x + "\n"));
@@ -867,28 +866,27 @@ public class ControlGUI implements ChangeListener {
 	@Override
 	public void stateChanged(ChangeEvent e) {
 
-		// TODO: add code to switch current overlay highlight as tab pages are
-		// changed
-		// if (e.getSource() instanceof JTabbedPane) {
-		// JTabbedPane pane = (JTabbedPane)e.getSource();
-		// int id = pane.getSelectedIndex();
-		// final HighlightMode[] tabModes = new HighlightMode[] {
-		// HighlightMode.None,
-		// HighlightMode.None,
-		// HighlightMode.None,
-		// HighlightMode.None,
-		// HighlightMode.None,
-		// };
-		// }
-
+        if (e!=null && e.getSource() instanceof JTabbedPane) {
+            JTabbedPane pane = (JTabbedPane)e.getSource();
+            int id = pane.getSelectedIndex();
+            final HighlightMode[] tabModes = new HighlightMode[] {
+            		HighlightMode.None,
+            		HighlightMode.Red,
+            		HighlightMode.Blue,
+            		HighlightMode.Yellow,
+            		HighlightMode.Black,
+            		HighlightMode.Green,
+            		HighlightMode.White,
+            };
+            worldStatePainter.setHighlightMode(tabModes[id]);
+        }
 		/* Update the world state. */
-		/*
-		 * if (pitch_0.isSelected()) { worldState.setPitch(0); } else {
-		 * worldState.setPitch(1); } if(colour_yellow.isSelected()) {
-		 * worldState.setColour(0); } else { worldState.setColour(1); }
-		 * if(direction_right.isSelected()) { worldState.setDirection(0); } else
-		 * { worldState.setDirection(1); }
-		 */
+		  /*if (pitch_0.isSelected()) { worldState.setPitch(0); } else {
+		  worldState.setPitch(1); } if(colour_yellow.isSelected()) {
+		  worldState.setColour(0); } else { worldState.setColour(1); }
+		  if(direction_right.isSelected()) { worldState.setDirection(0); } else
+		  { worldState.setDirection(1); }*/
+		 
 
 		/* Update the ThresholdsState object. */
 		/*

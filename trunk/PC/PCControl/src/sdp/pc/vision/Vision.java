@@ -94,10 +94,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 *             if any parameter if invalid
 	 */
 	public Vision(WorldState state) throws V4L4JException {
-		// set state
+		// Set state
 		Vision.state = state;
-
-		// create state listener
+		
+		// Create state listener
 		stateListener = new WorldStateUpdater(60, state);
 		Vision.stateUpdaterThread = new Thread(stateListener);
 		Vision.stateUpdaterThread.setDaemon(true);
@@ -206,7 +206,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		button.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new ControlGUI(thresh, pitchConsts);
+				new ControlGUI(thresh, statePainter, pitchConsts);
 			}
 		});
 		frame.getContentPane().add(frameLabel);

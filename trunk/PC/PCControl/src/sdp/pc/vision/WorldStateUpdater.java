@@ -22,7 +22,7 @@ public class WorldStateUpdater extends WorldStateListener {
 	 * The length of one side of the square bound around robot means for finding
 	 * orientation
 	 */
-	private static final int ORIENT_SQUARE_SIZE_PX = 50;
+	private static final int SQUARE_SIZE = 50;
 
 	/**
 	 * The minimum points needed to trigger a robot position update
@@ -216,30 +216,20 @@ public class WorldStateUpdater extends WorldStateListener {
 	 *            the HSB colors of the image
 	 * @return the angle the robot is facing
 	 */
-	private double findOrientation(Point2 robotCentroid, Color[][] cRgbs,
-			float[][][] cHsbs) {
-		int x = robotCentroid.getX();
-		int y = robotCentroid.getY();
+	private double findOrientation(Point2 robotCentroid, Color[][] cRgbs, float[][][] cHsbs) {
 
-		int minX = x - ORIENT_SQUARE_SIZE_PX / 2, maxX = x
-				+ ORIENT_SQUARE_SIZE_PX / 2, minY = y - ORIENT_SQUARE_SIZE_PX
-				/ 2, maxY = y + ORIENT_SQUARE_SIZE_PX / 2;
+		int minX = robotCentroid.getX() - SQUARE_SIZE / 2, 
+			maxX = robotCentroid.getX() + SQUARE_SIZE / 2, 
+			minY = robotCentroid.getY() - SQUARE_SIZE / 2, 
+			maxY = robotCentroid.getY() + SQUARE_SIZE / 2;
 
-		Color cRgb;
-		float[] cHsb;
-
-		// find all green pixels
+		// Find all green pixels
 		ArrayList<Point2> greenPoints = new ArrayList<Point2>();
 		for (int ix = minX; ix < maxX; ix++)
 			for (int iy = minY; iy < maxY; iy++) {
-				Point2 ip = new Point2(x, y);
+				Point2 ip = new Point2(ix, iy);
 				if (pointInPitch(ip)) {
-					cRgb = cRgbs[x][y];
-					cHsb = cHsbs[x][y];
-					System.out.println(cRgb.toString());
-					System.out.println(cHsb[0] + " " + cHsb[1] + " " + cHsb[2]);
-					if (Colors.isGreen(cRgb, cHsb)) {
-						System.out.println("Found green point");
+					if (Colors.isGreen(cRgbs[ix][iy], cHsbs[ix][iy])) {
 						greenPoints.add(ip);
 					}
 				}
@@ -249,18 +239,16 @@ public class WorldStateUpdater extends WorldStateListener {
 			return 0; // no green pts :(
 		}
 
-		// calculate the hull of the green points
+		// Calculate the hull of the green points
 		LinkedList<Point2> hull = Alg.convexHull(greenPoints);
 
-		System.out.println("2");
-
-		// now search for black points
+		// Now search for black points
 		Point2 blackPos = new Point2();
 		int blackCount = 0;
 		for (int ix = minX; ix < maxX; ix++)
 			for (int iy = minY; iy < maxY; iy++) {
 				Point2 ip = new Point2(ix, iy);
-				if (Colors.isBlack(cRgbs[x][y], cHsbs[x][y]))
+				if (Colors.isBlack(cRgbs[ix][iy], cHsbs[ix][iy]))
 					if (Alg.isInHull(hull, ip)) {
 						blackCount++;
 						blackPos = blackPos.add(ip);
@@ -270,11 +258,10 @@ public class WorldStateUpdater extends WorldStateListener {
 		if (blackCount == 0) {
 			return 0; // no black pts :(
 		}
-
+		
 		blackPos = blackPos.div(blackCount);
-
-		System.out.println("1");
-		return blackPos.angleTo(robotCentroid);
+		
+		return Math.PI + blackPos.angleTo(robotCentroid);  // In radians atm
 	}
 
 	/**
