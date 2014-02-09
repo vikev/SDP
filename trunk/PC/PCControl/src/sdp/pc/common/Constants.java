@@ -32,20 +32,35 @@ public class Constants {
 			RIGHT_GOAL_CENTRE_X, RIGHT_GOAL_CENTRE_Y);
 
 	/**
-	 * *Currently not actual measurements* Approximate measurements of robots in
-	 * pixels (could change to centimetres if we can work
+	 * Approximate measurements of robots in pixels (could change to
+	 * centimetres); these values haven't yet been measured. At some point we
+	 * can consider writing a centimetre->pixel conversion ratio, which may be
+	 * unique to each camera
 	 */
 	public static final int ATTACKER_LENGTH = 20;
 
 	/**
-	 * *Currently not actual measurements* Approximate measurements of robots in
-	 * pixels (could change to centimetres if we can work
+	 * Approximate measurements of robots in pixels (could change to
+	 * centimetres); these values haven't yet been measured. At some point we
+	 * can consider writing a centimetre->pixel conversion ratio, which may be
+	 * unique to each camera
 	 */
-	public static final int ATTACKER_WIDTH = 20; // out a centimetre -> pixel
-													// conversion which would be
-													// specific to the camera
-													// being used)
+	public static final int ATTACKER_WIDTH = 20;
+	
+	/**
+	 * Approximate measurements of robots in pixels (could change to
+	 * centimetres); these values haven't yet been measured. At some point we
+	 * can consider writing a centimetre->pixel conversion ratio, which may be
+	 * unique to each camera
+	 */
 	public static final int DEFENDER_LENGTH = 20;
+	
+	/**
+	 * Approximate measurements of robots in pixels (could change to
+	 * centimetres); these values haven't yet been measured. At some point we
+	 * can consider writing a centimetre->pixel conversion ratio, which may be
+	 * unique to each camera
+	 */
 	public static final int DEFENDER_WIDTH = 20;
 
 	// Directions and targets, should probably use an Enum, but I think this is

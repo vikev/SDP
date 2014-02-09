@@ -47,12 +47,12 @@ public class FutureBall {
 			if (!here == q[i]) {
 				here = !here;
 				p[found] = i;
-				// TODO: untested
-				Vision.frameLabel.getGraphics().drawLine((int) x, (int) y,
-						pts[i].getX(), pts[i].getY());
+				
 			}
 		}
-		// System.out.println(p[0] + p[1]);
+		System.out.println("collide8");
+		Vision.frameLabel.getGraphics().drawLine(pts[0].getX(), pts[0].getY(),
+				pts[1].getX(), pts[1].getY());
 	}
 
 	public static Point2 estimateRealStopPoint() {
