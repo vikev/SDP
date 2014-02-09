@@ -79,6 +79,8 @@ public class Start {
 						double dist = Double.parseDouble(fromClient.readLine());
 						conn1.sendCommand(c, dist);
 					}
+					//stop the robot if the connection is dropped or stopped
+					conn1.sendCommand('s', 0);
 				}
 			} catch (UnknownHostException ex) {
 				ex.printStackTrace();
