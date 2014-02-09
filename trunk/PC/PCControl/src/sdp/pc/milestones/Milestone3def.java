@@ -7,7 +7,6 @@ import sdp.pc.vision.FutureBall;
 import sdp.pc.vision.relay.Driver;
 import sdp.pc.vision.relay.TCPClient;
 import sdp.pc.common.*;
-import java.util.Scanner;
 
 /**
  * Static class for executing milestone 3 from a defending perspective. To run
@@ -22,6 +21,12 @@ import java.util.Scanner;
  * </ol>
  */
 public class Milestone3def {
+
+	/**
+	 * Minimum ball speed for the robot to consider the ball as approaching the
+	 * goal
+	 */
+	private static final double BALL_SPEED_THRESHOLD = 10.0;
 
 	/**
 	 * An instance of WorldState used by M3def
@@ -48,13 +53,29 @@ public class Milestone3def {
 		}
 		Thread.sleep(500);
 		while (true) {
-			Scanner reader = new Scanner(System.in);
-			System.out.println("Enter the first number");
-			// get user input for a
-			int a = reader.nextInt();
-			if (a == 0) {
-				defendBall(state, vision, driver);
-				System.out.println("Finished attempting to defend the ball");
+			// M3 should be a finite state machine that constantly loops,
+			// executing the necessary job. User input should not be necessary.
+
+			// Scanner reader = new Scanner(System.in);
+			// System.out.println("Enter the first number");
+			// // get user input for a
+			// int a = reader.nextInt();
+			// if (a == 0) {
+			// defendBall(state, vision, driver);
+			// System.out.println("Finished attempting to defend the ball");
+			// }
+
+			// * Assert perpendicular,
+			// * if the ball is moving with sufficient velocity:
+			// - block the ball
+			// * else:
+			// - if the attacking robot has a hat:
+			// * cut off the attacking robot w.r.t. the goal
+			// - else:
+			// * cut off the ball w.r.t the goal
+			rotatePerpendicular(state, vision, driver);
+			if (state.getBallSpeed() > BALL_SPEED_THRESHOLD) {
+
 			}
 		}
 	}
@@ -105,6 +126,23 @@ public class Milestone3def {
 		}
 	}
 
+	/**
+	 * Returns an angle ang in degrees on [0,360)
+	 * 
+	 * @param ang
+	 *            angle in degrees
+	 * @return ang on [0,360)
+	 */
+	private static double normalizeToUnitDegrees(double ang) {
+		while (ang < 0.0) {
+			ang += 360.0;
+		}
+		while (ang <= 360.0) {
+			ang -= 360.0;
+		}
+		return ang;
+	}
+
 	public static void rotatePerpendicular(WorldState state, Vision vision,
 			Driver driver) {
 
@@ -123,41 +161,42 @@ public class Milestone3def {
 			if (rotateDown) {
 				if (robotFacing < 90) {
 					try {
-						driver.turnRight(5);
+						driver.turnRight();
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
+						break;
 					}
 				} else {
 					try {
-						driver.turnLeft(5);
+						driver.turnLeft();
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
+						break;
 					}
 				}
 			} else {
 				if (robotFacing < 270) {
 					try {
-						driver.turnRight(5);
+						driver.turnRight();
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
+						break;
 					}
 				} else {
 					try {
-						driver.turnLeft(5);
+						driver.turnLeft();
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
+						break;
 					}
 				}
 			}
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+
+			// try {
+			// //Thread.sleep(100);
+			// } catch (InterruptedException e) {
+			// e.printStackTrace();
+			// }
 			robotFacing = state.getRobotFacing(0, 0);
 
 			if (robotFacing > 0 & robotFacing < 180) {
@@ -166,8 +205,14 @@ public class Milestone3def {
 				rotateBy = robotFacing - 270;
 			}
 		}
-		double shit = 270 - robotFacing;
-		System.out.println("Turned by: " + shit);
+		try {
+			driver.stop();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		// double shit = 270 - robotFacing;
+		// System.out.println("Turned by: " + shit);
 	}
 
 	public static void driveRobot(WorldState state, Vision vision,

@@ -57,8 +57,8 @@ public class BTReceive {
 						pilot.driveBackward(distance);
 						break;
 					case 'l':
-						pilot.turnLeft(distance); // distance is angle to turn
-													// in degrees
+						// distance is the angle in degrees
+						pilot.turnLeft(distance);
 						break;
 					case 'r':
 						pilot.turnRight(distance);
@@ -94,6 +94,7 @@ public class BTReceive {
 			} catch (Exception e) {
 				// nothing
 			}
+			pilot.stopNow();
 			Thread.sleep(100); // wait for data to drain
 			// LCD.clear();
 			LCD.drawString(closing, 0, 0);
