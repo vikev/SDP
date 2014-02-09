@@ -108,7 +108,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 		// load constants
 		pitchConsts.loadConstants("pitch0");
-		pitchConsts.uploadConstants(thresh);
+		pitchConsts.uploadConstants(thresh, state);
 		Colors.setTreshold(thresh);
 
 		// initialise the frame fetcher

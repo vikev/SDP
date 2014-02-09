@@ -115,9 +115,10 @@ public class Milestone3att {
 		// check if the ball will obstruct a direct path to the approach
 		// point move to a point where a direct path can be taken to the
 		// approach point
+		System.out.println(state.getDirection());
 		if ((angleBetween > 90)) {
 			Point2 approachPoint = calculateApproachPoint(ballPosition,
-					targetPoint, state.getTargetGoal());
+					targetPoint, state.getDirection());
 			System.out.println("Assigned approach point: " + approachPoint);
 			if ((approachPoint.getX() == 0) && (approachPoint.getY() == 0)) {
 				System.out.println("Could not assign Approach Point");
@@ -131,7 +132,7 @@ public class Milestone3att {
 						approachPoint.getY());
 			}
 		} else {
-			System.out.print("Have to navigate around ball");
+			System.out.println("Have to navigate around ball.");
 			return;
 		}
 		facePoint(state, driver, targetPoint.getX(), targetPoint.getY());
@@ -150,9 +151,9 @@ public class Milestone3att {
 	 * @return
 	 */
 	public static Point2 setBallTarget(WorldState state) {
-		if (1 == state.getTargetGoal()) // if target goal is the right hand goal
+		if (1 == state.getDirection()) // if target goal is the right hand goal
 			return state.getRightGoalCentre();
-		if (0 == state.getTargetGoal())
+		if (0 == state.getDirection())
 			return state.getLeftGoalCentre();
 		return new Point2(0, 0);
 	}
@@ -170,13 +171,13 @@ public class Milestone3att {
 		double vectorBMagnitude = Math.sqrt((vectorB[0] * vectorB[0])
 				+ (vectorB[1] * vectorB[1]));
 		int dotproduct = vectorA[0] * vectorB[0] + vectorA[1] * vectorB[1];
-		double angleRadians = Math.acos(dotproduct
-				/ (vectorAMagnitude * vectorBMagnitude));
+		double angleDegrees = Math.acos(dotproduct
+				/ (vectorAMagnitude * vectorBMagnitude)) *180/Math.PI;
 		System.out.println("Vector A Magnitude : " + vectorAMagnitude);
 		System.out.println("Vector B Magnitude : " + vectorBMagnitude);
 		System.out.println("Dot product : " + dotproduct);
-		System.out.println("Angle Radians : " + angleRadians);
-		return (angleRadians * (180 / Math.PI));
+		System.out.println("Angle (in degrees) : " + angleDegrees);
+		return angleDegrees;
 	}
 
 	/**
@@ -194,11 +195,11 @@ public class Milestone3att {
 		int approachPointY = 0;
 		int gradientLineBalltoGoal = ((ballTargePoint.getY() * (-1) - ballPosition
 				.getY() * (-1)) / (ballTargePoint.getX() - ballPosition.getX()));
-		if (targetGoal == Constants.GOAL_LEFT) {
+		if (targetGoal == Constants.DIRECTION_LEFT) {
 			approachPointX = ballPosition.getX()
 					- Math.max(Constants.ATTACKER_LENGTH,
 							Constants.ATTACKER_LENGTH);
-		} else if (targetGoal == Constants.GOAL_RIGHT) {
+		} else if (targetGoal == Constants.DIRECTION_RIGHT) {
 			approachPointX = ballPosition.getX()
 					+ Math.max(Constants.ATTACKER_LENGTH,
 							Constants.ATTACKER_LENGTH);

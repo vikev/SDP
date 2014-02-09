@@ -50,7 +50,6 @@ public class Constants {
 
 	// Directions and targets, should probably use an Enum, but I think this is
 	// related to Constants
-	public static final int GOAL_LEFT = 0, GOAL_RIGHT = 1;
 	public static final int DIRECTION_LEFT = 0, DIRECTION_RIGHT = 1;
 	public static final int TEAM_YELLOW = 0, TEAM_BLUE = 1,
 

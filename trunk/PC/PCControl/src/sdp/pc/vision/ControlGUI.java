@@ -19,6 +19,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import sdp.pc.common.Constants;
 import sdp.pc.vision.WorldStatePainter.HighlightMode;
 
 /**
@@ -250,8 +251,13 @@ public class ControlGUI implements ChangeListener {
 		colour_panel.add(colour_yellow);
 		colour_choice.add(colour_blue);
 		colour_panel.add(colour_blue);
-
-		colour_yellow.setSelected(true);
+		
+		if (worldState.getOurColor() == Constants.TEAM_YELLOW) {
+			colour_yellow.setSelected(true);
+		}
+		else {
+			colour_blue.setSelected(true);
+		}
 
 		colour_yellow.addChangeListener(this);
 		colour_blue.addChangeListener(this);
@@ -264,17 +270,22 @@ public class ControlGUI implements ChangeListener {
 		direction_panel.add(direction_label);
 
 		ButtonGroup direction_choice = new ButtonGroup();
-		direction_right = new JRadioButton("Right");
 		direction_left = new JRadioButton("Left");
-		direction_choice.add(direction_right);
-		direction_panel.add(direction_right);
+		direction_right = new JRadioButton("Right");
 		direction_choice.add(direction_left);
 		direction_panel.add(direction_left);
+		direction_choice.add(direction_right);
+		direction_panel.add(direction_right);
 
-		direction_right.setSelected(true);
+		if (worldState.getDirection() == Constants.DIRECTION_RIGHT) {
+			direction_right.setSelected(true);
+		}
+		else {
+			direction_left.setSelected(true);
+		}
 
-		direction_right.addChangeListener(this);
 		direction_left.addChangeListener(this);
+		direction_right.addChangeListener(this);
 
 		defaultPanel.add(direction_panel);
 
@@ -304,6 +315,9 @@ public class ControlGUI implements ChangeListener {
 				try {
 					FileWriter writer = new FileWriter(new File("pitch"
 							+ pitchNum));
+					
+					writer.write(String.valueOf(worldState.getOurColor())+ "\n");
+					writer.write(String.valueOf(worldState.getDirection()) + "\n");
 
 					/* Ball */
 					writer.write(String.valueOf(ball_r.getValue()) + "\n");
@@ -884,8 +898,8 @@ public class ControlGUI implements ChangeListener {
 		  if (pitch_0.isSelected()) { worldState.setPitch(0); } else {
 		  worldState.setPitch(1); } if(colour_yellow.isSelected()) {
 		  worldState.setOurColor(0); } else { worldState.setOurColor(1); }
-		  if(direction_right.isSelected()) { worldState.setDirection(0); } else
-		  { worldState.setDirection(1); }
+		  if(direction_right.isSelected()) { worldState.setDirection(1); } else
+		  { worldState.setDirection(0); }
 		 
 		/* Update the ThresholdsState object. */
 		/*
