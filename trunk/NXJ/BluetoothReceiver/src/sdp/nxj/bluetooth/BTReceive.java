@@ -48,20 +48,20 @@ public class BTReceive {
 					dos.writeChar(c);
 					dos.writeDouble(distance);
 					dos.flush();
-
+					// distance is the rotation speed in degrees per second
+					pilot.setRotateSpeed(distance);
 					switch (c) {
 					case 'f':
-						pilot.driveForward(distance);
+						pilot.driveForward(0);
 						break;
 					case 'b':
-						pilot.driveBackward(distance);
+						pilot.driveBackward(0);
 						break;
 					case 'l':
-						// distance is the angle in degrees
-						pilot.turnLeft(distance);
+						pilot.turnLeft(0);
 						break;
 					case 'r':
-						pilot.turnRight(distance);
+						pilot.turnRight(0);
 						break;
 					case 's':
 						pilot.stopNow(); // stop robot immediately
