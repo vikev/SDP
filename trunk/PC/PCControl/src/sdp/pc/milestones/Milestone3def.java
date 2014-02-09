@@ -35,7 +35,7 @@ public class Milestone3def {
 
 	// Yellow = Team 0; Blue = Team 1
 	private static int DEF_TEAM = 0, ATT_TEAM = 0, ATT_ROBOT = 1,
-			DEF_ROBOT = 0, SAFE_ANGLE = 10, SAFE_DIS = 1000;
+			DEF_ROBOT = 0, SAFE_ANGLE = 20, SAFE_DIS = 1000;
 
 	/**
 	 * Main method which executes M3def
@@ -156,59 +156,39 @@ public class Milestone3def {
 		} else {
 			rotateBy = robotFacing - 270;
 		}
-
-		while (Math.abs(rotateBy) > SAFE_ANGLE) {
-			if (rotateDown) {
-				if (robotFacing < 90) {
-					try {
-						driver.turnRight();
-					} catch (Exception e) {
-						e.printStackTrace();
-						break;
-					}
-				} else {
-					try {
-						driver.turnLeft();
-					} catch (Exception e) {
-						e.printStackTrace();
-						break;
-					}
-				}
-			} else {
-				if (robotFacing < 270) {
-					try {
-						driver.turnRight();
-					} catch (Exception e) {
-						e.printStackTrace();
-						break;
-					}
-				} else {
-					try {
-						driver.turnLeft();
-					} catch (Exception e) {
-						e.printStackTrace();
-						break;
-					}
-				}
-			}
-
-			// try {
-			// //Thread.sleep(100);
-			// } catch (InterruptedException e) {
-			// e.printStackTrace();
-			// }
-			robotFacing = state.getRobotFacing(0, 0);
-
-			if (robotFacing > 0 & robotFacing < 180) {
-				rotateBy = robotFacing - 90;
-			} else {
-				rotateBy = robotFacing - 270;
-			}
-		}
 		try {
-			driver.stop();
+			if (Math.abs(rotateBy) > SAFE_ANGLE) {
+				if (rotateDown) {
+					if (robotFacing < 90) {
+						driver.turnRight();
+					} else {
+						driver.turnLeft();
+					}
+				} else {
+					if (robotFacing < 270) {
+						driver.turnRight();
+					} else {
+						driver.turnLeft();
+					}
+				}
+			} else {
+				driver.stop();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+
+		// try {
+		// //Thread.sleep(100);
+		// } catch (InterruptedException e) {
+		// e.printStackTrace();
+		// }
+		robotFacing = state.getRobotFacing(0, 0);
+
+		if (robotFacing > 0 & robotFacing < 180) {
+			rotateBy = robotFacing - 90;
+		} else {
+			rotateBy = robotFacing - 270;
 		}
 
 		// double shit = 270 - robotFacing;
