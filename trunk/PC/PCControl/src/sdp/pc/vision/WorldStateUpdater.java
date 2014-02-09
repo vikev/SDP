@@ -214,7 +214,8 @@ public class WorldStateUpdater extends WorldStateListener {
 	 *            the RGB colors of the image
 	 * @param cHsbs
 	 *            the HSB colors of the image
-	 * @return the angle the robot is facing
+	 * @return the angle the robot is facing in degrees in range [0,360] where
+	 * 		   clockwise is the positive direction
 	 */
 	private double findOrientation(Point2 robotCentroid, Color[][] cRgbs, float[][][] cHsbs) {
 
@@ -259,7 +260,10 @@ public class WorldStateUpdater extends WorldStateListener {
 		}
 		
 		blackPos = blackPos.div(blackCount);
-		return 180 + blackPos.angleTo(robotCentroid);
+		double correctAngle = blackPos.angleTo(robotCentroid);
+		if (correctAngle < 0) correctAngle += 360;
+		assert(0 <= correctAngle && correctAngle < 360);
+		return correctAngle;
 	}
 
 	/**
