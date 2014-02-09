@@ -17,7 +17,7 @@ public class Constants {
 	// Socket data
 	public static final int ATTACKER_PORT = 5570;
 	public static final int DEFENDER_PORT = 1438;
-	public static final String HOST = "localhost";
+	public static final String HOST = "129.215.58.62";
 
 	// Arbitrary point values taken from image of pitch; these are likely to
 	// change

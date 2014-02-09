@@ -21,7 +21,9 @@ import sdp.pc.vision.relay.TCPClient;
  * </ol>
  */
 public class Milestone3def {
-
+	
+	private static final double PERIOD = (1.0/10.0*1000.0);
+	
 	/**
 	 * Minimum ball speed for the robot to consider the ball as approaching the
 	 * goal
@@ -92,6 +94,7 @@ public class Milestone3def {
 			if (state.getBallSpeed() > BALL_SPEED_THRESHOLD) {
 
 			}
+			Thread.sleep((int)PERIOD);
 		}
 	}
 
@@ -148,11 +151,30 @@ public class Milestone3def {
 	 *            angle in degrees
 	 * @return ang on [0,360)
 	 */
+	@SuppressWarnings("unused")
 	private static double normalizeToUnitDegrees(double ang) {
 		while (ang < 0.0) {
 			ang += 360.0;
 		}
-		while (ang <= 360.0) {
+		while (ang >= 360.0) {
+			ang -= 360.0;
+		}
+		return ang;
+	}
+
+	/**
+	 * Returns an angle ang in degrees on [-180,180)
+	 * 
+	 * @param ang
+	 *            angle in degrees
+	 * @return ang on [-180, 180)
+	 */
+	@SuppressWarnings("unused")
+	private static double normalizeToBiDirection(double ang) {
+		while (ang < -180.0) {
+			ang += 360.0;
+		}
+		while (ang >= 180.0) {
 			ang -= 360.0;
 		}
 		return ang;
@@ -172,6 +194,7 @@ public class Milestone3def {
 			rotateBy = robotFacing - 270;
 		}
 		try {
+			System.out.println(robotFacing);
 			if (Math.abs(rotateBy) > SAFE_ANGLE) {
 				if (rotateDown) {
 					if (robotFacing < 90) {
@@ -212,48 +235,33 @@ public class Milestone3def {
 
 	public static void driveRobot(WorldState state, Vision vision,
 			Driver driver, double predBallPos) {
+		
 		double robotFacing = state.getRobotFacing(DEF_TEAM, DEF_ROBOT);
 		Point2 robotPosition = state.getRobotPosition(DEF_TEAM, DEF_ROBOT);
 
 		while (Math.abs(robotPosition.getY() - predBallPos) > SAFE_DIS) {
 			double driveBy = predBallPos - robotPosition.getY();
 			System.out.println(driveBy);
-			if ((robotFacing > 90 - SAFE_ANGLE)
-					& (robotFacing < 90 + SAFE_ANGLE)) {
-				if (driveBy < 0) {
-					try {
+			try {
+				if ((robotFacing > 90 - SAFE_ANGLE)
+						& (robotFacing < 90 + SAFE_ANGLE)) {
+					if (driveBy < 0) {
 						driver.backward(-driveBy);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				} else {
-					try {
+					} else {
 						driver.forward(driveBy);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
 					}
-				}
-			} else if ((robotFacing > 270 - SAFE_ANGLE)
-					& (robotFacing < 270 + SAFE_ANGLE)) {
-				if (driveBy < 0) {
-					try {
+				} else if ((robotFacing > 270 - SAFE_ANGLE)
+						& (robotFacing < 270 + SAFE_ANGLE)) {
+					if (driveBy < 0) {
 						driver.forward(-driveBy);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+					} else {
+						driver.backward(driveBy);
 					}
 				} else {
-					try {
-						driver.backward(driveBy);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					rotatePerpendicular(state, vision, driver);
 				}
-			} else {
-				rotatePerpendicular(state, vision, driver);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 			robotPosition = state.getRobotPosition(DEF_TEAM, DEF_ROBOT);
 			robotFacing = state.getRobotFacing(DEF_TEAM, DEF_ROBOT);
