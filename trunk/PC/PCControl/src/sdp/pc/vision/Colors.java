@@ -16,6 +16,7 @@ public class Colors {
 	 * @return
 	 */
 	public static boolean isBlack(Color c, float[] hsb) {
+		if(c instanceof Color){
 		return hsb[0] <= tresholds.getGrey_h_high()
 				&& hsb[0] >= tresholds.getGrey_h_low()
 				&& hsb[1] <= tresholds.getGrey_s_high()
@@ -28,6 +29,8 @@ public class Colors {
 				&& c.getGreen() >= tresholds.getGrey_g_low()
 				&& c.getBlue() <= tresholds.getGrey_b_high()
 				&& c.getBlue() >= tresholds.getGrey_b_low();
+		}
+		return false;
 	}
 
 	/**
@@ -70,11 +73,15 @@ public class Colors {
 	public static boolean isWhite(Color c, float[] hsb) {
 		boolean h = Alg.withinBounds(hsb[0], 0.05f, 0.05f);
 		boolean b = Alg.withinBounds(hsb[0], 0.2f, 0.2f);
-		boolean rgb = 
-			c.getRed() > 90 && c.getRed() < 170 
-			&& c.getGreen() > 90 && c.getGreen() < 150
-			&& c.getBlue() > 70 && c.getBlue() < 130;
-		return rgb & h & b;
+		if(c instanceof Color ){
+			boolean rgb = 
+				c.getRed() > 90 && c.getRed() < 170 
+				&& c.getGreen() > 90 && c.getGreen() < 150
+				&& c.getBlue() > 70 && c.getBlue() < 130;
+			return rgb & h & b;
+		}else{
+			return false;
+		}
 	}
 
 	/**

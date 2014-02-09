@@ -178,7 +178,11 @@ public class WorldStatePainter {
 				cRgb = stateListener.getNormalisedRgb(p.x, p.y);
 				cHsb = stateListener.getNormalisedHsb(p.x, p.y);
 				cRgb = getHighlightColor(cRgb, cHsb);
-				image.setRGB(p.x, p.y, cRgb.getRGB());
+				if (p instanceof Point2 && cRgb instanceof Color){
+					image.setRGB(p.x, p.y, cRgb.getRGB());
+				}else{
+					System.out.println("Attemped to highlight null object");
+				}
 			}
 		}
 
