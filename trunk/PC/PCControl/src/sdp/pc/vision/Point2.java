@@ -349,7 +349,9 @@ public class Point2 {
 	 * Returns the angle to a given Point2 from <b>this</b> in degrees.
 	 * 
 	 * @param p
+	 * 			Target position
 	 * @return
+	 * 			angle on [0,360)
 	 */
 	public double angleTo(Point2 p) {
 		return Math.atan2(p.y - y, p.x - x)*180/Math.PI;
