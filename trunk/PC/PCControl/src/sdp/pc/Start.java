@@ -3,7 +3,6 @@ package sdp.pc;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-//import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -54,7 +53,7 @@ public class Start {
 					if ("quit".equalsIgnoreCase(input)) {
 						break;
 					}
-					;
+
 					System.out.println("Waiting for client on port "
 							+ serverSocket.getLocalPort() + "...");
 
@@ -64,22 +63,29 @@ public class Start {
 
 					BufferedReader fromClient = new BufferedReader(
 							new InputStreamReader(server.getInputStream()));
-					while (true) {
-						input = fromClient.readLine();
-						if ("close".equalsIgnoreCase(input)) {
-							fromClient.close();
-							break;
+					try {
+						while (true) {
+							input = fromClient.readLine();
+							if ("close".equalsIgnoreCase(input)) {
+								fromClient.close();
+								break;
+							}
+							if ("quit".equalsIgnoreCase(input)) {
+								fromClient.close();
+								work = false;
+								break;
+							}
+							char c = input.charAt(0);
+							double dist = Double.parseDouble(fromClient
+									.readLine());
+							conn1.sendCommand(c, dist);
 						}
-						if ("quit".equalsIgnoreCase(input)) {
-							fromClient.close();
-							work = false;
-							break;
-						}
-						char c = input.charAt(0);
-						double dist = Double.parseDouble(fromClient.readLine());
-						conn1.sendCommand(c, dist);
+					} catch (Exception e) {
+						// whatever goes wrong wait for a new connection
+						System.err.println(e);
+						System.out.println("Socket would restart now");
 					}
-					//stop the robot if the connection is dropped or stopped
+					// stop the robot if the connection is dropped or stopped
 					conn1.sendCommand('s', 0);
 				}
 			} catch (UnknownHostException ex) {
