@@ -1,12 +1,12 @@
 package sdp.pc.milestones;
 
+import sdp.pc.common.ChooseRobot;
+import sdp.pc.vision.FutureBall;
 import sdp.pc.vision.Point2;
 import sdp.pc.vision.Vision;
 import sdp.pc.vision.WorldState;
-import sdp.pc.vision.FutureBall;
 import sdp.pc.vision.relay.Driver;
 import sdp.pc.vision.relay.TCPClient;
-import sdp.pc.common.*;
 
 /**
  * Static class for executing milestone 3 from a defending perspective. To run
@@ -41,10 +41,25 @@ public class Milestone3def {
 	 * Main method which executes M3def
 	 */
 	public static void main(String[] args) throws Exception {
+
 		Vision vision = new Vision(state);
 		Thread.sleep(3000);
-
-		Driver driver = new Driver(new TCPClient(ChooseRobot.dialog()));
+		final TCPClient conn = new TCPClient(ChooseRobot.dialog());
+		final Driver driver = new Driver(conn);
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				System.out.println("Exiting and stopping the robot");
+				try {
+					driver.stop();
+					conn.closeConnection();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				System.out.println("Should have stopped by now.");
+			}
+		});
 
 		try {
 			driver.stop();
