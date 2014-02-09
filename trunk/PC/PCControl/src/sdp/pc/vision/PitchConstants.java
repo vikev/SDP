@@ -14,6 +14,10 @@ public class PitchConstants {
 
 	/** The pitch number. 0 is the main pitch, 1 is the side pitch. */
 	private int pitchNum;
+	
+	/* Settings */
+	public int ourTeam;        // 0 = Yellow; 1 = Blue
+	public int shootingDirection; // 0 = Left; 1 = Right
 
 	/* Ball */
 	public int ball_r_low;
@@ -148,6 +152,10 @@ public class PitchConstants {
 		assert (scanner != null);
 
 		/* We assume that the file is well formed. */
+		
+		/* Settings */
+		this.ourTeam = scanner.nextInt();
+		this.shootingDirection = scanner.nextInt();
 
 		/* Ball */
 		this.ball_r_low = scanner.nextInt();
@@ -239,7 +247,11 @@ public class PitchConstants {
 	/**
 	 * Loads its values to ThresholdsState
 	 */
-	public void uploadConstants(ThresholdsState thresh) {
+	public void uploadConstants(ThresholdsState thresh, WorldState state) {
+		
+		// Settings
+		state.setOurColor(ourTeam);
+		state.setDirection(shootingDirection);
 
 		// Ball
 		thresh.setBall_r_low(this.ball_r_low);

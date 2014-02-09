@@ -40,52 +40,59 @@ public class Start {
 			Exception e = new Exception("Couldn't select a robot...");
 			throw e;
 		}
+		boolean work = true;
 
 		BTConnection conn1 = new BTConnection(nxt, NXTComm.PACKET);
+		while (work) {
 
-		try {
-			serverSocket = new ServerSocket(port);
-			// If you get an "Address already in use" error, change the
-			// port in Constants to some other 4-digit number above 1024
-			String input = "";
-			while (true) {
-				if ("quit".equalsIgnoreCase(input)) {
-					break;
-				}
-				;
-				System.out.println("Waiting for client on port "
-						+ serverSocket.getLocalPort() + "...");
-
-				Socket server = serverSocket.accept();
-				System.out.println("Just connected to "
-						+ server.getRemoteSocketAddress());
-
-				BufferedReader fromClient = new BufferedReader(
-						new InputStreamReader(server.getInputStream()));
+			try {
+				String input = "";
+				serverSocket = new ServerSocket(port);
+				// If you get an "Address already in use" error, change the
+				// port in Constants to some other 4-digit number above 1024
 				while (true) {
-					input = fromClient.readLine();
 					if ("quit".equalsIgnoreCase(input)) {
-						fromClient.close();
 						break;
 					}
-					char c = input.charAt(0);
-					double dist = Double.parseDouble(fromClient.readLine());
-					conn1.sendCommand(c, dist);
+					;
+					System.out.println("Waiting for client on port "
+							+ serverSocket.getLocalPort() + "...");
+
+					Socket server = serverSocket.accept();
+					System.out.println("Just connected to "
+							+ server.getRemoteSocketAddress());
+
+					BufferedReader fromClient = new BufferedReader(
+							new InputStreamReader(server.getInputStream()));
+					while (true) {
+						input = fromClient.readLine();
+						if ("close".equalsIgnoreCase(input)) {
+							fromClient.close();
+							break;
+						}
+						if ("quit".equalsIgnoreCase(input)) {
+							fromClient.close();
+							work = false;
+							break;
+						}
+						char c = input.charAt(0);
+						double dist = Double.parseDouble(fromClient.readLine());
+						conn1.sendCommand(c, dist);
+					}
 				}
+			} catch (UnknownHostException ex) {
+				ex.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-		} catch (UnknownHostException ex) {
-			ex.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 
+			try {
+				serverSocket.close();
+			} catch (IOException e) {
+				System.err.println("Couldn't close the socket.");
+				e.printStackTrace();
+			}
+		}
 		conn1.disconnect();
-		try {
-			serverSocket.close();
-		} catch (IOException e) {
-			System.err.println("Couldn't close the socket.");
-			e.printStackTrace();
-		}
-
 	}
 }

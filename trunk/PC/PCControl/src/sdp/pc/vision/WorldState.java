@@ -10,8 +10,7 @@ import sdp.pc.common.Constants;
 public class WorldState {
 	public static final int PLAYERS_PER_TEAM = 2, TEAM_COUNT = 2;
 
-	public int targetGoal = Constants.GOAL_LEFT;
-	// Next three might need an enum, though we won't really need to ever touch them
+	// Next three might need an enum, though we won't really need to ever touch them here
 	private int pitch;				// 0 -> Main Pitch; 1 -> Side Pitch
 	private int ourColor;			// 0 -> Yellow; 1 -> Blue
 	private int shootingDirection;  // 0 -> Left; 1 -> Right
@@ -27,13 +26,6 @@ public class WorldState {
 	public static final Point2 rightGoalCentre = new Point2(589, 241);
 	
 	public WorldState() {
-
-		// Set initial direction
-		if (targetGoal == Constants.GOAL_LEFT) {
-			this.shootingDirection = Constants.DIRECTION_LEFT;
-		} else {
-			this.shootingDirection = Constants.DIRECTION_RIGHT;
-		}
 
 		// Initialise robot locations to null values
 		for (int t = 0; t < TEAM_COUNT; t++)
@@ -56,24 +48,6 @@ public class WorldState {
 
 	public Point2 getRightGoalCentre() {
 		return Constants.RIGHT_GOAL_CENTRE;
-	}
-
-	/**
-	 * ???
-	 * 
-	 * @return
-	 */
-	public int getTargetGoal() {
-		return targetGoal;
-	}
-
-	/**
-	 * Method for choosing a new target goal ???
-	 * 
-	 * @param newTargetGoal
-	 */
-	public void setTargetGoal(int newTargetGoal) {
-		targetGoal = newTargetGoal;
 	}
 
 	/**
