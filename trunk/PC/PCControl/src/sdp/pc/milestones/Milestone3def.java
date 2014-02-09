@@ -37,7 +37,7 @@ public class Milestone3def {
 
 	// Yellow = Team 0; Blue = Team 1
 	private static int DEF_TEAM = 0, ATT_TEAM = 0, ATT_ROBOT = 1,
-			DEF_ROBOT = 0, SAFE_ANGLE = 20, SAFE_DIS = 1000;
+			DEF_ROBOT = 0, SAFE_ANGLE = 5, SAFE_DIS = 1000;
 
 	/**
 	 * Main method which executes M3def
@@ -179,6 +179,17 @@ public class Milestone3def {
 		}
 		return ang;
 	}
+	
+	private static double getRotateSpeed(double rotateBy){
+		rotateBy = Math.abs(rotateBy);
+		if(rotateBy>35.0){
+			return 200.0;
+		}else if(rotateBy>20.0){
+			return 100.0;
+		}else{
+			return 50.0;
+		}
+	}
 
 	public static void rotatePerpendicular(WorldState state, Vision vision,
 			Driver driver) {
@@ -194,19 +205,19 @@ public class Milestone3def {
 			rotateBy = robotFacing - 270;
 		}
 		try {
-			System.out.println(robotFacing);
+			double speed = getRotateSpeed(rotateBy);
 			if (Math.abs(rotateBy) > SAFE_ANGLE) {
 				if (rotateDown) {
 					if (robotFacing < 90) {
-						driver.turnRight();
+						driver.turnRight(speed);
 					} else {
-						driver.turnLeft();
+						driver.turnLeft(speed);
 					}
 				} else {
 					if (robotFacing < 270) {
-						driver.turnRight();
+						driver.turnRight(speed);
 					} else {
-						driver.turnLeft();
+						driver.turnLeft(speed);
 					}
 				}
 			} else {
