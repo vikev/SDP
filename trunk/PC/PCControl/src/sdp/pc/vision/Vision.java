@@ -22,44 +22,113 @@ import au.edu.jcu.v4l4j.exceptions.StateException;
 import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 
 /**
- * This code builds a JFrame that shows the feed from the camera and calculates
- * and displays positions of objects on the field. Part of the code is inspired
- * from group 1 of SDP 2013.
+ * Builds a JFrame that shows the feed from the camera and instantiates
+ * necessary world state models. Depending on states and other logic data,
+ * displays overlay data as well.
  * 
- * For programmers: the bulk of the work is done by the method 'processImage'.
- * Don't touch stuff like initGui unless need be.
- * 
- * @author Group 8, SDP 2014
+ * An instance of Vision should be initialised as the parent for all camera feed
+ * data. EG Milestone3att.java initialises a new Vision.
  * 
  */
 public class Vision extends WindowAdapter implements CaptureCallback {
 
-	// Camera and image parameters
+	/**
+	 * The desired (maximum?) FPS at which the world state will refresh
+	 */
+	private static final int WORLD_STATE_TARGET_FPS = 60;
+
+	/**
+	 * Width of the video feed
+	 */
 	static final int WIDTH = 640;
+
+	/**
+	 * Height of the video feed
+	 */
 	static final int HEIGHT = 480;
 
-	private static final int
-	// ANGLE_SMOOTHING_FRAME_COUNT = 4, // ???
-			VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL,
-			CHANNEL = 0;
+	/**
+	 * Size of the buffer for smoothing orientation (disabled)
+	 */
+	// private static final int ANGLE_SMOOTHING_FRAME_COUNT = 4;
+
+	/**
+	 * Video standard used by V4L4J (should be PAL)
+	 */
+	private static final int VIDEO_STANDARD = V4L4JConstants.STANDARD_PAL;
+
+	/**
+	 * Which channel to get the video feed from (should be 0)
+	 */
+	private static final int CHANNEL = 0;
+
+	/**
+	 * The device driver name for the video feed (should be /dev/video0 for both
+	 * pitches --> don't change it)
+	 */
 	private static final String DEVICE = "/dev/video0";
 
+	/**
+	 * The world state used by the Vision system. There should be one set of
+	 * world state objects for a Vision instance.
+	 */
 	static WorldState state = new WorldState();
+
+	/**
+	 * An abstraction of the world state used to get state details
+	 */
 	static WorldStateListener stateListener;
+
+	/**
+	 * Thread which runs the world state updater
+	 */
 	private static Thread stateUpdaterThread;
+
+	/**
+	 * Painter which draws any highlighted pixels or control data to the vision
+	 * stream
+	 */
 	private WorldStatePainter statePainter;
 
-	// public static Point2 requestedData = new Point2(-1, -1);
+	/**
+	 * PitchConstants holds discrete values like thresholds and important
+	 * points. 0 refers to the main pitch, while 1 would be the side pitch.
+	 * 
+	 * TODO:This should be abstracted at some point
+	 */
 	private static PitchConstants pitchConsts = new PitchConstants(0);
+
+	/**
+	 * A massive list of getters and setters for requesting threshold values
+	 */
 	private static ThresholdsState thresh = new ThresholdsState();
 
+	/**
+	 * Main label for the video feed frame
+	 */
 	public static JLabel frameLabel;
+
+	/**
+	 * Main frame for the video feed
+	 */
 	public static JFrame frame;
 
+	/**
+	 * A V4L4J instance for grabbing video. Fairly abstract.
+	 */
 	private static VideoDevice videoDevice;
+
+	/**
+	 * The object which V4L4J uses to grab individual frames. Mostly abstracted.
+	 */
 	private static FrameGrabber frameGrabber;
 
-	// TODO: what were those used for?
+	/**
+	 * angleSmoothing was a system which buffered orientation values to smooth
+	 * the facing angles of our robots. It's disabled now because the new
+	 * orientation code is more accurate, but it may be useful to smooth 2-3
+	 * frames if our orientation gets jumpy.
+	 */
 	// private static double[][] angleSmoothing = new
 	// double[4][ANGLE_SMOOTHING_FRAME_COUNT];
 	// private static int angSmoothingWriteIndex = 0;
@@ -71,6 +140,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * @param args
 	 */
 	public static void main(String args[]) {
+
+		/**
+		 * Anyone know why we use invokeLater to start the video feed? Does this
+		 * simply mean "run after swing has initialised the frame"?
+		 */
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -84,21 +158,21 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	}
 
 	/**
-	 * Builds a WebcamViewer object
+	 * Builds the WebcamViewer object and initialises state data and thresholds
 	 * 
 	 * @param state
-	 *            - the WorldState which will be updated with all the
-	 *            information from the vision system dynamically.
+	 *            the WorldState which will be updated with all the information
+	 *            from the vision system dynamically.
 	 * 
 	 * @throws V4L4JException
-	 *             if any parameter if invalid
+	 *             if any parameter is invalid
 	 */
 	public Vision(WorldState state) throws V4L4JException {
 		// Set state
 		Vision.state = state;
-		
+
 		// Create state listener
-		stateListener = new WorldStateUpdater(60, state);
+		stateListener = new WorldStateUpdater(WORLD_STATE_TARGET_FPS, state);
 		Vision.stateUpdaterThread = new Thread(stateListener);
 		Vision.stateUpdaterThread.setDaemon(true);
 		stateUpdaterThread.start();
@@ -106,12 +180,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// create state painter
 		statePainter = new WorldStatePainter(stateListener, state);
 
-		// load constants
+		// Load threshold and point constants. TODO: Abstract this to not refer
+		// specifically to pitch0.
 		pitchConsts.loadConstants("pitch0");
 		pitchConsts.uploadConstants(thresh, state);
 		Colors.setTreshold(thresh);
 
-		// initialise the frame fetcher
+		// Initialise the frame fetcher
 		try {
 			initFrameGrabber();
 		} catch (V4L4JException e1) {
@@ -121,51 +196,61 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			return;
 		}
 
-		// create the form
+		// Create the form
 		initGUI();
 
-		// set the frame callback
+		/**
+		 * Set the frame callback with the frame grabber. Executes for every new
+		 * frame.
+		 */
 		frameGrabber.setCaptureCallback(new CaptureCallback() {
-			// used to prevent flickering
+			// Used to prevent flickering
 			BufferedImage buffer = new BufferedImage(WIDTH, HEIGHT,
 					BufferedImage.TYPE_3BYTE_BGR);
 
-			// exception handling
+			/**
+			 * Exception handling
+			 */
 			public void exceptionReceived(V4L4JException e) {
 				System.err.println("Unable to capture frame:");
 				e.printStackTrace();
 			}
 
-			// new frame!
+			/**
+			 * The nextFrame handler
+			 */
 			public void nextFrame(VideoFrame frame) {
-				// grab the new frame
+				// Grab the new frame
 				BufferedImage frameImage = frame.getBufferedImage();
 				frame.recycle();
 
-				// notify the listener
+				// Notify the listener
 				stateListener.setCurrentFrame(frameImage);
 
-				// copy the new frame to the buffer (overwriting anything that
+				// Copy the new frame to the buffer (overwriting anything that
 				// was there already)
 				Graphics bg = buffer.getGraphics();
 				bg.drawImage(frameImage, 0, 0, WIDTH, HEIGHT, null);
 				bg.dispose();
 
-				// draw the world overlay to the buffer
+				// Draw the world overlay to the buffer
 				Point2 mousePos = new Point2(Vision.frame.getContentPane()
-						.getMousePosition());// .subtractBorders();
+						.getMousePosition());
+				// TODO: Commented out was '.subtractBorders();' - do we need
+				// this?
 				statePainter.drawWorld(buffer, mousePos);
 
-				// draw the result to the frameLabel
+				// Draw the result to the frameLabel
 				Graphics labelG = frameLabel.getGraphics();
 				labelG.drawImage(buffer, 0, 0, WIDTH, HEIGHT, null);
 				labelG.dispose();
 			}
 		});
 
+		// Begin video capture
 		frameGrabber.startCapture();
 
-		// add the mouse Listener
+		// Add the mouse Listener
 		frame.addMouseListener(new Calibration());
 	}
 
@@ -190,10 +275,14 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 */
 	private void initFrameGrabber() throws V4L4JException {
 		videoDevice = new VideoDevice(DEVICE);
+
+		// TODO: Has anyone tried changing the JPEG quality? JPEG can be pushed
+		// all the way to 100, which may improve our pixel recognition (at the
+		// cost of performance?) If it makes any difference, JPEG quality should
+		// be abstracted to a constant.
 		frameGrabber = videoDevice.getJPEGFrameGrabber(WIDTH, HEIGHT, CHANNEL,
 				VIDEO_STANDARD, 80);
 		frameGrabber.setCaptureCallback(this);
-		// System.out.println("Starting capture at " + WIDTH + "x" + HEIGHT);
 	}
 
 	/**
@@ -202,8 +291,14 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private void initGUI() {
 		frame = new JFrame();
 		frameLabel = new JLabel();
+		
+		// Add button below the frame for opening the settings menu
 		JButton button = new JButton("Settings");
 		button.addActionListener(new ActionListener() {
+			
+			/**
+			 * Open the control GUI on click
+			 */
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				new ControlGUI(thresh, statePainter, pitchConsts);

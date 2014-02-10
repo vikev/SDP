@@ -99,13 +99,12 @@ public class Milestone3att {
 	 * accordingly -Blake</li>
 	 * <li>Create meaningful exception handling code</li>
 	 * </ul>
+	 * 
 	 **/
 	public static void kickStationaryBall(Driver driver) throws Exception {
-
 		Point2 robotPosition = state.getRobotPosition(state.getOurColor(), state.getDirection());
 		Point2 ballPosition = state.getBallPosition();
 		Point2 targetPoint = setBallTarget();
-		@SuppressWarnings("unused")
 		boolean succesfulTravel = false;
 		// System.out.println("Robot Position :" + robotPosition);
 		// System.out.println("Ball Position :" + ballPosition);
@@ -147,14 +146,13 @@ public class Milestone3att {
 				Thread.sleep(200);
 			}
 			driver.stop();
-			while (!(succesfulTravel = traveltoPoint(state, driver,
-					approachPoint.getX(), approachPoint.getY()))) {
+			while (!(succesfulTravel = traveltoPoint(driver,
+					approachPoint.getX(), approachPoint.getY(), 0))) {
 				while (!Milestone3def.turnTo(state, driver, approachPoint)) {
 					Thread.sleep(200);
 				}
 				driver.stop();
 			}
-			driver.stop();
 		} else {/*
 			Point2 intermediate_point = calculateIntermediatePoint(ballPosition, targetPoint);
 			//facePoint(driver, intermediate_point.getX(), intermediate_point.getY());
@@ -169,17 +167,17 @@ public class Milestone3att {
 					approachPoint.getX(), approachPoint.getY()))) {
 				//facePoint(driver, approachPoint.getX(),
 						//approachPoint.getY());
-			}
-			return;*/
+			}*/
+			return;
 		}
 		while (!Milestone3def.turnTo(state, driver, ballPosition)) {
 			Thread.sleep(200);
 		}
 		driver.stop();
-		/*while (!(succesfulTravel = traveltoPoint(state, driver,
-				targetPoint.getX(), targetPoint.getY()))) {
+		while (!(succesfulTravel = traveltoPoint(driver,
+				targetPoint.getX(), targetPoint.getY(), 1))) {
 			facePoint(state, driver, targetPoint.getX(), targetPoint.getY());
-		}*/
+		}
 		driver.forward(400);
 		Thread.sleep(300);
 		driver.stop();
@@ -304,31 +302,39 @@ public class Milestone3att {
 	 * called externally to correct the robots orientation before this method
 	 * should be called again (auxiliary method)
 	 * 
-	 * @param state
 	 * @param driver
+	 * @param targetX
+	 * @param targetY
+	 * @param movingTowardsBall
 	 * @return
 	 */
 
-	public static boolean traveltoPoint(WorldState state, Driver driver,
-			int targetX, int targetY) throws Exception {
+	public static boolean traveltoPoint(Driver driver,
+			int targetX, int targetY, int movingTowardsBall) throws Exception {
 		double initialOrientation = state.getRobotFacing(state.getOurColor(), state.getDirection());
-		Point2 robotPos = state.getRobotPosition(state.getOurColor(), state.getDirection());
 		double robotFacing = state.getRobotFacing(state.getOurColor(), state.getDirection());
-		if (Math.abs(robotPos.getX() - targetX) > SAFE_DIST
-				&& (Math.abs(robotPos.getY() - targetY) > SAFE_DIST));
-		driver.forward(2);
-		while (Math.abs(robotFacing - initialOrientation) < SAFE_ANGLE) {
-
-			if (Math.abs(robotPos.getX() - targetX) < SAFE_DIST
-				&& (Math.abs(robotPos.getY() - targetY) < SAFE_DIST)) {
+		Point2 robotPos = state.getRobotPosition(state.getOurColor(), state.getDirection());
+		int threshold = 2;
+		if (movingTowardsBall == 1){
+			threshold = SAFE_DIST;
+		}
+		if((Math.abs(robotPos.getX() - targetX) > threshold
+				&& (Math.abs(robotPos.getY() - targetY) > threshold))){
+			driver.forward(50);	//command robot to go forward at set speed
+		}
+		while (Math.abs(robotPos.getX() - targetX) > threshold
+				&& (Math.abs(robotPos.getY() - targetY) > threshold)){
+			if (Math.abs(robotFacing - initialOrientation) < SAFE_ANGLE) {
 				driver.stop();
-				return true;
+				return false;
 			}
+			Thread.sleep(50);
+			//Update position & orientation
 			robotPos = state.getRobotPosition(state.getOurColor(), state.getDirection());
 			robotFacing = state.getRobotFacing(state.getOurColor(), state.getDirection());
 		}
 		driver.stop();
-		return false;
+		return true;
 	}
 	
 	/**
