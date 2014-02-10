@@ -19,18 +19,6 @@ public class Constants {
 	public static final int DEFENDER_PORT = 1438;
 	public static final String HOST = "localhost";
 
-	// Arbitrary point values taken from image of pitch; these are likely to
-	// change
-	private static final int LEFT_GOAL_CENTRE_X = 77, LEFT_GOAL_CENTRE_Y = 235;
-	private static final int RIGHT_GOAL_CENTRE_X = 589,
-			RIGHT_GOAL_CENTRE_Y = 241;
-
-	// Points which can be referenced
-	public static final Point2 LEFT_GOAL_CENTRE = new Point2(
-			LEFT_GOAL_CENTRE_X, LEFT_GOAL_CENTRE_Y);
-	public static final Point2 RIGHT_GOAL_CENTRE = new Point2(
-			RIGHT_GOAL_CENTRE_X, RIGHT_GOAL_CENTRE_Y);
-
 	/**
 	 * Approximate measurements of robots in pixels (could change to
 	 * centimetres); these values haven't yet been measured. At some point we

@@ -90,32 +90,32 @@ public class WorldState {
 	/**
 	 * Goal points established using calibration values in the settings GUI.
 	 */
-	public static Point2 leftGoalTop;
+	public static Point2 leftGoalTop = new Point2();
 
 	/**
 	 * Goal points established using calibration values in the settings GUI.
 	 */
-	public static Point2 leftGoalBottom;
+	public static Point2 leftGoalBottom = new Point2();
 
 	/**
 	 * Goal points established using calibration values in the settings GUI.
 	 */
-	public static Point2 rightGoalTop;
+	public static Point2 rightGoalTop = new Point2();
 
 	/**
 	 * Goal points established using calibration values in the settings GUI.
 	 */
-	public static Point2 rightGoalBottom;
+	public static Point2 rightGoalBottom = new Point2();
 
 	/**
 	 * Goal points calculated using calibration values from the settings GUI.
 	 */
-	public static Point2 leftGoalCentre;
+	public static Point2 leftGoalCentre = new Point2();
 
 	/**
 	 * Goal points calculated using calibration values from the settings GUI.
 	 */
-	public static Point2 rightGoalCentre;
+	public static Point2 rightGoalCentre = new Point2();
 
 	/**
 	 * Simple constructor which sets robot positions to empty.
@@ -162,7 +162,13 @@ public class WorldState {
 	 * @return Left Goal Centre as a Point2
 	 */
 	public Point2 getLeftGoalCentre() {
-		return Constants.LEFT_GOAL_CENTRE;
+		if (leftGoalCentre == null) {
+			leftGoalCentre = new Point2(
+					(int) (leftGoalTop.getX() + leftGoalBottom.getX()) / 2,
+					(int) (leftGoalTop.getY() + leftGoalBottom.getY()) / 2);
+		}
+		return leftGoalCentre;
+
 	}
 
 	/**
@@ -171,7 +177,12 @@ public class WorldState {
 	 * @return Right Goal Centre as a Point2
 	 */
 	public Point2 getRightGoalCentre() {
-		return Constants.RIGHT_GOAL_CENTRE;
+		if (rightGoalCentre == null) {
+			rightGoalCentre = new Point2(
+					(int) (rightGoalTop.getX() + rightGoalBottom.getX()) / 2,
+					(int) (rightGoalTop.getY() + rightGoalBottom.getY()) / 2);
+		}
+		return rightGoalCentre;
 	}
 
 	/**
@@ -311,8 +322,12 @@ public class WorldState {
 	}
 
 	/**
+<<<<<<< HEAD
+	 * Setter method for updating the estimated ball stop point
+=======
 	 * Setter method for updating the estimated ball stop point. Used by
 	 * FutureBall
+>>>>>>> b54798607711c526d0c9a49fa2efc4fbff123854
 	 * 
 	 * @param pt
 	 */
@@ -321,8 +336,12 @@ public class WorldState {
 	}
 
 	/**
+<<<<<<< HEAD
+	 * Setter method for updating the estimated collide point
+=======
 	 * Setter method for updating the estimated collide point. Used by
 	 * FutureBall
+>>>>>>> b54798607711c526d0c9a49fa2efc4fbff123854
 	 * 
 	 * @param pt
 	 */
@@ -331,8 +350,12 @@ public class WorldState {
 	}
 
 	/**
+<<<<<<< HEAD
+	 * Getter method for the estimated stop point of the ball
+=======
 	 * Getter method for the estimated stop point of the ball. Used by
 	 * FutureBall
+>>>>>>> b54798607711c526d0c9a49fa2efc4fbff123854
 	 * 
 	 * @return
 	 */
@@ -341,8 +364,12 @@ public class WorldState {
 	}
 
 	/**
+<<<<<<< HEAD
+	 * Getter method for the estimated collide point of the ball
+=======
 	 * Getter method for the estimated collide point of the ball. Used by
 	 * FutureBall
+>>>>>>> b54798607711c526d0c9a49fa2efc4fbff123854
 	 * 
 	 * @return
 	 */

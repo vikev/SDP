@@ -1,7 +1,9 @@
 package sdp.pc.milestones;
 
+import javax.swing.SwingUtilities;
+
+import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 import sdp.pc.common.ChooseRobot;
-import sdp.pc.common.Constants;
 import sdp.pc.vision.FutureBall;
 import sdp.pc.vision.Point2;
 import sdp.pc.vision.Vision;
@@ -22,38 +24,45 @@ import sdp.pc.vision.relay.TCPClient;
  * </ol>
  */
 public class Milestone3def {
-
-	private static final double PERIOD = (1.0 / 5.0 * 1000.0);
+	
+	/**
+	 * An instance of WorldState used by M3def
+	 */
+	private static WorldState state = new WorldState();
 
 	/**
 	 * Minimum ball speed for the robot to consider the ball as approaching the
 	 * goal
 	 */
 	private static final double BALL_SPEED_THRESHOLD = 10.0;
-
-	/**
-	 * An instance of WorldState used by M3def
-	 */
-	private static WorldState state = new WorldState();
+	
+	private static final double PERIOD = (1.0 / 5.0 * 1000.0);
 
 	// Yellow = Team 0; Blue = Team 1
 	// Robot on the left - 0; robot on the right - 1
-	private static int DEF_TEAM = 0, ATT_TEAM = 0, ATT_ROBOT = 1,
-			DEF_ROBOT = 0, SAFE_ANGLE = 10, SAFE_DIS = 1000;
+	private static int DEF_TEAM = 0, ATT_TEAM = 0, ATT_ROBOT = 0,
+			DEF_ROBOT = 1, SAFE_ANGLE = 10, SAFE_DIS = 1000;
 	
-	private static Point2 DEF_GOAL_CENTRE = Constants.LEFT_GOAL_CENTRE;
+	private static Point2 DEF_GOAL_CENTRE = state.getRightGoalCentre();
 
 	private static double NEAR_EPSILON = 20;
-	private static double SAFE_DIST_FROM_GOAL = 20;
+	private static double SAFE_DIST_FROM_GOAL = 50;
 
 	/**
 	 * Main method which executes M3def
 	 */
 	public static void main(String[] args) throws Exception {
-
-		// Initialise the behaviour of the system
-		Vision vision = new Vision(state);
 		Thread.sleep(2000);
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					new Vision(state);
+				} catch (V4L4JException e) {
+					e.printStackTrace();
+				}
+			}
+		});
 		final TCPClient conn = new TCPClient(ChooseRobot.dialog());
 		final Driver driver = new Driver(conn);
 
@@ -92,12 +101,15 @@ public class Milestone3def {
 			if (assertNearGoalLine(state, driver)) {
 				if (assertPerpendicular(state, driver)) {
 					if (state.getBallSpeed() > BALL_SPEED_THRESHOLD) {
-						// Get predicted ball position (Y value) when it will come to
-						// defender's side
-						//double predBallPos = FutureBall.estimateBallPositionWhen(
-						//		attPosition, attFacing, robotPosition.getX());
+						defendBall(state, driver, state.getBallPosition(), state.getBallFacing());
 					} else {
-
+						Point2 robotPosition = state.getRobotPosition(ATT_TEAM, ATT_ROBOT);
+						double robotFacing = state.getRobotFacing(ATT_TEAM, ATT_ROBOT);
+						if (robotPosition.getX() != 0 && robotPosition.getY() != 0) {
+							defendBall(state, driver, robotPosition, robotFacing);
+						} else {
+							defendIfNoAttacker(state, driver);
+						}
 					}
 				}
 			}
@@ -107,51 +119,26 @@ public class Milestone3def {
 		}
 	}
 
-	public static void defendBall(WorldState state, Vision vision, Driver driver)
+	public static void defendBall(WorldState state, Driver driver, Point2 position, double facing)
 			throws Exception {
-		Point2 ballPosition = state.getBallPosition();
-		System.out.println("Ball is at: " + ballPosition);
-
-		double ballFacing = state.getBallFacing();
-		System.out.println("Ball facing: " + ballFacing);
-
 		Point2 robotPosition = state.getRobotPosition(DEF_TEAM, DEF_ROBOT);
-		System.out.println("Initially robot is at: " + robotPosition);
 
-		double robotFacing = state.getRobotFacing(DEF_TEAM, DEF_ROBOT);
-		System.out.println("Initial robot facing angle: " + robotFacing);
+		// Get predicted ball position (Y value) when it will come to
+		// defender's side
+		Point2 predBallPos = FutureBall.estimateBallPositionWhen(
+				position, facing, robotPosition.getX());
 
-		/**
-		 * Two states: Ball is not moving: 1. rotate perpendicular to edges 2.
-		 * cut off the direction of attacking robot Ball is moving: 1. cut off
-		 * the ball
-		 */
-
-		// At the beginning make sure that robot is facing perpendicular to
-		// edges
-		assertPerpendicular(state, driver);
-
-		if (state.getBallFacing() == -1) {
-			// Get the facing direction of the attacking robot
-			Point2 attPosition = state.getRobotPosition(ATT_TEAM, ATT_ROBOT);
-			System.out.println("Attacking robot is at: " + attPosition);
-
-			double attFacing = state.getRobotFacing(ATT_TEAM, ATT_ROBOT);
-			System.out.println("Attacking robot facing angle: " + attFacing);
-
-			// Get predicted ball position (Y value) when it will come to
-			// defender's side
-			double predBallPos = FutureBall.estimateBallPositionWhen(
-					attPosition, attFacing, robotPosition.getX());
-
-			// Drive robot to this position
-			driveRobot(state, vision, driver, predBallPos);
-		} else {
-			/**
-			 * If the ball is already moving - make sure that the robot will cut
-			 * off it
-			 */
-		}
+		// Move robot to this position
+		goTo(state, driver, predBallPos);
+	}
+	
+	public static void defendIfNoAttacker(WorldState state, Driver driver)
+			throws Exception {
+		Point2 robotPosition = state.getRobotPosition(DEF_TEAM, DEF_ROBOT);
+		Point2 ballPosition = state.getBallPosition();
+		
+		// Move robot to this position
+		goTo(state, driver, new Point2(robotPosition.getX(), ballPosition.getY()));
 	}
 
 	/**
@@ -251,7 +238,8 @@ public class Milestone3def {
 	public static boolean assertNearGoalLine(WorldState state, Driver driver) {
 		try {
 			Point2 botPos = state.getRobotPosition(DEF_TEAM, DEF_ROBOT);
-			if(botPos.distance(DEF_GOAL_CENTRE) > SAFE_DIST_FROM_GOAL){
+			System.out.println(DEF_GOAL_CENTRE);
+			if((Math.abs(botPos.getX() - DEF_GOAL_CENTRE.getX())) > SAFE_DIST_FROM_GOAL){
 				if (turnTo(state, driver, DEF_GOAL_CENTRE)) {
 					if (goTo(state, driver, DEF_GOAL_CENTRE)) {
 						return true;
@@ -299,7 +287,7 @@ public class Milestone3def {
 		return false;
 	}
 
-	public static void driveRobot(WorldState state, Vision vision,
+	public static void driveRobot(WorldState state,
 			Driver driver, double predBallPos) {
 
 		double robotFacing = state.getRobotFacing(DEF_TEAM, DEF_ROBOT);

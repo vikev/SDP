@@ -92,8 +92,8 @@ public class FutureBall {
 	// and the X-value of the defender robot's position
 	// estimateBallPositionWhen returns Y-value where the ball should be when
 	// robotPositionX == ballPosition.getX()
-	public static double estimateBallPositionWhen(Point2 attPosition,
+	public static Point2 estimateBallPositionWhen(Point2 attPosition,
 			double attFacing, double robotPositionX) {
-		return 160.0;
+		return new Point2((int)robotPositionX, 282);
 	}
 }
