@@ -10,27 +10,41 @@ import sdp.pc.common.Constants;
 public class WorldState {
 	public static final int PLAYERS_PER_TEAM = 2, TEAM_COUNT = 2;
 
-	// Next three might need an enum, though we won't really need to ever touch them here
-	private int pitch;				// 0 -> Main Pitch; 1 -> Side Pitch
-	private int ourColor;			// 0 -> Yellow; 1 -> Blue
-	private int shootingDirection;  // 0 -> Left; 1 -> Right
-	
+	// Next three might need an enum, though we won't really need to ever touch
+	// them here
+	private int pitch; // 0 -> Main Pitch; 1 -> Side Pitch
+	private int ourColor; // 0 -> Yellow; 1 -> Blue
+	private int shootingDirection; // 0 -> Left; 1 -> Right
+
 	private Point2 ballLocation = new Point2();
 	private Point2 ballVelocity = new Point2();
 	private double ballFacing, ballSpeed;
 	private Point2[][] robotLoc = new Point2[TEAM_COUNT][PLAYERS_PER_TEAM];
 	private double[][] robotFacing = new double[TEAM_COUNT][PLAYERS_PER_TEAM];
 
-	// Taken from image of pitch; these are likely to change
-	public static final Point2 leftGoalCentre = new Point2(77, 235);
-	public static final Point2 rightGoalCentre = new Point2(589, 241);
-	
+	// Those are assigned on start either from default value or config file
+	public static Point2 leftGoalTop;
+	public static Point2 leftGoalBottom;
+	public static Point2 rightGoalTop;
+	public static Point2 rightGoalBottom;
+	public static Point2 leftGoalCentre;
+	public static Point2 rightGoalCentre;
+
 	public WorldState() {
 
 		// Initialise robot locations to null values
 		for (int t = 0; t < TEAM_COUNT; t++)
 			for (int p = 0; p < PLAYERS_PER_TEAM; p++)
 				robotLoc[t][p] = new Point2();
+	}
+
+	public static void resetGoal() {
+		leftGoalTop = null;
+		leftGoalBottom = null;
+		rightGoalTop = null;
+		rightGoalBottom = null;
+		leftGoalCentre = null;
+		rightGoalCentre = null;
 	}
 
 	public double getBallFacing() {
@@ -117,33 +131,35 @@ public class WorldState {
 	public void setRobotFacing(int team, int robot, double newFacing) {
 		this.robotFacing[team][robot] = newFacing;
 	}
-	
+
 	/**
-	 * Set which pitch we're playing on (0 is Main, 1 is Side) 
+	 * Set which pitch we're playing on (0 is Main, 1 is Side)
 	 */
 	public void setPitch(int pitch) {
 		this.pitch = pitch;
 	}
+
 	/**
-	 * Get which pitch we're playing on (0 is Main, 1 is Side) 
+	 * Get which pitch we're playing on (0 is Main, 1 is Side)
 	 */
 	public int getPitch() {
 		return pitch;
 	}
-	
+
 	/**
 	 * Set our team's colour (0 is yellow, 1 is blue)
 	 */
 	public void setOurColor(int ourColor) {
 		this.ourColor = ourColor;
 	}
+
 	/**
 	 * Get our team's colour (0 is yellow, 1 is blue)
 	 */
 	public int getOurColor() {
 		return ourColor;
 	}
-	
+
 	/**
 	 * Gets the direction our team is supposed to shoot towards (0 is left)
 	 */

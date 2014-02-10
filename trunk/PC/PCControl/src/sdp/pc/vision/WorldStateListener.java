@@ -59,13 +59,13 @@ public abstract class WorldStateListener implements Runnable {
 	 * The (way too) current FPS
 	 */
 	private int currentFps = 0;
-	
+
 	/**
-	 * The refresh rate of the engine. 
-	 * Lower values indicate too much processing/world updating
+	 * The refresh rate of the engine. Lower values indicate too much
+	 * processing/world updating
 	 */
 	private int clockFps = 0;
-	
+
 	/**
 	 * Keeps track of the frames skipped so far. Should become equal to
 	 * FRAME_IGNORE_COUNT before preprocessing takes place
@@ -237,21 +237,21 @@ public abstract class WorldStateListener implements Runnable {
 	public int getKeyFrames() {
 		return 100 * keyframe / FRAME_IGNORE_COUNT;
 	}
-	
+
 	/**
 	 * Gets the target FPS
 	 */
 	public int getTargetFps() {
 		return (int) (1000 / targetFrameTime);
 	}
-	
+
 	/**
 	 * Gets the current FPS
 	 */
 	public int getCurrentFps() {
 		return currentFps;
 	}
-	
+
 	/**
 	 * Gets the current FPS
 	 */
@@ -283,10 +283,9 @@ public abstract class WorldStateListener implements Runnable {
 		this.currentFrame = currentFrame;
 	}
 
-	
 	private long lastFrameUpdate;
 	private long lastClockUpdate;
-	
+
 	/**
 	 * The main function of the listener; Starts listening for image updates
 	 * (ignoring the first couple), and, provided there are boundaries (added
@@ -312,29 +311,27 @@ public abstract class WorldStateListener implements Runnable {
 					processImage(currentFrame, currentRgb, currentHsb);
 					updateWorld(currentRgb, currentHsb);
 				}
-				
+
 				lastFrame = currentFrame;
-				
-				//collect FPS data
+
+				// collect FPS data
 				endT = System.currentTimeMillis();
-				currentFps = (int) (1000 / Math.max(1, (endT - lastFrameUpdate)));
+				currentFps = (int) (1000 / Math
+						.max(1, (endT - lastFrameUpdate)));
 				lastFrameUpdate = endT;
-			}
-			else
+			} else
 				endT = System.currentTimeMillis();
-			
-			//end time
-			
-			
-			//calculate sleep time (if needed at all)
+
+			// end time
+
+			// calculate sleep time (if needed at all)
 			clockFps = (int) (1000 / Math.max(1, (startT - lastClockUpdate)));
 			lastClockUpdate = startT;
 			currentFrameTime = endT - startT;
 			dT = targetFrameTime - currentFrameTime;
 			if (dT > SLEEP_ACCURACY)
 				safeSleep(dT);
-			
-			
+
 		}
 
 	}
@@ -367,10 +364,8 @@ public abstract class WorldStateListener implements Runnable {
 
 			// get boundary
 			Point2 pa = boundaryPoints[0], pb = boundaryPoints[1];
-			int minX = Math.min(pa.x, pb.x), 
-				maxX = Math.max(pa.x, pb.x), 
-				minY = Math.min(pa.y, pb.y), 
-				maxY = Math.max(pa.y, pb.y);
+			int minX = Math.min(pa.x, pb.x), maxX = Math.max(pa.x, pb.x), minY = Math
+					.min(pa.y, pb.y), maxY = Math.max(pa.y, pb.y);
 
 			// get all white pixels
 			ArrayList<Point2> whitePoints = new ArrayList<Point2>();
@@ -384,7 +379,6 @@ public abstract class WorldStateListener implements Runnable {
 					cHsb = currentHsb[x][y];
 					Color.RGBtoHSB(cRgb.getRed(), cRgb.getGreen(),
 							cRgb.getBlue(), cHsb);
-
 
 					// add to white if white
 					if (Colors.isWhite(cRgb, cHsb)) {
@@ -411,8 +405,7 @@ public abstract class WorldStateListener implements Runnable {
 							minMaxBrightness[0] = b;
 						if (b > minMaxBrightness[1]) // max
 							minMaxBrightness[1] = b;
-					}
-					else
+					} else
 						currentRgb[x][y] = null;
 				}
 			}

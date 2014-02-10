@@ -251,11 +251,10 @@ public class ControlGUI implements ChangeListener {
 		colour_panel.add(colour_yellow);
 		colour_choice.add(colour_blue);
 		colour_panel.add(colour_blue);
-		
+
 		if (worldState.getOurColor() == Constants.TEAM_YELLOW) {
 			colour_yellow.setSelected(true);
-		}
-		else {
+		} else {
 			colour_blue.setSelected(true);
 		}
 
@@ -279,8 +278,7 @@ public class ControlGUI implements ChangeListener {
 
 		if (worldState.getDirection() == Constants.DIRECTION_RIGHT) {
 			direction_right.setSelected(true);
-		}
-		else {
+		} else {
 			direction_left.setSelected(true);
 		}
 
@@ -315,9 +313,11 @@ public class ControlGUI implements ChangeListener {
 				try {
 					FileWriter writer = new FileWriter(new File("pitch"
 							+ pitchNum));
-					
-					writer.write(String.valueOf(worldState.getOurColor())+ "\n");
-					writer.write(String.valueOf(worldState.getDirection()) + "\n");
+
+					writer.write(String.valueOf(worldState.getOurColor())
+							+ "\n");
+					writer.write(String.valueOf(worldState.getDirection())
+							+ "\n");
 
 					/* Ball */
 					writer.write(String.valueOf(ball_r.getValue()) + "\n");
@@ -396,8 +396,8 @@ public class ControlGUI implements ChangeListener {
 					writer.write(String.valueOf(green_v.getUpperValue()) + "\n");
 
 					/* Absolute Borders */
-					Point2 pa = WorldStateListener.getBoundary(0),
-							pb = WorldStateListener.getBoundary(1);
+					Point2 pa = WorldStateListener.getBoundary(0), pb = WorldStateListener
+							.getBoundary(1);
 					writer.write(String.valueOf(pa.x + "\n"));
 					writer.write(String.valueOf(pa.y + "\n"));
 					writer.write(String.valueOf(pb.x + "\n"));
@@ -417,7 +417,14 @@ public class ControlGUI implements ChangeListener {
 							+ "\n");
 					writer.write(String.valueOf(pitchConstants.rightBuffer)
 							+ "\n");
-
+					writer.write(WorldState.leftGoalTop.getX() + "\n");
+					writer.write(WorldState.leftGoalTop.getY() + "\n");
+					writer.write(WorldState.leftGoalBottom.getX() + "\n");
+					writer.write(WorldState.leftGoalBottom.getY() + "\n");
+					writer.write(WorldState.rightGoalTop.getX() + "\n");
+					writer.write(WorldState.rightGoalTop.getY() + "\n");
+					writer.write(WorldState.rightGoalBottom.getX() + "\n");
+					writer.write(WorldState.rightGoalBottom.getY() + "\n");
 					writer.flush();
 					writer.close();
 
@@ -470,10 +477,10 @@ public class ControlGUI implements ChangeListener {
 	 */
 	private void setUpBorderPanel() {
 		JPanel pan = new JPanel();
-		JButton btn = new JButton("Calibrate Absolute Borders");
-		pan.add(btn);
+		JButton btnCalibrateBorders = new JButton("Calibrate Absolute Borders");
+		pan.add(btnCalibrateBorders);
 		borderPanel.add(pan);
-		btn.addActionListener(new ActionListener() {
+		btnCalibrateBorders.addActionListener(new ActionListener() {
 
 			/*
 			 * On click, reset the local calibration state for the absolute
@@ -482,15 +489,27 @@ public class ControlGUI implements ChangeListener {
 			 */
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("Select upper-left-most boundary point");
-
-				// TODO: test!!
+				System.out
+						.println("Select upper-left-most boundary point and then bottom-right boundary point!");
 				WorldStateListener.resetBoundary();
+			}
+		});
 
-				// Vision.leftTop = new Point2();
-				// Vision.rightBottom = new Point2();
-				// Vision.edgesCalibrated = false;
-				// Vision.hullCalculated = false;
+		JButton btnCalibrateGoals = new JButton("Calibrate Goals");
+		pan.add(btnCalibrateGoals);
+		borderPanel.add(pan);
+		btnCalibrateGoals.addActionListener(new ActionListener() {
+
+			/*
+			 * On click, reset the local calibration state for the absolute
+			 * borders, causing the Vision click listener to look for (first) a
+			 * top-left click.
+			 */
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.out
+						.println("Select top and bottom points of the left goal and then top and bottom points of the right goal.");
+				WorldState.resetGoal();
 			}
 		});
 	}
@@ -880,27 +899,32 @@ public class ControlGUI implements ChangeListener {
 	@Override
 	public void stateChanged(ChangeEvent e) {
 
-        if (e!=null && e.getSource() instanceof JTabbedPane) {
-            JTabbedPane pane = (JTabbedPane)e.getSource();
-            int id = pane.getSelectedIndex();
-            final HighlightMode[] tabModes = new HighlightMode[] {
-            		HighlightMode.None,
-            		HighlightMode.Red,
-            		HighlightMode.Blue,
-            		HighlightMode.Yellow,
-            		HighlightMode.Black,
-            		HighlightMode.Green,
-            		HighlightMode.White,
-            };
-            worldStatePainter.setHighlightMode(tabModes[id]);
-        }
+		if (e != null && e.getSource() instanceof JTabbedPane) {
+			JTabbedPane pane = (JTabbedPane) e.getSource();
+			int id = pane.getSelectedIndex();
+			final HighlightMode[] tabModes = new HighlightMode[] {
+					HighlightMode.None, HighlightMode.Red, HighlightMode.Blue,
+					HighlightMode.Yellow, HighlightMode.Black,
+					HighlightMode.Green, HighlightMode.White, };
+			worldStatePainter.setHighlightMode(tabModes[id]);
+		}
 		/* Update the world state. */
-		  if (pitch_0.isSelected()) { worldState.setPitch(0); } else {
-		  worldState.setPitch(1); } if(colour_yellow.isSelected()) {
-		  worldState.setOurColor(0); } else { worldState.setOurColor(1); }
-		  if(direction_right.isSelected()) { worldState.setDirection(1); } else
-		  { worldState.setDirection(0); }
-		 
+		if (pitch_0.isSelected()) {
+			worldState.setPitch(0);
+		} else {
+			worldState.setPitch(1);
+		}
+		if (colour_yellow.isSelected()) {
+			worldState.setOurColor(0);
+		} else {
+			worldState.setOurColor(1);
+		}
+		if (direction_right.isSelected()) {
+			worldState.setDirection(1);
+		} else {
+			worldState.setDirection(0);
+		}
+
 		/* Update the ThresholdsState object. */
 		/*
 		 * int index = tabPane.getSelectedIndex();

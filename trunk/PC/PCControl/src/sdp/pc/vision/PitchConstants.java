@@ -14,9 +14,9 @@ public class PitchConstants {
 
 	/** The pitch number. 0 is the main pitch, 1 is the side pitch. */
 	private int pitchNum;
-	
+
 	/* Settings */
-	public int ourTeam;        // 0 = Yellow; 1 = Blue
+	public int ourTeam; // 0 = Yellow; 1 = Blue
 	public int shootingDirection; // 0 = Left; 1 = Right
 
 	/* Ball */
@@ -99,6 +99,16 @@ public class PitchConstants {
 	public int leftBuffer;
 	public int rightBuffer;
 
+	/*
+	 * Location of the goals
+	 */
+	private Point2 leftGoalTop;
+	private Point2 leftGoalBottom;
+	private Point2 rightGoalTop;
+	private Point2 rightGoalBottom;
+	private Point2 leftGoalCentre;
+	private Point2 rightGoalCentre;
+
 	/**
 	 * Default constructor.
 	 * 
@@ -152,7 +162,7 @@ public class PitchConstants {
 		assert (scanner != null);
 
 		/* We assume that the file is well formed. */
-		
+
 		/* Settings */
 		this.ourTeam = scanner.nextInt();
 		this.shootingDirection = scanner.nextInt();
@@ -235,20 +245,31 @@ public class PitchConstants {
 		WorldStateListener.addBoundary(pb);
 
 		/* Pitch Dimensions */
+		// TODO: test
 		this.topBuffer = scanner.nextInt();
 		this.bottomBuffer = scanner.nextInt();
 		this.leftBuffer = scanner.nextInt();
 		this.rightBuffer = scanner.nextInt();
+		this.leftGoalTop = new Point2(scanner.nextInt(), scanner.nextInt());
+		this.leftGoalBottom = new Point2(scanner.nextInt(), scanner.nextInt());
+		this.rightGoalTop = new Point2(scanner.nextInt(), scanner.nextInt());
+		this.rightGoalBottom = new Point2(scanner.nextInt(), scanner.nextInt());
 
+		this.leftGoalCentre = new Point2(
+				(int) (this.leftGoalTop.getX() + this.leftGoalBottom.getX()) / 2,
+				(int) (this.leftGoalTop.getY() + this.leftGoalBottom.getY()) / 2);
+		this.rightGoalCentre = new Point2(
+				(int) (this.rightGoalTop.getX() + this.rightGoalBottom.getX()) / 2,
+				(int) (this.rightGoalTop.getY() + this.rightGoalBottom.getY()) / 2);
 		if (scanner != null)
 			scanner.close();
 	}
 
 	/**
-	 * Loads its values to ThresholdsState
+	 * Loads its values to ThresholdsStat382e
 	 */
 	public void uploadConstants(ThresholdsState thresh, WorldState state) {
-		
+
 		// Settings
 		state.setOurColor(ourTeam);
 		state.setDirection(shootingDirection);
@@ -322,6 +343,15 @@ public class PitchConstants {
 		thresh.setGreen_s_high(this.green_s_high / 100.0);
 		thresh.setGreen_v_low(this.green_v_low / 100.0);
 		thresh.setGreen_v_high(this.green_v_high / 100.0);
+
+		// TODO: test
+		// Goal locations
+		WorldState.leftGoalTop = leftGoalTop;
+		WorldState.leftGoalBottom = leftGoalBottom;
+		WorldState.rightGoalTop = rightGoalTop;
+		WorldState.rightGoalBottom = rightGoalBottom;
+		WorldState.leftGoalCentre = leftGoalCentre;
+		WorldState.rightGoalCentre = rightGoalCentre;
 
 	}
 
@@ -407,6 +437,14 @@ public class PitchConstants {
 		this.leftBuffer = 0;
 		this.rightBuffer = 0;
 
+		// TODO: those are random; put real values
+		// goal locations
+		this.leftGoalTop = new Point2(55, 142);
+		this.leftGoalBottom = new Point2(52, 286);
+		this.leftGoalCentre = new Point2(54, 214);
+		this.rightGoalTop = new Point2(572, 148);
+		this.rightGoalBottom = new Point2(577, 287);
+		this.rightGoalCentre = new Point2(574, 217);
 	}
 
 }
