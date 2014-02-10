@@ -106,15 +106,15 @@ public class BTConnection {
 			System.out.println("IO Exception writing bytes:");
 			System.out.println(ioe.getMessage());
 		}
-
-		try {
-			System.out.println("Received " + dis.readChar());
-			System.out.println("Received " + dis.readDouble());
-		} catch (IOException ioe) {
-			success = false;
-			System.out.println("IO Exception reading bytes:");
-			System.out.println(ioe.getMessage());
-		}
+		// removed to increase performance
+		// try {
+		// System.out.println("Received " + dis.readChar());
+		// System.out.println("Received " + dis.readDouble());
+		// } catch (IOException ioe) {
+		// success = false;
+		// System.out.println("IO Exception reading bytes:");
+		// System.out.println(ioe.getMessage());
+		// }
 		return success;
 	}
 }

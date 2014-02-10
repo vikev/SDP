@@ -1,7 +1,6 @@
 package sdp.nxj.bluetooth;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 
 import lejos.nxt.LCD;
 import lejos.nxt.comm.BTConnection;
@@ -19,88 +18,111 @@ import lejos.nxt.comm.Bluetooth;
 public class BTReceive {
 
 	public static void main(String[] args) throws Exception {
-		DiffPilot pilot = new DiffPilot();
+		try {
+			DiffPilot pilot = new DiffPilot();
 
-		String connected = "Connected";
-		String waiting = "Waiting...";
-		String closing = "Closing...";
+			String connected = "Connected";
+			String waiting = "Waiting...";
+			String closing = "Closing...";
 
-		Kicker kicker = null;
-		PneumaticKicker pneumaticKicker = null;
-
-		while (true) {
-			LCD.drawString(waiting, 0, 0);
-			LCD.refresh();
-
-			BTConnection btc = Bluetooth.waitForConnection();
-
-			LCD.clear();
-			LCD.drawString(connected, 0, 0);
-			LCD.refresh();
-
-			DataInputStream dis = btc.openDataInputStream();
-			DataOutputStream dos = btc.openDataOutputStream();
+			Kicker kicker = null;
+			PneumaticKicker pneumaticKicker = null;
 
 			while (true) {
-				try {
-					char c = dis.readChar();
-					double distance = dis.readDouble();
-					dos.writeChar(c);
-					dos.writeDouble(distance);
-					dos.flush();
-					// distance is the rotation speed in degrees per second
-					pilot.setRotateSpeed(distance);
-					switch (c) {
-					case 'f':
-						pilot.driveForward(0);
-						break;
-					case 'b':
-						pilot.driveBackward(0);
-						break;
-					case 'l':
-						pilot.turnLeft(0);
-						break;
-					case 'r':
-						pilot.turnRight(0);
-						break;
-					case 's':
-						pilot.stopNow(); // stop robot immediately
-						break;
-					case 'k':
-						if (kicker == null || !kicker.isAlive()) {
-							kicker = new Kicker(distance);
-							kicker.setDaemon(true);
-							kicker.start();
+				LCD.drawString(waiting, 0, 0);
+				LCD.refresh();
+
+				BTConnection btc = Bluetooth.waitForConnection();
+
+				LCD.clear();
+				LCD.drawString(connected, 0, 0);
+				LCD.refresh();
+
+				DataInputStream dis = btc.openDataInputStream();
+				// DataOutputStream dos = btc.openDataOutputStream();
+
+				while (true) {
+					try {
+						char c = dis.readChar();
+						double speed = dis.readDouble();
+						// if the speed is negative reverse the direction of
+						// movement
+						if (speed < 0) {
+							speed = -speed;
+							switch (c) {
+							case 'f':
+								c = 'b';
+								break;
+							case 'b':
+								c = 'f';
+								break;
+							case 'l':
+								c = 'r';
+								break;
+							case 'r':
+								c = 'l';
+								break;
+							}
 						}
-						break;
-					case 'p':
-						if (pneumaticKicker == null
-								|| !pneumaticKicker.isAlive()) {
-							pneumaticKicker = new PneumaticKicker();
-							pneumaticKicker.setDaemon(true);
-							pneumaticKicker.start();
+						// dos.writeChar(c);
+						// dos.writeDouble(speed);
+						// dos.flush();
+						// speed is the rotation speed in degrees per second
+						pilot.setRotateSpeed(speed);
+						switch (c) {
+						case 'f':
+							pilot.driveForward(0);
+							break;
+						case 'b':
+							pilot.driveBackward(0);
+							break;
+						case 'l':
+							pilot.turnLeft(0);
+							break;
+						case 'r':
+							pilot.turnRight(0);
+							break;
+						case 's':
+							pilot.stopNow(); // stop robot immediately
+							break;
+						case 'k':
+							if (kicker == null || !kicker.isAlive()) {
+								kicker = new Kicker(speed);
+								kicker.setDaemon(true);
+								kicker.start();
+							}
+							break;
+						case 'p':
+							if (pneumaticKicker == null
+									|| !pneumaticKicker.isAlive()) {
+								pneumaticKicker = new PneumaticKicker();
+								pneumaticKicker.setDaemon(true);
+								pneumaticKicker.start();
+							}
+							break;
 						}
+					} catch (Exception e) {
+						System.out.println(e.getMessage());
 						break;
 					}
-				} catch (Exception e) {
-					System.out.println(e.getMessage());
-					break;
-				}
 
+				}
+				try {
+					dis.close();
+					// dos.close();
+				} catch (Exception e) {
+					// nothing
+				}
+				pilot.stopNow();
+				Thread.sleep(100); // wait for data to drain
+				// LCD.clear();
+				LCD.drawString(closing, 0, 0);
+				LCD.refresh();
+				btc.close();
+				LCD.clear();
 			}
-			try {
-				dis.close();
-				dos.close();
-			} catch (Exception e) {
-				// nothing
-			}
-			pilot.stopNow();
-			Thread.sleep(100); // wait for data to drain
-			// LCD.clear();
-			LCD.drawString(closing, 0, 0);
-			LCD.refresh();
-			btc.close();
-			LCD.clear();
+		} catch (Exception e) {
+			System.out.println("Don't care. Restart.");
 		}
 	}
 }
