@@ -71,7 +71,7 @@ public class FutureBall {
 		double vHatY = tarY - pos.getY();
 		vHatX /= (Math.sqrt(vHatX * vHatX + vHatY * vHatY));
 		vHatY /= (Math.sqrt(vHatX * vHatX + vHatY * vHatY));
-		collision = new Point2(-1, -1);
+		collision = Point2.EMPTY;
 		if (state.getBallVelocity().modulus() > 5) {
 			while (collision.getX() == -1 && distToStop > 0) {
 				if (Vision.stateListener.pointInPitch(new Point2((int) sX,
@@ -81,7 +81,7 @@ public class FutureBall {
 				}
 				sX += vHatX;
 				sY += vHatY;
-				// distToStop -= Math.sqrt(vHatX + vHatY);
+				distToStop -= Math.sqrt(vHatX + vHatY);
 			}
 		}
 		return new Point2((int) tarX, (int) tarY);

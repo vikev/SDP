@@ -32,7 +32,7 @@ public class WorldStatePainter {
 	 * The offset at which each successive line is drawn
 	 */
 	private static final int TEXT_HEIGHT = 15;
-	
+
 	/**
 	 * the timestamp of the last run; used for FPS calculation
 	 */
@@ -158,7 +158,10 @@ public class WorldStatePainter {
 		// if pre-processing is not done yet just colour all 'white' pixels and
 		// return
 		if (!stateListener.isPreprocessed()) {
-			g.drawString("Waiting for preprocessor... " + stateListener.getKeyFrames() + "%", TEXT_OFFSET, TEXT_OFFSET);
+			g.drawString(
+					"Waiting for preprocessor... "
+							+ stateListener.getKeyFrames() + "%", TEXT_OFFSET,
+					TEXT_OFFSET);
 			for (int ix = 0; ix < Vision.WIDTH; ix++)
 				for (int iy = 0; iy < Vision.HEIGHT; iy++) {
 					cRgb = new Color(image.getRGB(ix, iy));
@@ -178,9 +181,9 @@ public class WorldStatePainter {
 				cRgb = stateListener.getNormalisedRgb(p.x, p.y);
 				cHsb = stateListener.getNormalisedHsb(p.x, p.y);
 				cRgb = getHighlightColor(cRgb, cHsb);
-				if (p instanceof Point2 && cRgb instanceof Color){
+				if (p instanceof Point2 && cRgb instanceof Color) {
 					image.setRGB(p.x, p.y, cRgb.getRGB());
-				}else{
+				} else {
 					System.out.println("Attemped to highlight null object");
 				}
 			}
@@ -202,6 +205,15 @@ public class WorldStatePainter {
 				g.drawLine(ballPos.getX(), ballPos.getY(), velocityPos.getX(),
 						velocityPos.getY());
 			}
+			
+			// futureballs
+			if(!state.getEstimatedStopPoint().equals(Point2.EMPTY)){
+				drawCircle(g, Constants.GRAY_BLEND, FutureBall.estimateRealStopPoint(),
+						Constants.ROBOT_HEAD_RADIUS);
+				if(!state.getEstimatedCollidePoint().equals(Point2.EMPTY)){
+					drawCircle(g, Constants.GRAY_BLEND, FutureBall.collision, 5);
+				}
+			}
 		}
 
 		// loop through all robots
@@ -217,7 +229,7 @@ public class WorldStatePainter {
 							Constants.ROBOT_CIRCLE_RADIUS);
 					if (!(robotFacing == Double.NaN)) {
 						Point2 nosePos = robotPos.polarOffset(ROBOT_NOSE,
-								robotFacing+180);
+								robotFacing + 180);
 						drawCircle(g, Color.WHITE, nosePos, 3);
 						g.drawLine(robotPos.x, robotPos.y, nosePos.x, nosePos.y);
 					}
@@ -235,17 +247,18 @@ public class WorldStatePainter {
 		g.drawLine(Constants.TABLE_CENTRE_X, Constants.TABLE_MIN_Y + 1,
 				Constants.TABLE_CENTRE_X, Constants.TABLE_MAX_Y - 1);
 
-		//calculate/get the different FPS
-		long nowRun = System.currentTimeMillis(); 
+		// calculate/get the different FPS
+		long nowRun = System.currentTimeMillis();
 		int drawFps = (int) (1000 / (nowRun - lastRun));
 		lastRun = nowRun;
 		int worldFps = stateListener.getCurrentFps();
 		int clockFps = stateListener.getClockFps();
-		
+
 		String sPaintFps = String.format("Paint: %2d", drawFps);
-		String sWorldFps = String.format("World: %2d / %2d", worldFps, clockFps);
-		
-		//draw FPS
+		String sWorldFps = String
+				.format("World: %2d / %2d", worldFps, clockFps);
+
+		// draw FPS
 		g.setColor(Color.white);
 		g.drawString(sPaintFps, TEXT_OFFSET, TEXT_OFFSET);
 		g.drawString(sWorldFps, TEXT_OFFSET, TEXT_OFFSET + TEXT_HEIGHT);
@@ -253,7 +266,7 @@ public class WorldStatePainter {
 		// display mouse position, RGB, and HSB values to screen (if any)
 		if (mousePos != null) {
 
-			 String colorTip = "norm";
+			String colorTip = "norm";
 			cRgb = stateListener.getNormalisedRgb(mousePos.x, mousePos.y);
 			cHsb = stateListener.getNormalisedHsb(mousePos.x, mousePos.y);
 
@@ -263,7 +276,7 @@ public class WorldStatePainter {
 			// not working, so essentially disabled for now
 			if (cRgb == null) {
 				cRgb = stateListener.getRgb(mousePos.x, mousePos.y);
-				 colorTip = "orig";
+				colorTip = "orig";
 			}
 
 			// no colours at all? all good
@@ -272,9 +285,11 @@ public class WorldStatePainter {
 			// color data displayed on screen is always normalised, so don't
 			// bother with colorTip
 			if (cRgb != null) {
-				String strPos = String.format("Pos: [%3d, %3d]", mousePos.x, mousePos.y);
+				String strPos = String.format("Pos: [%3d, %3d]", mousePos.x,
+						mousePos.y);
 				String strRgb = String.format("RGB: [%4d, %4d, %4d] (%s)",
-						cRgb.getRed(), cRgb.getGreen(), cRgb.getBlue(), colorTip);
+						cRgb.getRed(), cRgb.getGreen(), cRgb.getBlue(),
+						colorTip);
 				String strHsb = String.format("HSB: [%.2f, %.2f, %.2f]",
 						cHsb[0], cHsb[1], cHsb[2]);
 
@@ -324,7 +339,7 @@ public class WorldStatePainter {
 	public HighlightMode getHighlightMode() {
 		return highlightMode;
 	}
-	
+
 	public WorldState getWorldState() {
 		return state;
 	}

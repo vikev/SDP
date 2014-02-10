@@ -18,6 +18,19 @@ public class WorldState {
 
 	private Point2 ballLocation = new Point2();
 	private Point2 ballVelocity = new Point2();
+
+	/**
+	 * A point given by futureball as the estimated point the ball will stop,
+	 * given its current velocity and position
+	 */
+	private Point2 estimatedStopLocation = new Point2();
+
+	/**
+	 * A point given by futureball as the estimated point the ball will collide
+	 * with a wall (or goal), using the current ball velocity and location data
+	 */
+	private Point2 estimatedCollidePoint = new Point2();
+
 	private double ballFacing, ballSpeed;
 	private Point2[][] robotLoc = new Point2[TEAM_COUNT][PLAYERS_PER_TEAM];
 	private double[][] robotFacing = new double[TEAM_COUNT][PLAYERS_PER_TEAM];
@@ -190,6 +203,38 @@ public class WorldState {
 
 	public Point2 getBallVelocity() {
 		return ballVelocity;
+	}
+
+	/**
+	 * Setter method for updating the estimated ball stop point
+	 * @param pt
+	 */
+	public void setEstimatedStopPoint(Point2 pt) {
+		this.estimatedStopLocation = pt;
+	}
+	
+	/**
+	 * Setter method for updating the estimated collide point
+	 * @param pt
+	 */
+	public void setEstimatedCollisionPoint(Point2 pt) {
+		this.estimatedCollidePoint = pt;
+	}
+	
+	/**
+	 * Getter method for the estimated stop point of the ball
+	 * @return
+	 */
+	public Point2 getEstimatedStopPoint(){
+		return this.estimatedStopLocation;
+	}
+	
+	/**
+	 * Getter method for the estimated collide point of the ball
+	 * @return
+	 */
+	public Point2 getEstimatedCollidePoint(){
+		return this.estimatedCollidePoint;
 	}
 
 }
