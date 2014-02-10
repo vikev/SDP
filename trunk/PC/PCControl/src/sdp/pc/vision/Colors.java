@@ -77,8 +77,8 @@ public class Colors {
 		boolean b = Alg.withinBounds(hsb[2], 0.5f, 0.25f);
 		if(c instanceof Color ){
 			boolean rgb = 
-				c.getRed() > 100 && c.getRed() < 255 
-				&& c.getGreen() > 100 && c.getGreen() < 255
+				c.getRed() > 80 && c.getRed() < 255 
+				&& c.getGreen() > 80 && c.getGreen() < 255
 				&& c.getBlue() > 70 && c.getBlue() < 130;
 			return rgb & h & b;
 		} else {

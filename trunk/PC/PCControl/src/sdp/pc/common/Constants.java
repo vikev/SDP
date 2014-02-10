@@ -15,7 +15,7 @@ public class Constants {
 	public static final int DEFENDER = 2;
 
 	// Socket data
-	public static final int ATTACKER_PORT = 5570;
+	public static final int ATTACKER_PORT = 5581;
 	public static final int DEFENDER_PORT = 1438;
 	public static final String HOST = "localhost";
 
