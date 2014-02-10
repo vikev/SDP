@@ -65,9 +65,7 @@ public class BTReceive {
 								break;
 							}
 						}
-						if (speed == 0) {
-							speed = 5000;
-						}
+
 						// dos.writeChar(c);
 						// dos.writeDouble(speed);
 						// dos.flush();

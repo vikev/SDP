@@ -5,21 +5,29 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 /**
- * A state object that holds the constants for various values about the pitch,
- * such as thresholding values and dimension variables.
- * 
- * @author s0840449
+ * An instance of various calibrated pitch values such as thresholds and
+ * dimension points.
  */
 public class PitchConstants {
 
-	/** The pitch number. 0 is the main pitch, 1 is the side pitch. */
+	/**
+	 * The pitch number. 0 is the main pitch, 1 is the side pitch. TODO: Should
+	 * be abstracted
+	 */
 	private int pitchNum;
 
-	/* Settings */
-	public int ourTeam; // 0 = Yellow; 1 = Blue
-	public int shootingDirection; // 0 = Left; 1 = Right
+	/**
+	 * Our team number. 0 for Yellow, 1 for Blue. TODO: Should be abstracted
+	 */
+	public int ourTeam;
 
-	/* Ball */
+	/**
+	 * Our shooting direction. 0 for Left, 1 for RIght. TODO: Should be
+	 * abstracted
+	 */
+	public int shootingDirection;
+
+	// Ball threshold values
 	public int ball_r_low;
 	public int ball_r_high;
 	public int ball_g_low;
@@ -33,7 +41,7 @@ public class PitchConstants {
 	public int ball_v_low;
 	public int ball_v_high;
 
-	/* Blue Robot */
+	// Blue robot threshold values
 	public int blue_r_low;
 	public int blue_r_high;
 	public int blue_g_low;
@@ -47,7 +55,7 @@ public class PitchConstants {
 	public int blue_v_low;
 	public int blue_v_high;
 
-	/* Yellow Robot */
+	// Yellow robot threshold values
 	public int yellow_r_low;
 	public int yellow_r_high;
 	public int yellow_g_low;
@@ -61,7 +69,7 @@ public class PitchConstants {
 	public int yellow_v_low;
 	public int yellow_v_high;
 
-	/* Grey Circles */
+	// Gray circle threshold values
 	public int grey_r_low;
 	public int grey_r_high;
 	public int grey_g_low;
@@ -75,7 +83,7 @@ public class PitchConstants {
 	public int grey_v_low;
 	public int grey_v_high;
 
-	/* Green plates */
+	// Green plate threshold values
 	public int green_r_low;
 	public int green_r_high;
 	public int green_g_low;
@@ -89,19 +97,13 @@ public class PitchConstants {
 	public int green_v_low;
 	public int green_v_high;
 
-	/*
-	 * Pitch dimensions: When scanning the pitch we look at pixels starting from
-	 * 0 + topBuffer and 0 + leftBuffer, and then scan to pixels at 480 -
-	 * bottomBuffer and 640 - rightBuffer.
-	 */
+	// Pitch dimensions. TODO: Are all of these used?
 	public int topBuffer;
 	public int bottomBuffer;
 	public int leftBuffer;
 	public int rightBuffer;
 
-	/*
-	 * Location of the goals
-	 */
+	// Locations of goals
 	private Point2 leftGoalTop;
 	private Point2 leftGoalBottom;
 	private Point2 rightGoalTop;
@@ -117,9 +119,8 @@ public class PitchConstants {
 	 */
 	public PitchConstants(int pitchNum) {
 
-		/* Just call the setPitchNum method to load in the constants. */
+		// Just call the setPitchNum method to load in the constants.
 		setPitchNum(pitchNum);
-
 	}
 
 	/**
@@ -135,13 +136,13 @@ public class PitchConstants {
 
 		this.pitchNum = newPitchNum;
 
+		// TODO: File location should be abstracted
 		loadConstants("./pitch" + pitchNum);
-
 	}
 
 	/**
-	 * Load in the constants from a file. Note that this assumes that the
-	 * constants file is well formed.
+	 * Load in the constants from a file. <b>Note that this assumes that the
+	 * constants file is well formed.</b>
 	 * 
 	 * @param fileName
 	 *            The file name to load constants from.
@@ -161,13 +162,13 @@ public class PitchConstants {
 
 		assert (scanner != null);
 
-		/* We assume that the file is well formed. */
+		// Assuming that the file is well formed.
 
-		/* Settings */
+		// Begin retrieving settings from file
 		this.ourTeam = scanner.nextInt();
 		this.shootingDirection = scanner.nextInt();
 
-		/* Ball */
+		// Ball thresholds
 		this.ball_r_low = scanner.nextInt();
 		this.ball_r_high = scanner.nextInt();
 		this.ball_g_low = scanner.nextInt();
@@ -181,7 +182,7 @@ public class PitchConstants {
 		this.ball_v_low = scanner.nextInt();
 		this.ball_v_high = scanner.nextInt();
 
-		/* Blue Robot */
+		// Blue robot thresholds
 		this.blue_r_low = scanner.nextInt();
 		this.blue_r_high = scanner.nextInt();
 		this.blue_g_low = scanner.nextInt();
@@ -195,7 +196,7 @@ public class PitchConstants {
 		this.blue_v_low = scanner.nextInt();
 		this.blue_v_high = scanner.nextInt();
 
-		/* Yellow Robot */
+		// Yellow robot thresholds
 		this.yellow_r_low = scanner.nextInt();
 		this.yellow_r_high = scanner.nextInt();
 		this.yellow_g_low = scanner.nextInt();
@@ -209,7 +210,7 @@ public class PitchConstants {
 		this.yellow_v_low = scanner.nextInt();
 		this.yellow_v_high = scanner.nextInt();
 
-		/* Grey Circles */
+		// Gray circle thresholds
 		this.grey_r_low = scanner.nextInt();
 		this.grey_r_high = scanner.nextInt();
 		this.grey_g_low = scanner.nextInt();
@@ -223,7 +224,7 @@ public class PitchConstants {
 		this.grey_v_low = scanner.nextInt();
 		this.grey_v_high = scanner.nextInt();
 
-		/* Green Plates */
+		// Green plate thresholds
 		this.green_r_low = scanner.nextInt();
 		this.green_r_high = scanner.nextInt();
 		this.green_g_low = scanner.nextInt();
@@ -237,36 +238,43 @@ public class PitchConstants {
 		this.green_v_low = scanner.nextInt();
 		this.green_v_high = scanner.nextInt();
 
-		// TODO: test!!!
-		Point2 pa = new Point2(scanner.nextInt(), scanner.nextInt());
-		Point2 pb = new Point2(scanner.nextInt(), scanner.nextInt());
-		WorldStateListener.resetBoundary(); // just in case
-		WorldStateListener.addBoundary(pa); // order doesn't matter
-		WorldStateListener.addBoundary(pb);
+		// Order of boundary adding not important (As long as the points are top
+		// left and bottom right
+		Point2 boundary1 = new Point2(scanner.nextInt(), scanner.nextInt());
+		Point2 boudnary2 = new Point2(scanner.nextInt(), scanner.nextInt());
 
-		/* Pitch Dimensions */
-		// TODO: test
+		// Reset boundary "just in case"
+		WorldStateListener.resetBoundary();
+		WorldStateListener.addBoundary(boundary1);
+		WorldStateListener.addBoundary(boudnary2);
+
+		// Set pitch dimensions
 		this.topBuffer = scanner.nextInt();
 		this.bottomBuffer = scanner.nextInt();
 		this.leftBuffer = scanner.nextInt();
 		this.rightBuffer = scanner.nextInt();
+
+		// Set goal positions
 		this.leftGoalTop = new Point2(scanner.nextInt(), scanner.nextInt());
 		this.leftGoalBottom = new Point2(scanner.nextInt(), scanner.nextInt());
 		this.rightGoalTop = new Point2(scanner.nextInt(), scanner.nextInt());
 		this.rightGoalBottom = new Point2(scanner.nextInt(), scanner.nextInt());
 
+		// Calculate goal centres from goal boundaries
 		this.leftGoalCentre = new Point2(
 				(int) (this.leftGoalTop.getX() + this.leftGoalBottom.getX()) / 2,
 				(int) (this.leftGoalTop.getY() + this.leftGoalBottom.getY()) / 2);
 		this.rightGoalCentre = new Point2(
 				(int) (this.rightGoalTop.getX() + this.rightGoalBottom.getX()) / 2,
 				(int) (this.rightGoalTop.getY() + this.rightGoalBottom.getY()) / 2);
+
+		// Finally, close the scanner
 		if (scanner != null)
 			scanner.close();
 	}
 
 	/**
-	 * Loads its values to ThresholdsStat382e
+	 * Push thresholds to the requested file
 	 */
 	public void uploadConstants(ThresholdsState thresh, WorldState state) {
 
@@ -344,7 +352,6 @@ public class PitchConstants {
 		thresh.setGreen_v_low(this.green_v_low / 100.0);
 		thresh.setGreen_v_high(this.green_v_high / 100.0);
 
-		// TODO: test
 		// Goal locations
 		WorldState.leftGoalTop = leftGoalTop;
 		WorldState.leftGoalBottom = leftGoalBottom;
@@ -352,7 +359,6 @@ public class PitchConstants {
 		WorldState.rightGoalBottom = rightGoalBottom;
 		WorldState.leftGoalCentre = leftGoalCentre;
 		WorldState.rightGoalCentre = rightGoalCentre;
-
 	}
 
 	/**
@@ -361,7 +367,7 @@ public class PitchConstants {
 	 */
 	public void loadDefaultConstants() {
 
-		/* Ball */
+		// Ball thresholds
 		this.ball_r_low = 0;
 		this.ball_r_high = 255;
 		this.ball_g_low = 0;
@@ -375,7 +381,7 @@ public class PitchConstants {
 		this.ball_v_low = 0;
 		this.ball_v_high = 10;
 
-		/* Blue Robot */
+		// Blue robot thresholds
 		this.blue_r_low = 0;
 		this.blue_r_high = 255;
 		this.blue_g_low = 0;
@@ -389,7 +395,7 @@ public class PitchConstants {
 		this.blue_v_low = 0;
 		this.blue_v_high = 10;
 
-		/* Yellow Robot */
+		// Yellow robot thresholds
 		this.yellow_r_low = 0;
 		this.yellow_r_high = 255;
 		this.yellow_g_low = 0;
@@ -403,7 +409,7 @@ public class PitchConstants {
 		this.yellow_v_low = 0;
 		this.yellow_v_high = 10;
 
-		/* Grey Circles */
+		// Grey circle thresholds
 		this.grey_r_low = 0;
 		this.grey_r_high = 255;
 		this.grey_g_low = 0;
@@ -417,7 +423,7 @@ public class PitchConstants {
 		this.grey_v_low = 0;
 		this.grey_v_high = 10;
 
-		/* Green plates */
+		// Green plate thresholds
 		this.green_r_low = 0;
 		this.green_r_high = 255;
 		this.green_g_low = 0;
@@ -431,20 +437,20 @@ public class PitchConstants {
 		this.green_v_low = 0;
 		this.green_v_high = 10;
 
-		/* Pitch Dimensions */
+		// Pitch dimensions
 		this.topBuffer = 0;
 		this.bottomBuffer = 0;
 		this.leftBuffer = 0;
 		this.rightBuffer = 0;
 
-		// TODO: those are random; put real values
-		// goal locations
-		this.leftGoalTop = new Point2(55, 142);
-		this.leftGoalBottom = new Point2(52, 286);
-		this.leftGoalCentre = new Point2(54, 214);
-		this.rightGoalTop = new Point2(572, 148);
-		this.rightGoalBottom = new Point2(577, 287);
-		this.rightGoalCentre = new Point2(574, 217);
+		// Default goal locations; I've calibrated this manually for the main
+		// pitch -s1143704
+		this.leftGoalTop = new Point2(59, 148);
+		this.leftGoalBottom = new Point2(56, 287);
+		this.leftGoalCentre = new Point2(55, 218);
+		this.rightGoalTop = new Point2(573, 150);
+		this.rightGoalBottom = new Point2(575, 287);
+		this.rightGoalCentre = new Point2(574, 222);
 	}
 
 }
