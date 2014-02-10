@@ -124,10 +124,12 @@ public class Milestone3def {
 		// Get predicted ball position (Y value) when it will come to
 		// defender's side
 		Point2 predBallPos = FutureBall.estimateBallPositionWhen(
-				position, facing, robotPosition.getX());
-
+				position, facing, robotPosition, DEF_ROBOT);
+		System.out.println(predBallPos);
 		// Move robot to this position
-		goTo(state, driver, predBallPos);
+		if (predBallPos.getY() != 0) {
+			goTo(state, driver, predBallPos);
+		}
 	}
 	
 	public static void defendIfNoAttacker(WorldState state, Driver driver)
@@ -209,8 +211,8 @@ public class Milestone3def {
 			Point2 to, double epsilon) throws Exception {
 		Point2 robLoc = state.getRobotPosition(DEF_TEAM, DEF_ROBOT);
 		while (robLoc.distance(to) >= epsilon) {
-			System.out.println(robLoc.distance(to)-epsilon);
-			driver.forward(400);
+			//System.out.println(robLoc.distance(to)-epsilon);
+			driver.forward(100);
 			Thread.sleep(100);
 			robLoc = state.getRobotPosition(DEF_TEAM,  DEF_ROBOT);
 		}
@@ -244,7 +246,6 @@ public class Milestone3def {
 			} else {
 				goal_centre = state.getRightGoalCentre();
 			}
-			System.out.println(goal_centre);
 			if((Math.abs(botPos.getX() - goal_centre.getX())) > SAFE_DIST_FROM_GOAL){
 				if (turnTo(state, driver, goal_centre)) {
 					if (goTo(state, driver, goal_centre)) {

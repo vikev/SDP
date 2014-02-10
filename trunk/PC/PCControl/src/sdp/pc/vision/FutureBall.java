@@ -87,13 +87,36 @@ public class FutureBall {
 		return new Point2((int) tarX, (int) tarY);
 	}
 
-	// TODO Implement this such that by given the position and facing of the
-	// attacker
-	// and the X-value of the defender robot's position
-	// estimateBallPositionWhen returns Y-value where the ball should be when
-	// robotPositionX == ballPosition.getX()
-	public static Point2 estimateBallPositionWhen(Point2 attPosition,
-			double attFacing, double robotPositionX) {
-		return new Point2((int)robotPositionX, 282);
+	public static Point2 estimateBallPositionWhen(Point2 position,
+			double facing, Point2 robotPosition, int def) {
+		double a = facing;
+		if (a > 180) {
+			a = 360 - a;
+		}
+		if (a > 90) {
+			a = 180 - a;
+		}
+		//calculate the distance robot needs to move to cut off the ball
+		double betweenBallAndDefender = position.distance(robotPosition);
+		double distanceToMove = betweenBallAndDefender * Math.tan(a);
+		double newY;
+		if (facing > 180) {
+			newY = robotPosition.getY() + distanceToMove; 
+		} else {
+			newY = robotPosition.getY() - distanceToMove;
+		}
+		Point2 goal_top;
+		Point2 goal_bottom;
+		if (def == 0) {
+			goal_top = state.leftGoalTop;
+			goal_bottom = state.leftGoalBottom;
+		} else {
+			goal_top = state.rightGoalTop;
+			goal_bottom = state.rightGoalBottom;
+		}
+		if (goal_top.getY() > newY || goal_bottom.getY() < newY) {
+			newY = 0;
+		}
+		return new Point2((int)robotPosition.getX(), (int)newY);
 	}
 }
