@@ -74,7 +74,7 @@ public class TCPClient {
 							toServer.println("k");
 							break;
 						}
-						toServer.println(200);
+						toServer.println(2222);
 					}
 				}
 
