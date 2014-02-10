@@ -26,6 +26,7 @@ public class BTReceive {
 			String closing = "Closing...";
 
 			Kicker kicker = null;
+			KickerAtt kickerAtt = null;
 			PneumaticKicker pneumaticKicker = null;
 
 			while (true) {
@@ -64,6 +65,9 @@ public class BTReceive {
 								break;
 							}
 						}
+						if (speed == 0) {
+							speed = 5000;
+						}
 						// dos.writeChar(c);
 						// dos.writeDouble(speed);
 						// dos.flush();
@@ -93,11 +97,10 @@ public class BTReceive {
 							}
 							break;
 						case 'p':
-							if (pneumaticKicker == null
-									|| !pneumaticKicker.isAlive()) {
-								pneumaticKicker = new PneumaticKicker();
-								pneumaticKicker.setDaemon(true);
-								pneumaticKicker.start();
+							if (kickerAtt == null || !kickerAtt.isAlive()) {
+								kickerAtt = new KickerAtt(speed);
+								kickerAtt.setDaemon(true);
+								kickerAtt.start();
 							}
 							break;
 						}
