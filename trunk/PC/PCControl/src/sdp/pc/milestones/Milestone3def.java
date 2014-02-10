@@ -37,10 +37,14 @@ public class Milestone3def {
 	private static WorldState state = new WorldState();
 
 	// Yellow = Team 0; Blue = Team 1
+	// Robot on the left - 0; robot on the right - 1
 	private static int DEF_TEAM = 0, ATT_TEAM = 0, ATT_ROBOT = 1,
 			DEF_ROBOT = 0, SAFE_ANGLE = 10, SAFE_DIS = 1000;
+	
+	private static Point2 DEF_GOAL_CENTRE = Constants.LEFT_GOAL_CENTRE;
 
 	private static double NEAR_EPSILON = 20;
+	private static double SAFE_DIST_FROM_GOAL = 20;
 
 	/**
 	 * Main method which executes M3def
@@ -194,7 +198,7 @@ public class Milestone3def {
 
 	public static boolean assertFacing(WorldState state,
 			Driver driver, double deg, double epsilon) {
-		double rotateBy = normalizeToBiDirection(state.getRobotFacing(0,1) - deg);
+		double rotateBy = normalizeToBiDirection(state.getRobotFacing(DEF_TEAM, DEF_ROBOT) - deg);
 		try {
 			double speed = getRotateSpeed(rotateBy, epsilon);
 			if (rotateBy > epsilon) {
@@ -224,7 +228,7 @@ public class Milestone3def {
 
 	public static boolean turnTo(WorldState state,
 			Driver driver, Point2 to) {
-		double ang = normalizeToUnitDegrees(state.getRobotPosition(0,1).angleTo(to));;
+		double ang = normalizeToUnitDegrees(state.getRobotPosition(DEF_TEAM, DEF_ROBOT).angleTo(to));;
 		if (assertFacing(state, driver, ang, SAFE_ANGLE)) {
 			return true;
 		}
@@ -239,23 +243,17 @@ public class Milestone3def {
 		return false;
 	}
 
-	public static void goToGoalLine(WorldState state, Vision vision,
-			Driver driver) {
-
-	}
-
 	public static boolean assertNearGoalLine(WorldState state, Vision vision,
 			Driver driver) {
 		try {
 			Point2 botPos = state.getRobotPosition(DEF_TEAM, DEF_ROBOT);
-			if(botPos.distance(Constants.LEFT_GOAL_CENTRE.add(new Point2(20,0)))>20){
-				if (turnTo(state, driver, Constants.LEFT_GOAL_CENTRE)) {
-					if (goTo(state, vision, driver,
-							Constants.LEFT_GOAL_CENTRE.add(new Point2(20, 0)))) {
+			if(botPos.distance(DEF_GOAL_CENTRE) > SAFE_DIST_FROM_GOAL){
+				if (turnTo(state, driver, DEF_GOAL_CENTRE)) {
+					if (goTo(state, vision, driver, DEF_GOAL_CENTRE)) {
 						return true;
 					}
 				}
-			}else{
+			} else {
 				return true;
 			}
 		} catch (Exception e) {
