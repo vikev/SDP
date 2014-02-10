@@ -36,12 +36,12 @@ public class WorldState {
 	private double[][] robotFacing = new double[TEAM_COUNT][PLAYERS_PER_TEAM];
 
 	// Those are assigned on start either from default value or config file
-	public static Point2 leftGoalTop;
-	public static Point2 leftGoalBottom;
-	public static Point2 rightGoalTop;
-	public static Point2 rightGoalBottom;
-	public static Point2 leftGoalCentre;
-	public static Point2 rightGoalCentre;
+	public static Point2 leftGoalTop=new Point2();
+	public static Point2 leftGoalBottom=new Point2();
+	public static Point2 rightGoalTop=new Point2();
+	public static Point2 rightGoalBottom=new Point2();
+	public static Point2 leftGoalCentre=new Point2();
+	public static Point2 rightGoalCentre=new Point2();
 
 	public WorldState() {
 
@@ -70,11 +70,22 @@ public class WorldState {
 
 	// const getters
 	public Point2 getLeftGoalCentre() {
-		return Constants.LEFT_GOAL_CENTRE;
+		if (leftGoalCentre == null) {
+			leftGoalCentre = new Point2(
+					(int) (leftGoalTop.getX() + leftGoalBottom.getX()) / 2,
+					(int) (leftGoalTop.getY() + leftGoalBottom.getY()) / 2);
+		}
+		return leftGoalCentre;
+
 	}
 
 	public Point2 getRightGoalCentre() {
-		return Constants.RIGHT_GOAL_CENTRE;
+		if (rightGoalCentre == null) {
+			rightGoalCentre = new Point2(
+					(int) (rightGoalTop.getX() + rightGoalBottom.getX()) / 2,
+					(int) (rightGoalTop.getY() + rightGoalBottom.getY()) / 2);
+		}
+		return rightGoalCentre;
 	}
 
 	/**
@@ -207,33 +218,37 @@ public class WorldState {
 
 	/**
 	 * Setter method for updating the estimated ball stop point
+	 * 
 	 * @param pt
 	 */
 	public void setEstimatedStopPoint(Point2 pt) {
 		this.estimatedStopLocation = pt;
 	}
-	
+
 	/**
 	 * Setter method for updating the estimated collide point
+	 * 
 	 * @param pt
 	 */
 	public void setEstimatedCollisionPoint(Point2 pt) {
 		this.estimatedCollidePoint = pt;
 	}
-	
+
 	/**
 	 * Getter method for the estimated stop point of the ball
+	 * 
 	 * @return
 	 */
-	public Point2 getEstimatedStopPoint(){
+	public Point2 getEstimatedStopPoint() {
 		return this.estimatedStopLocation;
 	}
-	
+
 	/**
 	 * Getter method for the estimated collide point of the ball
+	 * 
 	 * @return
 	 */
-	public Point2 getEstimatedCollidePoint(){
+	public Point2 getEstimatedCollidePoint() {
 		return this.estimatedCollidePoint;
 	}
 
