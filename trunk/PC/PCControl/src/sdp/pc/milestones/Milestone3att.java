@@ -210,11 +210,11 @@ public class Milestone3att {
 			intermediateX = ballPosition.getX() - SAFE_DIST;
 		}if (state.getDirection() == Constants.DIRECTION_LEFT){
 			newEndPointX = ballTargetPoint.getX() - 2*diffX;
-			intermediateX = + SAFE_DIST;
+			intermediateX = ballPosition.getX() + SAFE_DIST;
 		}
 		Point2 endPoint = new Point2(newEndPointX, ballTargetPoint.getY());
-		double gradient = calculateGradient(newEndPointX, ballTargetPoint.getY(), ballPosition.getX(), ballPosition.getY()); 
-		int intermediateY = (int) Math.floor(gradient*intermediateX); 
+		double gradient = calculateGradient(newEndPointX, (ballTargetPoint.getY()*(-1)), ballPosition.getX(), (ballPosition.getY()*(-1))); 
+		int intermediateY = (int) Math.floor((-1)*gradient*intermediateX); 
 		Point2 intermediatePoint = new Point2(intermediateX, intermediateY);
 		return intermediatePoint;
 	}
