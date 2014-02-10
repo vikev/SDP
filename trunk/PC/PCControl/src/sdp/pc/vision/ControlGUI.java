@@ -910,9 +910,9 @@ public class ControlGUI implements ChangeListener {
 		}
 		/* Update the world state. */
 		if (pitch_0.isSelected()) {
-			worldState.setPitch(0);
+			worldState.setPitchId(0);
 		} else {
-			worldState.setPitch(1);
+			worldState.setPitchId(1);
 		}
 		if (colour_yellow.isSelected()) {
 			worldState.setOurColor(0);

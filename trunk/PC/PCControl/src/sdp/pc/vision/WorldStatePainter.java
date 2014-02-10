@@ -147,6 +147,8 @@ public class WorldStatePainter {
 	 * 
 	 * @param image
 	 *            the image to draw the overlay on
+	 * @param mousePos
+	 * 				the current cursor position used to print pixel data
 	 */
 	public void drawWorld(BufferedImage image, Point2 mousePos) {
 		Graphics g = image.getGraphics();
@@ -236,11 +238,8 @@ public class WorldStatePainter {
 				}
 			}
 
-		// TODO: Check all that unknown (???) code below
 
-		// // ???
-		// angSmoothingWriteIndex++;
-		// angSmoothingWriteIndex %= ANGLE_SMOOTHING_FRAME_COUNT;
+		
 
 		// draw centre line
 		g.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
@@ -254,6 +253,7 @@ public class WorldStatePainter {
 		int worldFps = stateListener.getCurrentFps();
 		int clockFps = stateListener.getClockFps();
 
+		
 		String sPaintFps = String.format("Paint: %2d", drawFps);
 		String sWorldFps = String
 				.format("World: %2d / %2d", worldFps, clockFps);
@@ -266,6 +266,8 @@ public class WorldStatePainter {
 		// display mouse position, RGB, and HSB values to screen (if any)
 		if (mousePos != null) {
 
+			
+			
 			String colorTip = "norm";
 			cRgb = stateListener.getNormalisedRgb(mousePos.x, mousePos.y);
 			cHsb = stateListener.getNormalisedHsb(mousePos.x, mousePos.y);
@@ -273,7 +275,6 @@ public class WorldStatePainter {
 			// no normalised colours for this area
 			// as it is not calculated for points outside the pitch
 			// => use originals
-			// not working, so essentially disabled for now
 			if (cRgb == null) {
 				cRgb = stateListener.getRgb(mousePos.x, mousePos.y);
 				colorTip = "orig";
@@ -281,12 +282,19 @@ public class WorldStatePainter {
 
 			// no colours at all? all good
 			// ps. should it happen at all?
-
-			// color data displayed on screen is always normalised, so don't
-			// bother with colorTip
 			if (cRgb != null) {
+				
+				//get attacker/defender zone
+				String sAtkDef = "";
+				Pitch pitch = state.getPitch();
+				if(pitch.isPointInAttackerZone(mousePos))
+					sAtkDef += " (A)";
+				if(pitch.isPointInDefenderZone(mousePos))
+					sAtkDef += " (D)";
+				
+				//get position, rgb, hsb
 				String strPos = String.format("Pos: [%3d, %3d]", mousePos.x,
-						mousePos.y);
+						mousePos.y) + sAtkDef;
 				String strRgb = String.format("RGB: [%4d, %4d, %4d] (%s)",
 						cRgb.getRed(), cRgb.getGreen(), cRgb.getBlue(),
 						colorTip);

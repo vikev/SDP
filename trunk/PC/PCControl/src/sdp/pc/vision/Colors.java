@@ -70,17 +70,21 @@ public class Colors {
 	 * @return True if the RGB and HSV values are within the defined thresholds
 	 *         (and thus the pixel is part of white tape), false otherwise.
 	 */
-	@SuppressWarnings("unused")
 	public static boolean isWhite(Color c, float[] hsb) {
-		boolean h = Alg.withinBounds(hsb[0], 0.10f, 0.10f);
-		boolean s = Alg.withinBounds(hsb[1], 0.15f, 0.15f);
-		boolean b = Alg.withinBounds(hsb[2], 0.5f, 0.25f);
-		if(c instanceof Color ){
+		boolean h = Alg.withinBounds(hsb[0], 0.0f, 1f);
+		boolean s = Alg.withinBounds(hsb[1], 0.05f, 0.3f);
+		boolean b = Alg.withinBounds(hsb[2], 0.65f, 0.7f);
+		if(c != null){
+			final int delta = 50;
+			int r = c.getRed();
+			int g = c.getGreen();
+			int bl = c.getBlue();
 			boolean rgb = 
-				c.getRed() > 100 && c.getRed() < 255 
-				&& c.getGreen() > 100 && c.getGreen() < 255
-				&& c.getBlue() > 70 && c.getBlue() < 130;
-			return rgb & h & b;
+				Math.abs(r - g) < delta &&
+				Math.abs(r - bl) < delta &&
+				Math.abs(bl - g) < delta &&
+				r > 90;
+			return rgb & h & s & b;
 		} else {
 			return false;
 		}

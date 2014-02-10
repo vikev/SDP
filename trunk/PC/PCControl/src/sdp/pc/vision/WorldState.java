@@ -1,7 +1,5 @@
 package sdp.pc.vision;
 
-import sdp.pc.common.Constants;
-
 /**
  * Class for recording and maintaining the positions and facing angles of
  * objects in "world". Must be instantiated.
@@ -22,10 +20,10 @@ public class WorldState {
 	public static final int TEAM_COUNT = 2;
 
 	/**
-	 * The pitch associated with this instance of WorldState. 0 for Main, 1 for
+	 * The pitch ID associated with this instance of WorldState. 0 for Main, 1 for
 	 * side (TODO: Should be abstracted)
 	 */
-	private int pitch;
+	private int pitchId;
 
 	/**
 	 * The colour of our team in this instance of WorldState. 0 for Yellow, 1
@@ -45,6 +43,11 @@ public class WorldState {
 	 */
 	private Point2 ballLocation = new Point2();
 
+	/**
+	 * The current pitch info for this world
+	 */
+	private final Pitch pitch = new Pitch();
+	
 	/**
 	 * The best known velocity of the ball in <b>this</b>. It is reset to
 	 * Point2.EMPTY when unknown. Note that Point2 is used because x,y refer to
@@ -261,16 +264,16 @@ public class WorldState {
 	 * Set which pitch we're playing on (0 is Main, 1 is Side) TODO: Should be
 	 * abstracted
 	 */
-	public void setPitch(int pitch) {
-		this.pitch = pitch;
+	public void setPitchId(int pitchId) {
+		this.pitchId = pitchId;
 	}
 
 	/**
 	 * Get which pitch we're playing on (0 is Main, 1 is Side) TODO: Should be
 	 * abstracted
 	 */
-	public int getPitch() {
-		return pitch;
+	public int getPitchId() {
+		return pitchId;
 	}
 
 	/**
@@ -375,5 +378,12 @@ public class WorldState {
 	 */
 	public Point2 getEstimatedCollidePoint() {
 		return this.estimatedCollidePoint;
+	}
+
+	/**
+	 * Gets the current pitch object associated with this world state
+	 */
+	public Pitch getPitch() {
+		return pitch;
 	}
 }

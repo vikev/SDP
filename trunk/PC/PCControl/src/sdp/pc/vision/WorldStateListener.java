@@ -352,6 +352,7 @@ public abstract class WorldStateListener implements Runnable {
 		}
 	}
 
+	
 	/**
 	 * Does initial preprocessing on the image, executed only once. Calculates
 	 * game field hull and normalised colours
@@ -362,6 +363,7 @@ public abstract class WorldStateListener implements Runnable {
 		// highly distorted)
 		if (++keyframe >= FRAME_IGNORE_COUNT && hasBoundary()) {
 
+			
 			// get boundary
 			Point2 pa = boundaryPoints[0], pb = boundaryPoints[1];
 			int minX = Math.min(pa.x, pb.x), maxX = Math.max(pa.x, pb.x), minY = Math
@@ -409,9 +411,14 @@ public abstract class WorldStateListener implements Runnable {
 						currentRgb[x][y] = null;
 				}
 			}
+			
+			
+			//get pitch
+			state.getPitch().Initialize();
+			
 			preprocessed = true;
 			System.out
-					.println("WorldStateListener: preprocessed image, beginning normalised colour and object recognition.");
+					.println("WorldStateListener: preprocessed image, beginning object recognition.");
 		}
 
 	}

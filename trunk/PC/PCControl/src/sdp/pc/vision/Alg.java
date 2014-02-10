@@ -175,4 +175,37 @@ public class Alg {
 	public static boolean isInHull(LinkedList<Point2> borderPoints, Point2 p) {
 		return isInHull(borderPoints, p.x, p.y);
 	}
+	
+	public static ArrayList<Point2>[] getIntervals(int[] vals, int minSize, int... margins) {
+		@SuppressWarnings("unchecked")	//no generic arrays
+		ArrayList<Point2>[] ans = new ArrayList[margins.length];
+		for(int i = 0; i < margins.length; i++)
+			ans[i] = new ArrayList<Point2>();
+		
+		int state = 0,
+			newState = 0,
+			stateStart = 0;
+		for(int i = 0; i < vals.length; i++) {
+			newState = getIntervalState(margins, vals[i]);
+			if(state == newState)
+				continue;
+			
+			if(state > 0 && i - stateStart > minSize ) {
+				ans[state - 1].add(new Point2(stateStart, i - 1));
+			}
+			stateStart = i;
+			
+
+			state = newState;
+		}
+		return ans;
+	}
+	
+	private static int getIntervalState(int[] margins, int val) {
+		int i = 0;
+		while(i < margins.length && margins[i] < val)
+			i++;
+		return i;
+	}
+	
 }
