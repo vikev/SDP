@@ -89,9 +89,14 @@ public class Milestone3def {
 			// * * cut off the attacking robot w.r.t. the goal
 			// - - else:
 			// * * cut off the ball w.r.t the goal
-			if (assertNearGoalLine(state, vision, driver)) {
-				if (assertPerpendicular(state, vision, driver)) {
+			if (assertNearGoalLine(state, driver)) {
+				if (assertPerpendicular(state, driver)) {
 					if (state.getBallSpeed() > BALL_SPEED_THRESHOLD) {
+						// Get predicted ball position (Y value) when it will come to
+						// defender's side
+						//double predBallPos = FutureBall.estimateBallPositionWhen(
+						//		attPosition, attFacing, robotPosition.getX());
+					} else {
 
 					}
 				}
@@ -124,7 +129,7 @@ public class Milestone3def {
 
 		// At the beginning make sure that robot is facing perpendicular to
 		// edges
-		assertPerpendicular(state, vision, driver);
+		assertPerpendicular(state, driver);
 
 		if (state.getBallFacing() == -1) {
 			// Get the facing direction of the attacking robot
@@ -215,8 +220,8 @@ public class Milestone3def {
 		return false;
 	}
 
-	public static boolean assertNear(WorldState state, Vision vision,
-			Driver driver, Point2 to, double epsilon) throws Exception {
+	public static boolean assertNear(WorldState state, Driver driver, 
+			Point2 to, double epsilon) throws Exception {
 		Point2 robLoc = state.getRobotPosition(DEF_TEAM, DEF_ROBOT);
 		if (robLoc.distance(to) < epsilon) {
 			driver.stop();
@@ -235,21 +240,20 @@ public class Milestone3def {
 		return false;
 	}
 
-	public static boolean goTo(WorldState state, Vision vision, Driver driver,
+	public static boolean goTo(WorldState state, Driver driver,
 			Point2 to) throws Exception {
-		if (assertNear(state, vision, driver, to, NEAR_EPSILON)) {
+		if (assertNear(state, driver, to, NEAR_EPSILON)) {
 			return true;
 		}
 		return false;
 	}
 
-	public static boolean assertNearGoalLine(WorldState state, Vision vision,
-			Driver driver) {
+	public static boolean assertNearGoalLine(WorldState state, Driver driver) {
 		try {
 			Point2 botPos = state.getRobotPosition(DEF_TEAM, DEF_ROBOT);
 			if(botPos.distance(DEF_GOAL_CENTRE) > SAFE_DIST_FROM_GOAL){
 				if (turnTo(state, driver, DEF_GOAL_CENTRE)) {
-					if (goTo(state, vision, driver, DEF_GOAL_CENTRE)) {
+					if (goTo(state, driver, DEF_GOAL_CENTRE)) {
 						return true;
 					}
 				}
@@ -273,7 +277,7 @@ public class Milestone3def {
 	 * @return
 	 * @throws Exception 
 	 */
-	public static boolean assertPerpendicular(WorldState state, Vision vision,
+	public static boolean assertPerpendicular(WorldState state,
 			Driver driver) throws Exception {
 
 		// Calculate which angle is the closest perpendicular one
@@ -320,7 +324,7 @@ public class Milestone3def {
 						driver.backward(driveBy);
 					}
 				} else {
-					assertPerpendicular(state, vision, driver);
+					assertPerpendicular(state, driver);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
