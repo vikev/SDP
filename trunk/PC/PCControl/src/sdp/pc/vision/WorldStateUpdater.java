@@ -167,10 +167,16 @@ public class WorldStateUpdater extends WorldStateListener {
 			ballPastPos.addFirst(ballPos);
 			if (ballPastPos.size() > PAST_BALL_POSITIONS)
 				ballPastPos.removeLast();
+			
+			// Update estimated stop/collide points
+			state.setEstimatedStopPoint(FutureBall.estimateRealStopPoint());
+			state.setEstimatedCollisionPoint(FutureBall.collision);
 		} else {
 			// If the ball position doesn't exist, update world state
 			// accordingly.
 			state.setBallPosition(Point2.EMPTY);
+			state.setEstimatedStopPoint(Point2.EMPTY);
+			state.setEstimatedCollisionPoint(Point2.EMPTY);
 		}
 
 		// loop through teams' robots
