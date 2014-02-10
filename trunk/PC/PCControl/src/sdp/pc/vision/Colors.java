@@ -72,13 +72,13 @@ public class Colors {
 	 */
 	@SuppressWarnings("unused")
 	public static boolean isWhite(Color c, float[] hsb) {
-		boolean h = Alg.withinBounds(hsb[0], 0.05f, 0.05f);
-		boolean s = Alg.withinBounds(hsb[1], 0.3f, 0.15f);
-		boolean b = Alg.withinBounds(hsb[2], 0.55f, 0.25f);
+		boolean h = Alg.withinBounds(hsb[0], 0.10f, 0.10f);
+		boolean s = Alg.withinBounds(hsb[1], 0.15f, 0.15f);
+		boolean b = Alg.withinBounds(hsb[2], 0.5f, 0.25f);
 		if(c instanceof Color ){
 			boolean rgb = 
-				c.getRed() > 120 && c.getRed() < 255 
-				&& c.getGreen() > 120 && c.getGreen() < 255
+				c.getRed() > 100 && c.getRed() < 255 
+				&& c.getGreen() > 100 && c.getGreen() < 255
 				&& c.getBlue() > 70 && c.getBlue() < 130;
 			return rgb & h & b;
 		} else {
