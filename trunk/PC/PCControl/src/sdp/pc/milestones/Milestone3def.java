@@ -41,7 +41,7 @@ public class Milestone3def {
 	// Yellow = Team 0; Blue = Team 1
 	// Robot on the left - 0; robot on the right - 1
 	private static int DEF_TEAM = 0, ATT_TEAM = 0, ATT_ROBOT = 0,
-			DEF_ROBOT = 1, SAFE_ANGLE = 10, SAFE_DIS = 1000;
+			DEF_ROBOT = 0, SAFE_ANGLE = 10, SAFE_DIS = 1000;
 
 	private static double NEAR_EPSILON = 30;
 	private static double SAFE_DIST_FROM_GOAL = 50;

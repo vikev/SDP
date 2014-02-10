@@ -25,7 +25,7 @@ public class Constants {
 	 * can consider writing a centimetre->pixel conversion ratio, which may be
 	 * unique to each camera
 	 */
-	public static final int ATTACKER_LENGTH = 35;
+	public static final int ATTACKER_LENGTH = 30;
 
 	/**
 	 * Approximate measurements of robots in pixels (could change to
@@ -33,7 +33,7 @@ public class Constants {
 	 * can consider writing a centimetre->pixel conversion ratio, which may be
 	 * unique to each camera
 	 */
-	public static final int ATTACKER_WIDTH = 35;
+	public static final int ATTACKER_WIDTH = 30;
 	
 	/**
 	 * Approximate measurements of robots in pixels (could change to
