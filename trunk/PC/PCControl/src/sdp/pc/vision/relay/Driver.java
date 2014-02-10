@@ -17,7 +17,7 @@ public class Driver {
 	}
 
 	/**
-	 * Travel forward that distance. 0 = travel forever.
+	 * Travel forward at that speed. 0 = travel at max speed.
 	 * 
 	 * @param dist
 	 * @throws Exception
@@ -27,7 +27,7 @@ public class Driver {
 	}
 
 	/**
-	 * Travel farward forever.
+	 * Travel farward at maximum speed.
 	 * 
 	 * @throws Exception
 	 */
@@ -36,7 +36,7 @@ public class Driver {
 	}
 
 	/**
-	 * Travel backward that distance. 0 = travel forever.
+	 * Travel backward at that speed. 0 = travel at max speed.
 	 * 
 	 * @param dist
 	 * @throws Exception
@@ -46,7 +46,7 @@ public class Driver {
 	}
 
 	/**
-	 * Travel backward forever.
+	 * Travel backward at maximum speed.
 	 * 
 	 * @throws Exception
 	 */
@@ -55,7 +55,7 @@ public class Driver {
 	}
 
 	/**
-	 * Turn left by given angle in degrees.
+	 * Turn left with that speed. 0 = travel at max speed.
 	 * 
 	 * @param deg
 	 * @return
@@ -66,7 +66,7 @@ public class Driver {
 	}
 
 	/**
-	 * Turn left until interrupted.
+	 * Turn left until interrupted at max speed.
 	 * 
 	 * @param deg
 	 * @return
@@ -77,7 +77,7 @@ public class Driver {
 	}
 
 	/**
-	 * Turn right by given angle in degrees.
+	 * Turn right with that speed.
 	 * 
 	 * @param deg
 	 * @return
@@ -88,7 +88,7 @@ public class Driver {
 	}
 
 	/**
-	 * Turn right until interrupted.
+	 * Turn right with maximum speed.
 	 * 
 	 * @param deg
 	 * @return
@@ -120,7 +120,7 @@ public class Driver {
 	}
 
 	/**
-	 * Robot stop whatever you are doing.
+	 * Robot please stop whatever you are doing.
 	 * 
 	 * @return
 	 * @throws Exception

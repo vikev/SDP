@@ -41,11 +41,9 @@ public class Milestone3def {
 	// Yellow = Team 0; Blue = Team 1
 	// Robot on the left - 0; robot on the right - 1
 	private static int DEF_TEAM = 0, ATT_TEAM = 0, ATT_ROBOT = 0,
-			DEF_ROBOT = 1, SAFE_ANGLE = 10, SAFE_DIS = 1000;
-	
-	private static Point2 DEF_GOAL_CENTRE = state.getRightGoalCentre();
+			DEF_ROBOT = 0, SAFE_ANGLE = 10, SAFE_DIS = 1000;
 
-	private static double NEAR_EPSILON = 20;
+	private static double NEAR_EPSILON = 30;
 	private static double SAFE_DIST_FROM_GOAL = 50;
 
 	/**
@@ -126,10 +124,12 @@ public class Milestone3def {
 		// Get predicted ball position (Y value) when it will come to
 		// defender's side
 		Point2 predBallPos = FutureBall.estimateBallPositionWhen(
-				position, facing, robotPosition.getX());
-
+				position, facing, robotPosition, DEF_ROBOT);
+		System.out.println(predBallPos);
 		// Move robot to this position
-		goTo(state, driver, predBallPos);
+		if (predBallPos.getY() != 0) {
+			goTo(state, driver, predBallPos);
+		}
 	}
 	
 	public static void defendIfNoAttacker(WorldState state, Driver driver)
@@ -210,12 +210,14 @@ public class Milestone3def {
 	public static boolean assertNear(WorldState state, Driver driver, 
 			Point2 to, double epsilon) throws Exception {
 		Point2 robLoc = state.getRobotPosition(DEF_TEAM, DEF_ROBOT);
-		if (robLoc.distance(to) < epsilon) {
-			driver.stop();
-			return true;
+		while (robLoc.distance(to) >= epsilon) {
+			//System.out.println(robLoc.distance(to)-epsilon);
+			driver.forward(100);
+			Thread.sleep(100);
+			robLoc = state.getRobotPosition(DEF_TEAM,  DEF_ROBOT);
 		}
-		driver.forward(10);
-		return false;
+		driver.stop();
+		return true;
 	}
 
 	public static boolean turnTo(WorldState state,
@@ -238,10 +240,15 @@ public class Milestone3def {
 	public static boolean assertNearGoalLine(WorldState state, Driver driver) {
 		try {
 			Point2 botPos = state.getRobotPosition(DEF_TEAM, DEF_ROBOT);
-			System.out.println(DEF_GOAL_CENTRE);
-			if((Math.abs(botPos.getX() - DEF_GOAL_CENTRE.getX())) > SAFE_DIST_FROM_GOAL){
-				if (turnTo(state, driver, DEF_GOAL_CENTRE)) {
-					if (goTo(state, driver, DEF_GOAL_CENTRE)) {
+			Point2 goal_centre;
+			if (DEF_ROBOT == 0) {
+				goal_centre = state.getLeftGoalCentre();
+			} else {
+				goal_centre = state.getRightGoalCentre();
+			}
+			if((Math.abs(botPos.getX() - goal_centre.getX())) > SAFE_DIST_FROM_GOAL){
+				if (turnTo(state, driver, goal_centre)) {
+					if (goTo(state, driver, goal_centre)) {
 						return true;
 					}
 				}
