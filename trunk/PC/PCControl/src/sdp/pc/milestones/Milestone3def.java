@@ -192,10 +192,9 @@ public class Milestone3def {
 		}
 	}
 
-	public static boolean assertFacing(WorldState state, Vision vision,
+	public static boolean assertFacing(WorldState state,
 			Driver driver, double deg, double epsilon) {
-		double rotateBy = normalizeToBiDirection(state.getRobotFacing(DEF_TEAM,
-				DEF_ROBOT) - deg);
+		double rotateBy = normalizeToBiDirection(state.getRobotFacing(0,1) - deg);
 		try {
 			double speed = getRotateSpeed(rotateBy, epsilon);
 			if (rotateBy > epsilon) {
@@ -223,11 +222,10 @@ public class Milestone3def {
 		return false;
 	}
 
-	public static boolean turnTo(WorldState state, Vision vision,
+	public static boolean turnTo(WorldState state,
 			Driver driver, Point2 to) {
-		double ang = normalizeToUnitDegrees(state.getRobotPosition(DEF_TEAM,
-				DEF_ROBOT).angleTo(to) + 180.0);
-		if (assertFacing(state, vision, driver, ang, SAFE_ANGLE)) {
+		double ang = normalizeToUnitDegrees(state.getRobotPosition(0,1).angleTo(to));;
+		if (assertFacing(state, driver, ang, SAFE_ANGLE)) {
 			return true;
 		}
 		return false;
@@ -251,7 +249,7 @@ public class Milestone3def {
 		try {
 			Point2 botPos = state.getRobotPosition(DEF_TEAM, DEF_ROBOT);
 			if(botPos.distance(Constants.LEFT_GOAL_CENTRE.add(new Point2(20,0)))>20){
-				if (turnTo(state, vision, driver, Constants.LEFT_GOAL_CENTRE)) {
+				if (turnTo(state, driver, Constants.LEFT_GOAL_CENTRE)) {
 					if (goTo(state, vision, driver,
 							Constants.LEFT_GOAL_CENTRE.add(new Point2(20, 0)))) {
 						return true;
@@ -292,7 +290,7 @@ public class Milestone3def {
 		}
 
 		// Do it
-		if(assertFacing(state, vision, driver, target, SAFE_ANGLE)){
+		if(assertFacing(state, driver, target, SAFE_ANGLE)){
 			driver.stop();
 			return true;
 		}
