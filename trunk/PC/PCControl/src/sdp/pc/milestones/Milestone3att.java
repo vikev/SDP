@@ -27,7 +27,7 @@ import sdp.pc.vision.relay.TCPClient;
  */
 public class Milestone3att {
 	
-	private static int  SAFE_ANGLE = 5, SAFE_DIST = 12;
+	private static int  SAFE_ANGLE = 5, SAFE_DIST = 15;
 
 	private static WorldState state = new WorldState();
 
@@ -61,7 +61,7 @@ public class Milestone3att {
 			e1.printStackTrace();
 		}
 		Thread.sleep(500);
-		kickStationaryBall(state, driver, vision, chosenRobot);
+		kickStationaryBall(driver, vision, chosenRobot);
 		System.out.println("Finished attempting to kick ball");
 	}
 
@@ -81,7 +81,7 @@ public class Milestone3att {
 	 * <li>Create meaningful exception handling code</li>
 	 * </ul>
 	 **/
-	public static void kickStationaryBall(WorldState state, Driver driver,
+	public static void kickStationaryBall(Driver driver,
 			Vision vision, int chosenRobot) throws Exception {
 		if (chosenRobot == Constants.ATTACKER)
 			chosenRobot = 0;
@@ -89,7 +89,7 @@ public class Milestone3att {
 			chosenRobot = 1;
 		Point2 robotPosition = state.getRobotPosition(state.getOurColor(), state.getDirection());
 		Point2 ballPosition = state.getBallPosition();
-		Point2 targetPoint = setBallTarget(state);
+		Point2 targetPoint = setBallTarget();
 		@SuppressWarnings("unused")
 		boolean succesfulTravel = false;
 		// System.out.println("Robot Position :" + robotPosition);
@@ -111,38 +111,47 @@ public class Milestone3att {
 				(ballPosition.getY() * (-1)) - -(robotPosition.getY() * (-1)) };
 
 		double angleBetween = calculateAngle(vectorBalltoTargetPoint,
-				vectorBalltoSelectedRobot); // this assumes angle is positive in
-											// the clockwise direction
+				vectorBalltoSelectedRobot); 
 		System.out.println("Angle between bot, ball and goal : " + angleBetween);
 		// check if the ball will obstruct a direct path to the approach
 		// point move to a point where a direct path can be taken to the
 		// approach point
+		Point2 approachPoint = calculateApproachPoint(ballPosition,
+				targetPoint, state.getDirection());
+		System.out.println("Ball point: " + ballPosition);
+		System.out.println("Assigned approach point: " + approachPoint);
+		if ((approachPoint.getX() == 0) && (approachPoint.getY() == 0)) {
+			System.out.println("Could not assign Approach Point");
+			return;
+		}
 		if ((angleBetween > 90)) {
-			Point2 approachPoint = calculateApproachPoint(ballPosition,
-					targetPoint, state.getDirection());
-			System.out.println("Ball point: " + ballPosition);
-			System.out.println("Assigned approach point: " + approachPoint);
-			if ((approachPoint.getX() == 0) && (approachPoint.getY() == 0)) {
-				System.out.println("Could not assign Approach Point");
-				return;
-			}
 			// Attempt to navigate to the approach point.
-			facePoint(state, driver, approachPoint.getX(), approachPoint.getY());
-			while (!(succesfulTravel = traveltoPoint(state, driver,
+			facePoint(driver, approachPoint.getX(), approachPoint.getY());
+			while (!(succesfulTravel = traveltoPoint(driver,
 					approachPoint.getX(), approachPoint.getY()))) {
-				facePoint(state, driver, approachPoint.getX(),
+				facePoint(driver, approachPoint.getX(),
 						approachPoint.getY());
 			}
 		} else {
+			Point2 intermediate_point = calculateIntermediatePoint(ballPosition, targetPoint);
+			facePoint(driver, intermediate_point.getX(), intermediate_point.getY());
+			while (!(succesfulTravel = traveltoPoint(driver,
+					intermediate_point.getX(), intermediate_point.getY()))) {
+				facePoint(driver, intermediate_point.getX(),
+						intermediate_point.getY());
+			}
+			// Attempt to navigate to the approach point.
+			facePoint(driver, approachPoint.getX(), approachPoint.getY());
+			while (!(succesfulTravel = traveltoPoint(driver,
+					approachPoint.getX(), approachPoint.getY()))) {
+				facePoint(driver, approachPoint.getX(),
+						approachPoint.getY());
+			}
 			return;
 		}
 		System.out.println(state.getRobotPosition(state.getOurColor(), state.getDirection()));
 		System.out.println(targetPoint);
-		facePoint(state, driver, targetPoint.getX(), targetPoint.getY());
-		/*while (!(succesfulTravel = traveltoPoint(state, driver,
-				targetPoint.getX(), targetPoint.getY()))) {
-			facePoint(state, driver, targetPoint.getX(), targetPoint.getY());
-		}*/
+		facePoint(driver, targetPoint.getX(), targetPoint.getY());
 		driver.kick(0);
 		System.out.println("KICK!");
 	}
@@ -154,7 +163,7 @@ public class Milestone3att {
 	 * @param state
 	 * @return
 	 */
-	public static Point2 setBallTarget(WorldState state) {
+	public static Point2 setBallTarget() {
 		if (state.getDirection() == Constants.DIRECTION_RIGHT) // if target goal is the right hand goal
 			return state.getRightGoalCentre();
 		if (state.getDirection() == Constants.DIRECTION_LEFT)
@@ -183,6 +192,48 @@ public class Milestone3att {
 		//System.out.println("Angle (in degrees) : " + angleDegrees);
 		return angleDegrees;
 	}
+	
+	/**
+	 * Calculates an intermediate point for the robot to travel to that is between
+	 * the robot and the approach point.(auxiliary method)
+	 * 
+	 * @param ballPosition, targetPoint
+	 * @param ballTargetPoint
+	 * @return
+	 */	
+	public static Point2 calculateIntermediatePoint(Point2 ballPosition, Point2 ballTargetPoint){
+		int diffX = Math.abs(ballTargetPoint.getX() - ballPosition.getX());
+		int newEndPointX = 0;
+		int intermediateX = 0;
+		if (state.getDirection() == Constants.DIRECTION_RIGHT){
+			newEndPointX = ballTargetPoint.getX() + 2*diffX;
+			intermediateX = ballPosition.getX() - SAFE_DIST;
+		}if (state.getDirection() == Constants.DIRECTION_LEFT){
+			newEndPointX = ballTargetPoint.getX() - 2*diffX;
+			intermediateX = + SAFE_DIST;
+		}
+		Point2 endPoint = new Point2(newEndPointX, ballTargetPoint.getY());
+		double gradient = calculateGradient(newEndPointX, ballTargetPoint.getY(), ballPosition.getX(), ballPosition.getY()); 
+		int intermediateY = (int) Math.floor(gradient*intermediateX); 
+		Point2 intermediatePoint = new Point2(intermediateX, intermediateY);
+		return intermediatePoint;
+	}
+	
+	/**
+	 * Calculates the gradient between two points (auxiliary
+	 * method)
+	 * 
+	 * @param XcoordinatePoint1
+	 * @param YcoordinatePoint1
+	 * @param XcoordinatePoint2
+	 * @param YcoordinatePoint2
+	 * @return
+	 */
+	public static double calculateGradient(int XcoordinatePoint1, int YcoordinatePoint1, int XcoordinatePoint2, int YcoordinatePoint2){
+		double diffY = YcoordinatePoint2 - YcoordinatePoint1;
+		double diffX = XcoordinatePoint2 - XcoordinatePoint1;
+		return (diffY/diffX);
+	}
 
 	/**
 	 * Calculates the attacking robots approach point to the ball (auxiliary
@@ -197,8 +248,8 @@ public class Milestone3att {
 			Point2 ballTargePoint, int targetGoal) {
 		int approachPointX = 0;
 		int approachPointY = 0;
-		int gradientLineBalltoGoal = ((ballTargePoint.getY() * (-1) - ballPosition
-				.getY() * (-1)) / (ballTargePoint.getX() - ballPosition.getX()));
+		double gradientLineBalltoGoal = calculateGradient(ballPosition.getX(),(ballPosition.getY() * (-1)), //Y coordinates must be inverted
+		ballTargePoint.getX(), (ballTargePoint.getY() * (-1)));
 		if (targetGoal == Constants.DIRECTION_LEFT) {
 			approachPointX = ballPosition.getX()
 					+ Math.max(Constants.ATTACKER_LENGTH,
@@ -208,7 +259,7 @@ public class Milestone3att {
 					- Math.max(Constants.ATTACKER_LENGTH,
 							Constants.ATTACKER_WIDTH);
 		}
-		approachPointY = -(gradientLineBalltoGoal * approachPointX) + ballPosition.getY();
+		approachPointY = (int) Math.floor(-(gradientLineBalltoGoal * approachPointX) + ballPosition.getY());
 		return new Point2(approachPointX, approachPointY);
 	}
 
@@ -226,7 +277,7 @@ public class Milestone3att {
 	 * @return
 	 */
 
-	public static boolean traveltoPoint(WorldState state, Driver driver,
+	public static boolean traveltoPoint(Driver driver,
 			int targetX, int targetY) throws Exception {
 		double initialOrientation = state.getRobotFacing(state.getOurColor(), state.getDirection());
 		Point2 robotPos = state.getRobotPosition(state.getOurColor(), state.getDirection());
@@ -259,7 +310,7 @@ public class Milestone3att {
 	 * @return
 	 */
 
-	public static void facePoint(WorldState state, Driver driver,
+	public static void facePoint(Driver driver,
 			int Xcoordinate, int Ycoordinate) {
 		double deltaY, deltaX;
 		Point2 robotPosition = state.getRobotPosition(state.getOurColor(), state.getDirection());
