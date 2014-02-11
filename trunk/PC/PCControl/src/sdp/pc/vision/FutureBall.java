@@ -86,37 +86,5 @@ public class FutureBall {
 		}
 		return new Point2((int) tarX, (int) tarY);
 	}
-
-	public static Point2 estimateBallPositionWhen(Point2 position,
-			double facing, Point2 robotPosition, int def) {
-		double a = facing;
-		if (a > 180) {
-			a = 360 - a;
-		}
-		if (a > 90) {
-			a = 180 - a;
-		}
-		// calculate the distance robot needs to move to cut off the ball
-		double betweenBallAndDefender = position.distance(robotPosition);
-		double distanceToMove = betweenBallAndDefender * Math.tan(a);
-		double newY;
-		if (facing > 180) {
-			newY = robotPosition.getY() + distanceToMove;
-		} else {
-			newY = robotPosition.getY() - distanceToMove;
-		}
-		Point2 goal_top;
-		Point2 goal_bottom;
-		if (def == 0) {
-			goal_top = WorldState.leftGoalTop;
-			goal_bottom = WorldState.leftGoalBottom;
-		} else {
-			goal_top = WorldState.rightGoalTop;
-			goal_bottom = WorldState.rightGoalBottom;
-		}
-		if (goal_top.getY() > newY || goal_bottom.getY() < newY) {
-			newY = 0;
-		}
-		return new Point2((int) robotPosition.getX(), (int) newY);
-	}
+	
 }
