@@ -1,4 +1,4 @@
-package sdp.pc.vision;
+package sdp.pc.vision.settings;
 
 /* FROM: https://github.com/ernieyu/Swing-range-slider */
 
@@ -40,6 +40,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicSliderUI;
+
 
 /**
  * UI delegate for the RangeSlider component. RangeSliderUI paints two thumbs,

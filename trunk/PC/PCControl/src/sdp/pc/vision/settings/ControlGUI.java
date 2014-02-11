@@ -1,4 +1,4 @@
-package sdp.pc.vision;
+package sdp.pc.vision.settings;
 
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -20,6 +20,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import sdp.pc.common.Constants;
+import sdp.pc.vision.PitchConstants;
+import sdp.pc.vision.Point2;
+import sdp.pc.vision.ThresholdsState;
+import sdp.pc.vision.WorldState;
+import sdp.pc.vision.WorldStateListener;
+import sdp.pc.vision.WorldStatePainter;
 import sdp.pc.vision.WorldStatePainter.HighlightMode;
 
 /**

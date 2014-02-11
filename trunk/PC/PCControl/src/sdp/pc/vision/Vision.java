@@ -13,6 +13,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
+import sdp.pc.vision.settings.Calibration;
+import sdp.pc.vision.settings.ControlGUI;
 import au.edu.jcu.v4l4j.CaptureCallback;
 import au.edu.jcu.v4l4j.FrameGrabber;
 import au.edu.jcu.v4l4j.V4L4JConstants;
@@ -77,7 +79,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	/**
 	 * An abstraction of the world state used to get state details
 	 */
-	static WorldStateListener stateListener;
+	public static WorldStateListener stateListener;
 
 	/**
 	 * Thread which runs the world state updater
@@ -291,11 +293,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private void initGUI() {
 		frame = new JFrame();
 		frameLabel = new JLabel();
-		
+
 		// Add button below the frame for opening the settings menu
 		JButton button = new JButton("Settings");
 		button.addActionListener(new ActionListener() {
-			
+
 			/**
 			 * Open the control GUI on click
 			 */
