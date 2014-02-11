@@ -131,8 +131,6 @@ public class Milestone3def {
 
 	public static void defendBall(WorldState state, Driver driver,
 			Point2 position, double facing) throws Exception {
-		Point2 robotPosition = state.getRobotPosition(DEF_TEAM, DEF_ROBOT);
-
 		// Get predicted ball position (Y value) when it will come to
 		// defender's side
 		// Point2 predBallPos = FutureBall.estimateBallPositionWhen(
@@ -171,8 +169,10 @@ public class Milestone3def {
 						state.getEstimatedStopPoint().getY())) > eps
 				&& betweenGoals(y, DEF_ROBOT)) {
 			if (Math.abs(diff) > 90) {
-
-				driver.backward(400);
+				assertNearReverse(state, driver,
+						new Point2(state.getRobotPosition(DEF_TEAM, DEF_ROBOT)
+								.getX(), state.getEstimatedStopPoint().getY()),
+						NEAR_EPSILON_DIST);
 			} else {
 				assertNear(state, driver,
 						new Point2(state.getRobotPosition(DEF_TEAM, DEF_ROBOT)
@@ -272,6 +272,17 @@ public class Milestone3def {
 		}
 		double speed = getMoveSpeed(robLoc.distance(to), NEAR_EPSILON_DIST);
 		driver.forward(speed);
+		return false;
+	}
+	
+	public static boolean assertNearReverse(WorldState state, Driver driver,
+			Point2 to, double epsilon) throws Exception {
+		Point2 robLoc = state.getRobotPosition(DEF_TEAM, DEF_ROBOT);
+		if (robLoc.distance(to) < epsilon) {
+			return true;
+		}
+		double speed = getMoveSpeed(robLoc.distance(to), NEAR_EPSILON_DIST);
+		driver.backward(speed);
 		return false;
 	}
 
