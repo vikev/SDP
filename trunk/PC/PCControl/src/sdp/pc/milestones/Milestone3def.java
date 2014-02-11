@@ -237,7 +237,6 @@ public class Milestone3def {
 	public static boolean turnTo(WorldState state, Driver driver, Point2 to) {
 		double ang = normalizeToUnitDegrees(state.getRobotPosition(DEF_TEAM,
 				DEF_ROBOT).angleTo(to));
-		;
 		if (assertFacing(state, driver, ang, SAFE_ANGLE)) {
 			return true;
 		}
