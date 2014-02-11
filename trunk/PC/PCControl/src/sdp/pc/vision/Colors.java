@@ -16,19 +16,19 @@ public class Colors {
 	 * @return
 	 */
 	public static boolean isBlack(Color c, float[] hsb) {
-		if(c instanceof Color){
-		return hsb[0] <= tresholds.getGrey_h_high()
-				&& hsb[0] >= tresholds.getGrey_h_low()
-				&& hsb[1] <= tresholds.getGrey_s_high()
-				&& hsb[1] >= tresholds.getGrey_s_low()
-				&& hsb[2] <= tresholds.getGrey_v_high()
-				&& hsb[2] >= tresholds.getGrey_v_low()
-				&& c.getRed() <= tresholds.getGrey_r_high()
-				&& c.getRed() >= tresholds.getGrey_r_low()
-				&& c.getGreen() <= tresholds.getGrey_g_high()
-				&& c.getGreen() >= tresholds.getGrey_g_low()
-				&& c.getBlue() <= tresholds.getGrey_b_high()
-				&& c.getBlue() >= tresholds.getGrey_b_low();
+		if (c instanceof Color) {
+			return hsb[0] <= tresholds.getGrey_h_high()
+					&& hsb[0] >= tresholds.getGrey_h_low()
+					&& hsb[1] <= tresholds.getGrey_s_high()
+					&& hsb[1] >= tresholds.getGrey_s_low()
+					&& hsb[2] <= tresholds.getGrey_v_high()
+					&& hsb[2] >= tresholds.getGrey_v_low()
+					&& c.getRed() <= tresholds.getGrey_r_high()
+					&& c.getRed() >= tresholds.getGrey_r_low()
+					&& c.getGreen() <= tresholds.getGrey_g_high()
+					&& c.getGreen() >= tresholds.getGrey_g_low()
+					&& c.getBlue() <= tresholds.getGrey_b_high()
+					&& c.getBlue() >= tresholds.getGrey_b_low();
 		}
 		return false;
 	}
@@ -74,17 +74,14 @@ public class Colors {
 		boolean h = Alg.withinBounds(hsb[0], 0.0f, 1f);
 		boolean s = Alg.withinBounds(hsb[1], 0.05f, 0.3f);
 		boolean b = Alg.withinBounds(hsb[2], 0.65f, 0.7f);
-		if(c != null){
+		if (c != null) {
 			final int delta = 50;
 			int r = c.getRed();
 			int g = c.getGreen();
 			int bl = c.getBlue();
-			boolean rgb = 
-				Math.abs(r - g) < delta &&
-				Math.abs(r - bl) < delta &&
-				Math.abs(bl - g) < delta &&
-				r > 90;
-			return rgb & h & s & b;
+			boolean rgb = Math.abs(r - g) < delta && Math.abs(r - bl) < delta
+					&& Math.abs(bl - g) < delta && r > 90;
+			return !(rgb & h & s & b);
 		} else {
 			return false;
 		}

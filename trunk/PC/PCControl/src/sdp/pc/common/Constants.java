@@ -2,8 +2,6 @@ package sdp.pc.common;
 
 import java.awt.Color;
 
-import sdp.pc.vision.Point2;
-
 /**
  * Class used to contain static final values.
  * 
@@ -25,7 +23,7 @@ public class Constants {
 	 * can consider writing a centimetre->pixel conversion ratio, which may be
 	 * unique to each camera
 	 */
-	public static final int ATTACKER_LENGTH = 30;
+	public static final int ATTACKER_LENGTH = 40;
 
 	/**
 	 * Approximate measurements of robots in pixels (could change to
@@ -33,8 +31,8 @@ public class Constants {
 	 * can consider writing a centimetre->pixel conversion ratio, which may be
 	 * unique to each camera
 	 */
-	public static final int ATTACKER_WIDTH = 30;
-	
+	public static final int ATTACKER_WIDTH = 40;
+
 	/**
 	 * Approximate measurements of robots in pixels (could change to
 	 * centimetres); these values haven't yet been measured. At some point we
@@ -42,7 +40,7 @@ public class Constants {
 	 * unique to each camera
 	 */
 	public static final int DEFENDER_LENGTH = 20;
-	
+
 	/**
 	 * Approximate measurements of robots in pixels (could change to
 	 * centimetres); these values haven't yet been measured. At some point we

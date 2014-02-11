@@ -75,7 +75,7 @@ public class WorldStatePainter {
 	 * 
 	 * @author Ix
 	 */
-	enum HighlightMode {
+	public enum HighlightMode {
 		None, Red, White, Yellow, Blue, Green, Black, All
 	}
 
@@ -101,7 +101,7 @@ public class WorldStatePainter {
 			return cRgb;
 		case Yellow:
 			if (Colors.isYellow(cRgb, cHsb))
-				return Color.YELLOW;
+				return Color.BLUE;
 			return cRgb;
 		case Blue:
 			if (Colors.isBlue(cRgb, cHsb))
@@ -148,7 +148,7 @@ public class WorldStatePainter {
 	 * @param image
 	 *            the image to draw the overlay on
 	 * @param mousePos
-	 * 				the current cursor position used to print pixel data
+	 *            the current cursor position used to print pixel data
 	 */
 	public void drawWorld(BufferedImage image, Point2 mousePos) {
 		Graphics g = image.getGraphics();
@@ -207,12 +207,13 @@ public class WorldStatePainter {
 				g.drawLine(ballPos.getX(), ballPos.getY(), velocityPos.getX(),
 						velocityPos.getY());
 			}
-			
+
 			// futureballs
-			if(!state.getEstimatedStopPoint().equals(Point2.EMPTY)){
-				drawCircle(g, Constants.GRAY_BLEND, FutureBall.estimateRealStopPoint(),
+			if (!state.getEstimatedStopPoint().equals(Point2.EMPTY)) {
+				drawCircle(g, Constants.GRAY_BLEND,
+						FutureBall.estimateRealStopPoint(),
 						Constants.ROBOT_HEAD_RADIUS);
-				if(!state.getEstimatedCollidePoint().equals(Point2.EMPTY)){
+				if (!state.getEstimatedCollidePoint().equals(Point2.EMPTY)) {
 					drawCircle(g, Constants.GRAY_BLEND, FutureBall.collision, 5);
 				}
 			}
@@ -238,9 +239,6 @@ public class WorldStatePainter {
 				}
 			}
 
-
-		
-
 		// draw centre line
 		g.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
 		g.drawLine(Constants.TABLE_CENTRE_X, Constants.TABLE_MIN_Y + 1,
@@ -253,7 +251,6 @@ public class WorldStatePainter {
 		int worldFps = stateListener.getCurrentFps();
 		int clockFps = stateListener.getClockFps();
 
-		
 		String sPaintFps = String.format("Paint: %2d", drawFps);
 		String sWorldFps = String
 				.format("World: %2d / %2d", worldFps, clockFps);
@@ -266,8 +263,6 @@ public class WorldStatePainter {
 		// display mouse position, RGB, and HSB values to screen (if any)
 		if (mousePos != null) {
 
-			
-			
 			String colorTip = "norm";
 			cRgb = stateListener.getNormalisedRgb(mousePos.x, mousePos.y);
 			cHsb = stateListener.getNormalisedHsb(mousePos.x, mousePos.y);
@@ -283,16 +278,16 @@ public class WorldStatePainter {
 			// no colours at all? all good
 			// ps. should it happen at all?
 			if (cRgb != null) {
-				
-				//get attacker/defender zone
+
+				// get attacker/defender zone
 				String sAtkDef = "";
 				Pitch pitch = state.getPitch();
-				if(pitch.isPointInAttackerZone(mousePos))
+				if (pitch.isPointInAttackerZone(mousePos))
 					sAtkDef += " (A)";
-				if(pitch.isPointInDefenderZone(mousePos))
+				if (pitch.isPointInDefenderZone(mousePos))
 					sAtkDef += " (D)";
-				
-				//get position, rgb, hsb
+
+				// get position, rgb, hsb
 				String strPos = String.format("Pos: [%3d, %3d]", mousePos.x,
 						mousePos.y) + sAtkDef;
 				String strRgb = String.format("RGB: [%4d, %4d, %4d] (%s)",
