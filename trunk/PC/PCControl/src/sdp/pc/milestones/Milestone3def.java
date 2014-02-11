@@ -40,8 +40,8 @@ public class Milestone3def {
 
 	// Yellow = Team 0; Blue = Team 1
 	// Robot on the left - 0; robot on the right - 1
-	private static int DEF_TEAM = 0, ATT_TEAM = 0, ATT_ROBOT = 0,
-			DEF_ROBOT = 1, SAFE_ANGLE = 5, SAFE_DIS = 1000;
+	private static int DEF_TEAM = 0, ATT_TEAM = 0, ATT_ROBOT = 1,
+			DEF_ROBOT = 0, SAFE_ANGLE = 5, SAFE_DIS = 1000;
 
 	private static double NEAR_EPSILON_DIST = 10;
 	private static double SAFE_DIST_FROM_GOAL = 30;
@@ -326,7 +326,7 @@ public class Milestone3def {
 			}
 			if (botPos.distance(goal_centre) > SAFE_DIST_FROM_GOAL) {
 				if (turnTo(state, driver, goal_centre)) {
-					if (goTo(state, driver, new Point2(goal_centre.getX() - 10,
+					if (goTo(state, driver, new Point2(goal_centre.getX() + 10,
 							goal_centre.getY()), eps)) {
 						return true;
 					}
