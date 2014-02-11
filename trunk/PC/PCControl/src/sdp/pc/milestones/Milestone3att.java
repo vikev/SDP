@@ -133,6 +133,7 @@ public class Milestone3att {
 			
 			// Checks if robot is between the ball and the goal
 			// If it is, move up or down
+			//*Need to also account for the ball's radius - Robaidh*
 			if (Math.abs(robotPosition.y-ballPosition.y) < Constants.ATTACKER_LENGTH) {
 				if (robotPosition.y > ballPosition.y) {
 					faceAndGoTo(driver, new Point2(robotPosition.x, 
@@ -254,6 +255,7 @@ public class Milestone3att {
 		int diffX = Math.abs(ballTargetPoint.getX() - ballPosition.getX());
 		int newEndPointX = 0;
 		int intermediateX = 0;
+		double cutOnYAxis;
 		if (state.getDirection() == Constants.DIRECTION_RIGHT){
 			newEndPointX = ballTargetPoint.getX() + 2*diffX;
 			intermediateX = ballPosition.getX() - SAFE_DIST;
@@ -263,7 +265,8 @@ public class Milestone3att {
 		}
 		//Point2 endPoint = new Point2(newEndPointX, ballTargetPoint.getY());
 		double gradient = calculateGradient(newEndPointX, (ballTargetPoint.getY()*(-1)), ballPosition.getX(), (ballPosition.getY()*(-1))); 
-		int intermediateY = (int) Math.floor((-1)*gradient*intermediateX); 
+		cutOnYAxis = (-1)*(gradient*ballPosition.getX() + (ballPosition.getY()*(-1))); //result should always be <=0
+		int intermediateY = (int) (Math.floor(gradient*intermediateX) + cutOnYAxis); 
 		Point2 intermediatePoint = new Point2(intermediateX, intermediateY);
 		return intermediatePoint;
 	}
@@ -298,6 +301,7 @@ public class Milestone3att {
 			Point2 ballTargePoint, int targetGoal) {
 		int approachPointX = 0;
 		int approachPointY = 0;
+		double cutOnYAxis;
 		double gradientLineBalltoGoal = calculateGradient(ballPosition.getX(),(ballPosition.getY() * (-1)), //Y coordinates must be inverted
 		ballTargePoint.getX(), (ballTargePoint.getY() * (-1)));
 		if (targetGoal == Constants.DIRECTION_LEFT) {
@@ -309,8 +313,11 @@ public class Milestone3att {
 					- Math.max(Constants.ATTACKER_LENGTH,
 							Constants.ATTACKER_WIDTH);
 		}
+		cutOnYAxis = ((-1)*(gradientLineBalltoGoal*ballPosition.getX()) + ballPosition.getY()); 	//result should always be <=0
+		approachPointY = (int) (Math.floor(gradientLineBalltoGoal*approachPointX) + cutOnYAxis);
 		//approachPointY = ballPosition.y;
-		approachPointY = (int) Math.floor(-(gradientLineBalltoGoal * 20) + ballPosition.getY());
+		//approachPointY = (int) Math.floor(-(gradientLineBalltoGoal * 20) + ballPosition.getY());
+		
 		return new Point2(approachPointX, approachPointY);
 	}
 
