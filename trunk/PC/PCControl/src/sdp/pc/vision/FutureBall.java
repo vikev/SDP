@@ -86,10 +86,5 @@ public class FutureBall {
 		}
 		return new Point2((int) tarX, (int) tarY);
 	}
-		} else {
-			facing = facing - angle;
-		}
-		return facing;
-	}
 	
 }
