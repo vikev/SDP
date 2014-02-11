@@ -27,7 +27,6 @@ public class BTReceive {
 
 			Kicker kicker = null;
 			KickerAtt kickerAtt = null;
-			PneumaticKicker pneumaticKicker = null;
 
 			while (true) {
 				LCD.drawString(waiting, 0, 0);

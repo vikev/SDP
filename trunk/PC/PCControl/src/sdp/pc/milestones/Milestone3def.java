@@ -4,7 +4,6 @@ import javax.swing.SwingUtilities;
 
 import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 import sdp.pc.common.ChooseRobot;
-import sdp.pc.vision.FutureBall;
 import sdp.pc.vision.Point2;
 import sdp.pc.vision.Vision;
 import sdp.pc.vision.WorldState;
@@ -40,8 +39,9 @@ public class Milestone3def {
 
 	// Yellow = Team 0; Blue = Team 1
 	// Robot on the left - 0; robot on the right - 1
+	@SuppressWarnings("unused")
 	private static int DEF_TEAM = 0, ATT_TEAM = 0, ATT_ROBOT = 1,
-			DEF_ROBOT = 0, SAFE_ANGLE = 5, SAFE_DIS = 1000;
+			DEF_ROBOT = 0, SAFE_ANGLE = 5;
 
 	private static double NEAR_EPSILON_DIST = 10;
 	private static double SAFE_DIST_FROM_GOAL = 30;
@@ -80,7 +80,14 @@ public class Milestone3def {
 			}
 		});
 		Thread.sleep(500);
-
+		
+		long q = Long.MIN_VALUE;
+		while(q<Long.MAX_VALUE){
+			assertFacing(state,driver,0,15);
+			q++;
+			Thread.sleep((int)PERIOD);
+		}
+		
 		// Here is the FSM behaviour of the system
 		while (true) {
 			// M3 should be a finite state machine that constantly loops,
