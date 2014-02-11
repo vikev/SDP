@@ -86,25 +86,21 @@ public class FutureBall {
 		}
 		return new Point2((int) tarX, (int) tarY);
 	}
-
-	public static Point2 estimateBallPositionWhen(Point2 position,
-			double facing, Point2 robotPosition, int def) {
-		double a = facing;
-		if (a > 180) {
-			a = 360 - a;
-		}
-		if (a > 90) {
-			a = 180 - a;
-		}
-		//calculate the distance robot needs to move to cut off the ball
-		double betweenBallAndDefender = position.distance(robotPosition);
-		double distanceToMove = betweenBallAndDefender * Math.tan(a);
-		double newY;
-		if (facing > 180) {
-			newY = robotPosition.getY() + distanceToMove; 
+	
+	public static double angleBetweenDiffs(double facing, double angle) {
+		if (facing > 270) {
+			facing = 360 - facing + angle;
+		} else if (180 < facing && facing <= 270){
+			facing = facing - 180 + angle;
+		} else if (90 < facing && facing <= 180) {
+			facing = 180 - facing - angle; 
 		} else {
-			newY = robotPosition.getY() - distanceToMove;
+			facing = facing - angle;
 		}
+		return facing;
+	}
+	
+	public static double movesInGoals(int def, double newY) {
 		Point2 goal_top;
 		Point2 goal_bottom;
 		if (def == 0) {
@@ -117,6 +113,37 @@ public class FutureBall {
 		if (goal_top.getY() > newY || goal_bottom.getY() < newY) {
 			newY = 0;
 		}
-		return new Point2((int)robotPosition.getX(), (int)newY);
+		return newY;
+	}
+
+	public static Point2 estimateBallPositionWhen(Point2 position,
+			double facing, Point2 robotPosition, int def) {
+		
+		//calculate the distance robot needs to move to cut off the ball
+		double distBetweenObjectAndDefender = position.distance(robotPosition);
+		double deltaX = Math.abs(position.getX() - robotPosition.getX());
+		//System.out.println("Dist: " + distBetweenObjectAndDefender);
+		//System.out.println("deltax: " + deltaX);
+		double angle = Math.acos(deltaX/distBetweenObjectAndDefender);
+		if (position.getY() < robotPosition.getY()) {
+			angle = -angle;
+		}
+		//System.out.println("Sending angle: " + angle);
+		angle = angleBetweenDiffs(facing, angle);
+		//System.out.println("Facing: " + facing);
+		//System.out.println("Angle: " + angle);
+	
+		double distanceToMove = distBetweenObjectAndDefender * Math.tan(angle);
+		//System.out.println("Distance to move: " + distanceToMove);
+		double newY;
+		if (facing > 180) {
+			newY = robotPosition.getY() + distanceToMove; 
+		} else {
+			newY = robotPosition.getY() - distanceToMove;
+		}
+		//check if object is facing toward goals area
+		newY = movesInGoals(def, newY);
+		//System.out.println(newY);
+		return new Point2((int)robotPosition.getX(), 290);
 	}
 }
