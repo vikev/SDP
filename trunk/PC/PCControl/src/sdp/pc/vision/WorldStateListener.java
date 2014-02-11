@@ -411,10 +411,11 @@ public abstract class WorldStateListener implements Runnable {
 						currentRgb[x][y] = null;
 				}
 			}
+			System.out.println(minMaxBrightness[0] + " " + minMaxBrightness[1]);
 			
 			
 			//get pitch
-			state.getPitch().Initialize();
+			//state.getPitch().Initialize();
 			
 			preprocessed = true;
 			System.out

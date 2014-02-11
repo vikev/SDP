@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import sdp.pc.common.ChooseRobot;
@@ -75,7 +76,9 @@ public class Milestone3att {
 			}
 		});
 		Thread.sleep(500);
-		JPanel startPanel = new JPanel();
+		JFrame frame = new JFrame();
+		//JPanel startPanel = new JPanel();
+		//startPanel.setBounds(600, 300, 100, 100);
 		JButton start = new JButton();
 		start.setText("Start");
 		start.addActionListener(new ActionListener() {
@@ -97,8 +100,8 @@ public class Milestone3att {
 
 			}
 		});
-		startPanel.add(start);
-		startPanel.show();
+		frame.add(start);
+		//startPanel.show();
 	}
 
 	/**
