@@ -111,7 +111,7 @@ public class Milestone3def {
 				defendBall(state, driver, state.getBallPosition(),
 						state.getBallFacing());
 			} else {
-				driver.stop();
+				//driver.stop();
 				// Point2 robotPosition = state.getRobotPosition(ATT_TEAM,
 				// ATT_ROBOT);
 				// double robotFacing = state.getRobotFacing(ATT_TEAM,
@@ -145,12 +145,12 @@ public class Milestone3def {
 		}
 	}
 
-	private static boolean betweenGoals(int y, int side) {
+	private static boolean betweenGoals(int y, int side, int eps) {
 		if (side == 0) {
-			return (y < WorldState.leftGoalBottom.getY() && y > WorldState.leftGoalTop
+			return (y+eps < WorldState.leftGoalBottom.getY() && y-eps > WorldState.leftGoalTop
 					.getY());
 		} else {
-			return (y < WorldState.rightGoalBottom.getY() && y > WorldState.rightGoalTop
+			return (y+eps < WorldState.rightGoalBottom.getY() && y-eps > WorldState.rightGoalTop
 					.getY());
 		}
 	}
@@ -167,7 +167,7 @@ public class Milestone3def {
 		if (state.getRobotPosition(DEF_TEAM, DEF_ROBOT).distance(
 				new Point2(state.getRobotPosition(DEF_TEAM, DEF_ROBOT).getX(),
 						state.getEstimatedStopPoint().getY())) > eps
-				&& betweenGoals(y, DEF_ROBOT)) {
+				&& betweenGoals(y, DEF_ROBOT, 3)) {
 			if (Math.abs(diff) > 90) {
 				assertNearReverse(state, driver,
 						new Point2(state.getRobotPosition(DEF_TEAM, DEF_ROBOT)
@@ -178,7 +178,6 @@ public class Milestone3def {
 						new Point2(state.getRobotPosition(DEF_TEAM, DEF_ROBOT)
 								.getX(), state.getEstimatedStopPoint().getY()),
 						NEAR_EPSILON_DIST);
-				//driver.forward(400);
 			}
 		} else {
 			driver.stop();
@@ -288,7 +287,7 @@ public class Milestone3def {
 
 	private static double getMoveSpeed(double distance, double eps) {
 		if (distance > 40.0) {
-			return 400.0;
+			return 500.0;
 		} else if (distance > 25.0) {
 			return 300.0;
 		} else if (distance > eps) {
