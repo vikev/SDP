@@ -93,6 +93,9 @@ public class Milestone3att {
 		Point2 robotPosition = state.getRobotPosition(state.getOurColor(), state.getDirection());
 		Point2 ballPosition = state.getBallPosition();
 		Point2 targetPoint = setBallTarget();
+		Point2 robotPositionInvertedY = new Point2(robotPosition.getX(), (robotPosition.getY()*(-1)));
+		Point2 ballPositionInvertedY = new Point2(ballPosition.getX(), (ballPosition.getY()*(-1)));
+		Point2 targetPointInvertedY = new Point2(targetPoint.getX(), (targetPoint.getY()*(-1)));
 		// System.out.println("Robot Position :" + robotPosition);
 		// System.out.println("Ball Position :" + ballPosition);
 		// System.out.println("Ball Target Point :" + targetPoint);
@@ -104,12 +107,12 @@ public class Milestone3att {
 			// take shot
 		}
 
-		int[] vectorBalltoTargetPoint = { // Y coordinates must be inverted
+		int[] vectorBalltoTargetPoint = { // Y coordinates given must be already inverted
 				ballPosition.getX() - targetPoint.getX(),
-				ballPosition.getY() - targetPoint.getY() };
+				ballPositionInvertedY.getY() - targetPointInvertedY.getY() };
 		int[] vectorBalltoSelectedRobot = {
 				ballPosition.getX() - robotPosition.getX(),
-				ballPosition.getY() - robotPosition.getY() };
+				ballPositionInvertedY.getY() - robotPositionInvertedY.getY() };
 
 		double angleBetween = calculateAngle(vectorBalltoTargetPoint,
 				vectorBalltoSelectedRobot); 
@@ -117,8 +120,8 @@ public class Milestone3att {
 		// check if the ball will obstruct a direct path to the approach
 		// point move to a point where a direct path can be taken to the
 		// approach point
-		Point2 approachPoint = calculateApproachPoint(ballPosition,
-				targetPoint, state.getDirection());
+		Point2 approachPoint = calculateApproachPoint(ballPositionInvertedY,
+				targetPointInvertedY, state.getDirection());
 		System.out.println("Ball point: " + ballPosition);
 		System.out.println("Assigned approach point: " + approachPoint);
 		if ((approachPoint.getX() == 0) && (approachPoint.getY() == 0)) {
@@ -146,7 +149,7 @@ public class Milestone3att {
 			}
 			
 			// Moves horizontally until it aligns with the Approach Point
-			Point2 intermediatePoint = new Point2(approachPoint.x, robotPosition.y);
+			Point2 intermediatePoint = new Point2(approachPoint.x, robotPositionInvertedY.y);
 			faceAndGoTo(driver, intermediatePoint);
 			faceAndGoTo(driver, approachPoint);
 
@@ -246,6 +249,7 @@ public class Milestone3att {
 	/**
 	 * Calculates an intermediate point for the robot to travel to that is between
 	 * the robot and the approach point.(auxiliary method)
+	 * Assumes that Y coordinates have already been inverted.
 	 * 
 	 * @param ballPosition, targetPoint
 	 * @param ballTargetPoint
@@ -264,10 +268,10 @@ public class Milestone3att {
 			intermediateX = ballPosition.getX() + SAFE_DIST;
 		}
 		//Point2 endPoint = new Point2(newEndPointX, ballTargetPoint.getY());
-		double gradient = calculateGradient(newEndPointX, (ballTargetPoint.getY()*(-1)), ballPosition.getX(), (ballPosition.getY()*(-1))); 
-		cutOnYAxis = (-1)*(gradient*ballPosition.getX() + (ballPosition.getY()*(-1))); //result should always be <=0
+		double gradient = calculateGradient(newEndPointX, (ballTargetPoint.getY()), ballPosition.getX(), ballPosition.getY()); 
+		cutOnYAxis = (-1)*(gradient*ballPosition.getX() + ballPosition.getY()); //result should always be <=0
 		int intermediateY = (int) (Math.floor(gradient*intermediateX) + cutOnYAxis); 
-		Point2 intermediatePoint = new Point2(intermediateX, intermediateY);
+		Point2 intermediatePoint = new Point2(intermediateX, intermediateY*(-1));	//Invert Y so that it is positive
 		return intermediatePoint;
 	}
 	
@@ -290,7 +294,8 @@ public class Milestone3att {
 
 	/**
 	 * Calculates the attacking robots approach point to the ball (auxiliary
-	 * method)
+	 * method).
+	 * Assumes that Y coordinates have already been inverted.
 	 * 
 	 * @param ballPosition
 	 * @param ballTargetPoint
@@ -302,8 +307,8 @@ public class Milestone3att {
 		int approachPointX = 0;
 		int approachPointY = 0;
 		double cutOnYAxis;
-		double gradientLineBalltoGoal = calculateGradient(ballPosition.getX(),(ballPosition.getY() * (-1)), //Y coordinates must be inverted
-		ballTargePoint.getX(), (ballTargePoint.getY() * (-1)));
+		double gradientLineBalltoGoal = calculateGradient(ballPosition.getX(),ballPosition.getY(),
+		ballTargePoint.getX(), ballTargePoint.getY());
 		if (targetGoal == Constants.DIRECTION_LEFT) {
 			approachPointX = ballPosition.getX()
 					+ Math.max(Constants.ATTACKER_LENGTH,
@@ -317,8 +322,7 @@ public class Milestone3att {
 		approachPointY = (int) (Math.floor(gradientLineBalltoGoal*approachPointX) + cutOnYAxis);
 		//approachPointY = ballPosition.y;
 		//approachPointY = (int) Math.floor(-(gradientLineBalltoGoal * 20) + ballPosition.getY());
-		
-		return new Point2(approachPointX, approachPointY);
+		return new Point2(approachPointX, (approachPointY*(-1))); //Y coordinate must be inverted to be positive
 	}
 
 	/**
