@@ -27,7 +27,9 @@ import sdp.pc.vision.relay.TCPClient;
  */
 public class Milestone3att {
 	
-	private static int  SAFE_ANGLE = 6, SAFE_DIST = 10;
+	private static int  SAFE_ANGLE = 6, SAFE_DIST = 10, MAX_SPEED = 150,
+			MAX_SPEED_THRESHOLD = 150,  MEDIUM_SPEED = 70, MEDIUM_SPEED_THRESHOLD = 100,
+			SLOW_SPEED = 20, SLOW_SPEED_THRESHOLD = 50;
 
 	private static WorldState state = new WorldState();
 
@@ -117,9 +119,6 @@ public class Milestone3att {
 		double angleBetween = calculateAngle(vectorBalltoTargetPoint,
 				vectorBalltoSelectedRobot); 
 		System.out.println("Angle between bot, ball and goal : " + angleBetween);
-		// check if the ball will obstruct a direct path to the approach
-		// point move to a point where a direct path can be taken to the
-		// approach point
 		Point2 approachPoint = calculateApproachPoint(ballPositionInvertedY,
 				targetPointInvertedY, state.getDirection());
 		System.out.println("Ball point: " + ballPosition);
@@ -128,6 +127,9 @@ public class Milestone3att {
 			System.out.println("Could not assign Approach Point");
 			return;
 		}
+		// check if the ball will obstruct a direct path to the approach
+		// point move to a point where a direct path can be taken to the
+		// approach point
 		if ((angleBetween > 90)) {
 			// Attempt to navigate to the approach point.
 			faceAndGoTo(driver, approachPoint);
@@ -149,25 +151,14 @@ public class Milestone3att {
 			}
 			
 			// Moves horizontally until it aligns with the Approach Point
-			Point2 intermediatePoint = new Point2(approachPoint.x, robotPositionInvertedY.y);
+			Point2 intermediatePoint = new Point2(approachPoint.x, robotPosition.y);
 			faceAndGoTo(driver, intermediatePoint);
 			faceAndGoTo(driver, approachPoint);
 
-			// Next part is a more complex implementation - must check it out
-			/*Point2 intermediate_point = calculateIntermediatePoint(ballPosition, targetPoint);
-			//facePoint(driver, intermediate_point.getX(), intermediate_point.getY());
-			while (!(succesfulTravel = traveltoPoint(state, driver,
-					intermediate_point.getX(), intermediate_point.getY()))) {
-				//facePoint(driver, intermediate_point.getX(),
-						intermediate_point.getY();
-			}
-			// Attempt to navigate to the approach point.
-			//facePoint(driver, approachPoint.getX(), approachPoint.getY());
-			while (!(succesfulTravel = traveltoPoint(state, driver,
-					approachPoint.getX(), approachPoint.getY()))) {
-				//facePoint(driver, approachPoint.getX(),
-						//approachPoint.getY());
-			}*/
+			//Next part is a more complex implementation - must check it out
+			//Point2 intermediate_point = calculateIntermediatePoint(ballPosition, targetPoint);
+			//faceAndGoTo(driver, intermediate_point);
+			//faceAndGoTo(driver, approachPoint);
 		}
 		
 		// Turn towards ball
@@ -330,7 +321,7 @@ public class Milestone3att {
 	 * close to the target point.
 	 * If the attacker robots orientation deviates from its initial orientation
 	 * by a set amount then the the robot is commanded to stop and the travel is
-	 * reported back as unsuccessful. Then the facePoint method needs to be
+	 * reported back as unsuccessful. Then the a method needs to be
 	 * called externally to correct the robots orientation before this method
 	 * should be called again (auxiliary method)
 	 * 
@@ -360,7 +351,28 @@ public class Milestone3att {
 		 		driver.stop();
 		 		return false;
 	}
-	/*public static boolean traveltoPoint(Driver driver,
+	
+	/**
+	 * Returns a speed for the robot to go forward at based on
+	 * how close the robot is to it's target.
+	 *
+	 * @param ballPosition
+	 * @param robotPosition
+	 * @return
+	 */
+	public static int setSpeed(int targetPointX, int targetPointY, Point2 robotPosition){
+		double distanceToTarget = 0;
+		int diffX = Math.abs(targetPointX - robotPosition.getX());
+		int diffY = Math.abs(targetPointY -  robotPosition.getY());
+		distanceToTarget = Math.sqrt(diffX*diffX + diffY*diffY);
+		if (distanceToTarget > MAX_SPEED_THRESHOLD)
+			return MAX_SPEED;
+		if (distanceToTarget > MEDIUM_SPEED_THRESHOLD)
+			return MEDIUM_SPEED;
+		return SLOW_SPEED;
+	}
+	
+	public static boolean traveltoPointAlt(Driver driver,
 			int targetX, int targetY, int movingTowardsBall) throws Exception {
 		double initialOrientation = state.getRobotFacing(state.getOurColor(), state.getDirection());
 		double robotFacing = state.getRobotFacing(state.getOurColor(), state.getDirection());
@@ -369,7 +381,7 @@ public class Milestone3att {
 		if (movingTowardsBall == 1){
 			threshold = SAFE_DIST;
 		}
-		driver.forward(125);		
+		driver.forward(setSpeed(targetX, targetY, robotPos));		
 		while (Math.abs(robotFacing - initialOrientation) < SAFE_ANGLE) {
 			if (Math.abs(robotPos.getX() - targetX) < threshold
 				&& (Math.abs(robotPos.getY() - targetY) < threshold)) {
@@ -377,13 +389,14 @@ public class Milestone3att {
 				return false;
 			}
 			Thread.sleep(50);
-			//Update position & orientation
+			//Update position, orientation & speed
 			robotPos = state.getRobotPosition(state.getOurColor(), state.getDirection());
 			robotFacing = state.getRobotFacing(state.getOurColor(), state.getDirection());
+			driver.forward(setSpeed(targetX, targetY, robotPos));
 		}
 		driver.stop();
 		return true;
-	}*/
+	}
 	
 	/**
 	 * Rotates the attacking robot to face the given coordinates (auxiliary
