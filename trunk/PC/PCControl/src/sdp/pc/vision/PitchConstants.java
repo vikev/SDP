@@ -2,6 +2,8 @@ package sdp.pc.vision;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Scanner;
 
 /**
@@ -123,6 +125,23 @@ public class PitchConstants {
 		setPitchNum(pitchNum);
 	}
 
+	public PitchConstants() {
+		int pitchNum = 0;
+		try {
+			Scanner scanner = new Scanner(new File("./pitchnum"));
+			int pn = scanner.nextInt();
+			if (pn == 1) {
+				pitchNum = 1;
+			}
+			scanner.close();
+		} catch (Exception e) {
+			System.err.println("Cannot load pitchnum file");
+			System.err.println(e.getMessage());
+			return;
+		}
+		setPitchNum(pitchNum);
+	}
+
 	/**
 	 * Sets a new pitch number, loading in constants from the corresponding
 	 * file.
@@ -138,6 +157,44 @@ public class PitchConstants {
 
 		// TODO: File location should be abstracted
 		loadConstants("./pitch" + pitchNum);
+		try {
+			FileWriter writer = new FileWriter(new File("./pitchnum"));
+
+			writer.write(String.valueOf(pitchNum));
+			writer.flush();
+			writer.close();
+
+			System.out.println("Wrote pitch num successfully!");
+
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+	}
+
+	public int getPitchNum() {
+		return pitchNum;
+	}
+
+	/**
+	 * Load the constants for the pitch used on last run.
+	 */
+	public void loadConstantsForPitchUsedLastTime() {
+
+		int pitchNum = 0;
+		try {
+			Scanner scanner = new Scanner(new File("./pitchnum"));
+			int pn = scanner.nextInt();
+			if (pn == 1) {
+				pitchNum = 1;
+			}
+			scanner.close();
+		} catch (Exception e) {
+			System.err.println("Cannot load pitchnum file");
+			System.err.println(e.getMessage());
+			return;
+		}
+		setPitchNum(pitchNum);
+
 	}
 
 	/**

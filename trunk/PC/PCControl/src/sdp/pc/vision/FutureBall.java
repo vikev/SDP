@@ -54,11 +54,15 @@ public class FutureBall {
 		Vision.frameLabel.getGraphics().drawLine(pts[0].getX(), pts[0].getY(),
 				pts[1].getX(), pts[1].getY());
 	}
-
+	
 	public static Point2 estimateRealStopPoint() {
 		Point2 vel = state.getBallVelocity();
-		double delX = vel.getX(), delY = vel.getY();
 		Point2 pos = state.getBallPosition().copy();
+		return estimateStopPoint(vel, pos);
+	}
+
+	public static Point2 estimateStopPoint(Point2 vel, Point2 pos) {
+		double delX = vel.getX(), delY = vel.getY();
 		double tarX = pos.getX(), tarY = pos.getY();
 		// Changed this with the help of geometric series
 		tarX -= delX * 1.5;

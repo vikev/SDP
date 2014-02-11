@@ -325,12 +325,9 @@ public class WorldState {
 	}
 
 	/**
-<<<<<<< HEAD
 	 * Setter method for updating the estimated ball stop point
-=======
 	 * Setter method for updating the estimated ball stop point. Used by
 	 * FutureBall
->>>>>>> b54798607711c526d0c9a49fa2efc4fbff123854
 	 * 
 	 * @param pt
 	 */
@@ -339,12 +336,9 @@ public class WorldState {
 	}
 
 	/**
-<<<<<<< HEAD
 	 * Setter method for updating the estimated collide point
-=======
 	 * Setter method for updating the estimated collide point. Used by
 	 * FutureBall
->>>>>>> b54798607711c526d0c9a49fa2efc4fbff123854
 	 * 
 	 * @param pt
 	 */
@@ -353,12 +347,9 @@ public class WorldState {
 	}
 
 	/**
-<<<<<<< HEAD
 	 * Getter method for the estimated stop point of the ball
-=======
 	 * Getter method for the estimated stop point of the ball. Used by
 	 * FutureBall
->>>>>>> b54798607711c526d0c9a49fa2efc4fbff123854
 	 * 
 	 * @return
 	 */
@@ -367,12 +358,9 @@ public class WorldState {
 	}
 
 	/**
-<<<<<<< HEAD
 	 * Getter method for the estimated collide point of the ball
-=======
 	 * Getter method for the estimated collide point of the ball. Used by
 	 * FutureBall
->>>>>>> b54798607711c526d0c9a49fa2efc4fbff123854
 	 * 
 	 * @return
 	 */
