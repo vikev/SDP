@@ -79,6 +79,8 @@ public class Start {
 							double dist = Double.parseDouble(fromClient
 									.readLine());
 							conn1.sendCommand(c, dist);
+							System.out.println("Command sent to the robot: "
+									+ c + " " + dist);
 						}
 					} catch (Exception e) {
 						// whatever goes wrong wait for a new connection
