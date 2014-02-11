@@ -238,7 +238,17 @@ public class ControlGUI implements ChangeListener {
 		pitch_choice.add(pitch_1);
 		pitch_panel.add(pitch_1);
 
-		pitch_0.setSelected(true);
+		switch (pitchConstants.getPitchNum()) {
+		case 0:
+			pitch_0.setSelected(true);
+			break;
+		case 1:
+			pitch_1.setSelected(true);
+			break;
+		default:
+			pitch_0.setSelected(true);
+
+		}
 
 		pitch_0.addChangeListener(this);
 		pitch_1.addChangeListener(this);

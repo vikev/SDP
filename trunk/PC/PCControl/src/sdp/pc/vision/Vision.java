@@ -98,7 +98,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * 
 	 * TODO:This should be abstracted at some point
 	 */
-	private static PitchConstants pitchConsts = new PitchConstants(0);
+	private static PitchConstants pitchConsts = new PitchConstants();
 
 	/**
 	 * A massive list of getters and setters for requesting threshold values
@@ -184,7 +184,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 		// Load threshold and point constants. TODO: Abstract this to not refer
 		// specifically to pitch0.
-		pitchConsts.loadConstants("pitch0");
+		pitchConsts.loadConstantsForPitchUsedLastTime();
 		pitchConsts.uploadConstants(thresh, state);
 		Colors.setTreshold(thresh);
 
