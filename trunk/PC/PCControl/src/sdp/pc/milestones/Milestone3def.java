@@ -2,13 +2,14 @@ package sdp.pc.milestones;
 
 import javax.swing.SwingUtilities;
 
-import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 import sdp.pc.common.ChooseRobot;
+import sdp.pc.vision.FutureBall;
 import sdp.pc.vision.Point2;
 import sdp.pc.vision.Vision;
 import sdp.pc.vision.WorldState;
 import sdp.pc.vision.relay.Driver;
 import sdp.pc.vision.relay.TCPClient;
+import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 
 /**
  * Static class for executing milestone 3 from a defending perspective. To run
@@ -115,29 +116,22 @@ public class Milestone3def {
 
 		while (true) {
 			if (state.getBallSpeed() > BALL_SPEED_THRESHOLD) {
-				defendBall(state, driver, state.getBallPosition(),
-						state.getBallFacing());
+				defendBall(state, driver);
 			} else {
-				//driver.stop();
-				// Point2 robotPosition = state.getRobotPosition(ATT_TEAM,
-				// ATT_ROBOT);
-				// double robotFacing = state.getRobotFacing(ATT_TEAM,
-				// ATT_ROBOT);
-				// if (!robotPosition.equals(Point2.EMPTY)) {
-				// System.out.println("Defending the robot");
-				// defendBall(state, driver, robotPosition, robotFacing);
-				// } else {
-				// System.out.println("Defending not moving ball");
-				// defendIfNoAttacker(state, driver);
-				// }
+				Point2 robotPosition = state.getRobotPosition(ATT_TEAM, ATT_ROBOT);
+				double robotFacing = state.getRobotFacing(ATT_TEAM, ATT_ROBOT);
+				if (!robotPosition.equals(Point2.EMPTY)) {
+					defendRobot(state, driver, robotPosition, robotFacing);
+				} else {
+				 defendIfNoAttacker(state, driver);
+				}
 			}
 
 			Thread.sleep((int) PERIOD);
 		}
 	}
 
-	public static void defendBall(WorldState state, Driver driver,
-			Point2 position, double facing) throws Exception {
+	public static void defendBall(WorldState state, Driver driver) throws Exception {
 		// Get predicted ball position (Y value) when it will come to
 		// defender's side
 		// Point2 predBallPos = FutureBall.estimateBallPositionWhen(
@@ -145,6 +139,28 @@ public class Milestone3def {
 		Point2 predBallPos = state.getEstimatedStopPoint();
 
 		// Move robot to this position
+		if (!predBallPos.equals(Point2.EMPTY)) {
+			defendTo(state, driver, predBallPos.getY(), NEAR_EPSILON_DIST);
+		} else {
+			driver.stop();
+		}
+	}
+	
+	public static void defendRobot(WorldState state, Driver driver, Point2 position, double facing) throws Exception{
+		
+		//Add some huge velocity
+		int x = 1000;
+		int y = 1000;
+		if (facing > 180) {
+			y = -y;
+		}
+		if (facing < 270 && facing > 90) {
+			x = -x;
+		}
+		
+		Point2 predBallPos = FutureBall.estimateStopPoint(new Point2(x, y), position);
+		
+		//Move robot to this position
 		if (!predBallPos.equals(Point2.EMPTY)) {
 			defendTo(state, driver, predBallPos.getY(), NEAR_EPSILON_DIST);
 		} else {
@@ -199,9 +215,7 @@ public class Milestone3def {
 		Point2 ballPosition = state.getBallPosition();
 
 		// Move robot to this position
-		goTo(state, driver,
-				new Point2(robotPosition.getX(), ballPosition.getY()),
-				NEAR_EPSILON_DIST);
+		defendTo(state, driver, ballPosition.getY(), NEAR_EPSILON_DIST);
 	}
 
 	/**
