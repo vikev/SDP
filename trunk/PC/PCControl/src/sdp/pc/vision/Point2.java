@@ -4,6 +4,8 @@ import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
+import lejos.geom.Line;
+
 public class Point2 {
 	public static final Point2 EMPTY = new Point2(0, 0);
 
@@ -349,12 +351,11 @@ public class Point2 {
 	 * Returns the angle to a given Point2 from <b>this</b> in degrees.
 	 * 
 	 * @param p
-	 * 			Target position
-	 * @return
-	 * 			angle on [0,360)
+	 *            Target position
+	 * @return angle on [0,360)
 	 */
 	public double angleTo(Point2 p) {
-		return Math.atan2(p.y - y, p.x - x)*180/Math.PI;
+		return Math.atan2(p.y - y, p.x - x) * 180 / Math.PI;
 	}
 
 	public boolean isToLeft(Point2 a, Point2 b) {
@@ -388,7 +389,20 @@ public class Point2 {
 	 * @return a unique point specified by dist/angle
 	 */
 	public Point2 polarOffset(int dist, double degs) {
-		return new Point2((int) (x + Math.cos(degs*Math.PI/180) * dist),
-				(int) (y + Math.sin(degs*Math.PI/180) * dist));
+		return new Point2((int) (x + Math.cos(degs * Math.PI / 180) * dist),
+				(int) (y + Math.sin(degs * Math.PI / 180) * dist));
+	}
+
+	public static void main(String args[]) {
+
+		System.out
+				.println(Point2.getLinesIntersection(new Point2(1, 2),
+						new Point2(2, 2), new Point2(3, 0), new Point2(3, 2)).x
+						+ " "
+						+ Point2.getLinesIntersection(new Point2(1, 2),
+								new Point2(2, 2), new Point2(3, 0), new Point2(
+										3, 2)).y);
+
+		new Line(0, 1, 0, 2);
 	}
 }

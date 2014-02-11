@@ -101,7 +101,7 @@ public class WorldStatePainter {
 			return cRgb;
 		case Yellow:
 			if (Colors.isYellow(cRgb, cHsb))
-				return Color.YELLOW;
+				return Color.BLUE;
 			return cRgb;
 		case Blue:
 			if (Colors.isBlue(cRgb, cHsb))

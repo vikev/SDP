@@ -47,7 +47,7 @@ public class FutureBall {
 			if (!here == q[i]) {
 				here = !here;
 				p[found] = i;
-				
+
 			}
 		}
 		System.out.println("collide8");
@@ -96,27 +96,27 @@ public class FutureBall {
 		if (a > 90) {
 			a = 180 - a;
 		}
-		//calculate the distance robot needs to move to cut off the ball
+		// calculate the distance robot needs to move to cut off the ball
 		double betweenBallAndDefender = position.distance(robotPosition);
 		double distanceToMove = betweenBallAndDefender * Math.tan(a);
 		double newY;
 		if (facing > 180) {
-			newY = robotPosition.getY() + distanceToMove; 
+			newY = robotPosition.getY() + distanceToMove;
 		} else {
 			newY = robotPosition.getY() - distanceToMove;
 		}
 		Point2 goal_top;
 		Point2 goal_bottom;
 		if (def == 0) {
-			goal_top = state.leftGoalTop;
-			goal_bottom = state.leftGoalBottom;
+			goal_top = WorldState.leftGoalTop;
+			goal_bottom = WorldState.leftGoalBottom;
 		} else {
-			goal_top = state.rightGoalTop;
-			goal_bottom = state.rightGoalBottom;
+			goal_top = WorldState.rightGoalTop;
+			goal_bottom = WorldState.rightGoalBottom;
 		}
 		if (goal_top.getY() > newY || goal_bottom.getY() < newY) {
 			newY = 0;
 		}
-		return new Point2((int)robotPosition.getX(), (int)newY);
+		return new Point2((int) robotPosition.getX(), (int) newY);
 	}
 }

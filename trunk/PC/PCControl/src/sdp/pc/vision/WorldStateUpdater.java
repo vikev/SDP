@@ -167,7 +167,7 @@ public class WorldStateUpdater extends WorldStateListener {
 			ballPastPos.addFirst(ballPos);
 			if (ballPastPos.size() > PAST_BALL_POSITIONS)
 				ballPastPos.removeLast();
-			
+
 			// Update estimated stop/collide points
 			state.setEstimatedStopPoint(FutureBall.estimateRealStopPoint());
 			state.setEstimatedCollisionPoint(FutureBall.collision);
@@ -221,14 +221,15 @@ public class WorldStateUpdater extends WorldStateListener {
 	 * @param cHsbs
 	 *            the HSB colors of the image
 	 * @return the angle the robot is facing in degrees in range [0,360] where
-	 * 		   clockwise is the positive direction
+	 *         clockwise is the positive direction
 	 */
-	private double findOrientation(Point2 robotCentroid, Color[][] cRgbs, float[][][] cHsbs) {
+	private double findOrientation(Point2 robotCentroid, Color[][] cRgbs,
+			float[][][] cHsbs) {
 
-		int minX = robotCentroid.getX() - SQUARE_SIZE / 2, 
-			maxX = robotCentroid.getX() + SQUARE_SIZE / 2, 
-			minY = robotCentroid.getY() - SQUARE_SIZE / 2, 
-			maxY = robotCentroid.getY() + SQUARE_SIZE / 2;
+		int minX = robotCentroid.getX() - SQUARE_SIZE / 2, maxX = robotCentroid
+				.getX() + SQUARE_SIZE / 2, minY = robotCentroid.getY()
+				- SQUARE_SIZE / 2, maxY = robotCentroid.getY() + SQUARE_SIZE
+				/ 2;
 
 		// Find all green pixels
 		ArrayList<Point2> greenPoints = new ArrayList<Point2>();
@@ -264,11 +265,12 @@ public class WorldStateUpdater extends WorldStateListener {
 		if (blackCount == 0) {
 			return 0; // no black pts :(
 		}
-		
+
 		blackPos = blackPos.div(blackCount);
 		double correctAngle = blackPos.angleTo(robotCentroid);
-		if (correctAngle < 0) correctAngle += 360;
-		assert(0 <= correctAngle && correctAngle < 360);
+		if (correctAngle < 0)
+			correctAngle += 360;
+		assert (0 <= correctAngle && correctAngle < 360);
 		return correctAngle;
 	}
 
@@ -301,8 +303,10 @@ public class WorldStateUpdater extends WorldStateListener {
 			cHsb[2] = br;
 
 			// save RGB
+
 			cRgbs[p.x][p.y] = new Color(Color.HSBtoRGB(cHsb[0], cHsb[1],
 					cHsb[2]));
+
 			// HSB is up to date
 
 		}
