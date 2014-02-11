@@ -43,7 +43,6 @@ public class Milestone3def {
 	private static int DEF_TEAM = 0, ATT_TEAM = 0, ATT_ROBOT = 0,
 			DEF_ROBOT = 1, SAFE_ANGLE = 5, SAFE_DIS = 1000;
 
-	private static double NEAR_EPSILON = 30;
 	private static double NEAR_EPSILON_DIST = 10;
 	private static double SAFE_DIST_FROM_GOAL = 30;
 
@@ -69,7 +68,7 @@ public class Milestone3def {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
-				// System.out.println("Exiting and stopping the robot");
+				System.out.println("Exiting and stopping the robot");
 				try {
 					driver.stop();
 					conn.closeConnection();
@@ -77,7 +76,7 @@ public class Milestone3def {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				// System.out.println("Should have stopped by now.");
+				System.out.println("Should have stopped by now.");
 			}
 		});
 		Thread.sleep(500);
@@ -100,25 +99,6 @@ public class Milestone3def {
 			if (assertNearGoalLine(state, driver, NEAR_EPSILON_DIST)) {
 				if (assertPerpendicular(state, driver)) {
 					break;
-					// System.out.println("forward");
-					// // if (state.getBallSpeed() > BALL_SPEED_THRESHOLD) {
-					// // System.out.println("err");
-					// // System.out.println("Defending moving ball");
-					// // defendBall(state, driver, state.getBallPosition(),
-					// state.getBallFacing());
-					// // } else {
-					// Point2 robotPosition = state.getRobotPosition(ATT_TEAM,
-					// ATT_ROBOT);
-					// double robotFacing = state.getRobotFacing(ATT_TEAM,
-					// ATT_ROBOT);
-					// if (!robotPosition.equals(Point2.EMPTY)) {
-					// //System.out.println("Defending the robot");
-					// defendBall(state, driver, robotPosition, robotFacing);
-					// } else {
-					// //System.out.println("Defending not moving ball");
-					// defendIfNoAttacker(state, driver);
-					// }
-					// // }
 				}
 			}
 
@@ -127,7 +107,25 @@ public class Milestone3def {
 		}
 
 		while (true) {
+			if (state.getBallSpeed() > BALL_SPEED_THRESHOLD) {
+				defendBall(state, driver, state.getBallPosition(),
+						state.getBallFacing());
+			} else {
+				driver.stop();
+				// Point2 robotPosition = state.getRobotPosition(ATT_TEAM,
+				// ATT_ROBOT);
+				// double robotFacing = state.getRobotFacing(ATT_TEAM,
+				// ATT_ROBOT);
+				// if (!robotPosition.equals(Point2.EMPTY)) {
+				// System.out.println("Defending the robot");
+				// defendBall(state, driver, robotPosition, robotFacing);
+				// } else {
+				// System.out.println("Defending not moving ball");
+				// defendIfNoAttacker(state, driver);
+				// }
+			}
 
+			Thread.sleep((int) PERIOD);
 		}
 	}
 
@@ -141,11 +139,52 @@ public class Milestone3def {
 		// position, facing, robotPosition, DEF_ROBOT);
 		Point2 predBallPos = state.getEstimatedStopPoint();
 
-		System.out.println("Pred pos: " + predBallPos);
 		// Move robot to this position
 		if (!predBallPos.equals(Point2.EMPTY)) {
-			goTo(state, driver, new Point2(robotPosition.getX(), 288));
+			defendTo(state, driver, predBallPos.getY(), NEAR_EPSILON_DIST);
+		} else {
+			driver.stop();
 		}
+	}
+
+	private static boolean betweenGoals(int y, int side) {
+		if (side == 0) {
+			return (y < WorldState.leftGoalBottom.getY() && y > WorldState.leftGoalTop
+					.getY());
+		} else {
+			return (y < WorldState.rightGoalBottom.getY() && y > WorldState.rightGoalTop
+					.getY());
+		}
+	}
+
+	private static boolean defendTo(WorldState state2, Driver driver, int y,
+			double eps) throws Exception {
+
+		double botFacing = state.getRobotFacing(DEF_TEAM, DEF_ROBOT);
+		double angleToBall = state.getRobotPosition(DEF_TEAM, DEF_ROBOT)
+				.angleTo(
+						new Point2(state.getRobotPosition(DEF_TEAM, DEF_ROBOT)
+								.getX(), y));
+		double diff = normalizeToBiDirection(botFacing - angleToBall);
+		if (state.getRobotPosition(DEF_TEAM, DEF_ROBOT).distance(
+				new Point2(state.getRobotPosition(DEF_TEAM, DEF_ROBOT).getX(),
+						state.getEstimatedStopPoint().getY())) > eps
+				&& betweenGoals(y, DEF_ROBOT)) {
+			if (Math.abs(diff) > 90) {
+
+				driver.backward(400);
+			} else {
+				assertNear(state, driver,
+						new Point2(state.getRobotPosition(DEF_TEAM, DEF_ROBOT)
+								.getX(), state.getEstimatedStopPoint().getY()),
+						NEAR_EPSILON_DIST);
+				//driver.forward(400);
+			}
+		} else {
+			driver.stop();
+			return true;
+		}
+		return false;
 	}
 
 	public static void defendIfNoAttacker(WorldState state, Driver driver)
@@ -155,7 +194,8 @@ public class Milestone3def {
 
 		// Move robot to this position
 		goTo(state, driver,
-				new Point2(robotPosition.getX(), ballPosition.getY()));
+				new Point2(robotPosition.getX(), ballPosition.getY()),
+				NEAR_EPSILON_DIST);
 	}
 
 	/**
@@ -230,23 +270,35 @@ public class Milestone3def {
 		if (robLoc.distance(to) < epsilon) {
 			return true;
 		}
-		driver.forward(300);
+		double speed = getMoveSpeed(robLoc.distance(to), NEAR_EPSILON_DIST);
+		driver.forward(speed);
 		return false;
+	}
+
+	private static double getMoveSpeed(double distance, double eps) {
+		if (distance > 40.0) {
+			return 400.0;
+		} else if (distance > 25.0) {
+			return 300.0;
+		} else if (distance > eps) {
+			return 100.0;
+		} else {
+			return 1.0;
+		}
 	}
 
 	public static boolean turnTo(WorldState state, Driver driver, Point2 to) {
 		double ang = normalizeToUnitDegrees(state.getRobotPosition(DEF_TEAM,
 				DEF_ROBOT).angleTo(to));
-		;
 		if (assertFacing(state, driver, ang, SAFE_ANGLE)) {
 			return true;
 		}
 		return false;
 	}
 
-	public static boolean goTo(WorldState state, Driver driver, Point2 to)
-			throws Exception {
-		if (assertNear(state, driver, to, NEAR_EPSILON_DIST)) {
+	public static boolean goTo(WorldState state, Driver driver, Point2 to,
+			double eps) throws Exception {
+		if (assertNear(state, driver, to, eps)) {
 			return true;
 		}
 		return false;
@@ -264,7 +316,8 @@ public class Milestone3def {
 			}
 			if (botPos.distance(goal_centre) > SAFE_DIST_FROM_GOAL) {
 				if (turnTo(state, driver, goal_centre)) {
-					if (goTo(state, driver, goal_centre)) {
+					if (goTo(state, driver, new Point2(goal_centre.getX() - 10,
+							goal_centre.getY()), eps)) {
 						return true;
 					}
 				}
@@ -294,14 +347,14 @@ public class Milestone3def {
 		// Calculate which angle is the closest perpendicular one
 		double target;
 		double face = state.getRobotFacing(DEF_TEAM, DEF_ROBOT);
-		
-		 double diff = normalizeToBiDirection(normalizeToBiDirection(face -
-		 270.0) - normalizeToBiDirection(face - 90.0));
-		 
+
+		double diff = normalizeToBiDirection(normalizeToBiDirection(face - 270.0)
+				- normalizeToBiDirection(face - 90.0));
+
 		if (diff > 0) {
-			target = 270.0;
-		} else {
 			target = 90.0;
+		} else {
+			target = 270.0;
 		}
 
 		// Do it
