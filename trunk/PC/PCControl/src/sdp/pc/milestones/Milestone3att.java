@@ -1,5 +1,11 @@
 package sdp.pc.milestones;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
 import sdp.pc.common.ChooseRobot;
 import sdp.pc.common.Constants;
 import sdp.pc.vision.Point2;
@@ -69,9 +75,30 @@ public class Milestone3att {
 			}
 		});
 		Thread.sleep(500);
+		JPanel startPanel = new JPanel();
+		JButton start = new JButton();
+		start.setText("Start");
+		start.addActionListener(new ActionListener() {
 
-		kickStationaryBall(driver);
-		System.out.println("Finished attempt to kick the ball.");
+			/*
+			 * On click, reset the local calibration state for the absolute
+			 * borders, causing the Vision click listener to look for (first) a
+			 * top-left click.
+			 */
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					kickStationaryBall(driver);
+					System.out.println("Finished attempt to kick the ball.");
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+			}
+		});
+		startPanel.add(start);
+		startPanel.show();
 	}
 
 	/**
