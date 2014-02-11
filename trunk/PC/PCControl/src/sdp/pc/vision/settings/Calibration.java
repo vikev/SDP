@@ -1,8 +1,13 @@
-package sdp.pc.vision;
+package sdp.pc.vision.settings;
 
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+
+import sdp.pc.vision.Point2;
+import sdp.pc.vision.Vision;
+import sdp.pc.vision.WorldState;
+import sdp.pc.vision.WorldStateListener;
 
 public class Calibration extends MouseAdapter {
 	public static Point lastClickPos;

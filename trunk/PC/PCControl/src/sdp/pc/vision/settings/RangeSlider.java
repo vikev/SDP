@@ -1,4 +1,4 @@
-package sdp.pc.vision;
+package sdp.pc.vision.settings;
 
 /* FROM: https://github.com/ernieyu/Swing-range-slider */
 
@@ -25,6 +25,7 @@ package sdp.pc.vision;
  THE SOFTWARE. */
 
 import javax.swing.JSlider;
+
 
 /**
  * An extension of JSlider to select a range of values using two thumb controls.
