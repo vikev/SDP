@@ -4,8 +4,6 @@ import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
-import lejos.geom.Line;
-
 public class Point2 {
 	public static final Point2 EMPTY = new Point2(0, 0);
 
@@ -393,16 +391,4 @@ public class Point2 {
 				(int) (y + Math.sin(degs * Math.PI / 180) * dist));
 	}
 
-	public static void main(String args[]) {
-
-		System.out
-				.println(Point2.getLinesIntersection(new Point2(1, 2),
-						new Point2(2, 2), new Point2(3, 0), new Point2(3, 2)).x
-						+ " "
-						+ Point2.getLinesIntersection(new Point2(1, 2),
-								new Point2(2, 2), new Point2(3, 0), new Point2(
-										3, 2)).y);
-
-		new Line(0, 1, 0, 2);
-	}
 }
