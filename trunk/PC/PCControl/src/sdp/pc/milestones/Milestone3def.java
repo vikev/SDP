@@ -44,8 +44,7 @@ public class Milestone3def {
 
 	// Yellow = Team 0; Blue = Team 1
 	// Robot on the left - 0; robot on the right - 1
-	private static int DEF_TEAM = 0, ATT_TEAM = 0, ATT_ROBOT = 1,
-			DEF_ROBOT = 0, SAFE_ANGLE = 5;
+	private static int DEF_TEAM = 0, DEF_ROBOT = 0, SAFE_ANGLE = 5;
 
 	private static double NEAR_EPSILON_DIST = 10;
 	private static double SAFE_DIST_FROM_GOAL = 30;
@@ -53,7 +52,6 @@ public class Milestone3def {
 	/**
 	 * Main method which executes M3def
 	 */
-	@SuppressWarnings("unused")
 	public static void main(String[] args) throws Exception {
 		Thread.sleep(2000);
 		SwingUtilities.invokeLater(new Runnable() {
@@ -87,45 +85,46 @@ public class Milestone3def {
 		Thread.sleep(500);
 
 		// Here is the FSM behaviour of the system
-//		while (true) {
-//			// M3 should be a finite state machine that constantly loops,
-//			// executing the necessary job. User input should not be necessary.
-//
-//			// FSM:
-//			// * Assert near goal-line,
-//			// * Assert perpendicular,
-//			// * if the ball is moving with sufficient velocity:
-//			// - block the ball
-//			// * else:
-//			// - - if the attacking robot has a hat:
-//			// * * cut off the attacking robot w.r.t. the goal
-//			// - - else:
-//			// * * cut off the ball w.r.t the goal
-//			if (assertNearGoalLine(state, driver, NEAR_EPSILON_DIST)) {
-//				if (assertPerpendicular(state, driver)) {
-//					break;
-//				}
-//			}
-//
-//			// Delay a moment to avoid a TCP overflow
-//			Thread.sleep((int) PERIOD);
-//		}
+		// while (true) {
+		// // M3 should be a finite state machine that constantly loops,
+		// // executing the necessary job. User input should not be necessary.
+		//
+		// // FSM:
+		// // * Assert near goal-line,
+		// // * Assert perpendicular,
+		// // * if the ball is moving with sufficient velocity:
+		// // - block the ball
+		// // * else:
+		// // - - if the attacking robot has a hat:
+		// // * * cut off the attacking robot w.r.t. the goal
+		// // - - else:
+		// // * * cut off the ball w.r.t the goal
+		// if (assertNearGoalLine(state, driver, NEAR_EPSILON_DIST)) {
+		// if (assertPerpendicular(state, driver)) {
+		// break;
+		// }
+		// }
+		//
+		// // Delay a moment to avoid a TCP overflow
+		// Thread.sleep((int) PERIOD);
+		// }
 
 		while (true) {
 			if (state.getBallSpeed() > BALL_SPEED_THRESHOLD) {
 				defendBall(state, driver);
 			} else {
-//				Point2 robotPosition = state.getRobotPosition(ATT_TEAM,
-//						ATT_ROBOT);
-//				double robotFacing = state.getRobotFacing(ATT_TEAM, ATT_ROBOT);
-//				if(assertPerpendicular(state, driver)){
-//					defendIfNoAttacker(state, driver);
-//				}
-//				if (!robotPosition.equals(Point2.EMPTY)) {
-//					defendRobot(state, driver, robotPosition, robotFacing);
-//				} else {
-//					defendIfNoAttacker(state, driver);
-//				}
+				// Point2 robotPosition = state.getRobotPosition(ATT_TEAM,
+				// ATT_ROBOT);
+				// double robotFacing = state.getRobotFacing(ATT_TEAM,
+				// ATT_ROBOT);
+				// if(assertPerpendicular(state, driver)){
+				// defendIfNoAttacker(state, driver);
+				// }
+				// if (!robotPosition.equals(Point2.EMPTY)) {
+				// defendRobot(state, driver, robotPosition, robotFacing);
+				// } else {
+				// defendIfNoAttacker(state, driver);
+				// }
 			}
 
 			Thread.sleep((int) PERIOD);
@@ -216,17 +215,17 @@ public class Milestone3def {
 			throws Exception {
 		Point2 robotPosition = state.getRobotPosition(DEF_TEAM, DEF_ROBOT);
 		Point2 ballPosition = state.getBallPosition();
-		
+
 		double q;
-		if(DEF_ROBOT == 0){
-			q=state.getLeftGoalCentre().getY();
-		}else{
-			q=state.getRightGoalCentre().getY();
+		if (DEF_ROBOT == 0) {
+			q = state.getLeftGoalCentre().getY();
+		} else {
+			q = state.getRightGoalCentre().getY();
 		}
-		
-		q+=ballPosition.getY();
-		q/=2;
-		
+
+		q += ballPosition.getY();
+		q /= 2;
+
 		// Move robot to this position
 		defendTo(state, driver, (int) q, NEAR_EPSILON_DIST);
 	}
