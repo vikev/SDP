@@ -76,6 +76,7 @@ public class Colors {
 		boolean b = Alg.withinBounds(hsb[2], 0.65f, 0.7f);
 		if (c != null) {
 			final int delta = 50;
+			final double minRgb = 150;
 			int r = c.getRed();
 			int g = c.getGreen();
 			int bl = c.getBlue();
