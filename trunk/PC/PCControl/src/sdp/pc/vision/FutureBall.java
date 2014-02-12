@@ -88,7 +88,6 @@ public class FutureBall {
 				distToStop -= Math.sqrt(vHatX + vHatY);
 			}
 		}
-		System.out.println(new Point2((int) tarX, (int) tarY));
 		return new Point2((int) tarX, (int) tarY);
 	}
 	

@@ -186,8 +186,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// specifically to pitch0.
 		pitchConsts.loadConstantsForPitchUsedLastTime();
 		pitchConsts.uploadConstants(thresh, state);
-		Colors.setTreshold(thresh); 
-		
+		Colors.setTreshold(thresh);
+
 		// Initialise the frame fetcher
 		try {
 			initFrameGrabber();
@@ -197,12 +197,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			cleanupCapture();
 			return;
 		}
-		
+
 		// Create the form
 		initGUI();
-		
 
-		
 		/**
 		 * Set the frame callback with the frame grabber. Executes for every new
 		 * frame.
@@ -286,7 +284,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// be abstracted to a constant.
 		frameGrabber = videoDevice.getJPEGFrameGrabber(WIDTH, HEIGHT, CHANNEL,
 				VIDEO_STANDARD, 80);
-
 		frameGrabber.setCaptureCallback(this);
 	}
 
