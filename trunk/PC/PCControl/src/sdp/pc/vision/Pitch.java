@@ -15,6 +15,12 @@ import java.util.ArrayList;
  */
 public class Pitch {
 	
+	private static final int PITCH_SIDE_Y_NPOINTS = 120;
+
+	private static final int PITCH_ZONE_X_NPOINTS = 195;
+
+	private static final int PITCH_SIDE_X_NPOINTS = 99;
+
 	/**
 	 * The radius of a robot
 	 * TODO: figure out a value for this
@@ -24,11 +30,15 @@ public class Pitch {
 	/**
 	 * The x coordinates of the goal lines
 	 */
-	private int[] goalLineX = new int[2];
+	int[] goalLineX = new int[2];
 	/**
 	 * The x coordinates of the (middle of the) zones
 	 */
-	private int[] zoneX = new int[3];
+	int[] zoneX = new int[3];
+	/**
+	 * The y coordinates of the pitches
+	 */
+	int[] pitchY = new int[2];
 
 	
 	/**
@@ -95,19 +105,26 @@ public class Pitch {
 				if(maxY < p.y) 
 					maxY = p.y;
 			}
+}
+		
+		ArrayList<Point2>[] xpts = Alg.getIntervals(xs, 7,  PITCH_SIDE_X_NPOINTS, PITCH_ZONE_X_NPOINTS);
+	
+		ArrayList<Point2>[] ypts = Alg.getIntervals(ys, 5, PITCH_SIDE_Y_NPOINTS);
+		
+		
+		if(xpts[0].size() >= 2 && xpts[1].size() >= 3) {
+			
+			goalLineX[0] = xpts[0].get(0).x;
+			goalLineX[1] = xpts[0].get(xpts[0].size() - 1).y;
+	
+			for(int i = 0; i < 3; i++) {
+				Point2 zone = xpts[1].get(i);
+				zoneX[i] = (zone.x + zone.y) / 2;
+			}
 		}
-		
-		ArrayList<Point2>[] pts = Alg.getIntervals(xs, 5,  99, 175);
-		
-		assert pts[0].size() > 1;
-		assert pts[1].size() == 3;
-		
-		goalLineX[0] = pts[0].get(0).x;
-		goalLineX[1] = pts[0].get(pts[0].size() - 1).y;
-
-		for(int i = 0; i < 3; i++) {
-			Point2 zone = pts[1].get(i);
-			zoneX[i] = (zone.x + zone.y) / 2;
+		if(ypts[0].size() >= 1) {
+			pitchY[0] = ypts[0].get(0).x;
+			pitchY[1] = ypts[0].get(ypts[0].size() - 1).y;
 		}
 	}
 }

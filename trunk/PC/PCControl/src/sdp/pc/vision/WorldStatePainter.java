@@ -302,6 +302,19 @@ public class WorldStatePainter {
 				g.drawString(strPos, TEXT_OFFSET, TEXT_OFFSET + 4 * TEXT_HEIGHT);
 			}
 		}
+		
+		//pitch borders
+//		Pitch pitch = state.getPitch();
+//		if(pitch != null) {
+//			g.drawLine(pitch.goalLineX[0], 0, pitch.goalLineX[0], Vision.HEIGHT);
+//			g.drawLine(pitch.goalLineX[1], 0, pitch.goalLineX[1], Vision.HEIGHT);
+//			g.drawLine(0, pitch.pitchY[0], Vision.WIDTH, pitch.pitchY[0]);
+//			g.drawLine(0, pitch.pitchY[1], Vision.WIDTH, pitch.pitchY[1]);
+//			g.drawLine(pitch.zoneX[0], 0, pitch.zoneX[0], Vision.HEIGHT);
+//			g.drawLine(pitch.zoneX[1], 0, pitch.zoneX[1], Vision.HEIGHT);
+//			g.drawLine(pitch.zoneX[2], 0, pitch.zoneX[2], Vision.HEIGHT);
+//		}
+		
 
 		// bin your litter
 		g.dispose();
