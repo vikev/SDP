@@ -115,12 +115,12 @@ public class Milestone3def {
 			if (state.getBallSpeed() > BALL_SPEED_THRESHOLD) {
 				defendBall(state, driver);
 			} else {
-				Point2 robotPosition = state.getRobotPosition(ATT_TEAM,
-						ATT_ROBOT);
-				double robotFacing = state.getRobotFacing(ATT_TEAM, ATT_ROBOT);
-				if(assertPerpendicular(state, driver)){
-					defendIfNoAttacker(state, driver);
-				}
+//				Point2 robotPosition = state.getRobotPosition(ATT_TEAM,
+//						ATT_ROBOT);
+//				double robotFacing = state.getRobotFacing(ATT_TEAM, ATT_ROBOT);
+//				if(assertPerpendicular(state, driver)){
+//					defendIfNoAttacker(state, driver);
+//				}
 //				if (!robotPosition.equals(Point2.EMPTY)) {
 //					defendRobot(state, driver, robotPosition, robotFacing);
 //				} else {
