@@ -81,7 +81,7 @@ public class Colors {
 			int bl = c.getBlue();
 			boolean rgb = Math.abs(r - g) < delta && Math.abs(r - bl) < delta
 					&& Math.abs(bl - g) < delta && r > 90;
-			return !(rgb & h & s & b);
+			return (rgb & h & s & b);
 		} else {
 			return false;
 		}
