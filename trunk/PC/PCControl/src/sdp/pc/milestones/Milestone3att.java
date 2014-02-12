@@ -32,7 +32,7 @@ import sdp.pc.vision.relay.TCPClient;
  * 
  */
 public class Milestone3att {
-	private static int SAFE_ANGLE = 5, SAFE_DIST = 8, MAX_SPEED = 150,
+	private static int SAFE_ANGLE = 5, SAFE_DIST = 7, MAX_SPEED = 150,
 			MAX_SPEED_THRESHOLD = 150, MEDIUM_SPEED = 70,
 			MEDIUM_SPEED_THRESHOLD = 100, SLOW_SPEED = 20,
 			SLOW_SPEED_THRESHOLD = 50;
@@ -368,7 +368,7 @@ public class Milestone3att {
 		int approachPointY = 0;
 		double cutOnYAxis;
 		// Bigger ballOffset = further away from the ball
-		double ballOffset = 1.0 + ((int) Math.abs(Constants.TABLE_CENTRE_X - ballPosition.x))/600.0;
+		double ballOffset = 1.0 + ((int) Math.abs(Constants.TABLE_CENTRE_X - ballPosition.x))/700.0;
 		double gradientLineBalltoGoal = calculateGradient(ballPosition.getX(),
 				ballPosition.getY(), ballTargePoint.getX(),
 				ballTargePoint.getY());
