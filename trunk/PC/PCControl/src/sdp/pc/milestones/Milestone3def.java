@@ -87,29 +87,29 @@ public class Milestone3def {
 		Thread.sleep(500);
 
 		// Here is the FSM behaviour of the system
-		while (true) {
-			// M3 should be a finite state machine that constantly loops,
-			// executing the necessary job. User input should not be necessary.
-
-			// FSM:
-			// * Assert near goal-line,
-			// * Assert perpendicular,
-			// * if the ball is moving with sufficient velocity:
-			// - block the ball
-			// * else:
-			// - - if the attacking robot has a hat:
-			// * * cut off the attacking robot w.r.t. the goal
-			// - - else:
-			// * * cut off the ball w.r.t the goal
-			if (assertNearGoalLine(state, driver, NEAR_EPSILON_DIST)) {
-				if (assertPerpendicular(state, driver)) {
-					break;
-				}
-			}
-
-			// Delay a moment to avoid a TCP overflow
-			Thread.sleep((int) PERIOD);
-		}
+//		while (true) {
+//			// M3 should be a finite state machine that constantly loops,
+//			// executing the necessary job. User input should not be necessary.
+//
+//			// FSM:
+//			// * Assert near goal-line,
+//			// * Assert perpendicular,
+//			// * if the ball is moving with sufficient velocity:
+//			// - block the ball
+//			// * else:
+//			// - - if the attacking robot has a hat:
+//			// * * cut off the attacking robot w.r.t. the goal
+//			// - - else:
+//			// * * cut off the ball w.r.t the goal
+//			if (assertNearGoalLine(state, driver, NEAR_EPSILON_DIST)) {
+//				if (assertPerpendicular(state, driver)) {
+//					break;
+//				}
+//			}
+//
+//			// Delay a moment to avoid a TCP overflow
+//			Thread.sleep((int) PERIOD);
+//		}
 
 		while (true) {
 			if (state.getBallSpeed() > BALL_SPEED_THRESHOLD) {
