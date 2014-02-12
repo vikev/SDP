@@ -199,20 +199,9 @@ public class Milestone3att {
 			faceAndGoTo(driver, approachPoint);
 
 			// Next part is a more complex implementation - must check it out
-			/*
-			 * Point2 intermediate_point =
-			 * calculateIntermediatePoint(ballPosition, targetPoint);
-			 * //facePoint(driver, intermediate_point.getX(),
-			 * intermediate_point.getY()); while (!(succesfulTravel =
-			 * traveltoPoint(state, driver, intermediate_point.getX(),
-			 * intermediate_point.getY()))) { //facePoint(driver,
-			 * intermediate_point.getX(), intermediate_point.getY(); } //
-			 * Attempt to navigate to the approach point. //facePoint(driver,
-			 * approachPoint.getX(), approachPoint.getY()); while
-			 * (!(succesfulTravel = traveltoPoint(state, driver,
-			 * approachPoint.getX(), approachPoint.getY()))) {
-			 * //facePoint(driver, approachPoint.getX(),
-			 * //approachPoint.getY()); }
+			/* Point2 intermediate_point = calculateIntermediatePoint(ballPosition, targetPoint);
+			 * faceAndGoTo(driver, intermediate_point);
+			 * faceAndGoTo(driver, approach_point);
 			 */
 		}
 
@@ -420,22 +409,7 @@ public class Milestone3att {
 				state.getDirection());
 		driver.forward(115);
 		/*
-		 * TODO: Check this out public static boolean traveltoPoint(Driver
-		 * driver, int targetX, int targetY) throws Exception { double
-		 * initialOrientation = state.getRobotFacing(state.getOurColor(),
-		 * state.getDirection()); Point2 robotPos =
-		 * state.getRobotPosition(state.getOurColor(), state.getDirection());
-		 * double robotFacing = state.getRobotFacing(state.getOurColor(),
-		 * state.getDirection()); if (Math.abs(robotPos.getX() - targetX) >
-		 * SAFE_DIST && (Math.abs(robotPos.getY() - targetY) > SAFE_DIST));
-		 * driver.forward(125); while (Math.abs(robotFacing -
-		 * initialOrientation) < SAFE_ANGLE) { if (Math.abs(robotPos.getX() -
-		 * targetX) < SAFE_DIST && (Math.abs(robotPos.getY() - targetY) <
-		 * SAFE_DIST)) { driver.stop(); return true; } robotPos =
-		 * state.getRobotPosition(state.getOurColor(), state.getDirection());
-		 * robotFacing = state.getRobotFacing(state.getOurColor(),
-		 * state.getDirection()); } driver.stop(); return false; }
-		 * 
+		 * TODO: Check this out  
 		 * /** Returns a speed for the robot to go forward at based on how close
 		 * the robot is to it's target.
 		 * 
@@ -479,81 +453,8 @@ public class Milestone3att {
 
 		return false;
 	}
-	/*
-	 * public static boolean traveltoPoint(Driver driver, int targetX, int
-	 * targetY, int movingTowardsBall) throws Exception { double
-	 * initialOrientation = state.getRobotFacing(state.getOurColor(),
-	 * state.getDirection()); double robotFacing =
-	 * state.getRobotFacing(state.getOurColor(), state.getDirection()); Point2
-	 * robotPos = state.getRobotPosition(state.getOurColor(),
-	 * state.getDirection()); int threshold = 10; if (movingTowardsBall == 1){
-	 * threshold = SAFE_DIST; } driver.forward(125); while (Math.abs(robotFacing
-	 * - initialOrientation) < SAFE_ANGLE) { if (Math.abs(robotPos.getX() -
-	 * targetX) < threshold && (Math.abs(robotPos.getY() - targetY) <
-	 * threshold)) { driver.stop(); return false; } Thread.sleep(50); //Update
-	 * position & orientation robotPos =
-	 * state.getRobotPosition(state.getOurColor(), state.getDirection());
-	 * robotFacing = state.getRobotFacing(state.getOurColor(),
-	 * state.getDirection()); } driver.stop(); return true; }
-	 */
-
-	/**
-	 * Rotates the attacking robot to face the given coordinates (auxiliary
-	 * method)
-	 * 
-	 * @param state
-	 * @param driver
-	 * @param Xcoodinate
-	 * @param Ycoordinate
-	 * @return
-	 */
-	/*
-	 * public static void facePoint(WorldState state, Driver driver, int
-	 * Xcoordinate, int Ycoordinate) { double deltaY, deltaX; Point2
-	 * robotPosition = state.getRobotPosition(state.getOurColor(),
-	 * state.getDirection()); double robotOrientation =
-	 * state.getRobotFacing(state.getOurColor(), state.getDirection()); deltaX =
-	 * Math.abs(robotPosition.getX() - Xcoordinate); deltaY =
-	 * Math.abs(Ycoordinate - robotPosition.getY()); double targetAngle = 360 -
-	 * (Math.atan(deltaY / deltaX) * 180/Math.PI); double rotateBy =
-	 * robotOrientation - targetAngle; while (Math.abs(rotateBy) > SAFE_ANGLE) {
-	 * try { if (rotateBy > 0) { if (rotateBy > 180) { driver.turnRight(5); }
-	 * else { driver.turnLeft(5); } } else { if (-rotateBy > 180) {
-	 * driver.turnLeft(5); } else { driver.turnRight(5); } } try {
-	 * Thread.sleep(150); } catch(InterruptedException ex) {
-	 * Thread.currentThread().interrupt(); } } catch (Exception e1) { System.out
-	 * .println("Exception encountered while trying to turn to face point " +
-	 * Xcoordinate + ", " + Ycoordinate); e1.printStackTrace(); } try {
-	 * Thread.sleep(100); } catch (InterruptedException e) {
-	 * e.printStackTrace(); } robotOrientation =
-	 * state.getRobotFacing(state.getOurColor(), state.getDirection()); rotateBy
-	 * = robotOrientation - targetAngle; } }
-	 */
-
-	/*
-	 * Pseudo Code for getting the robot to navigate to, and kick, the ball.
-	 * Call chooseRobot connect to chosen Robot create Vision instance discern
-	 * target goal assign target point within goal (currently only use goal
-	 * centre) - separate method create vectors for line ball to goal and for
-	 * ball to robot using ball position as (0,0) point of coordinate axis
-	 * assign ball's approach point if ball's approach point lies within
-	 * selected robots zone then if angle between line connecting ball to the
-	 * target goal and the line connecting the ball to the Robot is >90 degrees
-	 * and <270 move to the ball's approach point face target goal approach and
-	 * kick ball else set way-point 90 degrees or 270 degrees to the line
-	 * connecting ball to goal (whichever is closer to the angle between line
-	 * connecting ball to the target goal and the line connecting the ball to
-	 * the Robot) if way-point is within robots bounding box go to way-point
-	 * face and move to the ball's approach point face target goal and approach
-	 * and kick ball else Robot is stuck in a corner of its zone and can't kick
-	 * the ball towards the goal. display that shot has been deemed impossible
-	 * else display that shot has been deemed impossible end
-	 * 
-	 * Throughout this loop if ball location is changed then loop should start
-	 * from the top again after a period of waiting for the ball's reported
-	 * position to stabilise
-	 */
-
+	
+	//Duplicate code from Milestone3def below
 	
 	/**
 	 * Returns an angle ang in degrees on [0,360)
