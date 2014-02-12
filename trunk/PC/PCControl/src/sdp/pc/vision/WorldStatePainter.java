@@ -247,6 +247,7 @@ public class WorldStatePainter {
 		// calculate/get the different FPS
 		long nowRun = System.currentTimeMillis();
 		int drawFps = (int) (1000 / (nowRun - lastRun));
+		state.setPaintFps(drawFps);
 		lastRun = nowRun;
 		int worldFps = stateListener.getCurrentFps();
 		int clockFps = stateListener.getClockFps();

@@ -160,6 +160,9 @@ public class WorldStateUpdater extends WorldStateListener {
 
 				// make it an offset from current position
 				avgPastPos = avgPastPos.subtract(ballPos);
+				
+				// convert to pixels per second
+				avgPastPos = avgPastPos.mult(state.getPaintFps());
 				state.setBallVelocity(avgPastPos);
 			}
 

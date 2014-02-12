@@ -20,8 +20,8 @@ public class WorldState {
 	public static final int TEAM_COUNT = 2;
 
 	/**
-	 * The pitch ID associated with this instance of WorldState. 0 for Main, 1 for
-	 * side (TODO: Should be abstracted)
+	 * The pitch ID associated with this instance of WorldState. 0 for Main, 1
+	 * for side (TODO: Should be abstracted)
 	 */
 	private int pitchId;
 
@@ -47,7 +47,13 @@ public class WorldState {
 	 * The current pitch info for this world
 	 */
 	private final Pitch pitch = new Pitch();
-	
+
+	/**
+	 * The framerate of the world state painter in frames per second. Useful for
+	 * calculating the speed of things in meaningful units.
+	 */
+	private int paintFps;
+
 	/**
 	 * The best known velocity of the ball in <b>this</b>. It is reset to
 	 * Point2.EMPTY when unknown. Note that Point2 is used because x,y refer to
@@ -142,18 +148,26 @@ public class WorldState {
 	}
 
 	/**
+	 * Getter method for paint FPS, useful for calculating the velocity of
+	 * objects in meaningful units
+	 */
+	public int getPaintFps() {
+		return this.paintFps;
+	}
+
+	/**
 	 * Getter method for ball facing
 	 * 
-	 * @return TODO: Returns ball facing in degrees on [0,360)? (It should)
+	 * @return the ball facing angle in degrees on [0,360)
 	 */
 	public double getBallFacing() {
 		return ballFacing;
 	}
 
 	/**
-	 * Getter method for ball speed
+	 * Getter method for ball speed.
 	 * 
-	 * @return TODO: Ball speed in pixels per second? Or per frame? To discuss.
+	 * @return Ball speed in pixels per second, as a double
 	 */
 	public double getBallSpeed() {
 		return ballSpeed;
@@ -307,9 +321,18 @@ public class WorldState {
 	}
 
 	/**
-	 * Sets the current velocity of the ball TODO: Units
+	 * Setter method for the WorldStatePaint FPS. Useful for calculating the
+	 * velocity of objects in real units.
 	 */
+	public void setPaintFps(int fps) {
+		this.paintFps = fps;
+	}
 
+	/**
+	 * Sets the current velocity of the ball in pixels per second. Also
+	 * automatically calculates the ball speed and facing angle. (Speed is also
+	 * in pixels per second)
+	 */
 	public void setBallVelocity(Point2 ballVelocity) {
 		this.ballVelocity = ballVelocity;
 		this.ballSpeed = ballVelocity.length();
@@ -317,7 +340,7 @@ public class WorldState {
 	}
 
 	/**
-	 * Gets the current velocity of the ball TODO: Units
+	 * Gets the current velocity of the ball in pixels per second.
 	 */
 
 	public Point2 getBallVelocity() {
@@ -325,9 +348,8 @@ public class WorldState {
 	}
 
 	/**
-	 * Setter method for updating the estimated ball stop point
-	 * Setter method for updating the estimated ball stop point. Used by
-	 * FutureBall
+	 * Setter method for updating the estimated ball stop point Setter method
+	 * for updating the estimated ball stop point. Used by FutureBall
 	 * 
 	 * @param pt
 	 */
@@ -336,9 +358,8 @@ public class WorldState {
 	}
 
 	/**
-	 * Setter method for updating the estimated collide point
-	 * Setter method for updating the estimated collide point. Used by
-	 * FutureBall
+	 * Setter method for updating the estimated collide point Setter method for
+	 * updating the estimated collide point. Used by FutureBall
 	 * 
 	 * @param pt
 	 */
@@ -347,9 +368,8 @@ public class WorldState {
 	}
 
 	/**
-	 * Getter method for the estimated stop point of the ball
-	 * Getter method for the estimated stop point of the ball. Used by
-	 * FutureBall
+	 * Getter method for the estimated stop point of the ball Getter method for
+	 * the estimated stop point of the ball. Used by FutureBall
 	 * 
 	 * @return
 	 */
@@ -358,9 +378,8 @@ public class WorldState {
 	}
 
 	/**
-	 * Getter method for the estimated collide point of the ball
-	 * Getter method for the estimated collide point of the ball. Used by
-	 * FutureBall
+	 * Getter method for the estimated collide point of the ball Getter method
+	 * for the estimated collide point of the ball. Used by FutureBall
 	 * 
 	 * @return
 	 */

@@ -16,7 +16,9 @@ import au.edu.jcu.v4l4j.exceptions.V4L4JException;
  * M3def:
  * 
  * <ol>
- * <li>Ensure your robot and machine are paired via bluetooth</li>
+ * <li>Set DEF_TEAM and DEF_ROBOT depending to the desired values. Set
+ * GOAL_OFFSET to the desired x-offset from the target goal (use a negative
+ * number if defending right goal)</li>
  * <li>Run 'ant' via '/SDP/trunk/PC/PCControl/'</li>
  * <li>Follow the instructions in ant, choosing 'd' or 'a'</li>
  * <li>Run Milestone3def as a java application, choosing the same robot 'd' or
@@ -25,8 +27,17 @@ import au.edu.jcu.v4l4j.exceptions.V4L4JException;
  */
 public class Milestone3def {
 
+	/**
+	 * The size of the extra buffer a defender can travel beyond the goal mouth,
+	 * in pixels.
+	 */
 	private static final int BETWEEN_GOALS_EPSILON = 3;
 
+	/**
+	 * The desired offset from the goal centre for the robot to initialise
+	 * itself to, in pixels. Use a negative value if defending the right-hand
+	 * goal.
+	 */
 	private static final int GOAL_OFFSET = 20;
 
 	/**
@@ -36,23 +47,60 @@ public class Milestone3def {
 
 	/**
 	 * Minimum ball speed for the robot to consider the ball as approaching the
-	 * goal
+	 * goal in pixels per second.
 	 */
-	private static final double BALL_SPEED_THRESHOLD = 10.0;
+	private static final double BALL_SPEED_THRESHOLD = 50.0;
 
+	/**
+	 * The period at which the main method executes and sends commands to the
+	 * robot, in milliseconds. A value of 1/7*1000 corresponds to 7 times per
+	 * second. Avoid sending too many commands per second as the TCP/bluetooth
+	 * buffer can "overflow"
+	 */
 	private static final double PERIOD = (1.0 / 7.0 * 1000.0);
 
-	// Yellow = Team 0; Blue = Team 1
-	// Robot on the left - 0; robot on the right - 1
-	private static int DEF_TEAM = 0, DEF_ROBOT = 0, SAFE_ANGLE = 5;
+	/**
+	 * A constant representing our team (defending team). 0 refers to team
+	 * Yellow and 1 refers to team Blue.
+	 * 
+	 * TODO: This should be abstracted.
+	 */
+	private static final int DEF_TEAM = 0;
 
+	/**
+	 * A constant for our robot. 0 would be on the left, 1 on the right.
+	 * 
+	 * TODO: This should be abstracted.
+	 */
+	private static final int DEF_ROBOT = 0;
+
+	/**
+	 * A useful epsilon value for asserting our robots facing angle. We can
+	 * adjust how precise we want it to be to the true value with this. A higher
+	 * number will achieve the desired angle faster. Value is in degrees.
+	 */
+	private static final int FACING_EPSILON = 5;
+
+	/**
+	 * Similar to FACING_EPSILON, this value defines how close, in pixels, the
+	 * robot should be to a target point before it is considered done. A higher
+	 * value means the robot will achieve its goal faster but with less
+	 * precision.
+	 */
 	private static double NEAR_EPSILON_DIST = 10;
+
+	/**
+	 * How far from the goalmouth centre the robot should travel before
+	 * returning, in pixels.
+	 */
 	private static double SAFE_DIST_FROM_GOAL = 30;
 
 	/**
 	 * Main method which executes M3def
 	 */
 	public static void main(String[] args) throws Exception {
+
+		// Start the vision system
 		Thread.sleep(2000);
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
@@ -64,6 +112,8 @@ public class Milestone3def {
 				}
 			}
 		});
+
+		// Connect to a robot
 		final TCPClient conn = new TCPClient(ChooseRobot.dialog());
 		final Driver driver = new Driver(conn);
 
@@ -76,7 +126,6 @@ public class Milestone3def {
 					driver.stop();
 					conn.closeConnection();
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				System.out.println("Should have stopped by now.");
@@ -84,7 +133,10 @@ public class Milestone3def {
 		});
 		Thread.sleep(500);
 
-		// Here is the FSM behaviour of the system
+		// The following section was disabled to adhere to the (last minute)
+		// milestone rules:
+
+		// // Here is the FSM behaviour of the system
 		// while (true) {
 		// // M3 should be a finite state machine that constantly loops,
 		// // executing the necessary job. User input should not be necessary.
@@ -110,9 +162,15 @@ public class Milestone3def {
 		// }
 
 		while (true) {
+
+			// If the ball is moving fast enough, defend it.
 			if (state.getBallSpeed() > BALL_SPEED_THRESHOLD) {
 				defendBall(state, driver);
 			} else {
+
+				// The following code was disabled to adhere to the (last
+				// minute) milestone rules:
+
 				// Point2 robotPosition = state.getRobotPosition(ATT_TEAM,
 				// ATT_ROBOT);
 				// double robotFacing = state.getRobotFacing(ATT_TEAM,
@@ -131,15 +189,18 @@ public class Milestone3def {
 		}
 	}
 
+	/**
+	 * Synchronous method which performs (briefly) the goal of defending the
+	 * ball. It checks the predicted stop location of the ball and moves to its
+	 * Y coordinate by going forwards or backwards.
+	 */
 	public static void defendBall(WorldState state, Driver driver)
 			throws Exception {
-		// Get predicted ball position (Y value) when it will come to
-		// defender's side
-		// Point2 predBallPos = FutureBall.estimateBallPositionWhen(
-		// position, facing, robotPosition, DEF_ROBOT);
+
+		// Get predicted ball stop point
 		Point2 predBallPos = state.getEstimatedStopPoint();
 
-		// Move robot to this position
+		// If that position exists, go to its Y coordinate, otherwise stop.
 		if (!predBallPos.equals(Point2.EMPTY)) {
 			defendTo(state, driver, predBallPos.getY(), NEAR_EPSILON_DIST);
 		} else {
@@ -147,6 +208,15 @@ public class Milestone3def {
 		}
 	}
 
+	/**
+	 * In theory this method would be used for defending against the attacker
+	 * while the ball isn't moving, by estimating the robots facing angle and
+	 * cutting it off. In practice, we never used this method (and its
+	 * implementation does nothing like what's documented here)
+	 * 
+	 * TODO: Defending against a robot is useful, and we should implement,
+	 * abstract, and modularise this.
+	 */
 	public static void defendRobot(WorldState state, Driver driver,
 			Point2 position, double facing) throws Exception {
 
@@ -170,6 +240,10 @@ public class Milestone3def {
 		}
 	}
 
+	/**
+	 * Returns true if a given Y coordinate is between the specified goalmouth
+	 * endpoints, with some epsilon value.
+	 */
 	private static boolean betweenGoals(int y, int side, int eps) {
 		if (side == 0) {
 			return (y + eps < WorldState.leftGoalBottom.getY() && y - eps > WorldState.leftGoalTop
@@ -180,27 +254,34 @@ public class Milestone3def {
 		}
 	}
 
+	/**
+	 * Makes the robot, which should already be perpendicular, move forward or
+	 * backward to cut off the estimated ball postion's Y coordinte. The method
+	 * is synchronous, and therefore must be called until it returns true if you
+	 * expect it to be finished.
+	 */
 	private static boolean defendTo(WorldState state2, Driver driver, int y,
 			double eps) throws Exception {
 
 		double botFacing = state.getRobotFacing(DEF_TEAM, DEF_ROBOT);
-		double angleToBall = state.getRobotPosition(DEF_TEAM, DEF_ROBOT)
-				.angleTo(
-						new Point2(state.getRobotPosition(DEF_TEAM, DEF_ROBOT)
-								.getX(), y));
+		Point2 botPosition = state.getRobotPosition(DEF_TEAM, DEF_ROBOT);
+		int botX = botPosition.getX();
+		double angleToBall = botPosition.angleTo(new Point2(botX, y));
+		boolean between = betweenGoals(y, DEF_ROBOT, BETWEEN_GOALS_EPSILON);
+		int estStopY = state.getEstimatedStopPoint().getY();
+
+		// Compare robot facing with angle to ball
 		double diff = normalizeToBiDirection(botFacing - angleToBall);
-		if (state.getRobotPosition(DEF_TEAM, DEF_ROBOT).distance(
-				new Point2(state.getRobotPosition(DEF_TEAM, DEF_ROBOT).getX(),
-						state.getEstimatedStopPoint().getY())) > eps
-				&& betweenGoals(y, DEF_ROBOT, BETWEEN_GOALS_EPSILON)) {
+
+		// If the robot is far enough from the target, and between the goals:
+		if (botPosition.distance(new Point2(botX, estStopY)) > eps && between) {
+
+			// Assert the robot is near the target, by going forward or backward
 			if (Math.abs(diff) > 90) {
-				assertNearReverse(state, driver, new Point2(state
-						.getRobotPosition(DEF_TEAM, DEF_ROBOT).getX(), state
-						.getEstimatedStopPoint().getY()), NEAR_EPSILON_DIST);
+				assertNearReverse(state, driver, new Point2(botX, estStopY),
+						NEAR_EPSILON_DIST);
 			} else {
-				assertNear(state, driver,
-						new Point2(state.getRobotPosition(DEF_TEAM, DEF_ROBOT)
-								.getX(), state.getEstimatedStopPoint().getY()),
+				assertNearForward(state, driver, new Point2(botX, estStopY),
 						NEAR_EPSILON_DIST);
 			}
 		} else {
@@ -210,7 +291,19 @@ public class Milestone3def {
 		return false;
 	}
 
-	@SuppressWarnings("unused")
+	/**
+	 * In theory, should make the robot move somewhere half-way between the
+	 * estimated ball position's Y coordinate and the goalmouth's centre, useful
+	 * when the ball is not moving and the attacking robot is not wearing a hat.
+	 * We never used it for the milestone and therefore it is disabled. We're
+	 * suppressing all warnings because comparing DEF_ROBOT to 0 apparently
+	 * makes dead code etc.
+	 * 
+	 * In practice, this method won't really be useful for matches because all
+	 * robots will be wearing hats, but the concept behind weighting the goal
+	 * centre is useful.
+	 */
+	@SuppressWarnings("all")
 	public static void defendIfNoAttacker(WorldState state, Driver driver)
 			throws Exception {
 		Point2 robotPosition = state.getRobotPosition(DEF_TEAM, DEF_ROBOT);
@@ -231,7 +324,9 @@ public class Milestone3def {
 	}
 
 	/**
-	 * Returns an angle ang in degrees on [0,360)
+	 * Returns an angle ang in degrees on [0,360).
+	 * 
+	 * TODO: Should be abstracted to an Angle class, I guess.
 	 * 
 	 * @param ang
 	 *            angle in degrees
@@ -248,7 +343,10 @@ public class Milestone3def {
 	}
 
 	/**
-	 * Returns an angle ang in degrees on [-180,180)
+	 * Returns an angle ang in degrees on [-180,180), useful for comparing
+	 * angles.
+	 * 
+	 * TODO: Should be abstracted to an Angle class, I guess.
 	 * 
 	 * @param ang
 	 *            angle in degrees
@@ -264,6 +362,13 @@ public class Milestone3def {
 		return ang;
 	}
 
+	/**
+	 * Returns the desired rotate speed based on how far the robot has to rotate
+	 * before it finishes. Useful because there is a delay associated with
+	 * frames of world state, and we can't rotate at full-speed all the time.
+	 * 
+	 * @return TODO: speed in motor-degrees (?) per second
+	 */
 	private static double getRotateSpeed(double rotateBy, double epsilon) {
 		rotateBy = Math.abs(rotateBy);
 		if (rotateBy > 75.0) {
@@ -277,6 +382,14 @@ public class Milestone3def {
 		}
 	}
 
+	/**
+	 * Synchronous method which must be called continuously which makes a robot
+	 * face a specific angle in degrees. The robot will rotate the direction
+	 * which gets their faster.
+	 * 
+	 * @return true if the robot is already facing deg within a window of
+	 *         epsilon
+	 */
 	public static boolean assertFacing(WorldState state, Driver driver,
 			double deg, double epsilon) {
 		double rotateBy = normalizeToBiDirection(state.getRobotFacing(DEF_TEAM,
@@ -296,7 +409,12 @@ public class Milestone3def {
 		return false;
 	}
 
-	public static boolean assertNear(WorldState state, Driver driver,
+	/**
+	 * Makes the robot go forward as long as it's outwith <b>to</b> with
+	 * windowsize epsilon. We therefore assume the robot is perpendicular.
+	 * Synchronus and must be called continuously.
+	 */
+	public static boolean assertNearForward(WorldState state, Driver driver,
 			Point2 to, double epsilon) throws Exception {
 		Point2 robLoc = state.getRobotPosition(DEF_TEAM, DEF_ROBOT);
 		if (robLoc.distance(to) < epsilon) {
@@ -307,6 +425,11 @@ public class Milestone3def {
 		return false;
 	}
 
+	/**
+	 * Makes the robot go backward as long as it's outwith <b>to</b> with
+	 * windowsize epsilon. We therefore assume the robot is perpendicular.
+	 * Synchronous and must be called continuously.
+	 */
 	public static boolean assertNearReverse(WorldState state, Driver driver,
 			Point2 to, double epsilon) throws Exception {
 		Point2 robLoc = state.getRobotPosition(DEF_TEAM, DEF_ROBOT);
@@ -318,6 +441,10 @@ public class Milestone3def {
 		return false;
 	}
 
+	/**
+	 * Similar to getRotateSpeed, gets a reasonable move speed for the robot
+	 * depending how far it is from the target.
+	 */
 	private static double getMoveSpeed(double distance, double eps) {
 		if (distance > 60.0) {
 			return 300.0;
@@ -330,23 +457,41 @@ public class Milestone3def {
 		}
 	}
 
+	/**
+	 * Makes the robot turn to apoint synchronously. Returns true when it is
+	 * complete.
+	 */
 	public static boolean turnTo(WorldState state, Driver driver, Point2 to) {
 		double ang = normalizeToUnitDegrees(state.getRobotPosition(DEF_TEAM,
 				DEF_ROBOT).angleTo(to));
-		if (assertFacing(state, driver, ang, SAFE_ANGLE)) {
+		if (assertFacing(state, driver, ang, FACING_EPSILON)) {
 			return true;
 		}
 		return false;
 	}
 
+	/**
+	 * Essentially a Point2 abstraction of assertNearForward. Should probably be
+	 * refactored or at least renamed.
+	 * 
+	 * TODO: Consider this.
+	 */
 	public static boolean goTo(WorldState state, Driver driver, Point2 to,
 			double eps) throws Exception {
-		if (assertNear(state, driver, to, eps)) {
+		if (assertNearForward(state, driver, to, eps)) {
 			return true;
 		}
 		return false;
 	}
 
+	/**
+	 * Method for sending the robot to the goalmouth. Must be called
+	 * continuously because it is synchronous.
+	 * 
+	 * Here we suppress all warnings because we compare DEF_ROBOT to 0,
+	 * blablabla.
+	 */
+	@SuppressWarnings("all")
 	public static boolean assertNearGoalLine(WorldState state, Driver driver,
 			double eps) {
 		try {
@@ -400,7 +545,7 @@ public class Milestone3def {
 		}
 
 		// Do it
-		if (assertFacing(state, driver, target, SAFE_ANGLE)) {
+		if (assertFacing(state, driver, target, FACING_EPSILON)) {
 			driver.stop();
 			return true;
 		}

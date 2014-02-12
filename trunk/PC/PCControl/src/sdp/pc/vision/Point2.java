@@ -370,8 +370,10 @@ public class Point2 {
 	}
 
 	/**
-	 * Gets the angle from the origin (0,0) to this point i.e. the angle of this
-	 * vector
+	 * Gets the angle from the origin to <b>this</b>. In other words, the angle
+	 * of <b>this</b> as a vector.
+	 * 
+	 * @return The angle of <b>this</b> as a vector, in degrees on [0,360)
 	 */
 	public double angle() {
 		return Point2.EMPTY.angleTo(this);
