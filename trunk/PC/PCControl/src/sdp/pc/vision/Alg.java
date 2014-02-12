@@ -176,20 +176,40 @@ public class Alg {
 		return isInHull(borderPoints, p.x, p.y);
 	}
 	
+	/**
+	 * Splits the given array into intervals based on the margins (tresholds) given
+	 * The returned array lists contain Point2's whose X values represent the start
+	 * of the interval, and Y values represent its end. 
+	 * The index of the array list represents the class of the interval
+	 * @param vals the values to find the intervals in
+	 * @param minSize the minimum size of an interval
+	 * @param margins the minimum value for an item to get to the i'th interval (ascending order)
+	 * @return An array of lists with length equal to the margin count and each containing the intervals
+	 * where such points are contained, as points (x - start, y - end)
+	 */
 	public static ArrayList<Point2>[] getIntervals(int[] vals, int minSize, int... margins) {
+		
 		@SuppressWarnings("unchecked")	//no generic arrays
 		ArrayList<Point2>[] ans = new ArrayList[margins.length];
+		
+		//create margins
 		for(int i = 0; i < margins.length; i++)
 			ans[i] = new ArrayList<Point2>();
 		
+		//vars
 		int state = 0,
 			newState = 0,
 			stateStart = 0;
 		for(int i = 0; i < vals.length; i++) {
 			newState = getIntervalState(margins, vals[i]);
+			
+//			System.out.println(i + "   " + vals[i] + "  " + newState);
+			
+			//unchanged state
 			if(state == newState)
 				continue;
 			
+			//add to answers if state was valid (> 0)
 			if(state > 0 && i - stateStart > minSize ) {
 				ans[state - 1].add(new Point2(stateStart, i - 1));
 			}
