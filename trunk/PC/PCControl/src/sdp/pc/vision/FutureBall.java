@@ -55,12 +55,26 @@ public class FutureBall {
 				pts[1].getX(), pts[1].getY());
 	}
 	
+	/**
+	 * Estimates ball stop point given velocity and position
+	 * of the ball
+	 * 
+	 * @return predicted ball position
+	 */
 	public static Point2 estimateRealStopPoint() {
 		Point2 vel = state.getBallVelocity();
 		Point2 pos = state.getBallPosition().copy();
 		return estimateStopPoint(vel, pos);
 	}
 
+	/**
+	 * Estimates object stop point given velocity and position
+	 * of the object  
+	 * 
+	 * @param vel 
+	 * @param pos
+	 * @return predicted position
+	 */
 	public static Point2 estimateStopPoint(Point2 vel, Point2 pos) {
 		double delX = vel.getX(), delY = vel.getY();
 		double tarX = pos.getX(), tarY = pos.getY();
@@ -89,6 +103,51 @@ public class FutureBall {
 			}
 		}
 		return new Point2((int) tarX, (int) tarY);
+	}
+	/**
+	 * Estimates moving object position when movingPos.getX() == staticPos.getX().
+	 * Return Point2(0,0) if movingPos.getX() never equals staticPos.getX()
+	 * 
+	 * @param movingPos
+	 * @param movingFacing
+	 * @param staticPoints
+	 * @return estimated moving object position
+	 */
+	public static Point2 estimatePositionWhen(Point2 movingPos, double movingFacing, Point2 staticPos){
+		// Add some huge velocity for x
+		int x = 1000;
+		double angle = movingFacing;
+		if (90 < angle && angle < 180) {
+			angle = 180 - angle;
+		} else if (180 < angle && angle < 270) {
+			angle -= 180;
+		} else if (angle > 270) {
+			angle = 360 - angle;
+		}
+		int y = (int) (x * Math.tan(angle*Math.PI/180));
+		if (movingFacing < 180) {
+			y = -y;
+		}
+		if (movingFacing > 270 || movingFacing < 90) {
+			x = -x;
+		}
+
+		Point2 stopPos = FutureBall.estimateStopPoint(new Point2(x, y),
+				movingPos);
+		
+		double deltaY = Math.abs(stopPos.getY() - movingPos.getY()) *
+				Math.abs(staticPos.getX() - movingPos.getX()) / 
+				Math.abs(stopPos.getX() - movingPos.getX());
+		
+		double predY;
+		if (movingFacing < 180) {
+			predY = deltaY + movingPos.getY();
+		} else {
+			predY = movingPos.getY() - deltaY;
+		}
+		//TODO check if point is within the boundaries and if not
+		//return (0,0)
+		return new Point2(staticPos.getX(), (int) predY);
 	}
 	
 }

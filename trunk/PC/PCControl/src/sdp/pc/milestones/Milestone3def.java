@@ -223,10 +223,10 @@ public class Milestone3def {
 		// Add some huge velocity
 		int x = 200;
 		int y = 200;
-		if (facing > 180) {
+		if (facing < 180) {
 			y = -y;
 		}
-		if (facing < 270 && facing > 90) {
+		if (facing > 270 || facing < 90) {
 			x = -x;
 		}
 
