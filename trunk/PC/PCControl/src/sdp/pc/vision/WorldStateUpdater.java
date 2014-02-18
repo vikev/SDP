@@ -37,7 +37,7 @@ public class WorldStateUpdater extends WorldStateListener {
 	/**
 	 * The amount of past positions used to interpolate the speed of the ball
 	 */
-	public int PAST_BALL_POSITIONS = 10;
+	public int PAST_BALL_POSITIONS = 2;
 
 	// used to find them correct robot positions
 	// contain [team][robot]
@@ -173,6 +173,7 @@ public class WorldStateUpdater extends WorldStateListener {
 
 			// Update estimated stop/collide points
 			state.setEstimatedStopPoint(FutureBall.estimateRealStopPoint());
+			//System.out.println(FutureBall.collision);
 			state.setEstimatedCollisionPoint(FutureBall.collision);
 		} else {
 			// If the ball position doesn't exist, update world state

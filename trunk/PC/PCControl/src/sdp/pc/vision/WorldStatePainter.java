@@ -16,9 +16,10 @@ import sdp.pc.common.Constants;
  */
 public class WorldStatePainter {
 	/**
-	 * The minimum speed considered as moving TODO: move to WorldState?
+	 * Minimum ball speed for the robot to consider the ball as moving
+	 * in pixels per second.
 	 */
-	private static final double BALL_SPEED_THRESHOLD = 3.0;
+	private static final double BALL_SPEED_THRESHOLD = 50.0;
 	/**
 	 * The length of the nose of the robot exposing its current orientation
 	 */
@@ -195,6 +196,7 @@ public class WorldStatePainter {
 		Point2 ballPos = state.getBallPosition();
 		Point2 ballVelocity = state.getBallVelocity();
 		ballVelocity = ballVelocity.mult(-5);
+		double ballSpeed = state.getBallSpeed();
 		// draw ball if and only if the ball is on the table
 		if (!ballPos.equals(Point2.EMPTY)) {
 			g.setColor(Color.red);
@@ -202,7 +204,7 @@ public class WorldStatePainter {
 			g.drawLine(ballPos.getX(), 0, ballPos.getX(), 480);
 
 			// draw ball velocity (if above the threshold)
-			if (ballVelocity.length() > BALL_SPEED_THRESHOLD) {
+			if (ballSpeed > BALL_SPEED_THRESHOLD) {
 				Point2 velocityPos = ballPos.add(ballVelocity);
 				g.drawLine(ballPos.getX(), ballPos.getY(), velocityPos.getX(),
 						velocityPos.getY());
