@@ -247,7 +247,48 @@ public class WorldStatePainter {
 					}
 				}
 			}
-
+		
+		/*
+		// Attempting to draw rebounds
+		Point2 start = new Point2(222,222);
+		Point2 end = new Point2(444,444);
+		
+		if (!Vision.stateListener.pointInPitch(end)){
+			double m = (start.getY() -end.getY())/(start.getX() - end.getX());
+			Point2 current = new Point2(start.getX(),start.getY());
+			Point2 next = new Point2(current.getX(),start.getY());
+			int incrementsY;
+			if (end.getY()<start.getY()){
+				incrementsY = -1;
+			} else {
+				incrementsY = 1;
+			}
+			
+			int incrementsX;
+			if (end.getX()<start.getX()){
+				incrementsX = -1;
+			} else {
+				incrementsX = 1;
+			}
+			while(Vision.stateListener.pointInPitch(current)){
+				next.setY(next.getY()+incrementsY);
+				int x = (int) Math.round((next.getX()+(incrementsX/m)));
+				next.setX(x);
+				current = next;
+			}
+			g.drawLine(start.getX(), start.getY(), current.getX(), current.getY());
+			double revisedM = m /-1;
+			double vHatY = Math.abs(current.getX() - start.getY());
+			
+			int predictedY = (int) (current.getY() - vHatY/2);
+			int predictedX = (int) (((predictedY - current.getY())/revisedM)+ current.getX());
+			Point2 predicted = new Point2(predictedX,predictedY);
+			g.drawLine(current.getX(), current.getY(), predicted.getX(), predicted.getY());			
+		} else {
+			g.drawLine(start.getX(), start.getY(), end.getX(), end.getY());
+		}
+		*/
+		
 		// draw centre line
 		g.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
 		g.drawLine(TABLE_CENTRE_X, TABLE_MIN_Y + 1, TABLE_CENTRE_X,
@@ -324,6 +365,19 @@ public class WorldStatePainter {
 		// g.drawLine(pitch.zoneX[1], 0, pitch.zoneX[1], Vision.HEIGHT);
 		// g.drawLine(pitch.zoneX[2], 0, pitch.zoneX[2], Vision.HEIGHT);
 		// }
+		
+/*		//pitch borders
+		Pitch pitch = state.getPitch();
+		if(pitch != null) {
+			g.drawLine(pitch.goalLineX[0], 0, pitch.goalLineX[0], Vision.HEIGHT);
+			g.drawLine(pitch.goalLineX[1], 0, pitch.goalLineX[1], Vision.HEIGHT);
+			g.drawLine(0, pitch.pitchY[0], Vision.WIDTH, pitch.pitchY[0]);
+			g.drawLine(0, pitch.pitchY[1], Vision.WIDTH, pitch.pitchY[1]);
+			g.drawLine(pitch.zoneX[0], 0, pitch.zoneX[0], Vision.HEIGHT);
+			g.drawLine(pitch.zoneX[1], 0, pitch.zoneX[1], Vision.HEIGHT);
+			g.drawLine(pitch.zoneX[2], 0, pitch.zoneX[2], Vision.HEIGHT);
+		}
+		*/
 
 		// bin your litter
 		g.dispose();
