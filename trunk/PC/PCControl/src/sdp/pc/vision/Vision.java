@@ -188,8 +188,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// create state painter
 		statePainter = new WorldStatePainter(stateListener, state);
 
-		// Load threshold and point constants. TODO: Abstract this to not refer
-		// specifically to pitch0.
+		// Load threshold and point constants. 
+		
+		//TODO: Abstract this to not refer specifically to pitch0.
 		pitchConsts.loadConstantsForPitchUsedLastTime();
 		pitchConsts.uploadConstants(thresh, state);
 		Colors.setTreshold(thresh);

@@ -76,19 +76,21 @@ public class Colors {
 	 */
 	@SuppressWarnings("unused")
 	public static boolean isWhite(Color c, float[] hsb) {
+		final int delta = 50;
+		final double minRgb = 120;
+		
 		boolean h = Alg.withinBounds(hsb[0], 0.00f, 1f);
 		boolean s = Alg.withinBounds(hsb[1], 0.05f, 0.3f);
 		boolean b = Alg.withinBounds(hsb[2], 0.65f, 0.7f);
 		if (c != null) {
-			final int delta = 100;
-			final double minRgb = 150;
+			
 			int r = c.getRed();
 			int g = c.getGreen();
 			int bl = c.getBlue();
 			boolean rgb = Math.abs(r - g) < delta && Math.abs(r - bl) < delta
 					&& Math.abs(bl - g) < delta && g > minRgb;
 			//return rgb && h && s && b;
-			return h && s;
+			return rgb;
 		} else {
 			return false;
 		}

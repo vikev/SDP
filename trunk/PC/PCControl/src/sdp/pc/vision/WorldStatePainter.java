@@ -5,7 +5,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
-import sdp.pc.common.Constants;
+import static sdp.pc.common.Constants.*;
 
 /**
  * Takes care of painting a {@link WorldState} overlay atop a
@@ -16,8 +16,8 @@ import sdp.pc.common.Constants;
  */
 public class WorldStatePainter {
 	/**
-	 * Minimum ball speed for the robot to consider the ball as moving
-	 * in pixels per second.
+	 * Minimum ball speed for the robot to consider the ball as moving in pixels
+	 * per second.
 	 */
 	private static final double BALL_SPEED_THRESHOLD = 50.0;
 	/**
@@ -199,7 +199,7 @@ public class WorldStatePainter {
 		double ballSpeed = state.getBallSpeed();
 		// draw ball if and only if the ball is on the table
 		if (!ballPos.equals(Point2.EMPTY)) {
-			g.setColor(Color.red);
+			g.setColor(RED_BLEND);
 			g.drawLine(0, ballPos.getY(), 640, ballPos.getY());
 			g.drawLine(ballPos.getX(), 0, ballPos.getX(), 480);
 
@@ -212,12 +212,20 @@ public class WorldStatePainter {
 
 			// futureballs
 			if (!state.getEstimatedStopPoint().equals(Point2.EMPTY)) {
-				drawCircle(g, Constants.GRAY_BLEND,
-						FutureBall.estimateRealStopPoint(),
-						Constants.ROBOT_HEAD_RADIUS);
+				drawCircle(g, GRAY_BLEND, FutureBall.estimateRealStopPoint(),
+						ROBOT_HEAD_RADIUS);
 				if (!state.getEstimatedCollidePoint().equals(Point2.EMPTY)) {
-					drawCircle(g, Constants.GRAY_BLEND, FutureBall.collision, 5);
+					drawCircle(g, GRAY_BLEND, FutureBall.collision, 5);
 				}
+			}
+
+			// collision
+			if (!state.getEstimatedCollidePoint().equals(Point2.EMPTY)) {
+				g.setColor(GRAY_BLEND);
+				g.drawLine(state.getBallPosition().getX(), state
+						.getBallPosition().getY(), state
+						.getEstimatedCollidePoint().getX(), state
+						.getEstimatedCollidePoint().getY());
 			}
 		}
 
@@ -230,8 +238,7 @@ public class WorldStatePainter {
 
 				// draw robots, if and only if they are on the table
 				if (!robotPos.equals(Point2.EMPTY)) {
-					drawCircle(g, Constants.YELLOW_BLEND, robotPos,
-							Constants.ROBOT_CIRCLE_RADIUS);
+					drawCircle(g, YELLOW_BLEND, robotPos, ROBOT_CIRCLE_RADIUS);
 					if (!(robotFacing == Double.NaN)) {
 						Point2 nosePos = robotPos.polarOffset(ROBOT_NOSE,
 								robotFacing + 180);
@@ -243,8 +250,8 @@ public class WorldStatePainter {
 
 		// draw centre line
 		g.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
-		g.drawLine(Constants.TABLE_CENTRE_X, Constants.TABLE_MIN_Y + 1,
-				Constants.TABLE_CENTRE_X, Constants.TABLE_MAX_Y - 1);
+		g.drawLine(TABLE_CENTRE_X, TABLE_MIN_Y + 1, TABLE_CENTRE_X,
+				TABLE_MAX_Y - 1);
 
 		// calculate/get the different FPS
 		long nowRun = System.currentTimeMillis();
@@ -305,19 +312,18 @@ public class WorldStatePainter {
 				g.drawString(strPos, TEXT_OFFSET, TEXT_OFFSET + 4 * TEXT_HEIGHT);
 			}
 		}
-		
-		//pitch borders
-//		Pitch pitch = state.getPitch();
-//		if(pitch != null) {
-//			g.drawLine(pitch.goalLineX[0], 0, pitch.goalLineX[0], Vision.HEIGHT);
-//			g.drawLine(pitch.goalLineX[1], 0, pitch.goalLineX[1], Vision.HEIGHT);
-//			g.drawLine(0, pitch.pitchY[0], Vision.WIDTH, pitch.pitchY[0]);
-//			g.drawLine(0, pitch.pitchY[1], Vision.WIDTH, pitch.pitchY[1]);
-//			g.drawLine(pitch.zoneX[0], 0, pitch.zoneX[0], Vision.HEIGHT);
-//			g.drawLine(pitch.zoneX[1], 0, pitch.zoneX[1], Vision.HEIGHT);
-//			g.drawLine(pitch.zoneX[2], 0, pitch.zoneX[2], Vision.HEIGHT);
-//		}
-		
+
+		// pitch borders
+		// Pitch pitch = state.getPitch();
+		// if(pitch != null) {
+		// g.drawLine(pitch.goalLineX[0], 0, pitch.goalLineX[0], Vision.HEIGHT);
+		// g.drawLine(pitch.goalLineX[1], 0, pitch.goalLineX[1], Vision.HEIGHT);
+		// g.drawLine(0, pitch.pitchY[0], Vision.WIDTH, pitch.pitchY[0]);
+		// g.drawLine(0, pitch.pitchY[1], Vision.WIDTH, pitch.pitchY[1]);
+		// g.drawLine(pitch.zoneX[0], 0, pitch.zoneX[0], Vision.HEIGHT);
+		// g.drawLine(pitch.zoneX[1], 0, pitch.zoneX[1], Vision.HEIGHT);
+		// g.drawLine(pitch.zoneX[2], 0, pitch.zoneX[2], Vision.HEIGHT);
+		// }
 
 		// bin your litter
 		g.dispose();

@@ -11,6 +11,11 @@ package sdp.pc.vision;
 public class FutureBall {
 
 	/**
+	 * The estimated fraction of the ball velocity lost per second
+	 */
+	private static final double ESTIMATED_BALL_FRICTION = 0.6;
+
+	/**
 	 * The world state attached to FutureBall.
 	 */
 	public static WorldState state = Vision.state;
@@ -21,13 +26,14 @@ public class FutureBall {
 	public static Point2 collision = Point2.EMPTY;
 
 	/**
-	 * Returns true if the pitch contains point q
+	 * Returns true if the pitch contains point q. As long as the isWhite method
+	 * is calibrated for your pitch (the convex hull is working properly), it
+	 * will work!
 	 * 
 	 * @param q
 	 * @return
 	 */
 	public static boolean pitchContains(Point2 q) {
-		// TODO: untested
 		if (Vision.stateListener.pointInPitch(q)) {
 			return true;
 		}
@@ -81,7 +87,6 @@ public class FutureBall {
 
 			}
 		}
-		System.out.println("collide8");
 		Vision.frameLabel.getGraphics().drawLine(pts[0].getX(), pts[0].getY(),
 				pts[1].getX(), pts[1].getY());
 	}
@@ -101,37 +106,47 @@ public class FutureBall {
 	 * Estimates object stop point given velocity and position of the object
 	 * 
 	 * @param vel
-	 * @param pos
+	 *            - the velocity of the ball in vector format
+	 * @param ball
+	 *            - the position of the ball in co-ordinate format
 	 * @return predicted position
 	 */
-	public static Point2 estimateStopPoint(Point2 vel, Point2 pos) {
+	public static Point2 estimateStopPoint(Point2 vel, Point2 ball) {
 		double delX = vel.getX(), delY = vel.getY();
-		double tarX = pos.getX(), tarY = pos.getY();
-		// Changed this with the help of geometric series
-		tarX -= delX * 1.5;
-		tarY -= delY * 1.5;
+		double tarX = ball.getX(), tarY = ball.getY();
 
-		double distToStop = (new Point2((int) (tarX - pos.getX()),
-				(int) (tarY - pos.getY())).modulus());
-		double sX = pos.getX(), sY = pos.getY();
-		double vHatX = tarX - pos.getX();
-		double vHatY = tarY - pos.getY();
-		vHatX /= (Math.sqrt(vHatX * vHatX + vHatY * vHatY));
-		vHatY /= (Math.sqrt(vHatX * vHatX + vHatY * vHatY));
+		// How much friction to apply to the ball
+
+		double frameFriction = 1.0 - ESTIMATED_BALL_FRICTION;
+
+		// Apply geometric series
+		frameFriction = frameFriction / (1 - frameFriction);
+		tarX -= delX * frameFriction;
+		tarY -= delY * frameFriction;
+
+		// Search for collision
+		double iteratorX = ball.getX(), iteratorY = ball.getY();
+		double distToStop = (new Point2((int) (tarX - iteratorX),
+				(int) (tarY - iteratorY)).modulus());
+
+		double vHatX = tarX - iteratorX;
+		double vHatY = tarY - iteratorY;
+		vHatX /= distToStop;
+		vHatY /= distToStop;
 		collision = Point2.EMPTY;
 		if (vel.modulus() > 5) {
-			while (collision.getX() == -1 && distToStop > 0) {
-				if (Vision.stateListener.pointInPitch(new Point2((int) sX,
-						(int) sY))
-						&& !pitchContains(new Point2((int) sX, (int) sY))) {
-					collision = new Point2((int) sX, (int) sY);
-					collide8(sX, sY);
+			while (collision.equals(Point2.EMPTY) && distToStop > 0) {
+				if (!pitchContains(new Point2((int) iteratorX, (int) iteratorY))) {
+					collision = new Point2((int) iteratorX, (int) iteratorY);
+					collide8(iteratorX, iteratorY);
 				}
-				sX += vHatX;
-				sY += vHatY;
-				distToStop -= Math.sqrt(vHatX + vHatY);
+				iteratorX += vHatX;
+				iteratorY += vHatY;
+				distToStop -= 1;
 			}
 		}
+
+		// Return stop point
 		return new Point2((int) tarX, (int) tarY);
 	}
 
