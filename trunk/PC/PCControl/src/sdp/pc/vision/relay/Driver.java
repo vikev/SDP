@@ -2,6 +2,11 @@ package sdp.pc.vision.relay;
 
 import sdp.pc.common.Constants;
 
+/**
+ * TODO:What is the difference between this and sdp.pc.robot.pilot.Driver ?? We
+ * don't need two drivers, I'm quite sure.
+ * 
+ */
 public class Driver {
 	private TCPClient conn;
 	private int robotId;

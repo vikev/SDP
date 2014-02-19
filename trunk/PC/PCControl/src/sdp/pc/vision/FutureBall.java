@@ -1,10 +1,32 @@
 package sdp.pc.vision;
 
+/**
+ * Class for estimating the real trajectories of the ball. Feeds data it
+ * estimates to the world state. FutureBall is static and monolithic and
+ * shouldn't be instantiated.
+ * 
+ * @author s1143704
+ * 
+ */
 public class FutureBall {
-	public static WorldState state = Vision.state;
-	public static Point2 collision = new Point2(-1, -1);
 
-	public static boolean contains(Point2 q) {
+	/**
+	 * The world state attached to FutureBall.
+	 */
+	public static WorldState state = Vision.state;
+
+	/**
+	 * The estimated collision point. For now, there is at most one collision.
+	 */
+	public static Point2 collision = Point2.EMPTY;
+
+	/**
+	 * Returns true if the pitch contains point q
+	 * 
+	 * @param q
+	 * @return
+	 */
+	public static boolean pitchContains(Point2 q) {
 		// TODO: untested
 		if (Vision.stateListener.pointInPitch(q)) {
 			return true;
@@ -12,33 +34,42 @@ public class FutureBall {
 		return false;
 	}
 
+	/**
+	 * Calculate if the pitch contains the 8 surrounding pixels around (x,y) and
+	 * therefore determine the deflection angle.
+	 * 
+	 * TODO: Incomplete and untested
+	 * 
+	 * @param x
+	 * @param y
+	 */
 	public static void collide8(double x, double y) {
 		boolean[] q = new boolean[8];
 		Point2[] pts = new Point2[8];
 
 		pts[0] = new Point2((int) x + 1, (int) y);
-		q[0] = contains(pts[0]);
+		q[0] = pitchContains(pts[0]);
 
 		pts[1] = new Point2((int) x + 1, (int) y - 1);
-		q[1] = contains(pts[1]);
+		q[1] = pitchContains(pts[1]);
 
 		pts[2] = new Point2((int) x, (int) y - 1);
-		q[2] = contains(pts[2]);
+		q[2] = pitchContains(pts[2]);
 
 		pts[3] = new Point2((int) x - 1, (int) y - 1);
-		q[3] = contains(pts[3]);
+		q[3] = pitchContains(pts[3]);
 
 		pts[4] = new Point2((int) x - 1, (int) y);
-		q[4] = contains(pts[4]);
+		q[4] = pitchContains(pts[4]);
 
 		pts[5] = new Point2((int) x - 1, (int) y + 1);
-		q[5] = contains(pts[5]);
+		q[5] = pitchContains(pts[5]);
 
 		pts[6] = new Point2((int) x, (int) y + 1);
-		q[6] = contains(pts[6]);
+		q[6] = pitchContains(pts[6]);
 
 		pts[7] = new Point2((int) x + 1, (int) y + 1);
-		q[7] = contains(pts[7]);
+		q[7] = pitchContains(pts[7]);
 
 		boolean here = q[0];
 		int[] p = new int[2];
@@ -54,10 +85,9 @@ public class FutureBall {
 		Vision.frameLabel.getGraphics().drawLine(pts[0].getX(), pts[0].getY(),
 				pts[1].getX(), pts[1].getY());
 	}
-	
+
 	/**
-	 * Estimates ball stop point given velocity and position
-	 * of the ball
+	 * Estimates ball stop point given velocity and position of the ball
 	 * 
 	 * @return predicted ball position
 	 */
@@ -68,10 +98,9 @@ public class FutureBall {
 	}
 
 	/**
-	 * Estimates object stop point given velocity and position
-	 * of the object  
+	 * Estimates object stop point given velocity and position of the object
 	 * 
-	 * @param vel 
+	 * @param vel
 	 * @param pos
 	 * @return predicted position
 	 */
@@ -93,7 +122,8 @@ public class FutureBall {
 		if (vel.modulus() > 5) {
 			while (collision.getX() == -1 && distToStop > 0) {
 				if (Vision.stateListener.pointInPitch(new Point2((int) sX,
-						(int) sY)) && !contains(new Point2((int) sX, (int) sY))) {
+						(int) sY))
+						&& !pitchContains(new Point2((int) sX, (int) sY))) {
 					collision = new Point2((int) sX, (int) sY);
 					collide8(sX, sY);
 				}
@@ -104,16 +134,19 @@ public class FutureBall {
 		}
 		return new Point2((int) tarX, (int) tarY);
 	}
+
 	/**
-	 * Estimates moving object position when movingPos.getX() == staticPos.getX().
-	 * Return Point2(0,0) if movingPos.getX() never equals staticPos.getX()
+	 * Estimates moving object position when movingPos.getX() ==
+	 * staticPos.getX(). Return Point2(0,0) if movingPos.getX() never equals
+	 * staticPos.getX()
 	 * 
 	 * @param movingPos
 	 * @param movingFacing
 	 * @param staticPoints
 	 * @return estimated moving object position
 	 */
-	public static Point2 estimatePositionWhen(Point2 movingPos, double movingFacing, Point2 staticPos){
+	public static Point2 estimatePositionWhen(Point2 movingPos,
+			double movingFacing, Point2 staticPos) {
 		// Add some huge velocity for x
 		int x = 1000;
 		double angle = movingFacing;
@@ -124,7 +157,7 @@ public class FutureBall {
 		} else if (angle > 270) {
 			angle = 360 - angle;
 		}
-		int y = (int) (x * Math.tan(angle*Math.PI/180));
+		int y = (int) (x * Math.tan(angle * Math.PI / 180));
 		if (movingFacing < 180) {
 			y = -y;
 		}
@@ -134,20 +167,19 @@ public class FutureBall {
 
 		Point2 stopPos = FutureBall.estimateStopPoint(new Point2(x, y),
 				movingPos);
-		
-		double deltaY = Math.abs(stopPos.getY() - movingPos.getY()) *
-				Math.abs(staticPos.getX() - movingPos.getX()) / 
-				Math.abs(stopPos.getX() - movingPos.getX());
-		
+
+		double deltaY = Math.abs(stopPos.getY() - movingPos.getY())
+				* Math.abs(staticPos.getX() - movingPos.getX())
+				/ Math.abs(stopPos.getX() - movingPos.getX());
+
 		double predY;
 		if (movingFacing < 180) {
 			predY = deltaY + movingPos.getY();
 		} else {
 			predY = movingPos.getY() - deltaY;
 		}
-		//TODO check if point is within the boundaries and if not
-		//return (0,0)
+		// TODO check if point is within the boundaries and if not
+		// return (0,0)
 		return new Point2(staticPos.getX(), (int) predY);
 	}
-	
 }

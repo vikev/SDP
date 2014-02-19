@@ -35,6 +35,17 @@ import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 public class Vision extends WindowAdapter implements CaptureCallback {
 
 	/**
+	 * TODO: Has anyone tried changing the JPEG quality? JPEG can be pushed all
+	 * the way to 100, which may improve our pixel recognition (at the cost of
+	 * performance?)
+	 * 
+	 * I've adjusted it to 100 and manually taken a look at the performance
+	 * while running Vision. It doesn't seem to change. As long as no one else
+	 * has problems we should keep it at 100
+	 */
+	private static final int JPEG_QUALITY = 100;
+
+	/**
 	 * The desired (maximum?) FPS at which the world state will refresh
 	 */
 	private static final int WORLD_STATE_TARGET_FPS = 60;
@@ -48,11 +59,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * Height of the video feed
 	 */
 	static final int HEIGHT = 480;
-
-	/**
-	 * Size of the buffer for smoothing orientation (disabled)
-	 */
-	// private static final int ANGLE_SMOOTHING_FRAME_COUNT = 4;
 
 	/**
 	 * Video standard used by V4L4J (should be PAL)
@@ -238,8 +244,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				// Draw the world overlay to the buffer
 				Point2 mousePos = new Point2(Vision.frame.getContentPane()
 						.getMousePosition());
-				// TODO: Commented out was '.subtractBorders();' - do we need
-				// this?
 				statePainter.drawWorld(buffer, mousePos);
 
 				// Draw the result to the frameLabel
@@ -277,13 +281,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 */
 	private void initFrameGrabber() throws V4L4JException {
 		videoDevice = new VideoDevice(DEVICE);
-
-		// TODO: Has anyone tried changing the JPEG quality? JPEG can be pushed
-		// all the way to 100, which may improve our pixel recognition (at the
-		// cost of performance?) If it makes any difference, JPEG quality should
-		// be abstracted to a constant.
 		frameGrabber = videoDevice.getJPEGFrameGrabber(WIDTH, HEIGHT, CHANNEL,
-				VIDEO_STANDARD, 80);
+				VIDEO_STANDARD, JPEG_QUALITY);
 		frameGrabber.setCaptureCallback(this);
 	}
 

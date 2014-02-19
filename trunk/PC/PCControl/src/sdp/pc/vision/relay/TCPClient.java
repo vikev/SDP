@@ -5,6 +5,11 @@ import java.net.*;
 
 import sdp.pc.common.Constants;
 
+/**
+ * TODO: What's the difference between this and sdp.pc.relay.TCPClient ? I'm
+ * sure we don't need two of them.
+ * 
+ */
 public class TCPClient {
 	private PrintWriter toServer;
 	private BufferedReader fromServer;

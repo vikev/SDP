@@ -1,6 +1,8 @@
 package sdp.pc.robot.pilot;
 
 /**
+ * TODO: What is this class and why do we have it?
+ * 
  * @author s1133141
  */
 

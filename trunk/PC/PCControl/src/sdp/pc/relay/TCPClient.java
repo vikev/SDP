@@ -15,6 +15,10 @@ import javax.swing.JFrame;
 import sdp.pc.common.ChooseRobot;
 import sdp.pc.common.Constants;
 
+/**
+ * TODO: What is this class for and are we using it?
+ *
+ */
 public class TCPClient {
 
 	public void run(int serverPort, final int robot) {

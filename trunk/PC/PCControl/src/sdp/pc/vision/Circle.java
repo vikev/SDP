@@ -2,9 +2,21 @@ package sdp.pc.vision;
 
 import java.awt.geom.Point2D;
 
+/**
+ * Our implementation of a Circle which essentially contains a center and
+ * radius.
+ * 
+ */
 public class Circle {
-	public Point2D.Double position;
-	public double radius;
+	/**
+	 * The centre of the circle
+	 */
+	private Point2D.Double position;
+	
+	/**
+	 * The radius of the circle
+	 */
+	private double radius;
 
 	/**
 	 * Gets the centre of this circle
@@ -35,6 +47,8 @@ public class Circle {
 
 	/**
 	 * Constructs a new circle determined by three points lying on its boundary
+	 * 
+	 * TODO: What does method do if the points don't form a circle?
 	 * 
 	 * @param a
 	 *            the first point lying on the circle's boundary

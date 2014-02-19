@@ -4,6 +4,10 @@ import java.awt.Color;
 
 import sdp.pc.common.Constants;
 
+/**
+ * TODO: What is this class for? Are we using it?
+ *
+ */
 public class Colors {
 
 	private static ThresholdsState tresholds;
