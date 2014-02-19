@@ -1,5 +1,8 @@
 package sdp.pc.vision;
 
+import java.awt.Color;
+import java.awt.Graphics;
+
 /**
  * Class for estimating the real trajectories of the ball. Feeds data it
  * estimates to the world state. FutureBall is static and monolithic and
@@ -41,6 +44,21 @@ public class FutureBall {
 	}
 
 	/**
+	 * Draw a line to the world state (you naughty boy) between a and b
+	 * 
+	 * @param a
+	 *            - One Point2
+	 * @param b
+	 *            - The other Point2
+	 */
+	private static void drawLine(Point2 a, Point2 b) {
+		// Attempt to draw collision boundary
+		Graphics g = Vision.frameLabel.getGraphics();
+		g.setColor(Color.RED);
+		g.drawLine(a.getX(), a.getY(), b.getX(), b.getY());
+	}
+
+	/**
 	 * Calculate if the pitch contains the 8 surrounding pixels around (x,y) and
 	 * therefore determine the deflection angle.
 	 * 
@@ -79,16 +97,29 @@ public class FutureBall {
 
 		boolean here = q[0];
 		int[] p = new int[2];
-		int found = 0;
+		int found = -1;
+		boolean b = true;
 		for (int i = 1; i < 8; i++) {
 			if (!here == q[i]) {
 				here = !here;
-				p[found] = i;
-
+				if (found > -1) {
+					p[found] = i;
+				}
+				found++;
+				if (found > 1) {
+					break;
+				}
+				if(i==7 && b){
+					i=0;
+					b=false;
+				}
 			}
 		}
-		Vision.frameLabel.getGraphics().drawLine(pts[0].getX(), pts[0].getY(),
-				pts[1].getX(), pts[1].getY());
+
+		double ang = pts[p[0]].angleTo(pts[p[1]]) * Math.PI / 180.0;
+		Point2 offsPt = new Point2((int) (50.0 * Math.cos(ang)),
+				(int) (50.0 * Math.sin(ang)));
+		drawLine(pts[p[0]].add(offsPt), pts[p[1]].sub(offsPt));
 	}
 
 	/**
@@ -151,50 +182,75 @@ public class FutureBall {
 	}
 
 	/**
-	 * Estimates moving object position when movingPos.getX() ==
-	 * staticPos.getX(). Return Point2(0,0) if movingPos.getX() never equals
-	 * staticPos.getX()
+	 * Estimates the intersection point of a moving ball, with a robot whose x
+	 * co-ordinate remains static.
 	 * 
-	 * @param movingPos
-	 * @param movingFacing
-	 * @param staticPoints
-	 * @return estimated moving object position
+	 * @param ball
+	 *            - the position of the ball (moving object with arbitrary
+	 *            facing angle)
+	 * @param ballFacing
+	 *            - the facing angle of ball
+	 * @param staticPos
+	 *            - the position of the robot whose x co-ordinate should remain
+	 *            static
+	 * @return estimated position of the robot to intersect the ball
 	 */
-	public static Point2 estimatePositionWhen(Point2 movingPos,
-			double movingFacing, Point2 staticPos) {
-		// Add some huge velocity for x
+	public static Point2 estimateMatchingYCoord(Point2 ball, double ballFacing,
+			Point2 staticPos) {
+
+		// Assume the ball is moving very fast, give it a velocity of 1000.
 		int x = 1000;
-		double angle = movingFacing;
+		double angle = ballFacing;
+
+		// Do Lukas-style maths, lose brownie points
+
+		// Note 90 degrees is south due to inverted co-ordinates.
+		// Change quadrant 3 to quadrant 1: (mirror on y=-x)
 		if (90 < angle && angle < 180) {
 			angle = 180 - angle;
+
+			// Change quadrant 2 to quadrant 4: (mirror on y=x)
 		} else if (180 < angle && angle < 270) {
 			angle -= 180;
+
+			// Change quadrant 1 to quadrant 4 (mirror on x-axis)
 		} else if (angle > 270) {
 			angle = 360 - angle;
 		}
+
+		// Projection: y <-- big number * tan(angle)
+		// small angle -> 0, large angle -> inf
 		int y = (int) (x * Math.tan(angle * Math.PI / 180));
-		if (movingFacing < 180) {
+
+		// assert y on first two quadrants
+		if (ballFacing < 180) {
 			y = -y;
 		}
-		if (movingFacing > 270 || movingFacing < 90) {
+		// mirror on y-axis if facing angle is on 1st or 4th quadrant
+		if (ballFacing > 270 || ballFacing < 90) {
 			x = -x;
 		}
 
-		Point2 stopPos = FutureBall.estimateStopPoint(new Point2(x, y),
-				movingPos);
+		// TODO: I refuse to believe this works
+		Point2 stopPos = FutureBall.estimateStopPoint(new Point2(x, y), ball);
 
-		double deltaY = Math.abs(stopPos.getY() - movingPos.getY())
-				* Math.abs(staticPos.getX() - movingPos.getX())
-				/ Math.abs(stopPos.getX() - movingPos.getX());
+		// What the fuck does this do? Nothing
+		double deltaY = Math.abs(stopPos.getY() - ball.getY())
+				* Math.abs(staticPos.getX() - ball.getX())
+				/ Math.abs(stopPos.getX() - ball.getX());
 
+		// Does nothing
 		double predY;
-		if (movingFacing < 180) {
-			predY = deltaY + movingPos.getY();
+		if (ballFacing < 180) {
+			predY = deltaY + ball.getY();
 		} else {
-			predY = movingPos.getY() - deltaY;
+			predY = ball.getY() - deltaY;
 		}
-		// TODO check if point is within the boundaries and if not
-		// return (0,0)
-		return new Point2(staticPos.getX(), (int) predY);
+		// check if point is within the boundaries and if not return (0,0)
+		Point2 target = new Point2(staticPos.getX(), (int) predY);
+		if (pitchContains(target)) {
+			return target;
+		}
+		return Point2.EMPTY;
 	}
 }

@@ -305,6 +305,16 @@ public class Point2 {
 	}
 
 	/**
+	 * gets a point which is <b>this</b> minus the components of p.
+	 * 
+	 * @param p
+	 * @return
+	 */
+	public Point2 sub(Point2 p) {
+		return new Point2(x - p.x, y - p.y);
+	}
+
+	/**
 	 * Gets a point which is the sum of this point and the given point
 	 * 
 	 * @param p
