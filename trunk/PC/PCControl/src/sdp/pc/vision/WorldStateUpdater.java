@@ -43,31 +43,46 @@ public class WorldStateUpdater extends WorldStateListener {
 	// contain [team][robot]
 
 	/**
-	 * the amount of points observed for each robot
+	 * The amount of points observed for each robot
 	 */
 	private int[][] robotPtsCount = new int[2][2];
 
 	/**
-	 * the sum (later average) of the observed points
+	 * The sum (later average) of the observed points
 	 */
 	private Point2[][] robotPos = new Point2[2][2];
 
 	@SuppressWarnings("unchecked")
 	// can't create generic arrays
 	/**
-	 *  the list of points for each robot
+	 *  The list of points for each robot
 	 */
 	private ArrayList<Point2>[][] robotPts = new ArrayList[][] {
 			new ArrayList[] { new ArrayList<Point2>(), new ArrayList<Point2>(), },
 			new ArrayList[] { new ArrayList<Point2>(), new ArrayList<Point2>() } };
 
 	/**
-	 * the list of points for ball position
+	 * The list of points for ball position
 	 */
 	private int ballPtsCount;
 	Point2 ballPos;
 	LinkedList<Point2> ballPastPos = new LinkedList<Point2>();
+	
+	/**
+	 * List of points belonging to the green plates
+	 */
+	private ArrayList<Point2> greenPlatePoints = new ArrayList<Point2>();
+	
+	/**
+	 * Clusters giving the positions of the four green plates
+	 * The given points are just for initialisation of the vision
+	 */
+	Cluster[] clusters = { new Cluster( new Point2(110,220)),
+						   new Cluster( new Point2(240,220)),
+						   new Cluster( new Point2(390,220)), 
+						   new Cluster( new Point2(520,220)) };
 
+	
 	/**
 	 * Constructs a new WorldStateUpdater to look for new frames, as refreshed
 	 * by setCurrentFrame(). When a new frame is detected it first grabs the
@@ -94,6 +109,7 @@ public class WorldStateUpdater extends WorldStateListener {
 		// reset ball/robot averages and collected points
 		ballPtsCount = 0;
 		ballPos = new Point2();
+		greenPlatePoints.clear();
 		for (int i = 0; i < 2; i++)
 			for (int j = 0; j < 2; j++) {
 				robotPtsCount[i][j] = 0;
@@ -123,6 +139,11 @@ public class WorldStateUpdater extends WorldStateListener {
 				// update its counters
 				ballPos = ballPos.add(p);
 				ballPtsCount++;
+			}
+			
+			// Check if it's a green plate
+			if(Colors.isGreen(cRgb, cHsb)) {
+				greenPlatePoints.add(p);
 			}
 
 			// check if it's a team colour
@@ -184,28 +205,62 @@ public class WorldStateUpdater extends WorldStateListener {
 			state.setEstimatedStopPoint(Point2.EMPTY);
 			state.setEstimatedCollisionPoint(Point2.EMPTY);
 		}
+		
+		// Find the green plate clusters
+		clusters = Kmeans.doKmeans(greenPlatePoints, 
+				clusters[0].getMean(), clusters[1].getMean(),
+				clusters[2].getMean(), clusters[3].getMean());
 
-		// loop through teams' robots
+		// Loop through teams' robots
 		for (int team = 0; team < 2; team++)
 			for (int robot = 0; robot < 2; robot++) {
-				// check if we saw that robot enough times
+				
+				// Check if we saw that robot enough times
 				int ptCount = robotPtsCount[team][robot];
 				if (ptCount > MINIMUM_ROBOT_POINTS) {
-					// if so, find the centre (mean)
+					
+					// Remove team-color pixels if they're not within a green plate
+					Point2 tempPos = new Point2(0,0);
+					ArrayList<Point2> tempPts = new ArrayList<Point2>();
+					int tempCount = 0;
+					for (Point2 p : robotPts[team][robot]) {
+						boolean isPointInPlate = false;
+						for (Cluster cluster : clusters) {
+							if (p.distance(cluster.getMean()) < Constants.ROBOT_CIRCLE_RADIUS/2) {
+								isPointInPlate = true;
+							}
+						}
+						if (isPointInPlate) {
+							tempPos = tempPos.add(p);
+							tempPts.add(p);
+							tempCount++;
+						}
+						else {
+							robotPos[team][robot].sub(p);
+							ptCount--;
+						}
+					}
+					robotPos[team][robot] = tempPos;
+					robotPts[team][robot] = tempPts;
+					ptCount = tempCount;
+					
+					// Find the robot's centre (mean)
+					if (ptCount==0) break;
 					Point2 newPos = robotPos[team][robot].div(ptCount);
-
-					// remove the outliers
+					
+					// Remove the outliers
 					ArrayList<Point2> newPts = Point2.removeOutliers(
 							robotPts[team][robot], newPos);
 
 					newPos.filterPoints(newPts); // and find it again
 
-					// now find its facing
+					// Now find its facing
 					double newFacing = findOrientation(newPos, cRgbs, cHsbs);
 
-					// and update the world state
+					// And update the world state
 					state.setRobotPosition(team, robot, newPos);
 					state.setRobotFacing(team, robot, newFacing);
+					
 				} else {
 					state.setRobotPosition(team, robot, Point2.EMPTY);
 					state.setRobotFacing(team, robot, Double.NaN);

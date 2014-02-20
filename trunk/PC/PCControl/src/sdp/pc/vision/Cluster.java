@@ -84,4 +84,11 @@ public class Cluster {
 	public void setMean(Point2 mean) {
 		this.mean = mean;
 	}
+	
+	/**
+	 * Returns all the points in the cluster
+	 */
+	public ArrayList<Point2> getPoints() {
+		return points;
+	}
 }

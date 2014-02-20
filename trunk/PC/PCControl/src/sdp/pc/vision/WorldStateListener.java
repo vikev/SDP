@@ -320,27 +320,26 @@ public abstract class WorldStateListener implements Runnable {
 		if (SettingsManager.defaultSettings.hasBoundary() && ++keyframe >= FRAME_IGNORE_COUNT) {
 
 			
-			// get boundary
+			// Get boundary
 			Point2 pa = SettingsManager.defaultSettings.getBoundary(0);
 			Point2 pb = SettingsManager.defaultSettings.getBoundary(1);
-			
 			int minX = Math.min(pa.x, pb.x), maxX = Math.max(pa.x, pb.x), minY = Math
 					.min(pa.y, pb.y), maxY = Math.max(pa.y, pb.y);
 
-			// get all white pixels
+			// Get all white pixels
 			ArrayList<Point2> whitePoints = new ArrayList<Point2>();
 			Color cRgb;
 			float[] cHsb;
 			for (int x = minX; x < maxX; x++) {
 				for (int y = minY; y < maxY; y++) {
-					// get colours
+					// Get colours
 					cRgb = new Color(img.getRGB(x, y));
 					currentRgb[x][y] = cRgb;
 					cHsb = currentHsb[x][y];
 					Color.RGBtoHSB(cRgb.getRed(), cRgb.getGreen(),
 							cRgb.getBlue(), cHsb);
 
-					// add to white if white
+					// Add to white if white
 					if (Colors.isWhite(cRgb, cHsb)) {
 						Point2 p = new Point2(x, y);
 						whitePoints.add(p);
@@ -348,7 +347,7 @@ public abstract class WorldStateListener implements Runnable {
 				}
 			}
 
-			// find their hull
+			// Find their hull
 			LinkedList<Point2> borders = Alg.convexHull(whitePoints);
 
 			pitchPoints.clear();
@@ -369,12 +368,10 @@ public abstract class WorldStateListener implements Runnable {
 						currentRgb[x][y] = null;
 				}
 			}
-			System.out.println(minMaxBrightness[0] + " " + minMaxBrightness[1]);
 			
 			
-			//get pitch
+			// Get pitch
 			state.getPitch().Initialize(currentRgb, currentHsb);
-//			FisheyeFilter.initCL();
 			
 			preprocessed = true;
 			System.out

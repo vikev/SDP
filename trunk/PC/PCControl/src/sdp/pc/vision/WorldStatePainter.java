@@ -5,6 +5,8 @@ import static sdp.pc.vision.settings.SettingsManager.defaultSettings;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 
 import static sdp.pc.common.Constants.*;
@@ -17,6 +19,10 @@ import static sdp.pc.common.Constants.*;
  * @author Ix
  */
 public class WorldStatePainter {
+	
+	
+	public ActionListener customPaintCode;
+	
 	/**
 	 * Minimum ball speed for the robot to consider the ball as moving in pixels
 	 * per second.
@@ -224,8 +230,8 @@ public class WorldStatePainter {
 						.getEstimatedCollidePoint().getY());
 			}
 		}
-
-		// loop through all robots
+		
+		// Loop through all robots
 		for (int team = 0; team < 2; team++)
 			for (int robot = 0; robot < 2; robot++) {
 				// robot position, facing and nose
@@ -371,6 +377,10 @@ public class WorldStatePainter {
 		
 		// bin your litter
 		g.dispose();
+		
+		if(customPaintCode != null)
+			customPaintCode.actionPerformed(new ActionEvent(image, 0, ""));
+		
 	}
 
 	private void drawPreprocessOverlay(BufferedImage image, Graphics g, Point2 mousePos) {
