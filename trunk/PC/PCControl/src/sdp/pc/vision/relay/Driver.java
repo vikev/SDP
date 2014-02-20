@@ -20,7 +20,11 @@ public class Driver {
 		this.conn = conn;
 		this.robotId = conn.getRobotId();
 	}
-
+	
+	public void closeConnection(){
+		conn.closeConnection();
+	}
+	
 	/**
 	 * Travel forward at that speed. 0 = travel at max speed.
 	 * 

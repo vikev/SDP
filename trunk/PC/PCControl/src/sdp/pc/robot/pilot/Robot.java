@@ -57,6 +57,14 @@ public class Robot {
 	private static final int SAFE_APPROACH_DIST = 8;
 
 	/**
+	 * States for controlling logic branches of robots. (Should maybe be in an
+	 * Enum)
+	 */
+	private static final int STATE_UNKNOWN = 0;
+	
+	//TODO: More states
+	
+	/**
 	 * The primitive driver used to control the NXT
 	 */
 	private Driver driver;
@@ -75,6 +83,9 @@ public class Robot {
 	 * An integer which represents <b>this</> with respect to myTeam.
 	 */
 	private int myIdentifier;
+
+	@SuppressWarnings("unused")
+	private int myState = STATE_UNKNOWN;
 
 	/**
 	 * Class for controlling a robot from a more abstract point of view
@@ -95,6 +106,14 @@ public class Robot {
 		this.state = state;
 		this.myTeam = myTeam;
 		this.myIdentifier = myId;
+	}
+
+	public void stop() throws Exception {
+		driver.stop();
+	}
+
+	public void closeConnection() {
+		driver.closeConnection();
 	}
 
 	/**
@@ -417,10 +436,10 @@ public class Robot {
 		return false;
 	}
 
-	/////////////////////////////////////////////////////////////
+	// ///////////////////////////////////////////////////////////
 	// TODO: Check attacker code to conform to defender standards
-	/////////////////////////////////////////////////////////////
-	
+	// ///////////////////////////////////////////////////////////
+
 	/**
 	 * WIP Attempts to kick the ball by first navigating to a point
 	 * (apprachPoint) from which it can then approach the ball and kick it
