@@ -186,7 +186,7 @@ public abstract class WorldStateListener implements Runnable {
 	 * Gets the current progress of skipping frames as a value [0;100)
 	 */
 	public int getKeyFrames() {
-		return 100 * keyframe / FRAME_IGNORE_COUNT;
+		return 100 * Math.min(keyframe, FRAME_IGNORE_COUNT) / FRAME_IGNORE_COUNT;
 	}
 
 	/**

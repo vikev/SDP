@@ -113,6 +113,11 @@ public class SettingsManager implements java.io.Serializable {
 	 * The maximum R/G/B delta for a colour to be considered white
 	 */
 	private int[] whiteRgbDelta = new int[2];
+
+	/**
+	 * The pitch number. 0 is the main pitch, 1 is the side pitch. 
+	 */
+	private int currentPitchId = 0;
 	
 	// boundary points
 	private Point2[] boundaryPoints = new Point2[] { new Point2(),
@@ -125,11 +130,6 @@ public class SettingsManager implements java.io.Serializable {
 	 */
 	private transient String fileName;
 	
-	/**
-	 * The pitch number. 0 is the main pitch, 1 is the side pitch. 
-	 * ix: decided it should not be saved in the settings file
-	 */
-	private transient int currentPitchId = 0;
 
 	/**
 	 * Whether there are changes unsaved to the file. 
@@ -247,6 +247,7 @@ public class SettingsManager implements java.io.Serializable {
 
 	public void setCurrentPitchId(int currentPitchId) {
 		this.currentPitchId = currentPitchId;
+		registerChange();
 	}
 
 	/**

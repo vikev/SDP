@@ -308,7 +308,7 @@ public class WorldStatePainter {
 		g.drawString(sWorldFps, TEXT_OFFSET, TEXT_OFFSET + TEXT_HEIGHT);
 
 		// display mouse position, RGB, and HSB values to screen (if any)
-		if (mousePos != null) {
+		if (mousePos != null && mousePos.x < Vision.WIDTH && mousePos.y < Vision.HEIGHT) {
 
 			String colorTip = "norm";
 			cRgb = stateListener.getNormalisedRgb(mousePos.x, mousePos.y);
@@ -353,13 +353,17 @@ public class WorldStatePainter {
 		//pitch borders
 		Pitch pitch = state.getPitch();
 		if(pitch != null) {
-			g.drawLine(pitch.goalLineX[0], 0, pitch.goalLineX[0], Vision.HEIGHT);
-			g.drawLine(pitch.goalLineX[1], 0, pitch.goalLineX[1], Vision.HEIGHT);
-			g.drawLine(0, pitch.pitchY[0], Vision.WIDTH, pitch.pitchY[0]);
-			g.drawLine(0, pitch.pitchY[1], Vision.WIDTH, pitch.pitchY[1]);
-			g.drawLine(pitch.zoneX[0], 0, pitch.zoneX[0], Vision.HEIGHT);
-			g.drawLine(pitch.zoneX[1], 0, pitch.zoneX[1], Vision.HEIGHT);
-			g.drawLine(pitch.zoneX[2], 0, pitch.zoneX[2], Vision.HEIGHT);
+			g.drawLine(pitch.goalLineX[0], pitch.goalLineY[0], pitch.goalLineX[0], pitch.goalLineY[1]);
+			g.drawLine(pitch.goalLineX[1], pitch.goalLineY[0], pitch.goalLineX[1], pitch.goalLineY[1]);
+			g.drawLine(pitch.pitchCornerX[0], pitch.pitchY[0], pitch.pitchCornerX[1], pitch.pitchY[0]);
+			g.drawLine(pitch.pitchCornerX[0], pitch.pitchY[1], pitch.pitchCornerX[1], pitch.pitchY[1]);
+			g.drawLine(pitch.zoneX[0], pitch.pitchY[0], pitch.zoneX[0], pitch.pitchY[1]);
+			g.drawLine(pitch.zoneX[1], pitch.pitchY[0], pitch.zoneX[1], pitch.pitchY[1]);
+			g.drawLine(pitch.zoneX[2], pitch.pitchY[0], pitch.zoneX[2], pitch.pitchY[1]);
+			g.drawLine(pitch.goalLineX[0], pitch.goalLineY[0], pitch.pitchCornerX[0], pitch.pitchY[0]);
+			g.drawLine(pitch.goalLineX[0], pitch.goalLineY[1], pitch.pitchCornerX[0], pitch.pitchY[1]);
+			g.drawLine(pitch.goalLineX[1], pitch.goalLineY[0], pitch.pitchCornerX[1], pitch.pitchY[0]);
+			g.drawLine(pitch.goalLineX[1], pitch.goalLineY[1], pitch.pitchCornerX[1], pitch.pitchY[1]);
 		}
 		
 		if(isRawBoundaryShown())
@@ -378,24 +382,6 @@ public class WorldStatePainter {
 					"Select raw boundary points", TEXT_OFFSET,
 					TEXT_OFFSET);
 		
-			g.setColor(new Color(255, 127, 127, 127));
-			if(defaultSettings.getBoundary(0).equals(Point2.EMPTY))	{
-				//waiting for 1st point
-				g.fillRect(0, 0, Vision.WIDTH / 2, Vision.HEIGHT / 2);
-				
-				g.setColor(Color.white);
-				g.drawLine(mousePos.x, mousePos.y, Vision.WIDTH, mousePos.y);
-				g.drawLine(mousePos.x, mousePos.y, mousePos.x, Vision.HEIGHT);
-			}
-			else {
-				//waiting for 2nd point
-				g.fillRect(Vision.WIDTH / 2, Vision.HEIGHT / 2, Vision.WIDTH / 2, Vision.HEIGHT / 2);
-				
-				g.setColor(Color.white);
-				g.drawLine(mousePos.x, mousePos.y, 0, mousePos.y);
-				g.drawLine(mousePos.x, mousePos.y, mousePos.x, 0);
-			
-			}
 			
 			//draw white overlay to help selecting boundaries
 			for (int ix = 0; ix < Vision.WIDTH; ix++)
@@ -408,6 +394,26 @@ public class WorldStatePainter {
 					if (Colors.isWhite(cRgb, cHsb))
 						image.setRGB(ix, iy, Color.white.getRGB());
 				}
+			
+			// draw text n background
+			g.setColor(new Color(255, 127, 127, 127));
+			if(defaultSettings.getBoundary(0).equals(Point2.EMPTY))	{
+				// waiting for 1st point
+				g.fillRect(0, 0, Vision.WIDTH / 2, Vision.HEIGHT / 2);
+				
+				g.setColor(Color.white);
+				g.drawLine(mousePos.x, mousePos.y, Vision.WIDTH, mousePos.y);
+				g.drawLine(mousePos.x, mousePos.y, mousePos.x, Vision.HEIGHT);
+			}
+			else {
+				// waiting for 2nd point
+				g.fillRect(Vision.WIDTH / 2, Vision.HEIGHT / 2, Vision.WIDTH / 2, Vision.HEIGHT / 2);
+				
+				g.setColor(Color.white);
+				g.drawLine(mousePos.x, mousePos.y, 0, mousePos.y);
+				g.drawLine(mousePos.x, mousePos.y, mousePos.x, 0);
+			
+			}
 		}
 		else {
 			g.drawString(

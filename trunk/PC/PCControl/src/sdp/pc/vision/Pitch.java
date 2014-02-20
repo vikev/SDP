@@ -16,11 +16,13 @@ import java.util.ArrayList;
  */
 public class Pitch {
 
-	private static final int PITCH_SIDE_Y_NPOINTS = 120;
+	private static final int PITCH_SIDE_Y_NPOINTS = 300;
 
 	private static final int PITCH_ZONE_X_NPOINTS = 195;
 
 	private static final int PITCH_SIDE_X_NPOINTS = 99;
+
+	private static final int SOME_SHANO_VALUE = 4;
 
 	/**
 	 * The radius of a robot TODO: figure out a value for this
@@ -31,6 +33,12 @@ public class Pitch {
 	 * The x coordinates of the goal lines
 	 */
 	int[] goalLineX = new int[2];
+	
+	/**
+	 * The y coordinates of the goal lines
+	 */
+	int[] goalLineY = new int[2];
+	
 	/**
 	 * The x coordinates of the (middle of the) zones
 	 */
@@ -39,6 +47,8 @@ public class Pitch {
 	 * The y coordinates of the pitches
 	 */
 	int[] pitchY = new int[2];
+	
+	int[] pitchCornerX = new int[2];
 
 	boolean initialized = false;
 	
@@ -91,6 +101,29 @@ public class Pitch {
 
 	}
 
+	private Point2 horizontalSwipe(Color[][] rgb, float[][][] hsb, int y) {
+		Point2 p = new Point2(0, Vision.WIDTH - 1);
+		
+		while(!Colors.isWhite(rgb[p.x][y], hsb[p.x][y]) && p.x < Vision.WIDTH)
+			p.x++;
+		
+		while(!Colors.isWhite(rgb[p.y][y], hsb[p.y][y]) && p.y >= 0)
+			p.y--;
+		
+		return p;
+	}
+	
+	private Point2 verticalSwipe(Color[][] rgb, float[][][] hsb, int x) {
+		Point2 p = new Point2(0, Vision.HEIGHT - 1);
+		
+		while(!Colors.isWhite(rgb[x][p.x], hsb[x][p.x]) && p.x < Vision.HEIGHT)
+			p.x++;
+		
+		while(!Colors.isWhite(rgb[x][p.y], hsb[x][p.y]) && p.y >= 0)
+			p.y--;
+		return p;
+	}
+	
 	/**
 	 * Tries to grab pitch data from the current state listener's RGB/HSB values
 	 */
@@ -112,7 +145,7 @@ public class Pitch {
 		}
 		
 		ArrayList<Point2>[] xpts = Alg.getIntervals(xs, 7,  PITCH_SIDE_X_NPOINTS, PITCH_ZONE_X_NPOINTS);
-	
+		
 		ArrayList<Point2>[] ypts = Alg.getIntervals(ys, 5, PITCH_SIDE_Y_NPOINTS);
 		
 		if(xpts[0].size() < 2 || xpts[1].size() < 3 || ypts[0].isEmpty())
@@ -129,6 +162,16 @@ public class Pitch {
 		
 		pitchY[0] = ypts[0].get(0).x;
 		pitchY[1] = ypts[0].get(ypts[0].size() - 1).y;
+		
+		Point2 cx = horizontalSwipe(rgb, hsb, pitchY[0] + SOME_SHANO_VALUE);
+		
+		Point2 cy = verticalSwipe(rgb, hsb, goalLineX[0] + SOME_SHANO_VALUE);
+		
+		pitchCornerX[0] = cx.x;
+		pitchCornerX[1] = cx.y;
+
+		goalLineY[0] = cy.x;
+		goalLineY[1] = cy.y;
 		
 		initialized = true;
 		return true;
