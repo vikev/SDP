@@ -3,11 +3,71 @@ package sdp.pc.vision;
 import java.awt.Color;
 
 import sdp.pc.common.Constants;
+import sdp.pc.vision.settings.SettingsManager;
 
 public class Colors {
 
-	private static ThresholdsState tresholds;
+	/** 
+	 * The SettingsManager to get interval values from
+	 */
+	private static SettingsManager settingsManager;
 
+	/**
+	 * Checks whether all components (R,G,B,H,S,V) are greater than the values
+	 * in the reference array
+	 * @param rgb The RGB colour object
+	 * @param hsb The HSB colour object
+	 * @param ref 
+	 * 		An array of length 6 
+	 * 		with the first 3 values (RGB) in the range [0;255]
+	 * 		and the last 3 values (HSB) in the range [0;100]
+	 * @return Whether all components of the colour are higher than the reference values
+	 */
+	private static boolean moreThan(Color rgb, float[] hsb, int[] ref) {
+		return rgb.getRed() 	>= ref[0]
+			&& rgb.getGreen() 	>= ref[1]
+			&& rgb.getBlue() 	>= ref[2]
+			&& hsb[0] * 100 	>= ref[3]
+			&& hsb[1] * 100 	>= ref[4]
+			&& hsb[2] * 100	>= ref[5];
+	}
+	
+	/**
+	 * Checks whether all components (R,G,B,H,S,V) are less than the values
+	 * in the reference array
+	 * @param rgb The RGB colour object
+	 * @param hsb The HSB colour object
+	 * @param ref 
+	 * 		An array of length 6 
+	 * 		with the first 3 values (RGB) in the range [0;255]
+	 * 		and the last 3 values (HSB) in the range [0;100]
+	 * @return Whether all components of the colour are higher than the reference values
+	 */
+	private static boolean lessThan(Color rgb, float[] hsb, int[] ref) {
+		return rgb.getRed()	 	<= ref[0]
+			&& rgb.getGreen() 	<= ref[1]
+			&& rgb.getBlue() 	<= ref[2]
+			&& hsb[0] * 100 	<= ref[3]
+			&& hsb[1] * 100 	<= ref[4]
+			&& hsb[2] * 100 	<= ref[5];
+	}
+	
+	/**
+	 * Returns whether the given colour, represented by an RGB and an HSB object matches 
+	 * the predicate for a given colour code
+	 * @param rgb The RGB colour object
+	 * @param hsb The HSB colour object
+	 * @param colorCode The colour code to match against
+	 * @return Whether the colour matches the given colour code
+	 */
+	public static boolean isColorCode(Color rgb, float[] hsb, int colorCode) {
+		if(rgb == null)
+			return false;
+		
+		return moreThan(rgb, hsb, getSettingsManager().getMinValues(colorCode))
+				&& lessThan(rgb, hsb, getSettingsManager().getMaxValues(colorCode));
+	}
+	
 	/**
 	 * Checks if a pixel is black, i.e. can be used for orientation detection
 	 * 
@@ -16,21 +76,7 @@ public class Colors {
 	 * @return
 	 */
 	public static boolean isBlack(Color c, float[] hsb) {
-		if (c instanceof Color) {
-			return hsb[0] <= tresholds.getGrey_h_high()
-					&& hsb[0] >= tresholds.getGrey_h_low()
-					&& hsb[1] <= tresholds.getGrey_s_high()
-					&& hsb[1] >= tresholds.getGrey_s_low()
-					&& hsb[2] <= tresholds.getGrey_v_high()
-					&& hsb[2] >= tresholds.getGrey_v_low()
-					&& c.getRed() <= tresholds.getGrey_r_high()
-					&& c.getRed() >= tresholds.getGrey_r_low()
-					&& c.getGreen() <= tresholds.getGrey_g_high()
-					&& c.getGreen() >= tresholds.getGrey_g_low()
-					&& c.getBlue() <= tresholds.getGrey_b_high()
-					&& c.getBlue() >= tresholds.getGrey_b_low();
-		}
-		return false;
+		return isColorCode(c, hsb, SettingsManager.COLOR_CODE_GRAY);
 	}
 
 	/**
@@ -47,19 +93,10 @@ public class Colors {
 	 *         otherwise.
 	 */
 	public static boolean isGreen(Color c, float[] hsb) {
-		return hsb[0] <= tresholds.getGreen_h_high()
-				&& hsb[0] >= tresholds.getGreen_h_low()
-				&& hsb[1] <= tresholds.getGreen_s_high()
-				&& hsb[1] >= tresholds.getGreen_s_low()
-				&& hsb[2] <= tresholds.getGreen_v_high()
-				&& hsb[2] >= tresholds.getGreen_v_low()
-				&& c.getRed() <= tresholds.getGreen_r_high()
-				&& c.getRed() >= tresholds.getGreen_r_low()
-				&& c.getGreen() <= tresholds.getGreen_g_high()
-				&& c.getGreen() >= tresholds.getGreen_g_low()
-				&& c.getBlue() <= tresholds.getGreen_b_high()
-				&& c.getBlue() >= tresholds.getGreen_b_low();
+		return isColorCode(c, hsb, SettingsManager.COLOR_CODE_PLATE);
 	}
+
+	
 
 	/**
 	 * Determines if a pixel is from the white tape on the pitch. Used to
@@ -70,24 +107,22 @@ public class Colors {
 	 * @return True if the RGB and HSV values are within the defined thresholds
 	 *         (and thus the pixel is part of white tape), false otherwise.
 	 */
-	@SuppressWarnings("unused")
 	public static boolean isWhite(Color c, float[] hsb) {
-		boolean h = Alg.withinBounds(hsb[0], 0.00f, 1f);
-		boolean s = Alg.withinBounds(hsb[1], 0.05f, 0.3f);
-		boolean b = Alg.withinBounds(hsb[2], 0.65f, 0.7f);
-		if (c != null) {
-			final int delta = 100;
-			final double minRgb = 150;
-			int r = c.getRed();
-			int g = c.getGreen();
-			int bl = c.getBlue();
-			boolean rgb = Math.abs(r - g) < delta && Math.abs(r - bl) < delta
-					&& Math.abs(bl - g) < delta && g > minRgb;
-			//return rgb && h && s && b;
-			return h && s;
-		} else {
+		if(c == null)
 			return false;
-		}
+		
+		int r = c.getRed(),
+			g = c.getGreen(),
+			b = c.getBlue();
+			
+		int da = Math.abs(r - g),
+			db = Math.abs(r - b),
+			dc = Math.abs(g - b);
+		
+		int d = getSettingsManager().getWhiteRgbDelta(),
+			min = getSettingsManager().getWhiteRgbThreshold();
+		return da < d && db < d && dc < d &&
+				r > min && g > min && b > min;
 	}
 
 	/**
@@ -103,18 +138,7 @@ public class Colors {
 	 *         (and thus the pixel is part of the ball), false otherwise.
 	 */
 	public static boolean isBall(Color c, float[] hsb) {
-		return hsb[0] <= tresholds.getBall_h_high()
-				&& hsb[0] >= tresholds.getBall_h_low()
-				&& hsb[1] <= tresholds.getBall_s_high()
-				&& hsb[1] >= tresholds.getBall_s_low()
-				&& hsb[2] <= tresholds.getBall_v_high()
-				&& hsb[2] >= tresholds.getBall_v_low()
-				&& c.getRed() <= tresholds.getBall_r_high()
-				&& c.getRed() >= tresholds.getBall_r_low()
-				&& c.getGreen() <= tresholds.getBall_g_high()
-				&& c.getGreen() >= tresholds.getBall_g_low()
-				&& c.getBlue() <= tresholds.getBall_b_high()
-				&& c.getBlue() >= tresholds.getBall_b_low();
+		return isColorCode(c, hsb, SettingsManager.COLOR_CODE_BALL);
 	}
 
 	/**
@@ -130,18 +154,7 @@ public class Colors {
 	 *         (and thus the pixel is part of the yellow T), false otherwise.
 	 */
 	public static boolean isYellow(Color c, float[] hsb) {
-		return hsb[0] <= tresholds.getYellow_h_high()
-				&& hsb[0] >= tresholds.getYellow_h_low()
-				&& hsb[1] <= tresholds.getYellow_s_high()
-				&& hsb[1] >= tresholds.getYellow_s_low()
-				&& hsb[2] <= tresholds.getYellow_v_high()
-				&& hsb[2] >= tresholds.getYellow_v_low()
-				&& c.getRed() <= tresholds.getYellow_r_high()
-				&& c.getRed() >= tresholds.getYellow_r_low()
-				&& c.getGreen() <= tresholds.getYellow_g_high()
-				&& c.getGreen() >= tresholds.getYellow_g_low()
-				&& c.getBlue() <= tresholds.getYellow_b_high()
-				&& c.getBlue() >= tresholds.getYellow_b_low();
+		return isColorCode(c, hsb, SettingsManager.COLOR_CODE_YELLOW);
 	}
 
 	/**
@@ -157,22 +170,7 @@ public class Colors {
 	 *         (and thus the pixel is part of the blue T), false otherwise.
 	 */
 	public static boolean isBlue(Color c, float[] hsb) {
-		return hsb[0] <= tresholds.getBlue_h_high()
-				&& hsb[0] >= tresholds.getBlue_h_low()
-				&& hsb[1] <= tresholds.getBlue_s_high()
-				&& hsb[1] >= tresholds.getBlue_s_low()
-				&& hsb[2] <= tresholds.getBlue_v_high()
-				&& hsb[2] >= tresholds.getBlue_v_low()
-				&& c.getRed() <= tresholds.getBlue_r_high()
-				&& c.getRed() >= tresholds.getBlue_r_low()
-				&& c.getGreen() <= tresholds.getBlue_g_high()
-				&& c.getGreen() >= tresholds.getBlue_g_low()
-				&& c.getBlue() <= tresholds.getBlue_b_high()
-				&& c.getBlue() >= tresholds.getBlue_b_low();
-	}
-
-	public static void setTreshold(ThresholdsState tresholds) {
-		Colors.tresholds = tresholds;
+		return isColorCode(c, hsb, SettingsManager.COLOR_CODE_BLUE);
 	}
 
 	public static boolean isTeamColor(int team, Color c, float[] hsb) {
@@ -180,6 +178,14 @@ public class Colors {
 			return isBlue(c, hsb);
 		else
 			return isYellow(c, hsb);
+	}
+
+	public static SettingsManager getSettingsManager() {
+		return settingsManager;
+	}
+
+	public static void setSettingsManager(SettingsManager settingsManager) {
+		Colors.settingsManager = settingsManager;
 	}
 
 }

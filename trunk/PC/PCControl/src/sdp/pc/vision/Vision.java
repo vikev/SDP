@@ -13,8 +13,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
-import sdp.pc.vision.settings.Calibration;
-import sdp.pc.vision.settings.ControlGUI;
+import sdp.pc.vision.settings.VisionMouseAdapter;
+import sdp.pc.vision.settings.SettingsManager;
+import sdp.pc.vision.settings.SettingsGUI;
 import au.edu.jcu.v4l4j.CaptureCallback;
 import au.edu.jcu.v4l4j.FrameGrabber;
 import au.edu.jcu.v4l4j.V4L4JConstants;
@@ -93,19 +94,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private WorldStatePainter statePainter;
 
 	/**
-	 * PitchConstants holds discrete values like thresholds and important
-	 * points. 0 refers to the main pitch, while 1 would be the side pitch.
-	 * 
-	 * TODO:This should be abstracted at some point
-	 */
-	private static PitchConstants pitchConsts = new PitchConstants();
-
-	/**
-	 * A massive list of getters and setters for requesting threshold values
-	 */
-	private static ThresholdsState thresh = new ThresholdsState();
-
-	/**
 	 * Main label for the video feed frame
 	 */
 	public static JLabel frameLabel;
@@ -124,7 +112,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * The object which V4L4J uses to grab individual frames. Mostly abstracted.
 	 */
 	private static FrameGrabber frameGrabber;
-
+	
 	/**
 	 * angleSmoothing was a system which buffered orientation values to smooth
 	 * the facing angles of our robots. It's disabled now because the new
@@ -182,11 +170,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// create state painter
 		statePainter = new WorldStatePainter(stateListener, state);
 
-		// Load threshold and point constants. TODO: Abstract this to not refer
-		// specifically to pitch0.
-		pitchConsts.loadConstantsForPitchUsedLastTime();
-		pitchConsts.uploadConstants(thresh, state);
-		Colors.setTreshold(thresh);
+		Colors.setSettingsManager(SettingsManager.defaultSettings);
 
 		// Initialise the frame fetcher
 		try {
@@ -229,8 +213,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				// Notify the listener
 				stateListener.setCurrentFrame(frameImage);
 
-				// Copy the new frame to the buffer (overwriting anything that
-				// was there already)
+				// Copy the new frame to the buffer
 				Graphics bg = buffer.getGraphics();
 				bg.drawImage(frameImage, 0, 0, WIDTH, HEIGHT, null);
 				bg.dispose();
@@ -238,8 +221,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				// Draw the world overlay to the buffer
 				Point2 mousePos = new Point2(Vision.frame.getContentPane()
 						.getMousePosition());
+				
 				// TODO: Commented out was '.subtractBorders();' - do we need
-				// this?
+				// this? No, use .getContentPane()
+				
 				statePainter.drawWorld(buffer, mousePos);
 
 				// Draw the result to the frameLabel
@@ -253,7 +238,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		frameGrabber.startCapture();
 
 		// Add the mouse Listener
-		frame.addMouseListener(new Calibration());
+		frame.addMouseListener(new VisionMouseAdapter());
 	}
 
 	/**
@@ -282,8 +267,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// all the way to 100, which may improve our pixel recognition (at the
 		// cost of performance?) If it makes any difference, JPEG quality should
 		// be abstracted to a constant.
+		
+		// 	ix:	made it 100; should not alter performance; 
+		//		doesn't seem to do it either
 		frameGrabber = videoDevice.getJPEGFrameGrabber(WIDTH, HEIGHT, CHANNEL,
-				VIDEO_STANDARD, 80);
+				VIDEO_STANDARD, 100);
 		frameGrabber.setCaptureCallback(this);
 	}
 
@@ -303,7 +291,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			 */
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new ControlGUI(thresh, statePainter, pitchConsts);
+				SettingsGUI gui =new SettingsGUI();
+				gui.setWorldPainter(statePainter);
+				gui.setWorldListener(stateListener);
+				gui.setSettingsManager(SettingsManager.defaultSettings);
+				gui.setVisible(true);
 			}
 		});
 		frame.getContentPane().add(frameLabel);

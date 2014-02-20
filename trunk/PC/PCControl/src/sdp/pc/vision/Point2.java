@@ -4,7 +4,8 @@ import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
-public class Point2 {
+@SuppressWarnings("serial")
+public class Point2 implements java.io.Serializable {
 	public static final Point2 EMPTY = new Point2(0, 0);
 
 	private static final double STD_DEV_THRESHOLD = 1.17;

@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+import sdp.pc.vision.settings.SettingsManager;
+
 /**
  * A generic world state updater.
  * <p>
@@ -31,11 +33,9 @@ public abstract class WorldStateListener implements Runnable {
 	/**
 	 * The amount of frames to drop before preprocessing should occur
 	 */
-	private static final int FRAME_IGNORE_COUNT = 50;
+	private static final int FRAME_IGNORE_COUNT = 20;
 
-	// boundary points
-	private static Point2[] boundaryPoints = new Point2[] { new Point2(),
-			new Point2() };
+
 
 	/**
 	 * the last frame we observed; used to prevent unnecessary updates
@@ -97,54 +97,7 @@ public abstract class WorldStateListener implements Runnable {
 	 */
 	protected float[] minMaxBrightness = new float[] { 1, 0 };
 
-	/**
-	 * Adds a boundary point for image clipping
-	 * 
-	 * @param p
-	 *            the point to add
-	 * @return whether the point was needed'n'received
-	 */
-	public static boolean addBoundary(Point2 p) {
-		if (boundaryPoints[0].equals(Point2.EMPTY)) {
-			boundaryPoints[0] = p;
-			return true;
-		}
-		if (boundaryPoints[1].equals(Point2.EMPTY)) {
-			boundaryPoints[1] = p;
-		}
-		System.out
-				.println("Warning: Attempted to add boundary to a world state listener with existing boundaries.");
-		return false;
-	}
 
-	/**
-	 * Returns whether there's full boundary information
-	 */
-	public static boolean hasBoundary() {
-		return !(boundaryPoints[0].equals(Point2.EMPTY) || boundaryPoints[1]
-				.equals(Point2.EMPTY));
-	}
-
-	/**
-	 * Gets the selected point from the boundary. Makes no guarantees which
-	 * point has smaller coordinates Returns an empty point if there is no
-	 * boundary information for this index
-	 * 
-	 * @param i
-	 *            the index of the point; should be in the range [0;1]
-	 * @return the requested boundary point
-	 */
-	public static Point2 getBoundary(int i) {
-		return boundaryPoints[i];
-	}
-
-	/**
-	 * Resets the region boundary.
-	 */
-	public static void resetBoundary() {
-		boundaryPoints[0] = new Point2();
-		boundaryPoints[1] = new Point2();
-	}
 
 	/**
 	 * Returns whether preprocessing has occurred, i.e. whether the pitch hull
@@ -155,13 +108,11 @@ public abstract class WorldStateListener implements Runnable {
 	}
 
 	/**
-	 * Used to set the 'preprocessed' flag on or off, for triggering
-	 * hull/normalisation re-calibration
-	 * 
-	 * @param preproc
+	 * Used to reset the {@link preprocess} flag, and force 
+	 * hull and normalisation re-calculation
 	 */
-	public void setPreprocessed(boolean preproc) {
-		preprocessed = preproc;
+	public void forcePreprocess() {
+		preprocessed = false;
 	}
 
 	/**
@@ -304,7 +255,12 @@ public abstract class WorldStateListener implements Runnable {
 
 			// if we have a valid, changed image
 			if (currentFrame != lastFrame) {
+				
 				// have we done preprocessing?
+				// well, if there's no boundary, we've not!
+				if(!SettingsManager.defaultSettings.hasBoundary())
+					preprocessed = false;
+				
 				if (!preprocessed) {
 					preprocessImage(currentFrame);
 				} else {
@@ -361,11 +317,13 @@ public abstract class WorldStateListener implements Runnable {
 		// Ensure the pre-process is only ran once during
 		// initialisation; but ignore first few frames (which are always
 		// highly distorted)
-		if (++keyframe >= FRAME_IGNORE_COUNT && hasBoundary()) {
+		if (SettingsManager.defaultSettings.hasBoundary() && ++keyframe >= FRAME_IGNORE_COUNT) {
 
 			
 			// get boundary
-			Point2 pa = boundaryPoints[0], pb = boundaryPoints[1];
+			Point2 pa = SettingsManager.defaultSettings.getBoundary(0);
+			Point2 pb = SettingsManager.defaultSettings.getBoundary(1);
+			
 			int minX = Math.min(pa.x, pb.x), maxX = Math.max(pa.x, pb.x), minY = Math
 					.min(pa.y, pb.y), maxY = Math.max(pa.y, pb.y);
 
@@ -377,7 +335,7 @@ public abstract class WorldStateListener implements Runnable {
 				for (int y = minY; y < maxY; y++) {
 					// get colours
 					cRgb = new Color(img.getRGB(x, y));
-
+					currentRgb[x][y] = cRgb;
 					cHsb = currentHsb[x][y];
 					Color.RGBtoHSB(cRgb.getRed(), cRgb.getGreen(),
 							cRgb.getBlue(), cHsb);
@@ -415,7 +373,8 @@ public abstract class WorldStateListener implements Runnable {
 			
 			
 			//get pitch
-			//state.getPitch().Initialize();
+			state.getPitch().Initialize(currentRgb, currentHsb);
+//			FisheyeFilter.initCL();
 			
 			preprocessed = true;
 			System.out

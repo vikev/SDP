@@ -1,5 +1,7 @@
 package sdp.pc.vision;
 
+import static sdp.pc.vision.settings.SettingsManager.defaultSettings;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -52,6 +54,11 @@ public class WorldStatePainter {
 	 * The state we are attached to and paint using the drawWorld() method
 	 */
 	private WorldState state;
+	
+	/**
+	 * Whether to display the rectangle with the raw boundaries
+	 */
+	private boolean rawBoundaryShown = false;
 
 	/**
 	 * Constructs a new WorldStatePainter given a WorldState and
@@ -113,7 +120,7 @@ public class WorldStatePainter {
 			return cRgb;
 		case Black:
 			if (Colors.isBlack(cRgb, cHsb))
-				return Color.BLACK;
+				return Color.GRAY;
 			return cRgb;
 		case All:
 			if (Colors.isWhite(cRgb, cHsb))
@@ -125,7 +132,7 @@ public class WorldStatePainter {
 			if (Colors.isGreen(cRgb, cHsb))
 				return Color.GREEN;
 			if (Colors.isBlack(cRgb, cHsb))
-				return Color.BLACK;
+				return Color.GRAY;
 		default: // None or missing entry!
 			return cRgb;
 		}
@@ -160,18 +167,7 @@ public class WorldStatePainter {
 		// if pre-processing is not done yet just colour all 'white' pixels and
 		// return
 		if (!stateListener.isPreprocessed()) {
-			g.drawString(
-					"Waiting for preprocessor... "
-							+ stateListener.getKeyFrames() + "%", TEXT_OFFSET,
-					TEXT_OFFSET);
-			for (int ix = 0; ix < Vision.WIDTH; ix++)
-				for (int iy = 0; iy < Vision.HEIGHT; iy++) {
-					cRgb = new Color(image.getRGB(ix, iy));
-					Color.RGBtoHSB(cRgb.getRed(), cRgb.getGreen(),
-							cRgb.getBlue(), cHsb);
-					if (Colors.isWhite(cRgb, cHsb))
-						image.setRGB(ix, iy, Color.white.getRGB());
-				}
+			drawPreprocessOverlay(image, g, mousePos);
 			return;
 		}
 
@@ -305,22 +301,90 @@ public class WorldStatePainter {
 		}
 		
 		//pitch borders
-//		Pitch pitch = state.getPitch();
-//		if(pitch != null) {
-//			g.drawLine(pitch.goalLineX[0], 0, pitch.goalLineX[0], Vision.HEIGHT);
-//			g.drawLine(pitch.goalLineX[1], 0, pitch.goalLineX[1], Vision.HEIGHT);
-//			g.drawLine(0, pitch.pitchY[0], Vision.WIDTH, pitch.pitchY[0]);
-//			g.drawLine(0, pitch.pitchY[1], Vision.WIDTH, pitch.pitchY[1]);
-//			g.drawLine(pitch.zoneX[0], 0, pitch.zoneX[0], Vision.HEIGHT);
-//			g.drawLine(pitch.zoneX[1], 0, pitch.zoneX[1], Vision.HEIGHT);
-//			g.drawLine(pitch.zoneX[2], 0, pitch.zoneX[2], Vision.HEIGHT);
-//		}
+		Pitch pitch = state.getPitch();
+		if(pitch != null) {
+			g.drawLine(pitch.goalLineX[0], 0, pitch.goalLineX[0], Vision.HEIGHT);
+			g.drawLine(pitch.goalLineX[1], 0, pitch.goalLineX[1], Vision.HEIGHT);
+			g.drawLine(0, pitch.pitchY[0], Vision.WIDTH, pitch.pitchY[0]);
+			g.drawLine(0, pitch.pitchY[1], Vision.WIDTH, pitch.pitchY[1]);
+			g.drawLine(pitch.zoneX[0], 0, pitch.zoneX[0], Vision.HEIGHT);
+			g.drawLine(pitch.zoneX[1], 0, pitch.zoneX[1], Vision.HEIGHT);
+			g.drawLine(pitch.zoneX[2], 0, pitch.zoneX[2], Vision.HEIGHT);
+		}
 		
-
+		if(isRawBoundaryShown())
+			drawRawBoundary(g);
+		
 		// bin your litter
 		g.dispose();
 	}
 
+	private void drawPreprocessOverlay(BufferedImage image, Graphics g, Point2 mousePos) {
+		float[] cHsb = new float[3];
+		Color cRgb;
+		
+		if(!defaultSettings.hasBoundary()) {
+			g.drawString(
+					"Select raw boundary points", TEXT_OFFSET,
+					TEXT_OFFSET);
+		
+			g.setColor(new Color(255, 127, 127, 127));
+			if(defaultSettings.getBoundary(0).equals(Point2.EMPTY))	{
+				//waiting for 1st point
+				g.fillRect(0, 0, Vision.WIDTH / 2, Vision.HEIGHT / 2);
+				
+				g.setColor(Color.white);
+				g.drawLine(mousePos.x, mousePos.y, Vision.WIDTH, mousePos.y);
+				g.drawLine(mousePos.x, mousePos.y, mousePos.x, Vision.HEIGHT);
+			}
+			else {
+				//waiting for 2nd point
+				g.fillRect(Vision.WIDTH / 2, Vision.HEIGHT / 2, Vision.WIDTH / 2, Vision.HEIGHT / 2);
+				
+				g.setColor(Color.white);
+				g.drawLine(mousePos.x, mousePos.y, 0, mousePos.y);
+				g.drawLine(mousePos.x, mousePos.y, mousePos.x, 0);
+			
+			}
+			
+			//draw white overlay to help selecting boundaries
+			for (int ix = 0; ix < Vision.WIDTH; ix++)
+				for (int iy = 0; iy < Vision.HEIGHT; iy++) {
+					
+					cRgb = new Color(image.getRGB(ix, iy));
+					Color.RGBtoHSB(cRgb.getRed(), cRgb.getGreen(),
+							cRgb.getBlue(), cHsb);
+					
+					if (Colors.isWhite(cRgb, cHsb))
+						image.setRGB(ix, iy, Color.white.getRGB());
+				}
+		}
+		else {
+			g.drawString(
+					"Waiting for preprocessor... "
+							+ stateListener.getKeyFrames() + "%", TEXT_OFFSET,
+					TEXT_OFFSET);
+		}
+	}
+
+	/**
+	 * Draws the raw boundary of the world listener as a rectangle
+	 * on the specified Graphics object.
+	 * @param g The Graphics to draw on
+	 */
+	private void drawRawBoundary(Graphics g) {
+		
+		Point2 ptl = defaultSettings.getBoundary(0),
+			plr = defaultSettings.getBoundary(1);
+		
+		g.setColor(Color.red);
+		g.drawLine(ptl.x, ptl.y, ptl.x, plr.y);
+		g.drawLine(ptl.x, ptl.y, plr.x, ptl.y);
+		g.drawLine(plr.x, plr.y, ptl.x, plr.y);
+		g.drawLine(plr.x, plr.y, plr.x, ptl.y);
+	}
+	
+	
 	/**
 	 * Draws the outline of a circle with a given centre and radius
 	 * 
@@ -359,5 +423,13 @@ public class WorldStatePainter {
 
 	public WorldState getWorldState() {
 		return state;
+	}
+
+	public boolean isRawBoundaryShown() {
+		return rawBoundaryShown;
+	}
+
+	public void setRawBoundaryShown(boolean rawBoundaryShown) {
+		this.rawBoundaryShown = rawBoundaryShown;
 	}
 }
