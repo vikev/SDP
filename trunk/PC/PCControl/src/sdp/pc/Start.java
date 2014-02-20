@@ -14,6 +14,10 @@ import sdp.pc.common.ChooseRobot;
 import sdp.pc.common.Constants;
 import sdp.pc.robot.btcomm.BTConnection;
 
+/**
+ * TODO: What is this class and why do we have it?
+ *
+ */
 public class Start {
 
 	private static final String A_NAME = "SDP 9A", A_MAC = "0016530BB5A3",

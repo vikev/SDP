@@ -5,6 +5,10 @@ import java.awt.Color;
 import sdp.pc.common.Constants;
 import sdp.pc.vision.settings.SettingsManager;
 
+/**
+ * TODO: What is this class for? Are we using it?
+ *
+ */
 public class Colors {
 
 	/** 

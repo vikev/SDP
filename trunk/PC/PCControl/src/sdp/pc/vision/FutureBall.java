@@ -1,94 +1,256 @@
 package sdp.pc.vision;
 
-public class FutureBall {
-	public static WorldState state = Vision.state;
-	public static Point2 collision = new Point2(-1, -1);
+import java.awt.Color;
+import java.awt.Graphics;
 
-	public static boolean contains(Point2 q) {
-		// TODO: untested
+/**
+ * Class for estimating the real trajectories of the ball. Feeds data it
+ * estimates to the world state. FutureBall is static and monolithic and
+ * shouldn't be instantiated.
+ * 
+ * @author s1143704
+ * 
+ */
+public class FutureBall {
+
+	/**
+	 * The estimated fraction of the ball velocity lost per second
+	 */
+	private static final double ESTIMATED_BALL_FRICTION = 0.6;
+
+	/**
+	 * The world state attached to FutureBall.
+	 */
+	public static WorldState state = Vision.state;
+
+	/**
+	 * The estimated collision point. For now, there is at most one collision.
+	 */
+	public static Point2 collision = Point2.EMPTY;
+
+	/**
+	 * Returns true if the pitch contains point q. As long as the isWhite method
+	 * is calibrated for your pitch (the convex hull is working properly), it
+	 * will work!
+	 * 
+	 * @param q
+	 * @return
+	 */
+	public static boolean pitchContains(Point2 q) {
 		if (Vision.stateListener.pointInPitch(q)) {
 			return true;
 		}
 		return false;
 	}
 
+	/**
+	 * Draw a line to the world state (you naughty boy) between a and b
+	 * 
+	 * @param a
+	 *            - One Point2
+	 * @param b
+	 *            - The other Point2
+	 */
+	private static void drawLine(Point2 a, Point2 b) {
+		// Attempt to draw collision boundary
+		Graphics g = Vision.frameLabel.getGraphics();
+		g.setColor(Color.RED);
+		g.drawLine(a.getX(), a.getY(), b.getX(), b.getY());
+	}
+
+	/**
+	 * Calculate if the pitch contains the 8 surrounding pixels around (x,y) and
+	 * therefore determine the deflection angle.
+	 * 
+	 * TODO: Incomplete and untested
+	 * 
+	 * @param x
+	 * @param y
+	 */
 	public static void collide8(double x, double y) {
 		boolean[] q = new boolean[8];
 		Point2[] pts = new Point2[8];
 
 		pts[0] = new Point2((int) x + 1, (int) y);
-		q[0] = contains(pts[0]);
+		q[0] = pitchContains(pts[0]);
 
 		pts[1] = new Point2((int) x + 1, (int) y - 1);
-		q[1] = contains(pts[1]);
+		q[1] = pitchContains(pts[1]);
 
 		pts[2] = new Point2((int) x, (int) y - 1);
-		q[2] = contains(pts[2]);
+		q[2] = pitchContains(pts[2]);
 
 		pts[3] = new Point2((int) x - 1, (int) y - 1);
-		q[3] = contains(pts[3]);
+		q[3] = pitchContains(pts[3]);
 
 		pts[4] = new Point2((int) x - 1, (int) y);
-		q[4] = contains(pts[4]);
+		q[4] = pitchContains(pts[4]);
 
 		pts[5] = new Point2((int) x - 1, (int) y + 1);
-		q[5] = contains(pts[5]);
+		q[5] = pitchContains(pts[5]);
 
 		pts[6] = new Point2((int) x, (int) y + 1);
-		q[6] = contains(pts[6]);
+		q[6] = pitchContains(pts[6]);
 
 		pts[7] = new Point2((int) x + 1, (int) y + 1);
-		q[7] = contains(pts[7]);
+		q[7] = pitchContains(pts[7]);
 
 		boolean here = q[0];
 		int[] p = new int[2];
-		int found = 0;
+		int found = -1;
+		boolean b = true;
 		for (int i = 1; i < 8; i++) {
 			if (!here == q[i]) {
 				here = !here;
-				p[found] = i;
-
+				if (found > -1) {
+					p[found] = i;
+				}
+				found++;
+				if (found > 1) {
+					break;
+				}
+				if(i==7 && b){
+					i=0;
+					b=false;
+				}
 			}
 		}
-		System.out.println("collide8");
-		Vision.frameLabel.getGraphics().drawLine(pts[0].getX(), pts[0].getY(),
-				pts[1].getX(), pts[1].getY());
+
+		double ang = pts[p[0]].angleTo(pts[p[1]]) * Math.PI / 180.0;
+		Point2 offsPt = new Point2((int) (50.0 * Math.cos(ang)),
+				(int) (50.0 * Math.sin(ang)));
+		drawLine(pts[p[0]].add(offsPt), pts[p[1]].sub(offsPt));
 	}
-	
+
+	/**
+	 * Estimates ball stop point given velocity and position of the ball
+	 * 
+	 * @return predicted ball position
+	 */
 	public static Point2 estimateRealStopPoint() {
 		Point2 vel = state.getBallVelocity();
 		Point2 pos = state.getBallPosition().copy();
 		return estimateStopPoint(vel, pos);
 	}
 
-	public static Point2 estimateStopPoint(Point2 vel, Point2 pos) {
+	/**
+	 * Estimates object stop point given velocity and position of the object
+	 * 
+	 * @param vel
+	 *            - the velocity of the ball in vector format
+	 * @param ball
+	 *            - the position of the ball in co-ordinate format
+	 * @return predicted position
+	 */
+	public static Point2 estimateStopPoint(Point2 vel, Point2 ball) {
 		double delX = vel.getX(), delY = vel.getY();
-		double tarX = pos.getX(), tarY = pos.getY();
-		// Changed this with the help of geometric series
-		tarX -= delX * 1.5;
-		tarY -= delY * 1.5;
+		double tarX = ball.getX(), tarY = ball.getY();
 
-		double distToStop = (new Point2((int) (tarX - pos.getX()),
-				(int) (tarY - pos.getY())).modulus());
-		double sX = pos.getX(), sY = pos.getY();
-		double vHatX = tarX - pos.getX();
-		double vHatY = tarY - pos.getY();
-		vHatX /= (Math.sqrt(vHatX * vHatX + vHatY * vHatY));
-		vHatY /= (Math.sqrt(vHatX * vHatX + vHatY * vHatY));
+		// How much friction to apply to the ball
+
+		double frameFriction = 1.0 - ESTIMATED_BALL_FRICTION;
+
+		// Apply geometric series
+		frameFriction = frameFriction / (1 - frameFriction);
+		tarX -= delX * frameFriction;
+		tarY -= delY * frameFriction;
+
+		// Search for collision
+		double iteratorX = ball.getX(), iteratorY = ball.getY();
+		double distToStop = (new Point2((int) (tarX - iteratorX),
+				(int) (tarY - iteratorY)).modulus());
+
+		double vHatX = tarX - iteratorX;
+		double vHatY = tarY - iteratorY;
+		vHatX /= distToStop;
+		vHatY /= distToStop;
 		collision = Point2.EMPTY;
 		if (vel.modulus() > 5) {
-			while (collision.getX() == -1 && distToStop > 0) {
-				if (Vision.stateListener.pointInPitch(new Point2((int) sX,
-						(int) sY)) && !contains(new Point2((int) sX, (int) sY))) {
-					collision = new Point2((int) sX, (int) sY);
-					collide8(sX, sY);
+			while (collision.equals(Point2.EMPTY) && distToStop > 0) {
+				if (!pitchContains(new Point2((int) iteratorX, (int) iteratorY))) {
+					collision = new Point2((int) iteratorX, (int) iteratorY);
+					collide8(iteratorX, iteratorY);
 				}
-				sX += vHatX;
-				sY += vHatY;
-				distToStop -= Math.sqrt(vHatX + vHatY);
+				iteratorX += vHatX;
+				iteratorY += vHatY;
+				distToStop -= 1;
 			}
 		}
+
+		// Return stop point
 		return new Point2((int) tarX, (int) tarY);
 	}
-	
+
+	/**
+	 * Estimates the intersection point of a moving ball, with a robot whose x
+	 * co-ordinate remains static.
+	 * 
+	 * @param ball
+	 *            - the position of the ball (moving object with arbitrary
+	 *            facing angle)
+	 * @param ballFacing
+	 *            - the facing angle of ball
+	 * @param staticPos
+	 *            - the position of the robot whose x co-ordinate should remain
+	 *            static
+	 * @return estimated position of the robot to intersect the ball
+	 */
+	public static Point2 estimateMatchingYCoord(Point2 ball, double ballFacing,
+			Point2 staticPos) {
+
+		// Assume the ball is moving very fast, give it a velocity of 1000.
+		int x = 1000;
+		double angle = ballFacing;
+
+		// Do Lukas-style maths, lose brownie points
+
+		// Note 90 degrees is south due to inverted co-ordinates.
+		// Change quadrant 3 to quadrant 1: (mirror on y=-x)
+		if (90 < angle && angle < 180) {
+			angle = 180 - angle;
+
+			// Change quadrant 2 to quadrant 4: (mirror on y=x)
+		} else if (180 < angle && angle < 270) {
+			angle -= 180;
+
+			// Change quadrant 1 to quadrant 4 (mirror on x-axis)
+		} else if (angle > 270) {
+			angle = 360 - angle;
+		}
+
+		// Projection: y <-- big number * tan(angle)
+		// small angle -> 0, large angle -> inf
+		int y = (int) (x * Math.tan(angle * Math.PI / 180));
+
+		// assert y on first two quadrants
+		if (ballFacing < 180) {
+			y = -y;
+		}
+		// mirror on y-axis if facing angle is on 1st or 4th quadrant
+		if (ballFacing > 270 || ballFacing < 90) {
+			x = -x;
+		}
+
+		// TODO: I refuse to believe this works
+		Point2 stopPos = FutureBall.estimateStopPoint(new Point2(x, y), ball);
+
+		// What the fuck does this do? Nothing
+		double deltaY = Math.abs(stopPos.getY() - ball.getY())
+				* Math.abs(staticPos.getX() - ball.getX())
+				/ Math.abs(stopPos.getX() - ball.getX());
+
+		// Does nothing
+		double predY;
+		if (ballFacing < 180) {
+			predY = deltaY + ball.getY();
+		} else {
+			predY = ball.getY() - deltaY;
+		}
+		// check if point is within the boundaries and if not return (0,0)
+		Point2 target = new Point2(staticPos.getX(), (int) predY);
+		if (pitchContains(target)) {
+			return target;
+		}
+		return Point2.EMPTY;
+	}
 }

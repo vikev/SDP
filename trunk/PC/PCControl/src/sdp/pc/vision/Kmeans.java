@@ -5,6 +5,7 @@ import java.util.ArrayList;
 /**
  * Class for calculating static KMeans data. Don't instantiated a KMeans.
  * 
+ * TODO: Do we use KMeans still? Where?
  */
 public class Kmeans {
 
@@ -148,17 +149,4 @@ public class Kmeans {
 
 		return new Point2(meanx, meany);
 	}
-
-	/**
-	 * TODO: Doesn't seem to be in use, I believe. Remove if that is the case.
-	 */
-	// public static double sumSquaredError(ArrayList<Point2> points, Point2
-	// center) {
-	// double sumSqErr = 0.0;
-	//
-	// for (int i = 0; i < points.size(); i++)
-	// sumSqErr += center.distance(points.get(i));
-	//
-	// return Math.sqrt(sumSqErr);
-	// }
 }

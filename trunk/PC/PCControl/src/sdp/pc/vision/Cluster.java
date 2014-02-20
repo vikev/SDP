@@ -2,6 +2,10 @@ package sdp.pc.vision;
 
 import java.util.ArrayList;
 
+/**
+ * TODO: Is this class in use? What is it for?
+ *
+ */
 public class Cluster {
 	private ArrayList<Point2> points;
 	private Point2 mean;

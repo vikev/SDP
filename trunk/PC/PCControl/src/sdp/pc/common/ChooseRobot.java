@@ -4,6 +4,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+/**
+ * TODO: What is this class and why do we have it?
+ *
+ */
 public class ChooseRobot {
 	public static int dialog() {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));

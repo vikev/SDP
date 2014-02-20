@@ -3,6 +3,9 @@ package sdp.pc.vision;
 /**
  * Stores the states of the various thresholds.
  * 
+ * TODO: Why do Colors, PitchConstants, and ThresholdsState all contain the same
+ * crap? I think Yordan wanted to work on this.
+ * 
  * @author s0840449
  * 
  */

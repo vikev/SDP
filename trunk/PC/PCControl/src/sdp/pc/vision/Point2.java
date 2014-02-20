@@ -4,13 +4,35 @@ import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
+/**
+ * Our implementation of a 2D point class of the form (int,int). Positions
+ * represent (x,y) co-ordinates on the vision feed, but can be used for other
+ * things like velocity vector data.
+ * 
+ */
+
 @SuppressWarnings("serial")
 public class Point2 implements java.io.Serializable {
+
+	/**
+	 * An empty point (0,0) for comparisons
+	 */
 	public static final Point2 EMPTY = new Point2(0, 0);
 
+	/**
+	 * The standard deviation threshold for removing outlying points.
+	 */
 	private static final double STD_DEV_THRESHOLD = 1.17;
 
-	public int x = 0, y = 0;
+	/**
+	 * The x co-ordinate of <b>this</b>
+	 */
+	public int x = 0;
+
+	/**
+	 * The y co-ordinate of <b>this</b>
+	 */
+	public int y = 0;
 
 	/**
 	 * Constructs a new point at the given coordinates
@@ -26,16 +48,18 @@ public class Point2 implements java.io.Serializable {
 	public Point2() {
 	}
 
-	/**
-	 * Constructs a copy of the given point
-	 */
-	public Point2(Point2 p) {
-		this.x = p.x;
-		this.y = p.y;
-	}
+	// TODO: This isn't used anymore (replaced by point2.copy())
+
+	// /**
+	// * Constructs a copy of the given point
+	// */
+	// public Point2(Point2 p) {
+	// this.x = p.x;
+	// this.y = p.y;
+	// }
 
 	/**
-	 * Constructs a copy of the given point
+	 * Constructs a Point2 from a java.awt.Point
 	 */
 	public Point2(Point p) {
 		if (p != null) {
@@ -44,6 +68,9 @@ public class Point2 implements java.io.Serializable {
 		}
 	}
 
+	/**
+	 * Method for comparing two Point2s
+	 */
 	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof Point || o instanceof Point2))
@@ -52,6 +79,9 @@ public class Point2 implements java.io.Serializable {
 		return p.x == x && p.y == y;
 	}
 
+	/**
+	 * Method for building a hashcode of a Point2
+	 */
 	@Override
 	public int hashCode() {
 		return x * 1000 + y;
@@ -78,6 +108,11 @@ public class Point2 implements java.io.Serializable {
 		this.x = x;
 	}
 
+	/**
+	 * Calculates the size of <b>this</b> from the origin
+	 * 
+	 * @return
+	 */
 	public double modulus() {
 		return Math.sqrt(this.x * this.x + this.y * this.y);
 	}
@@ -272,6 +307,16 @@ public class Point2 implements java.io.Serializable {
 	}
 
 	/**
+	 * gets a point which is <b>this</b> minus the components of p.
+	 * 
+	 * @param p
+	 * @return
+	 */
+	public Point2 sub(Point2 p) {
+		return new Point2(x - p.x, y - p.y);
+	}
+
+	/**
 	 * Gets a point which is the sum of this point and the given point
 	 * 
 	 * @param p
@@ -306,6 +351,9 @@ public class Point2 implements java.io.Serializable {
 
 	/**
 	 * Vector operation Returns a vector perpendicular to this one
+	 * 
+	 * TODO: This method mirrors the vector on y=x (doesn't actually return a
+	 * perpendicular vector, as far as I can tell)
 	 * 
 	 * @return a point with coordinates (y; x)
 	 */
@@ -357,18 +405,30 @@ public class Point2 implements java.io.Serializable {
 		return Math.atan2(p.y - y, p.x - x) * 180 / Math.PI;
 	}
 
+	/**
+	 * TODO: Does this method return whether <b>this</b> is to the left of a
+	 * line built by a->b ?
+	 * 
+	 * @param a
+	 * @param b
+	 * @return
+	 */
 	public boolean isToLeft(Point2 a, Point2 b) {
 		int dot = ((b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x));
 		return dot > 0 || (dot == 0 && a.distanceSq(b) < a.distanceSq(this));
 	}
 
-	/**
-	 * Gets the distance from the origin (0,0) to this point i.e. the length of
-	 * this vector.
-	 */
-	public double length() {
-		return Point2.EMPTY.distance(this);
-	}
+	// TODO: This was essentially the same as point2.modulus. Can be removed I
+	// guess.
+
+	// /**
+	// * Gets the distance from the origin (0,0) to this point i.e. the length
+	// of
+	// * this vector.
+	// */
+	// public double length() {
+	// return Point2.EMPTY.distance(this);
+	// }
 
 	/**
 	 * Gets the angle from the origin to <b>this</b>. In other words, the angle

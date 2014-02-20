@@ -4,17 +4,18 @@ import java.awt.Color;
 import java.util.ArrayList;
 
 /**
- * Contains information about the Pitch dimensions and the zones a robot is supposed to be in. 
- * Currently only checks X values; works well given that Colors.isWhite() returns proper values
+ * Contains information about the Pitch dimensions and the zones a robot is
+ * supposed to be in. Currently only checks X values; works well given that
+ * Colors.isWhite() returns proper values
  * 
- * TODO: add Y values checks
- * TODO: detect goal positions automatically (would it be reliable enough?)
+ * TODO: add Y values checks TODO: detect goal positions automatically (would it
+ * be reliable enough?)
  * 
  * @author s1141301
- *
+ * 
  */
 public class Pitch {
-	
+
 	private static final int PITCH_SIDE_Y_NPOINTS = 120;
 
 	private static final int PITCH_ZONE_X_NPOINTS = 195;
@@ -22,11 +23,10 @@ public class Pitch {
 	private static final int PITCH_SIDE_X_NPOINTS = 99;
 
 	/**
-	 * The radius of a robot
-	 * TODO: figure out a value for this
+	 * The radius of a robot TODO: figure out a value for this
 	 */
 	private int robotRadius = 0;
-	
+
 	/**
 	 * The x coordinates of the goal lines
 	 */
@@ -45,47 +45,52 @@ public class Pitch {
 	public boolean isInitialized() {
 		return initialized;
 	}
-	
 	/**
-	 * Gets whether the specified point is in our defender zone.
-	 * Uses Vision.state.getDirection() to determine our team.
-	 * @param p the point to check
+	 * Gets whether the specified point is in our defender zone. Uses
+	 * Vision.state.getDirection() to determine our team.
+	 * 
+	 * @param p
+	 *            the point to check
 	 */
 	public boolean isPointInDefenderZone(Point2 p) {
 		if(!robotInBounds(p.y, pitchY[0], pitchY[1]))
 			return false;
+		
 		if(Vision.state.getDirection() == 1)	//shoot right => our is left!
 			return robotInBounds(p.x, goalLineX[0], zoneX[0]);
 		else
 			return robotInBounds(p.x, zoneX[2], goalLineX[1]);
 	}
-	
+
 	/**
-	 * Checks whether the specified value is in the range [min + robotRadius; max - robotRadius]
+	 * Checks whether the specified value is in the range [min + robotRadius;
+	 * max - robotRadius]
 	 */
 	private boolean robotInBounds(int val, int min, int max) {
 		return val >= min + robotRadius && val <= max - robotRadius;
 	}
 
 	/**
-	 * Gets whether the specified point is in our attacker zone
-	 * Uses Vision.state.getDirection() to determine our team.
-	 * @param p the point to check
+	 * Gets whether the specified point is in our attacker zone Uses
+	 * Vision.state.getDirection() to determine our team.
+	 * 
+	 * @param p
+	 *            the point to check
 	 */
 	public boolean isPointInAttackerZone(Point2 p) {
 		if(!robotInBounds(p.y, pitchY[0], pitchY[1]))
 			return false;
+		
 		if(Vision.state.getDirection() == 1)	//shoot right
 			return robotInBounds(p.x, zoneX[1], zoneX[2]);
 		else
 			return robotInBounds(p.x, zoneX[0], zoneX[1]);
 	}
-	
-	
+
 	public Pitch() {
 
 	}
-	
+
 	/**
 	 * Tries to grab pitch data from the current state listener's RGB/HSB values
 	 */
@@ -119,6 +124,7 @@ public class Pitch {
 		for(int i = 0; i < 3; i++) {
 			Point2 zone = xpts[1].get(i);
 			zoneX[i] = (zone.x + zone.y) / 2;
+
 		}
 		
 		pitchY[0] = ypts[0].get(0).x;

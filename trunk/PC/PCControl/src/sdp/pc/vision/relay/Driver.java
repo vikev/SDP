@@ -2,6 +2,11 @@ package sdp.pc.vision.relay;
 
 import sdp.pc.common.Constants;
 
+/**
+ * TODO:What is the difference between this and sdp.pc.robot.pilot.Driver ?? We
+ * don't need two drivers, I'm quite sure.
+ * 
+ */
 public class Driver {
 	private TCPClient conn;
 	private int robotId;
@@ -15,7 +20,11 @@ public class Driver {
 		this.conn = conn;
 		this.robotId = conn.getRobotId();
 	}
-
+	
+	public void closeConnection(){
+		conn.closeConnection();
+	}
+	
 	/**
 	 * Travel forward at that speed. 0 = travel at max speed.
 	 * 

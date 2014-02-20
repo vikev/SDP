@@ -8,32 +8,42 @@ package sdp.pc.vision;
 public class WorldState {
 
 	/**
-	 * Simple value for the number of players per team. TODO: Should probably be
-	 * moved to a global constants class to avoid code duplication.
+	 * Simple value for the number of players per team.
+	 * 
+	 * TODO: Should probably be moved to a global constants class to avoid code
+	 * duplication.
 	 */
 	public static final int PLAYERS_PER_TEAM = 2;
 
 	/**
-	 * Simple value for the number of teams. TODO: Should probably be moved to a
-	 * global constants class to avoid code duplication.
+	 * Simple value for the number of teams.
+	 * 
+	 * TODO: Should probably be moved to a global constants class to avoid code
+	 * duplication.
 	 */
 	public static final int TEAM_COUNT = 2;
 
 	/**
 	 * The pitch ID associated with this instance of WorldState. 0 for Main, 1
-	 * for side (TODO: Should be abstracted)
+	 * for side
+	 * 
+	 * (TODO: Should be abstracted)
 	 */
 	private int pitchId;
 
 	/**
 	 * The colour of our team in this instance of WorldState. 0 for Yellow, 1
-	 * for Blue. (TODO: Should be abstracted)
+	 * for Blue.
+	 * 
+	 * (TODO: Should be abstracted)
 	 */
 	private int ourColor;
 
 	/**
 	 * Which direction our robots are aiming for in this instance of WorldState.
-	 * 0 for left, 1 for right. (TODO: Should be abstracted)
+	 * 0 for left, 1 for right.
+	 * 
+	 * (TODO: Should be abstracted)
 	 */
 	private int shootingDirection;
 
@@ -80,8 +90,9 @@ public class WorldState {
 	private double ballFacing;
 
 	/**
-	 * The movement speed of the ball TODO: Units? Should likely use pixels per
-	 * second.
+	 * The movement speed of the ball
+	 * 
+	 * TODO: Units? Should likely use pixels per second.
 	 */
 	private double ballSpeed;
 
@@ -91,13 +102,17 @@ public class WorldState {
 	private Point2[][] robotLoc = new Point2[TEAM_COUNT][PLAYERS_PER_TEAM];
 
 	/**
-	 * Set of robot facing angles TODO: Units? should be degrees on [0,360).
-	 * What is it set to if the robot position is unknown?
+	 * Set of robot facing angles TODO:
+	 * 
+	 * Units? should be degrees on [0,360). What is it set to if the robot
+	 * position is unknown?
 	 */
 	private double[][] robotFacing = new double[TEAM_COUNT][PLAYERS_PER_TEAM];
 
 	/**
 	 * Goal points established using calibration values in the settings GUI.
+	 * 
+	 * TODO: Why are these static?
 	 */
 	public static Point2 leftGoalTop = new Point2();
 
@@ -222,10 +237,12 @@ public class WorldState {
 	 * Gets the position of the specified robot
 	 * 
 	 * @param team
-	 *            the team of the robot, 0 for yellow and 1 for blue TODO:
-	 *            Should be abstracted
+	 *            the team of the robot, 0 for yellow and 1 for blue
+	 * 
+	 *            TODO: Should be abstracted
 	 * @param robot
 	 *            the id of the robot, 0 for left one and 1 for the right one
+	 * 
 	 *            TODO: Should be abstracted
 	 * @return the position of the requested robot as a Point2
 	 */
@@ -254,7 +271,9 @@ public class WorldState {
 	 *            the team of the robot, 0 for yellow and 1 for blue
 	 * @param robot
 	 *            the id of the robot, 0 for left one and 1 for the right one
-	 * @return the orientation of the robot, in TODO:
+	 * @return the orientation of the robot, in
+	 * 
+	 *         TODO: units?
 	 */
 	public double getRobotFacing(int team, int robot) {
 		return robotFacing[team][robot];
@@ -268,37 +287,45 @@ public class WorldState {
 	 * @param robot
 	 *            - the robot to update.
 	 * @param newFacing
-	 *            - the updated angle of facing for the robot. TODO: Units
+	 *            - the updated angle of facing for the robot.
+	 * 
+	 *            TODO: Units
 	 */
 	public void setRobotFacing(int team, int robot, double newFacing) {
 		this.robotFacing[team][robot] = newFacing;
 	}
 
 	/**
-	 * Set which pitch we're playing on (0 is Main, 1 is Side) TODO: Should be
-	 * abstracted
+	 * Set which pitch we're playing on (0 is Main, 1 is Side)
+	 * 
+	 * TODO: Should be abstracted
 	 */
 	public void setPitchId(int pitchId) {
 		this.pitchId = pitchId;
 	}
 
 	/**
-	 * Get which pitch we're playing on (0 is Main, 1 is Side) TODO: Should be
-	 * abstracted
+	 * Get which pitch we're playing on (0 is Main, 1 is Side)
+	 * 
+	 * TODO: Should be abstracted
 	 */
 	public int getPitchId() {
 		return pitchId;
 	}
 
 	/**
-	 * Set our team's colour (0 is yellow, 1 is blue) TODO: Should be abstracted
+	 * Set our team's colour (0 is yellow, 1 is blue)
+	 * 
+	 * TODO: Should be abstracted
 	 */
 	public void setOurColor(int ourColor) {
 		this.ourColor = ourColor;
 	}
 
 	/**
-	 * Get our team's colour (0 is yellow, 1 is blue) TODO: Should be abstracted
+	 * Get our team's colour (0 is yellow, 1 is blue)
+	 * 
+	 * TODO: Should be abstracted
 	 */
 	public int getOurColor() {
 		return ourColor;
@@ -306,6 +333,7 @@ public class WorldState {
 
 	/**
 	 * Gets the direction our team is supposed to shoot towards (0 is left)
+	 * 
 	 * TODO: Should be abstracted
 	 */
 	public int getDirection() {
@@ -314,6 +342,7 @@ public class WorldState {
 
 	/**
 	 * Sets the direction our team is supposed to shoot towards (0 is left)
+	 * 
 	 * TODO: Should be abstracted
 	 */
 	public void setDirection(int direction) {
@@ -335,7 +364,7 @@ public class WorldState {
 	 */
 	public void setBallVelocity(Point2 ballVelocity) {
 		this.ballVelocity = ballVelocity;
-		this.ballSpeed = ballVelocity.length();
+		this.ballSpeed = ballVelocity.modulus();
 		this.ballFacing = ballVelocity.angle();
 	}
 
