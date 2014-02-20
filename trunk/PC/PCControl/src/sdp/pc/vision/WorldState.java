@@ -111,6 +111,8 @@ public class WorldState {
 
 	/**
 	 * Goal points established using calibration values in the settings GUI.
+	 * 
+	 * TODO: Why are these static?
 	 */
 	public static Point2 leftGoalTop = new Point2();
 

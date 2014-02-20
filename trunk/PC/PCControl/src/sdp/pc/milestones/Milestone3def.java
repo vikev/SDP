@@ -458,7 +458,7 @@ public class Milestone3def {
 	}
 
 	/**
-	 * Makes the robot turn to apoint synchronously. Returns true when it is
+	 * Makes the robot turn to a point synchronously. Returns true when it is
 	 * complete.
 	 */
 	public static boolean turnTo(WorldState state, Driver driver, Point2 to) {

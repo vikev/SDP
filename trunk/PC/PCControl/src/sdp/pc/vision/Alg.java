@@ -9,7 +9,46 @@ import java.util.LinkedList;
  * state, video feed, data, etc.
  */
 public class Alg {
-
+	
+	/**
+	 * Returns an angle ang in degrees on [0,360).
+	 * 
+	 * TODO: Should be abstracted to an Angle class, I guess.
+	 * 
+	 * @param ang
+	 *            angle in degrees
+	 * @return ang on [0,360)
+	 */
+	public static double normalizeToUnitDegrees(double ang) {
+		while (ang < 0.0) {
+			ang += 360.0;
+		}
+		while (ang >= 360.0) {
+			ang -= 360.0;
+		}
+		return ang;
+	}
+	
+	/**
+	 * Returns an angle ang in degrees on [-180,180), useful for comparing
+	 * angles.
+	 * 
+	 * TODO: Should be abstracted to an Angle class, I guess.
+	 * 
+	 * @param ang
+	 *            angle in degrees
+	 * @return ang on [-180, 180)
+	 */
+	public static double normalizeToBiDirection(double ang) {
+		while (ang < -180.0) {
+			ang += 360.0;
+		}
+		while (ang >= 180.0) {
+			ang -= 360.0;
+		}
+		return ang;
+	}
+	
 	/**
 	 * Computes the smallest circle that contains the given points
 	 * 
