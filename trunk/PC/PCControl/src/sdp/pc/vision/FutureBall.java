@@ -67,7 +67,7 @@ public class FutureBall {
 	 * @param x
 	 * @param y
 	 */
-	public static void collide8(double x, double y) {
+	public static Intersect collide8(double x, double y) {
 		boolean[] q = new boolean[8];
 		Point2[] pts = new Point2[8];
 
@@ -109,17 +109,30 @@ public class FutureBall {
 				if (found > 1) {
 					break;
 				}
-				if(i==7 && b){
-					i=0;
-					b=false;
+				if (i == 7 && b) {
+					i = 0;
+					b = false;
 				}
 			}
 		}
 
-		double ang = pts[p[0]].angleTo(pts[p[1]]) * Math.PI / 180.0;
+		double angleInDegrees = pts[p[0]].angleTo(pts[p[1]]);
+		double ang = angleInDegrees * Math.PI / 180.0;
 		Point2 offsPt = new Point2((int) (50.0 * Math.cos(ang)),
 				(int) (50.0 * Math.sin(ang)));
 		drawLine(pts[p[0]].add(offsPt), pts[p[1]].sub(offsPt));
+
+		Point2 A = new Point2((int) x, (int) y); // right most
+		Point2 B = pts[p[1]].sub(offsPt); // left most
+		Point2 C = pts[p[0]]; // centre
+
+		double angle = getOutwardAngle(A, B, C);
+		Intersect intersect = new Intersect();
+		intersect.setBall(A);
+		intersect.setIntersection(C);
+		intersect.setAngle(angle);
+		return intersect;
+
 	}
 
 	/**
@@ -145,7 +158,6 @@ public class FutureBall {
 	public static Point2 estimateStopPoint(Point2 vel, Point2 ball) {
 		double delX = vel.getX(), delY = vel.getY();
 		double tarX = ball.getX(), tarY = ball.getY();
-
 		// How much friction to apply to the ball
 
 		double frameFriction = 1.0 - ESTIMATED_BALL_FRICTION;
@@ -169,7 +181,14 @@ public class FutureBall {
 			while (collision.equals(Point2.EMPTY) && distToStop > 0) {
 				if (!pitchContains(new Point2((int) iteratorX, (int) iteratorY))) {
 					collision = new Point2((int) iteratorX, (int) iteratorY);
-					collide8(iteratorX, iteratorY);
+
+					// collide8(iteratorX, iteratorY);
+					Intersect collide = collide8(iteratorX, iteratorY);
+					Point2 temp = new Point2((int) tarX, (int) tarY);
+					Point2 reboundPoint = getReboundPoint(
+							collide.getIntersection(), collide.getBall(), temp,
+							collide.getAngle());
+
 				}
 				iteratorX += vHatX;
 				iteratorY += vHatY;
@@ -253,4 +272,47 @@ public class FutureBall {
 		}
 		return Point2.EMPTY;
 	}
+
+	/**
+	 * Calculates the angle between three points using arc cos.
+	 * 
+	 * @param A
+	 *            - Location of the ball on the pitch.
+	 * @param B
+	 *            - Point of collision with boundary.
+	 * @param C
+	 *            - Leftmost point of the drawn line indicating the collision
+	 *            wall.
+	 * @return angle between point A,B and C
+	 */
+	public static double getOutwardAngle(Point2 A, Point2 B, Point2 C) {
+
+		double smallA = Math.sqrt(Math.pow((C.getX() - B.getX()), 2)
+				+ Math.pow((C.getY() - B.getY()), 2));
+		double smallB = Math.sqrt(Math.pow((A.getX() - C.getX()), 2)
+				+ Math.pow((A.getY() - C.getY()), 2));
+		double smallC = Math.sqrt(Math.pow((A.getX() - B.getX()), 2)
+				+ Math.pow((A.getY() - B.getY()), 2));
+		// double beforeAcos= ((Math.pow(smallA,2) + Math.pow(smallB,2) -
+		// Math.pow(smallC,2))/(2*smallA*smallB));
+		double inAngle = Math
+				.acos((Math.pow(smallA, 2) + Math.pow(smallB, 2) - Math.pow(
+						smallC, 2)) / (2 * smallA * smallB));
+		double outAngle = 180 - (inAngle * 180 / Math.PI);
+		return outAngle;
+	}
+
+	private static Point2 getReboundPoint(Point2 intersection, Point2 ball,
+			Point2 temp, double angle) {
+		double distance = Math.sqrt(Math.pow(
+				(temp.getX() - intersection.getX()), 2)
+				+ Math.pow((temp.getY() - intersection.getY()), 2));
+        double x = intersection.getX() + distance * Math.cos(angle);
+        double y = intersection.getY() + distance * Math.sin(angle);
+        Point2 estimation = new Point2((int) x,(int) y);
+        //System.out.println("Estimation after rebound:" + estimation.toString());
+        drawLine(intersection, estimation);
+        return estimation;
+	}
+
 }
