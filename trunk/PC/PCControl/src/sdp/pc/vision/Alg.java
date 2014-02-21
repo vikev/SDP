@@ -9,7 +9,26 @@ import java.util.LinkedList;
  * state, video feed, data, etc.
  */
 public class Alg {
-	
+
+	/**
+	 * Returns true if a given Y coordinate is between the specified goalmouth
+	 * endpoints, with some epsilon value.
+	 * 
+	 * @param p
+	 * @param side
+	 * @param eps
+	 * @return
+	 */
+	public static boolean pointBetweenGoals(Point2 p, int side, int eps) {
+		int y = p.getY();
+		if (side == 0) {
+			return (y + eps < WorldState.leftGoalBottom.getY() && y - eps > WorldState.leftGoalTop
+					.getY());
+		}
+		return (y + eps < WorldState.rightGoalBottom.getY() && y - eps > WorldState.rightGoalTop
+				.getY());
+	}
+
 	/**
 	 * Returns an angle ang in degrees on [0,360).
 	 * 
@@ -28,7 +47,7 @@ public class Alg {
 		}
 		return ang;
 	}
-	
+
 	/**
 	 * Returns an angle ang in degrees on [-180,180), useful for comparing
 	 * angles.
@@ -48,7 +67,7 @@ public class Alg {
 		}
 		return ang;
 	}
-	
+
 	/**
 	 * Computes the smallest circle that contains the given points
 	 * 
@@ -161,7 +180,8 @@ public class Alg {
 	 * @return a LinkedList of Point2's, containing the vertices of the
 	 *         surrounding polygon
 	 */
-	public synchronized static LinkedList<Point2> convexHull(ArrayList<Point2> pts) {
+	public synchronized static LinkedList<Point2> convexHull(
+			ArrayList<Point2> pts) {
 		if (pts.size() > 0) {
 			Point2 pHull = pts.get(0);
 			Point2 endPoint;
@@ -200,9 +220,9 @@ public class Alg {
 	 * @param borderPoints
 	 *            - points on the polygon's border
 	 * @param pointX
-	 *            - the x co-ordinate of the point to check
+	 *            - the x coordinate of the point to check
 	 * @param pointY
-	 *            - the y co-ordinate of the point to check
+	 *            - the y coordinate of the point to check
 	 * @return true if the point is within the polygon, false otherwise
 	 */
 	public static boolean isInHull(LinkedList<Point2> borderPoints, int pointX,
@@ -288,7 +308,7 @@ public class Alg {
 	}
 
 	/**
-	 * Auxillary method for getIntervals method
+	 * Auxiliary method for getIntervals method
 	 * 
 	 * @param margins
 	 * @param val

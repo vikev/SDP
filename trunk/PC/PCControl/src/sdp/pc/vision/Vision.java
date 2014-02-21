@@ -118,7 +118,13 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * The object which V4L4J uses to grab individual frames. Mostly abstracted.
 	 */
 	private static FrameGrabber frameGrabber;
-	
+
+	/**
+	 * A point at the centre of the camera feed, useful for representing
+	 * distortion
+	 */
+	private static Point2 cameraCenter = new Point2(WIDTH / 2, HEIGHT / 2);
+
 	/**
 	 * angleSmoothing was a system which buffered orientation values to smooth
 	 * the facing angles of our robots. It's disabled now because the new
@@ -285,7 +291,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			 */
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				SettingsGUI gui =new SettingsGUI();
+				SettingsGUI gui = new SettingsGUI();
 				gui.setWorldPainter(statePainter);
 				gui.setWorldListener(stateListener);
 				gui.setSettingsManager(SettingsManager.defaultSettings);
@@ -339,5 +345,15 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		frameLabel.getGraphics().drawImage(frame.getBufferedImage(), 0, 0,
 				WIDTH, HEIGHT, null);
 		frame.recycle();
+	}
+
+	/**
+	 * Getter method for the static camera centre point (may not be the centre
+	 * of the table!
+	 * 
+	 * @return
+	 */
+	public static Point2 getCameraCentre() {
+		return cameraCenter;
 	}
 }

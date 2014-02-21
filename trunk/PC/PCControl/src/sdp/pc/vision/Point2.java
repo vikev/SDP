@@ -25,12 +25,12 @@ public class Point2 implements java.io.Serializable {
 	private static final double STD_DEV_THRESHOLD = 1.17;
 
 	/**
-	 * The x co-ordinate of <b>this</b>
+	 * The x coordinate of <b>this</b>
 	 */
 	public int x = 0;
 
 	/**
-	 * The y co-ordinate of <b>this</b>
+	 * The y coordinate of <b>this</b>
 	 */
 	public int y = 0;
 
@@ -48,16 +48,6 @@ public class Point2 implements java.io.Serializable {
 	public Point2() {
 	}
 
-	// TODO: This isn't used anymore (replaced by point2.copy())
-
-	// /**
-	// * Constructs a copy of the given point
-	// */
-	// public Point2(Point2 p) {
-	// this.x = p.x;
-	// this.y = p.y;
-	// }
-
 	/**
 	 * Constructs a Point2 from a java.awt.Point
 	 */
@@ -66,6 +56,16 @@ public class Point2 implements java.io.Serializable {
 			this.x = p.x;
 			this.y = p.y;
 		}
+	}
+
+	/**
+	 * Builds a symmetric point (x=y=v)
+	 * 
+	 * @param v
+	 */
+	public Point2(int v) {
+		this.x = v;
+		this.y = v;
 	}
 
 	/**
@@ -454,4 +454,46 @@ public class Point2 implements java.io.Serializable {
 				(int) (y + Math.sin(degs * Math.PI / 180) * dist));
 	}
 
+	/**
+	 * Returns a Point2 with the y-coordinate inverted
+	 * 
+	 * @return
+	 */
+	public Point2 invertY() {
+		return this.mult(new Point2(1, -1));
+	}
+
+	/**
+	 * Returns a Point2 with its parameters multiplied by the parameters of the
+	 * argument. <b>Not</b> a cross product, nor a dot product.
+	 * 
+	 * @param pt
+	 * @return
+	 */
+	private Point2 mult(Point2 pt) {
+		return new Point2(this.x * pt.x, this.y * pt.y);
+	}
+
+	/**
+	 * Returns the dot product of this to vector B
+	 * 
+	 * @param vecB
+	 * @return
+	 */
+	public int dot(Point2 vecB) {
+		return this.x * vecB.x + this.y * vecB.y;
+	}
+
+	/**
+	 * Returns the gradient to vector B (from the line equation:)
+	 * <ul>
+	 * <li>y - y1 = gradient * (x - x1))</li>
+	 * </ul>
+	 * 
+	 * @param vecB
+	 * @return
+	 */
+	public double gradTo(Point2 vecB) {
+		return (vecB.y - this.y / vecB.y - this.y);
+	}
 }
