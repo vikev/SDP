@@ -134,7 +134,7 @@ public class Robot {
 	public void defendBall() throws Exception {
 
 		// Get predicted ball stop point
-		Point2 predBallPos = state.getEstimatedStopPoint();
+		Point2 predBallPos = state.getFutureData().getResult();
 
 		// If that position exists, go to its Y coordinate, otherwise stop.
 		if (!predBallPos.equals(Point2.EMPTY)) {
@@ -168,7 +168,7 @@ public class Robot {
 		}
 
 		Point2 predBallPos = FutureBall
-				.estimateStopPoint(new Point2(x, y), pos);
+				.estimateStopPoint(new Point2(x, y), pos).getResult();
 		// Move robot to this position
 		if (!predBallPos.equals(Point2.EMPTY)) {
 			defendToY(predBallPos.getY(), DEFEND_EPSILON_DISTANCE);
@@ -418,7 +418,7 @@ public class Robot {
 		double angleToBall = botPosition.angleTo(new Point2(botX, y));
 		boolean between = Alg.pointBetweenGoals(new Point2(y), myIdentifier,
 				BETWEEN_GOALS_EPSILON);
-		int estStopY = state.getEstimatedStopPoint().getY();
+		int estStopY = state.getFutureData().getResult().getY();
 
 		// Compare robot facing with angle to ball
 		double diff = normalizeToBiDirection(botFacing - angleToBall);
@@ -437,39 +437,6 @@ public class Robot {
 			return true;
 		}
 		return false;
-	}
-
-	/**
-	 * In theory, should make the robot move somewhere half-way between the
-	 * estimated ball position's Y coordinate and the goalmouth's centre, useful
-	 * when the ball is not moving and the attacking robot is not wearing a hat.
-	 * We never used it for the milestone and therefore it is disabled. We're
-	 * suppressing all warnings because comparing DEF_ROBOT to 0 apparently
-	 * makes dead code etc.
-	 * 
-	 * In practice, this method won't really be useful for matches because all
-	 * robots will be wearing hats, but the concept behind weighting the goal
-	 * centre is useful.
-	 * 
-	 * TODO: Consider this
-	 */
-	@SuppressWarnings("all")
-	private void defendIfNoAttacker() throws Exception {
-		Point2 robotPosition = state.getRobotPosition(myTeam, myIdentifier);
-		Point2 ballPosition = state.getBallPosition();
-
-		double q;
-		if (myIdentifier == 0) {
-			q = state.getLeftGoalCentre().getY();
-		} else {
-			q = state.getRightGoalCentre().getY();
-		}
-
-		q += ballPosition.getY();
-		q /= 2;
-
-		// Move robot to this position
-		defendToY((int) q, DEFEND_EPSILON_DISTANCE);
 	}
 
 	/**

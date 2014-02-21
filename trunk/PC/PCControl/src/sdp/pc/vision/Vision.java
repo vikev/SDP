@@ -36,10 +36,6 @@ import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 public class Vision extends WindowAdapter implements CaptureCallback {
 
 	/**
-	 * TODO: Has anyone tried changing the JPEG quality? JPEG can be pushed all
-	 * the way to 100, which may improve our pixel recognition (at the cost of
-	 * performance?)
-	 * 
 	 * I've adjusted it to 100 and manually taken a look at the performance
 	 * while running Vision. It doesn't seem to change. As long as no one else
 	 * has problems we should keep it at 100

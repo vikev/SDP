@@ -14,6 +14,12 @@ import java.awt.Graphics;
 public class FutureBall {
 
 	/**
+	 * The minimum velocity of the ball in pixels per second to estimate its
+	 * stopping point.
+	 */
+	private static final int MIN_ESTIMATE_VELOCITY = 10;
+
+	/**
 	 * The estimated fraction of the ball velocity lost per second
 	 */
 	private static final double ESTIMATED_BALL_FRICTION = 0.6;
@@ -62,12 +68,10 @@ public class FutureBall {
 	 * Calculate if the pitch contains the 8 surrounding pixels around (x,y) and
 	 * therefore determine the deflection angle.
 	 * 
-	 * TODO: Incomplete and untested
-	 * 
 	 * @param x
 	 * @param y
 	 */
-	public static Intersect collide8(double x, double y) {
+	public static Intersect collide8(double x, double y, Intersect inter) {
 		boolean[] q = new boolean[8];
 		Point2[] pts = new Point2[8];
 
@@ -127,12 +131,9 @@ public class FutureBall {
 		Point2 C = pts[p[0]]; // centre
 
 		double angle = getOutwardAngle(A, B, C);
-		Intersect intersect = new Intersect();
-		intersect.setBall(A);
-		intersect.setIntersection(C);
-		intersect.setAngle(angle);
-		return intersect;
-
+		inter.setIntersection(C);
+		inter.setAngle(angle);
+		return inter;
 	}
 
 	/**
@@ -140,7 +141,7 @@ public class FutureBall {
 	 * 
 	 * @return predicted ball position
 	 */
-	public static Point2 estimateRealStopPoint() {
+	public static Intersect estimateRealStopPoint() {
 		Point2 vel = state.getBallVelocity();
 		Point2 pos = state.getBallPosition().copy();
 		return estimateStopPoint(vel, pos);
@@ -155,7 +156,7 @@ public class FutureBall {
 	 *            - the position of the ball in co-ordinate format
 	 * @return predicted position
 	 */
-	public static Point2 estimateStopPoint(Point2 vel, Point2 ball) {
+	public static Intersect estimateStopPoint(Point2 vel, Point2 ball) {
 		double delX = vel.getX(), delY = vel.getY();
 		double tarX = ball.getX(), tarY = ball.getY();
 		// How much friction to apply to the ball
@@ -177,18 +178,19 @@ public class FutureBall {
 		vHatX /= distToStop;
 		vHatY /= distToStop;
 		collision = Point2.EMPTY;
-		if (vel.modulus() > 5) {
+		Intersect inter = new Intersect(ball, Point2.EMPTY, Point2.EMPTY,
+				Double.NaN);
+		if (vel.modulus() > MIN_ESTIMATE_VELOCITY) {
 			while (collision.equals(Point2.EMPTY) && distToStop > 0) {
 				if (!pitchContains(new Point2((int) iteratorX, (int) iteratorY))) {
 					collision = new Point2((int) iteratorX, (int) iteratorY);
 
-					// collide8(iteratorX, iteratorY);
-					Intersect collide = collide8(iteratorX, iteratorY);
+					inter = collide8(iteratorX, iteratorY, inter);
 					Point2 temp = new Point2((int) tarX, (int) tarY);
 					Point2 reboundPoint = getReboundPoint(
-							collide.getIntersection(), collide.getBall(), temp,
-							collide.getAngle());
-
+							inter.getIntersection(), inter.getBall(), temp,
+							inter.getAngle());
+					inter.setDeflection(reboundPoint);
 				}
 				iteratorX += vHatX;
 				iteratorY += vHatY;
@@ -196,8 +198,8 @@ public class FutureBall {
 			}
 		}
 
-		// Return stop point
-		return new Point2((int) tarX, (int) tarY);
+		// Return bundle
+		return inter;
 	}
 
 	/**
@@ -251,12 +253,12 @@ public class FutureBall {
 		}
 
 		// TODO: I refuse to believe this works
-		Point2 stopPos = FutureBall.estimateStopPoint(new Point2(x, y), ball);
+		Intersect stopPos = estimateStopPoint(new Point2(x, y), ball);
 
 		// What the fuck does this do? Nothing
-		double deltaY = Math.abs(stopPos.getY() - ball.getY())
+		double deltaY = Math.abs(stopPos.getDeflection().getY() - ball.getY())
 				* Math.abs(staticPos.getX() - ball.getX())
-				/ Math.abs(stopPos.getX() - ball.getX());
+				/ Math.abs(stopPos.getDeflection().getX() - ball.getX());
 
 		// Does nothing
 		double predY;
@@ -307,12 +309,13 @@ public class FutureBall {
 		double distance = Math.sqrt(Math.pow(
 				(temp.getX() - intersection.getX()), 2)
 				+ Math.pow((temp.getY() - intersection.getY()), 2));
-        double x = intersection.getX() + distance * Math.cos(angle);
-        double y = intersection.getY() + distance * Math.sin(angle);
-        Point2 estimation = new Point2((int) x,(int) y);
-        //System.out.println("Estimation after rebound:" + estimation.toString());
-        drawLine(intersection, estimation);
-        return estimation;
+		double x = intersection.getX() + distance * Math.cos(angle);
+		double y = intersection.getY() + distance * Math.sin(angle);
+		Point2 estimation = new Point2((int) x, (int) y);
+		// System.out.println("Estimation after rebound:" +
+		// estimation.toString());
+		drawLine(intersection, estimation);
+		return estimation;
 	}
 
 }
