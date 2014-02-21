@@ -249,11 +249,11 @@ public class WorldStatePainter {
 					}
 				}
 			}
-		
+	
 		/*
-		// Attempting to draw rebounds
-		Point2 start = new Point2(222,222);
-		Point2 end = new Point2(444,444);
+		// Basic rebound testing using and inverse function. Probably redundant with Blake's FutureBall collide8 being improved.
+		Point2 start = new Point2(381,174);
+		Point2 end = new Point2(800,800);
 		
 		if (!Vision.stateListener.pointInPitch(end)){
 			double m = (start.getY() -end.getY())/(start.getX() - end.getX());
@@ -290,6 +290,7 @@ public class WorldStatePainter {
 			g.drawLine(start.getX(), start.getY(), end.getX(), end.getY());
 		}
 		*/
+		
 		
 		// draw centre line
 		g.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
