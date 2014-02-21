@@ -67,22 +67,21 @@ public class WorldStateUpdater extends WorldStateListener {
 	private int ballPtsCount;
 	Point2 ballPos;
 	LinkedList<Point2> ballPastPos = new LinkedList<Point2>();
-	
+
 	/**
 	 * List of points belonging to the green plates
 	 */
 	private ArrayList<Point2> greenPlatePoints = new ArrayList<Point2>();
-	
-	/**
-	 * Clusters giving the positions of the four green plates
-	 * The given points are just for initialisation of the vision
-	 */
-	Cluster[] clusters = { new Cluster( new Point2(110,220)),
-						   new Cluster( new Point2(240,220)),
-						   new Cluster( new Point2(390,220)), 
-						   new Cluster( new Point2(520,220)) };
 
-	
+	/**
+	 * Clusters giving the positions of the four green plates The given points
+	 * are just for initialisation of the vision
+	 */
+	Cluster[] clusters = { new Cluster(new Point2(110, 220)),
+			new Cluster(new Point2(240, 220)),
+			new Cluster(new Point2(390, 220)),
+			new Cluster(new Point2(520, 220)) };
+
 	/**
 	 * Constructs a new WorldStateUpdater to look for new frames, as refreshed
 	 * by setCurrentFrame(). When a new frame is detected it first grabs the
@@ -140,9 +139,9 @@ public class WorldStateUpdater extends WorldStateListener {
 				ballPos = ballPos.add(p);
 				ballPtsCount++;
 			}
-			
+
 			// Check if it's a green plate
-			if(Colors.isGreen(cRgb, cHsb)) {
+			if (Colors.isGreen(cRgb, cHsb)) {
 				greenPlatePoints.add(p);
 			}
 
@@ -181,7 +180,7 @@ public class WorldStateUpdater extends WorldStateListener {
 
 				// make it an offset from current position
 				avgPastPos = avgPastPos.subtract(ballPos);
-				
+
 				// convert to pixels per second
 				avgPastPos = avgPastPos.mult(state.getPaintFps());
 				state.setBallVelocity(avgPastPos);
@@ -193,40 +192,39 @@ public class WorldStateUpdater extends WorldStateListener {
 				ballPastPos.removeLast();
 
 			// Update estimated stop/collide points
-			state.setEstimatedStopPoint(FutureBall.estimateRealStopPoint());
-			//System.out.println(FutureBall.estimateRealStopPoint());
-			//FutureBall.estimatePositionWhen(new Point2(528,206), state.getRobotFacing(0, 1), new Point2(81,227));
-			
-			state.setEstimatedCollisionPoint(FutureBall.collision);
+			state.setFutureData(FutureBall.estimateRealStopPoint());
+			// System.out.println(FutureBall.estimateRealStopPoint());
+			// FutureBall.estimatePositionWhen(new Point2(528,206),
+			// state.getRobotFacing(0, 1), new Point2(81,227));
 		} else {
 			// If the ball position doesn't exist, update world state
 			// accordingly.
 			state.setBallPosition(Point2.EMPTY);
-			state.setEstimatedStopPoint(Point2.EMPTY);
-			state.setEstimatedCollisionPoint(Point2.EMPTY);
+			state.setFutureData(Intersect.EMPTY);
 		}
-		
+
 		// Find the green plate clusters
-		clusters = Kmeans.doKmeans(greenPlatePoints, 
-				clusters[0].getMean(), clusters[1].getMean(),
-				clusters[2].getMean(), clusters[3].getMean());
+		clusters = Kmeans.doKmeans(greenPlatePoints, clusters[0].getMean(),
+				clusters[1].getMean(), clusters[2].getMean(),
+				clusters[3].getMean());
 
 		// Loop through teams' robots
 		for (int team = 0; team < 2; team++)
 			for (int robot = 0; robot < 2; robot++) {
-				
+
 				// Check if we saw that robot enough times
 				int ptCount = robotPtsCount[team][robot];
 				if (ptCount > MINIMUM_ROBOT_POINTS) {
-					
-					// Remove team-color pixels if they're not within a green plate
-					Point2 tempPos = new Point2(0,0);
+
+					// Remove team-color pixels if they're not within a green
+					// plate
+					Point2 tempPos = new Point2(0, 0);
 					ArrayList<Point2> tempPts = new ArrayList<Point2>();
 					int tempCount = 0;
 					for (Point2 p : robotPts[team][robot]) {
 						boolean isPointInPlate = false;
 						for (Cluster cluster : clusters) {
-							if (p.distance(cluster.getMean()) < Constants.ROBOT_CIRCLE_RADIUS/2) {
+							if (p.distance(cluster.getMean()) < Constants.ROBOT_CIRCLE_RADIUS / 2) {
 								isPointInPlate = true;
 							}
 						}
@@ -234,8 +232,7 @@ public class WorldStateUpdater extends WorldStateListener {
 							tempPos = tempPos.add(p);
 							tempPts.add(p);
 							tempCount++;
-						}
-						else {
+						} else {
 							robotPos[team][robot].sub(p);
 							ptCount--;
 						}
@@ -243,11 +240,12 @@ public class WorldStateUpdater extends WorldStateListener {
 					robotPos[team][robot] = tempPos;
 					robotPts[team][robot] = tempPts;
 					ptCount = tempCount;
-					
+
 					// Find the robot's centre (mean)
-					if (ptCount==0) break;
+					if (ptCount == 0)
+						break;
 					Point2 newPos = robotPos[team][robot].div(ptCount);
-					
+
 					// Remove the outliers
 					ArrayList<Point2> newPts = Point2.removeOutliers(
 							robotPts[team][robot], newPos);
@@ -260,7 +258,7 @@ public class WorldStateUpdater extends WorldStateListener {
 					// And update the world state
 					state.setRobotPosition(team, robot, newPos);
 					state.setRobotFacing(team, robot, newFacing);
-					
+
 				} else {
 					state.setRobotPosition(team, robot, Point2.EMPTY);
 					state.setRobotFacing(team, robot, Double.NaN);

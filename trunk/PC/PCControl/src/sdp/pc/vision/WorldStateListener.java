@@ -30,12 +30,11 @@ public abstract class WorldStateListener implements Runnable {
 	 * We shall not sleep (pause) the thread if the amount is less than that
 	 */
 	private static final long SLEEP_ACCURACY = 5;
+	
 	/**
 	 * The amount of frames to drop before preprocessing should occur
 	 */
 	private static final int FRAME_IGNORE_COUNT = 20;
-
-
 
 	/**
 	 * the last frame we observed; used to prevent unnecessary updates

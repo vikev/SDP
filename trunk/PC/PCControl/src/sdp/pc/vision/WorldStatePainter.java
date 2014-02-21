@@ -19,10 +19,9 @@ import static sdp.pc.common.Constants.*;
  * @author Ix
  */
 public class WorldStatePainter {
-	
-	
+
 	public ActionListener customPaintCode;
-	
+
 	/**
 	 * Minimum ball speed for the robot to consider the ball as moving in pixels
 	 * per second.
@@ -61,7 +60,7 @@ public class WorldStatePainter {
 	 * The state we are attached to and paint using the drawWorld() method
 	 */
 	private WorldState state;
-	
+
 	/**
 	 * Whether to display the rectangle with the raw boundaries
 	 */
@@ -212,25 +211,22 @@ public class WorldStatePainter {
 						velocityPos.getY());
 			}
 
+			Intersect data = state.getFutureData();
+
 			// futureballs
-			if (!state.getEstimatedStopPoint().equals(Point2.EMPTY)) {
-				drawCircle(g, GRAY_BLEND, FutureBall.estimateRealStopPoint(),
-						ROBOT_HEAD_RADIUS);
-				if (!state.getEstimatedCollidePoint().equals(Point2.EMPTY)) {
-					drawCircle(g, GRAY_BLEND, FutureBall.collision, 5);
-				}
+			if (!data.getResult().equals(Point2.EMPTY)) {
+				drawCircle(g, GRAY_BLEND, data.getResult(), ROBOT_HEAD_RADIUS);
 			}
 
 			// collision
-			if (!state.getEstimatedCollidePoint().equals(Point2.EMPTY)) {
+			if (!data.getIntersection().equals(Point2.EMPTY)) {
 				g.setColor(GRAY_BLEND);
 				g.drawLine(state.getBallPosition().getX(), state
-						.getBallPosition().getY(), state
-						.getEstimatedCollidePoint().getX(), state
-						.getEstimatedCollidePoint().getY());
+						.getBallPosition().getY(), data.getIntersection()
+						.getX(), data.getIntersection().getY());
 			}
 		}
-		
+
 		// Loop through all robots
 		for (int team = 0; team < 2; team++)
 			for (int robot = 0; robot < 2; robot++) {
@@ -249,49 +245,36 @@ public class WorldStatePainter {
 					}
 				}
 			}
-	
+
 		/*
-		// Basic rebound testing using and inverse function. Probably redundant with Blake's FutureBall collide8 being improved.
-		Point2 start = new Point2(381,174);
-		Point2 end = new Point2(800,800);
-		
-		if (!Vision.stateListener.pointInPitch(end)){
-			double m = (start.getY() -end.getY())/(start.getX() - end.getX());
-			Point2 current = new Point2(start.getX(),start.getY());
-			Point2 next = new Point2(current.getX(),start.getY());
-			int incrementsY;
-			if (end.getY()<start.getY()){
-				incrementsY = -1;
-			} else {
-				incrementsY = 1;
-			}
-			
-			int incrementsX;
-			if (end.getX()<start.getX()){
-				incrementsX = -1;
-			} else {
-				incrementsX = 1;
-			}
-			while(Vision.stateListener.pointInPitch(current)){
-				next.setY(next.getY()+incrementsY);
-				int x = (int) Math.round((next.getX()+(incrementsX/m)));
-				next.setX(x);
-				current = next;
-			}
-			g.drawLine(start.getX(), start.getY(), current.getX(), current.getY());
-			double revisedM = m /-1;
-			double vHatY = Math.abs(current.getX() - start.getY());
-			
-			int predictedY = (int) (current.getY() - vHatY/2);
-			int predictedX = (int) (((predictedY - current.getY())/revisedM)+ current.getX());
-			Point2 predicted = new Point2(predictedX,predictedY);
-			g.drawLine(current.getX(), current.getY(), predicted.getX(), predicted.getY());			
-		} else {
-			g.drawLine(start.getX(), start.getY(), end.getX(), end.getY());
-		}
-		*/
-		
-		
+		 * // Basic rebound testing using and inverse function. Probably
+		 * redundant with Blake's FutureBall collide8 being improved. Point2
+		 * start = new Point2(381,174); Point2 end = new Point2(800,800);
+		 * 
+		 * if (!Vision.stateListener.pointInPitch(end)){ double m =
+		 * (start.getY() -end.getY())/(start.getX() - end.getX()); Point2
+		 * current = new Point2(start.getX(),start.getY()); Point2 next = new
+		 * Point2(current.getX(),start.getY()); int incrementsY; if
+		 * (end.getY()<start.getY()){ incrementsY = -1; } else { incrementsY =
+		 * 1; }
+		 * 
+		 * int incrementsX; if (end.getX()<start.getX()){ incrementsX = -1; }
+		 * else { incrementsX = 1; }
+		 * while(Vision.stateListener.pointInPitch(current)){
+		 * next.setY(next.getY()+incrementsY); int x = (int)
+		 * Math.round((next.getX()+(incrementsX/m))); next.setX(x); current =
+		 * next; } g.drawLine(start.getX(), start.getY(), current.getX(),
+		 * current.getY()); double revisedM = m /-1; double vHatY =
+		 * Math.abs(current.getX() - start.getY());
+		 * 
+		 * int predictedY = (int) (current.getY() - vHatY/2); int predictedX =
+		 * (int) (((predictedY - current.getY())/revisedM)+ current.getX());
+		 * Point2 predicted = new Point2(predictedX,predictedY);
+		 * g.drawLine(current.getX(), current.getY(), predicted.getX(),
+		 * predicted.getY()); } else { g.drawLine(start.getX(), start.getY(),
+		 * end.getX(), end.getY()); }
+		 */
+
 		// draw centre line
 		g.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
 		g.drawLine(TABLE_CENTRE_X, TABLE_MIN_Y + 1, TABLE_CENTRE_X,
@@ -315,7 +298,8 @@ public class WorldStatePainter {
 		g.drawString(sWorldFps, TEXT_OFFSET, TEXT_OFFSET + TEXT_HEIGHT);
 
 		// display mouse position, RGB, and HSB values to screen (if any)
-		if (mousePos != null && mousePos.x < Vision.WIDTH && mousePos.y < Vision.HEIGHT) {
+		if (mousePos != null && mousePos.x < Vision.WIDTH
+				&& mousePos.y < Vision.HEIGHT) {
 
 			String colorTip = "norm";
 			cRgb = stateListener.getNormalisedRgb(mousePos.x, mousePos.y);
@@ -357,76 +341,84 @@ public class WorldStatePainter {
 			}
 		}
 
-		//pitch borders
+		// pitch borders
 		Pitch pitch = state.getPitch();
-		if(pitch != null) {
-			g.drawLine(pitch.goalLineX[0], pitch.goalLineY[0], pitch.goalLineX[0], pitch.goalLineY[1]);
-			g.drawLine(pitch.goalLineX[1], pitch.goalLineY[0], pitch.goalLineX[1], pitch.goalLineY[1]);
-			g.drawLine(pitch.pitchCornerX[0], pitch.pitchY[0], pitch.pitchCornerX[1], pitch.pitchY[0]);
-			g.drawLine(pitch.pitchCornerX[0], pitch.pitchY[1], pitch.pitchCornerX[1], pitch.pitchY[1]);
-			g.drawLine(pitch.zoneX[0], pitch.pitchY[0], pitch.zoneX[0], pitch.pitchY[1]);
-			g.drawLine(pitch.zoneX[1], pitch.pitchY[0], pitch.zoneX[1], pitch.pitchY[1]);
-			g.drawLine(pitch.zoneX[2], pitch.pitchY[0], pitch.zoneX[2], pitch.pitchY[1]);
-			g.drawLine(pitch.goalLineX[0], pitch.goalLineY[0], pitch.pitchCornerX[0], pitch.pitchY[0]);
-			g.drawLine(pitch.goalLineX[0], pitch.goalLineY[1], pitch.pitchCornerX[0], pitch.pitchY[1]);
-			g.drawLine(pitch.goalLineX[1], pitch.goalLineY[0], pitch.pitchCornerX[1], pitch.pitchY[0]);
-			g.drawLine(pitch.goalLineX[1], pitch.goalLineY[1], pitch.pitchCornerX[1], pitch.pitchY[1]);
+		if (pitch != null) {
+			g.drawLine(pitch.goalLineX[0], pitch.goalLineY[0],
+					pitch.goalLineX[0], pitch.goalLineY[1]);
+			g.drawLine(pitch.goalLineX[1], pitch.goalLineY[0],
+					pitch.goalLineX[1], pitch.goalLineY[1]);
+			g.drawLine(pitch.pitchCornerX[0], pitch.pitchY[0],
+					pitch.pitchCornerX[1], pitch.pitchY[0]);
+			g.drawLine(pitch.pitchCornerX[0], pitch.pitchY[1],
+					pitch.pitchCornerX[1], pitch.pitchY[1]);
+			g.drawLine(pitch.zoneX[0], pitch.pitchY[0], pitch.zoneX[0],
+					pitch.pitchY[1]);
+			g.drawLine(pitch.zoneX[1], pitch.pitchY[0], pitch.zoneX[1],
+					pitch.pitchY[1]);
+			g.drawLine(pitch.zoneX[2], pitch.pitchY[0], pitch.zoneX[2],
+					pitch.pitchY[1]);
+			g.drawLine(pitch.goalLineX[0], pitch.goalLineY[0],
+					pitch.pitchCornerX[0], pitch.pitchY[0]);
+			g.drawLine(pitch.goalLineX[0], pitch.goalLineY[1],
+					pitch.pitchCornerX[0], pitch.pitchY[1]);
+			g.drawLine(pitch.goalLineX[1], pitch.goalLineY[0],
+					pitch.pitchCornerX[1], pitch.pitchY[0]);
+			g.drawLine(pitch.goalLineX[1], pitch.goalLineY[1],
+					pitch.pitchCornerX[1], pitch.pitchY[1]);
 		}
-		
-		if(isRawBoundaryShown())
+
+		if (isRawBoundaryShown())
 			drawRawBoundary(g);
-		
+
 		// bin your litter
 		g.dispose();
-		
-		if(customPaintCode != null)
+
+		if (customPaintCode != null)
 			customPaintCode.actionPerformed(new ActionEvent(image, 0, ""));
-		
+
 	}
 
-	private void drawPreprocessOverlay(BufferedImage image, Graphics g, Point2 mousePos) {
+	private void drawPreprocessOverlay(BufferedImage image, Graphics g,
+			Point2 mousePos) {
 		float[] cHsb = new float[3];
 		Color cRgb;
-		
-		if(!defaultSettings.hasBoundary()) {
-			g.drawString(
-					"Select raw boundary points", TEXT_OFFSET,
-					TEXT_OFFSET);
-		
-			
-			//draw white overlay to help selecting boundaries
+
+		if (!defaultSettings.hasBoundary()) {
+			g.drawString("Select raw boundary points", TEXT_OFFSET, TEXT_OFFSET);
+
+			// draw white overlay to help selecting boundaries
 			for (int ix = 0; ix < Vision.WIDTH; ix++)
 				for (int iy = 0; iy < Vision.HEIGHT; iy++) {
-					
+
 					cRgb = new Color(image.getRGB(ix, iy));
 					Color.RGBtoHSB(cRgb.getRed(), cRgb.getGreen(),
 							cRgb.getBlue(), cHsb);
-					
+
 					if (Colors.isWhite(cRgb, cHsb))
 						image.setRGB(ix, iy, Color.white.getRGB());
 				}
-			
+
 			// draw text n background
 			g.setColor(new Color(255, 127, 127, 127));
-			if(defaultSettings.getBoundary(0).equals(Point2.EMPTY))	{
+			if (defaultSettings.getBoundary(0).equals(Point2.EMPTY)) {
 				// waiting for 1st point
 				g.fillRect(0, 0, Vision.WIDTH / 2, Vision.HEIGHT / 2);
-				
+
 				g.setColor(Color.white);
 				g.drawLine(mousePos.x, mousePos.y, Vision.WIDTH, mousePos.y);
 				g.drawLine(mousePos.x, mousePos.y, mousePos.x, Vision.HEIGHT);
-			}
-			else {
+			} else {
 				// waiting for 2nd point
-				g.fillRect(Vision.WIDTH / 2, Vision.HEIGHT / 2, Vision.WIDTH / 2, Vision.HEIGHT / 2);
-				
+				g.fillRect(Vision.WIDTH / 2, Vision.HEIGHT / 2,
+						Vision.WIDTH / 2, Vision.HEIGHT / 2);
+
 				g.setColor(Color.white);
 				g.drawLine(mousePos.x, mousePos.y, 0, mousePos.y);
 				g.drawLine(mousePos.x, mousePos.y, mousePos.x, 0);
-			
+
 			}
-		}
-		else {
+		} else {
 			g.drawString(
 					"Waiting for preprocessor... "
 							+ stateListener.getKeyFrames() + "%", TEXT_OFFSET,
@@ -435,23 +427,24 @@ public class WorldStatePainter {
 	}
 
 	/**
-	 * Draws the raw boundary of the world listener as a rectangle
-	 * on the specified Graphics object.
-	 * @param g The Graphics to draw on
+	 * Draws the raw boundary of the world listener as a rectangle on the
+	 * specified Graphics object.
+	 * 
+	 * @param g
+	 *            The Graphics to draw on
 	 */
 	private void drawRawBoundary(Graphics g) {
-		
-		Point2 ptl = defaultSettings.getBoundary(0),
-			plr = defaultSettings.getBoundary(1);
-		
+
+		Point2 ptl = defaultSettings.getBoundary(0), plr = defaultSettings
+				.getBoundary(1);
+
 		g.setColor(Color.red);
 		g.drawLine(ptl.x, ptl.y, ptl.x, plr.y);
 		g.drawLine(ptl.x, ptl.y, plr.x, ptl.y);
 		g.drawLine(plr.x, plr.y, ptl.x, plr.y);
 		g.drawLine(plr.x, plr.y, plr.x, ptl.y);
 	}
-	
-	
+
 	/**
 	 * Draws the outline of a circle with a given centre and radius
 	 * 

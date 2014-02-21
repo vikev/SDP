@@ -76,13 +76,7 @@ public class WorldState {
 	 * A point given by futureball as the estimated point the ball will stop,
 	 * given its current velocity and position
 	 */
-	private Point2 estimatedStopLocation = new Point2();
-
-	/**
-	 * A point given by futureball as the estimated point the ball will collide
-	 * with a wall (or goal), using the current ball velocity and location data
-	 */
-	private Point2 estimatedCollidePoint = new Point2();
+	private Intersect futureData = new Intersect();
 
 	/**
 	 * The movement angle of the ball in degrees
@@ -377,43 +371,30 @@ public class WorldState {
 	}
 
 	/**
-	 * Setter method for updating the estimated ball stop point Setter method
-	 * for updating the estimated ball stop point. Used by FutureBall
+	 * Setter method for updating the estimated data from FutureBall
 	 * 
 	 * @param pt
 	 */
-	public void setEstimatedStopPoint(Point2 pt) {
-		this.estimatedStopLocation = pt;
+	public void setIntersectData(Intersect inter) {
+		this.futureData = inter;
 	}
 
 	/**
-	 * Setter method for updating the estimated collide point Setter method for
-	 * updating the estimated collide point. Used by FutureBall
+	 * Setter method for updating the data from FutureBall
 	 * 
 	 * @param pt
 	 */
-	public void setEstimatedCollisionPoint(Point2 pt) {
-		this.estimatedCollidePoint = pt;
+	public void setFutureData(Intersect pt) {
+		this.futureData = pt;
 	}
 
 	/**
-	 * Getter method for the estimated stop point of the ball Getter method for
-	 * the estimated stop point of the ball. Used by FutureBall
+	 * Getter method for the data from FutureBall
 	 * 
 	 * @return
 	 */
-	public Point2 getEstimatedStopPoint() {
-		return this.estimatedStopLocation;
-	}
-
-	/**
-	 * Getter method for the estimated collide point of the ball Getter method
-	 * for the estimated collide point of the ball. Used by FutureBall
-	 * 
-	 * @return
-	 */
-	public Point2 getEstimatedCollidePoint() {
-		return this.estimatedCollidePoint;
+	public Intersect getFutureData() {
+		return this.futureData;
 	}
 
 	/**
