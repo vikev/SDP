@@ -4,6 +4,7 @@ import javax.swing.SwingUtilities;
 
 import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 import sdp.pc.common.ChooseRobot;
+import sdp.pc.vision.Point2;
 import sdp.pc.vision.Vision;
 import sdp.pc.vision.WorldState;
 import sdp.pc.vision.relay.Driver;
@@ -56,6 +57,23 @@ public class Strategy {
 	 */
 	private static WorldState state = new WorldState();
 
+	
+	@SuppressWarnings("unused")
+	private static Point2 basicGoalTarget() {
+		if (state.getDirection() == 0) {
+			if (state.getRobotPosition(MY_TEAM ^ 1, DEFENDER_ID).getY() > state.getLeftGoalCentre().getY())
+				return WorldState.leftGoalTop;
+			else
+				return WorldState.leftGoalBottom;
+		}
+		else {
+			if (state.getRobotPosition(MY_TEAM ^ 1, DEFENDER_ID).getY() > state.getRightGoalCentre().getY())
+				return WorldState.rightGoalTop;
+			else
+				return WorldState.rightGoalBottom;
+		}
+	}
+	
 	/**
 	 * Builds the vision system
 	 * 

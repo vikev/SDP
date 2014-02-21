@@ -23,7 +23,10 @@ public class Pitch {
 	private static final int PITCH_SIDE_X_NPOINTS = 99;
 
 	private static final int SOME_SHANO_VALUE = 4;
-
+	
+	private static final int Y_END = 360, Y_BEGIN = 85;
+	private static final int X_END = 570, X_BEGIN = 310;
+	
 	/**
 	 * The radius of a robot TODO: figure out a value for this
 	 */
@@ -175,5 +178,21 @@ public class Pitch {
 		
 		initialized = true;
 		return true;
+	}
+	
+	public int getYEnd() {
+		return Y_END;
+	}
+	
+	public int getYBegin() {
+		return Y_BEGIN;
+	}
+	
+	public int getXEnd() {
+		return X_END;
+	}
+	
+	public int getXBegin() {
+		return X_BEGIN;
 	}
 }

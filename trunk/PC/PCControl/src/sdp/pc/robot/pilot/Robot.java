@@ -343,6 +343,21 @@ public class Robot {
 			return 1.0;
 		}
 	}
+	
+	/**
+	 * Checks if robot can actually make turn without hitting wall, entering goal mouth or going
+	 * through center line. 5 pixels is an estimate from testing in Milestone 1 and 3
+	 */
+	public boolean canTurn() {
+		return (Math.abs(state.getRobotPosition(myTeam, myIdentifier).getY() - 
+					state.getPitch().getYBegin()) < 5 && 
+					Math.abs(state.getRobotPosition(myTeam, myIdentifier).getY() - 
+							state.getPitch().getYEnd()) < 5 && 
+							Math.abs(state.getRobotPosition(myTeam, myIdentifier).getX() - 
+									state.getPitch().getXBegin()) < 5 && 
+									Math.abs(state.getRobotPosition(myTeam, myIdentifier).getX() - 
+											state.getPitch().getXEnd()) < 5);
+	}
 
 	/**
 	 * Makes the robot turn to a point synchronously. Returns true when it is
@@ -368,6 +383,15 @@ public class Robot {
 			return true;
 		}
 		return false;
+	}
+	
+	/**
+	 * Calculates distance to opposite team's goal.
+	 */
+	public double getDistanceToOppositeGoal() {
+		if (state.getDirection() == 0)
+			return state.getRobotPosition(myTeam, myIdentifier).distance(state.getLeftGoalCentre());
+		return state.getRobotPosition(myTeam, myIdentifier).distance(state.getRightGoalCentre());
 	}
 
 	/**
