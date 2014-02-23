@@ -38,7 +38,7 @@ public class Milestone3def {
 	 * itself to, in pixels. Use a negative value if defending the right-hand
 	 * goal.
 	 */
-	private static final int GOAL_OFFSET = 20;
+	private static final int GOAL_OFFSET = -20;
 
 	/**
 	 * An instance of WorldState used by M3def
@@ -49,7 +49,7 @@ public class Milestone3def {
 	 * Minimum ball speed for the robot to consider the ball as approaching the
 	 * goal in pixels per second.
 	 */
-	private static final double BALL_SPEED_THRESHOLD = 50.0;
+	private static final double BALL_SPEED_THRESHOLD = 30.0;
 
 	/**
 	 * The period at which the main method executes and sends commands to the
@@ -72,7 +72,7 @@ public class Milestone3def {
 	 * 
 	 * TODO: This should be abstracted.
 	 */
-	private static final int DEF_ROBOT = 0;
+	private static final int DEF_ROBOT = 1;
 
 	/**
 	 * A useful epsilon value for asserting our robots facing angle. We can
@@ -136,30 +136,30 @@ public class Milestone3def {
 		// The following section was disabled to adhere to the (last minute)
 		// milestone rules:
 
-		// // Here is the FSM behaviour of the system
-		// while (true) {
-		// // M3 should be a finite state machine that constantly loops,
-		// // executing the necessary job. User input should not be necessary.
-		//
-		// // FSM:
-		// // * Assert near goal-line,
-		// // * Assert perpendicular,
-		// // * if the ball is moving with sufficient velocity:
-		// // - block the ball
-		// // * else:
-		// // - - if the attacking robot has a hat:
-		// // * * cut off the attacking robot w.r.t. the goal
-		// // - - else:
-		// // * * cut off the ball w.r.t the goal
-		// if (assertNearGoalLine(state, driver, NEAR_EPSILON_DIST)) {
-		// if (assertPerpendicular(state, driver)) {
-		// break;
-		// }
-		// }
-		//
-		// // Delay a moment to avoid a TCP overflow
-		// Thread.sleep((int) PERIOD);
-		// }
+		// Here is the FSM behaviour of the system
+		while (true) {
+			// M3 should be a finite state machine that constantly loops,
+			// executing the necessary job. User input should not be necessary.
+
+			// FSM:
+			// * Assert near goal-line,
+			// * Assert perpendicular,
+			// * if the ball is moving with sufficient velocity:
+			// - block the ball
+			// * else:
+			// - - if the attacking robot has a hat:
+			// * * cut off the attacking robot w.r.t. the goal
+			// - - else:
+			// * * cut off the ball w.r.t the goal
+			if (assertNearGoalLine(state, driver, NEAR_EPSILON_DIST)) {
+				if (assertPerpendicular(state, driver)) {
+					break;
+				}
+			}
+
+			// Delay a moment to avoid a TCP overflow
+			Thread.sleep((int) PERIOD);
+		}
 
 		while (true) {
 
@@ -274,13 +274,16 @@ public class Milestone3def {
 		double diff = normalizeToBiDirection(botFacing - angleToBall);
 
 		// If the robot is far enough from the target, and between the goals:
+		System.out.println(y);
 		if (botPosition.distance(new Point2(botX, estStopY)) > eps && between) {
 
 			// Assert the robot is near the target, by going forward or backward
 			if (Math.abs(diff) > 90) {
+				System.out.println("reverse");
 				assertNearReverse(state, driver, new Point2(botX, estStopY),
 						NEAR_EPSILON_DIST);
 			} else {
+				System.out.println("forward");
 				assertNearForward(state, driver, new Point2(botX, estStopY),
 						NEAR_EPSILON_DIST);
 			}

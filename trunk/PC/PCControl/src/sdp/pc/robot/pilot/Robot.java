@@ -190,6 +190,7 @@ public class Robot {
 		double rotateBy = normalizeToBiDirection(state.getRobotFacing(myTeam,
 				myIdentifier) - deg);
 		double speed = getRotateSpeed(rotateBy, epsilon);
+		System.out.println(rotateBy);
 		if (rotateBy > epsilon && speed > 1.0) {
 			driver.turnLeft(speed);
 		} else if (rotateBy < -epsilon && speed > 1.0) {

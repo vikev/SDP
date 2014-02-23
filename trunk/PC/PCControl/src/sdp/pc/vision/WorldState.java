@@ -185,12 +185,7 @@ public class WorldState {
 	 * @return Left Goal Centre as a Point2
 	 */
 	public Point2 getLeftGoalCentre() {
-		if (leftGoalCentre == null) {
-			leftGoalCentre = new Point2(
-					(int) (leftGoalTop.getX() + leftGoalBottom.getX()) / 2,
-					(int) (leftGoalTop.getY() + leftGoalBottom.getY()) / 2);
-		}
-		return leftGoalCentre;
+		return pitch.getLeftGoalCentre();
 
 	}
 
@@ -200,12 +195,7 @@ public class WorldState {
 	 * @return Right Goal Centre as a Point2
 	 */
 	public Point2 getRightGoalCentre() {
-		if (rightGoalCentre == null) {
-			rightGoalCentre = new Point2(
-					(int) (rightGoalTop.getX() + rightGoalBottom.getX()) / 2,
-					(int) (rightGoalTop.getY() + rightGoalBottom.getY()) / 2);
-		}
-		return rightGoalCentre;
+		return pitch.getRightGoalCentre();
 	}
 
 	/**

@@ -57,23 +57,23 @@ public class Strategy {
 	 */
 	private static WorldState state = new WorldState();
 
-	
 	@SuppressWarnings("unused")
 	private static Point2 basicGoalTarget() {
 		if (state.getDirection() == 0) {
-			if (state.getRobotPosition(MY_TEAM ^ 1, DEFENDER_ID).getY() > state.getLeftGoalCentre().getY())
+			if (state.getRobotPosition(MY_TEAM ^ 1, DEFENDER_ID).getY() > state
+					.getLeftGoalCentre().getY())
 				return WorldState.leftGoalTop;
 			else
 				return WorldState.leftGoalBottom;
-		}
-		else {
-			if (state.getRobotPosition(MY_TEAM ^ 1, DEFENDER_ID).getY() > state.getRightGoalCentre().getY())
+		} else {
+			if (state.getRobotPosition(MY_TEAM ^ 1, DEFENDER_ID).getY() > state
+					.getRightGoalCentre().getY())
 				return WorldState.rightGoalTop;
 			else
 				return WorldState.rightGoalBottom;
 		}
 	}
-	
+
 	/**
 	 * Builds the vision system
 	 * 
@@ -138,18 +138,26 @@ public class Strategy {
 
 	/**
 	 * Main logic branching mechanism for attacker. Use robot.myState as well
+	 * 
+	 * @throws Exception
 	 */
-	public static void parseAttacker() {
+	public static void parseAttacker() throws Exception {
 		// TODO: Logic
+		if (attacker.assertPerpendicular(20.0)) {
+		}
 	}
 
 	/**
 	 * Main logic branching mechanism for defender. Use robot.myState as well
+	 * 
+	 * @throws Exception
 	 */
-	public static void parseDefender() {
+	public static void parseDefender() throws Exception {
 		// TODO: Logic
+		if (defender.assertPerpendicular(20.0)) {
+		}
 	}
-	
+
 	/**
 	 * Loops indefinitely, ordering the robots to do things
 	 * 
@@ -158,12 +166,16 @@ public class Strategy {
 	public static void executeStrategy() throws InterruptedException {
 		Thread.sleep(1000);
 		while (true) {
-			parseAttacker();
-			parseDefender();
+			try {
+				parseAttacker();
+				parseDefender();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			Thread.sleep((int) PERIOD);
 		}
 	}
-	
+
 	/**
 	 * Main method
 	 * 
