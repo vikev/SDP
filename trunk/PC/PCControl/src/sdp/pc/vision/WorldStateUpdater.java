@@ -193,9 +193,8 @@ public class WorldStateUpdater extends WorldStateListener {
 
 			// Update estimated stop/collide points
 			state.setFutureData(FutureBall.estimateRealStopPoint());
-			// System.out.println(FutureBall.estimateRealStopPoint());
-			// FutureBall.estimatePositionWhen(new Point2(528,206),
-			// state.getRobotFacing(0, 1), new Point2(81,227));
+			//FutureBall.estimateMatchingYCoord(new Point2(528,206),
+			//170, new Point2(81,227)));
 		} else {
 			// If the ball position doesn't exist, update world state
 			// accordingly.
