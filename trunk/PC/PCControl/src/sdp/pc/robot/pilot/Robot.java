@@ -526,8 +526,7 @@ public class Robot {
 		if (robLoc.distance(to) < epsilon) {
 			return true;
 		}
-		double speed = getMoveSpeed(robLoc.distance(to),
-				DEFEND_EPSILON_DISTANCE);
+		double speed = getMoveSpeed(robLoc.distance(to));
 		driver.forward(speed);
 		return false;
 	}
@@ -542,8 +541,7 @@ public class Robot {
 		if (robLoc.distance(to) < epsilon) {
 			return true;
 		}
-		double speed = getMoveSpeed(robLoc.distance(to),
-				DEFEND_EPSILON_DISTANCE);
+		double speed = getMoveSpeed(robLoc.distance(to));
 		driver.backward(speed);
 		return false;
 	}
@@ -554,15 +552,15 @@ public class Robot {
 	 * 
 	 * TODO: Units? motor velocity in radians per second or..?
 	 */
-	private static double getMoveSpeed(double distance, double eps) {
-		if (distance > 60.0) {
+	private static double getMoveSpeed(double distance) {
+		if (distance > 120.0) {
 			return 300.0;
-		} else if (distance > 25.0) {
-			return 140.0;
-		} else if (distance > eps) {
+		} else if (distance > 50.0) {
+			return 150.0;
+		} else if (distance > 20.0) {
 			return 30.0;
 		} else {
-			return 1.0;
+			return 10.0;
 		}
 	}
 

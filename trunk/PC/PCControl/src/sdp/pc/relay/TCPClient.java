@@ -80,6 +80,15 @@ public class TCPClient {
 						}
 						toServer.println(2222);
 					}
+					/* Grab - g */
+					if (code == 71) {
+						switch (robot) {
+						case Constants.DEFENDER:
+							toServer.println("g");
+							break;
+						}
+						toServer.println(2222);
+					}
 				}
 
 				public void keyReleased(KeyEvent e) {
