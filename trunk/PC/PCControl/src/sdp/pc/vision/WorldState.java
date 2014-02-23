@@ -96,10 +96,7 @@ public class WorldState {
 	private Point2[][] robotLoc = new Point2[TEAM_COUNT][PLAYERS_PER_TEAM];
 
 	/**
-	 * Set of robot facing angles TODO:
-	 * 
-	 * Units? should be degrees on [0,360). What is it set to if the robot
-	 * position is unknown?
+	 * Robot facing angle in degrees on [0,360)
 	 */
 	private double[][] robotFacing = new double[TEAM_COUNT][PLAYERS_PER_TEAM];
 
