@@ -6,6 +6,7 @@ import sdp.pc.vision.Point2;
 import sdp.pc.vision.Vision;
 import sdp.pc.vision.WorldState;
 import sdp.pc.vision.relay.Driver;
+import sdp.pc.vision.relay.TCPClient;
 import sdp.pc.vision.Alg;
 
 import static sdp.pc.vision.Alg.*;
@@ -106,13 +107,37 @@ public class Robot {
 	 *            - the WorldState <b>this</b> should get data from
 	 * 
 	 * @param myTeam
-	 *            - the integer identifier which refers to this Robot's team.
+	 *            - the integer identifier which refers to this Robot's team -
+	 *            (0, 1) are (yellow, blue) respectively
 	 * @param myId
 	 *            - the integer identifier which uniquely identifies one of the
 	 *            4 robots, with the help of myTeam
 	 */
 	public Robot(Driver driver, WorldState state, int myTeam, int myId) {
 		this.driver = driver;
+		this.state = state;
+		this.myTeam = myTeam;
+		this.myIdentifier = myId;
+	}
+
+	/**
+	 * Constructor which builds a Driver from a robot id
+	 * 
+	 * @param robotCode
+	 *            - use ChooseRobot.x
+	 * @param state
+	 *            - the worldstate the robot exists in
+	 * @param myTeam
+	 *            - team (0, 1) for (yellow, blue) respectively
+	 * @param myId
+	 *            - the id for the robot (0, or 1)
+	 * @throws Exception
+	 */
+	public Robot(int robotCode, WorldState state, int myTeam, int myId)
+			throws Exception {
+		TCPClient conn = new TCPClient(robotCode);
+		Driver drv = new Driver(conn);
+		this.driver = drv;
 		this.state = state;
 		this.myTeam = myTeam;
 		this.myIdentifier = myId;
@@ -194,21 +219,20 @@ public class Robot {
 		return false;
 	}
 
-	
-	
 	/**
-	 * Checks if robot can actually make turn without hitting wall, entering goal mouth or going
-	 * through center line. 5 pixels is an estimate from testing in Milestone 1 and 3
+	 * Checks if robot can actually make turn without hitting wall, entering
+	 * goal mouth or going through center line. 5 pixels is an estimate from
+	 * testing in Milestone 1 and 3
 	 */
 	public boolean canTurn() {
-		return (Math.abs(state.getRobotPosition(myTeam, myIdentifier).getY() - 
-					state.getPitch().getYBegin()) < 5 && 
-					Math.abs(state.getRobotPosition(myTeam, myIdentifier).getY() - 
-							state.getPitch().getYEnd()) < 5 && 
-							Math.abs(state.getRobotPosition(myTeam, myIdentifier).getX() - 
-									state.getPitch().getXBegin()) < 5 && 
-									Math.abs(state.getRobotPosition(myTeam, myIdentifier).getX() - 
-											state.getPitch().getXEnd()) < 5);
+		return (Math.abs(state.getRobotPosition(myTeam, myIdentifier).getY()
+				- state.getPitch().getYBegin()) < 5
+				&& Math.abs(state.getRobotPosition(myTeam, myIdentifier).getY()
+						- state.getPitch().getYEnd()) < 5
+				&& Math.abs(state.getRobotPosition(myTeam, myIdentifier).getX()
+						- state.getPitch().getXBegin()) < 5 && Math.abs(state
+				.getRobotPosition(myTeam, myIdentifier).getX()
+				- state.getPitch().getXEnd()) < 5);
 	}
 
 	/**
@@ -238,14 +262,16 @@ public class Robot {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Calculates distance to opposite team's goal.
 	 */
 	public double getDistanceToOppositeGoal() {
 		if (state.getDirection() == 0)
-			return state.getRobotPosition(myTeam, myIdentifier).distance(state.getLeftGoalCentre());
-		return state.getRobotPosition(myTeam, myIdentifier).distance(state.getRightGoalCentre());
+			return state.getRobotPosition(myTeam, myIdentifier).distance(
+					state.getLeftGoalCentre());
+		return state.getRobotPosition(myTeam, myIdentifier).distance(
+				state.getRightGoalCentre());
 	}
 
 	/**

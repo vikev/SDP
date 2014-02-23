@@ -7,14 +7,11 @@ import sdp.pc.common.ChooseRobot;
 import sdp.pc.vision.Point2;
 import sdp.pc.vision.Vision;
 import sdp.pc.vision.WorldState;
-import sdp.pc.vision.relay.Driver;
-import sdp.pc.vision.relay.TCPClient;
 
 /**
  * Strategy is the global static class for running a match in SDP. Here we
- * initialise a Vision and Robot pair.
- * 
- * TODO: Better Docu
+ * initialise a Vision and Robot pair, and conduct all the state-based decision
+ * model related data to command the robot pair.
  * 
  * @author s1133141
  * 
@@ -100,16 +97,13 @@ public class Strategy {
 	 */
 	private static void connectRobots() throws Exception {
 		Thread.sleep(1000);
-		// TODO: Change this to connect to both robots with a different? dialog.
 		// TODO: Having two different versions of TCPClient and Driver is
 		// extremely difficult to deal with. Can someone familiar with both
 		// classes refactor/remove something please
-		TCPClient conn = new TCPClient(ChooseRobot.dialog());
-		TCPClient conn2 = new TCPClient(ChooseRobot.dialog());
-		Driver driver = new Driver(conn);
-		Driver driver2 = new Driver(conn2);
-		defender = new Robot(driver, state, MY_TEAM, DEFENDER_ID);
-		attacker = new Robot(driver2, state, MY_TEAM, ATTACKER_ID);
+		defender = new Robot(ChooseRobot.defender(), state, MY_TEAM,
+				DEFENDER_ID);
+		attacker = new Robot(ChooseRobot.attacker(), state, MY_TEAM,
+				ATTACKER_ID);
 	}
 
 	/**
@@ -143,7 +137,7 @@ public class Strategy {
 	 */
 	public static void parseAttacker() throws Exception {
 		// TODO: Logic
-		if (attacker.assertPerpendicular(20.0)) {
+		if (attacker.assertPerpendicular(10.0)) {
 		}
 	}
 

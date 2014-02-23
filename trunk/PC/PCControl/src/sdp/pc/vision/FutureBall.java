@@ -2,6 +2,7 @@ package sdp.pc.vision;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.util.ArrayList;
 
 /**
  * Class for estimating the real trajectories of the ball. Feeds data it
@@ -124,14 +125,12 @@ public class FutureBall {
 		double ang = angleInDegrees * Math.PI / 180.0;
 		Point2 offsPt = new Point2((int) (50.0 * Math.cos(ang)),
 				(int) (50.0 * Math.sin(ang)));
-		drawLine(pts[p[0]].add(offsPt), pts[p[1]].sub(offsPt));
+		//drawLine(pts[p[0]].add(offsPt), pts[p[1]].sub(offsPt));
 
-		Point2 A = new Point2((int) x, (int) y); // right most
-		Point2 B = pts[p[1]].sub(offsPt); // left most
-		Point2 C = pts[p[0]]; // centre
-
-		double angle = getOutwardAngle(A, B, C);
-		inter.setIntersection(C);
+		Point2 A = new Point2((int) x, (int) y); //Ball
+		Point2 B = pts[p[0]]; // Collision
+		double angle = getOutwardAngle(A, B);
+		inter.setIntersection(B);
 		inter.setAngle(angle);
 		return inter;
 	}
@@ -188,7 +187,7 @@ public class FutureBall {
 					inter = collide8(iteratorX, iteratorY, inter);
 					Point2 temp = new Point2((int) tarX, (int) tarY);
 					Point2 reboundPoint = getReboundPoint(
-							inter.getIntersection(), inter.getBall(), temp,
+							inter.getIntersection(), inter.getBall(), 5,
 							inter.getAngle());
 					inter.setDeflection(reboundPoint);
 				}
@@ -312,40 +311,136 @@ public class FutureBall {
 	 *            - Location of the ball on the pitch.
 	 * @param B
 	 *            - Point of collision with boundary.
-	 * @param C
-	 *            - Leftmost point of the drawn line indicating the collision
-	 *            wall.
-	 * @return angle between point A,B and C
+	 * 
+	 * @return angle between point A,B and two closest points on the boundary
 	 */
-	public static double getOutwardAngle(Point2 A, Point2 B, Point2 C) {
+	public static double getOutwardAngle(Point2 A, Point2 B) {
+		int[] twoPoints = getCollisionWall(B);
+		double outAngle;
+		Point2 C = new Point2(twoPoints[0],twoPoints[1]);
+		Point2 D = new Point2(twoPoints[2],twoPoints[3]);
 
-		double smallA = Math.sqrt(Math.pow((C.getX() - B.getX()), 2)
-				+ Math.pow((C.getY() - B.getY()), 2));
-		double smallB = Math.sqrt(Math.pow((A.getX() - C.getX()), 2)
-				+ Math.pow((A.getY() - C.getY()), 2));
-		double smallC = Math.sqrt(Math.pow((A.getX() - B.getX()), 2)
-				+ Math.pow((A.getY() - B.getY()), 2));
-		// double beforeAcos= ((Math.pow(smallA,2) + Math.pow(smallB,2) -
-		// Math.pow(smallC,2))/(2*smallA*smallB));
-		double inAngle = Math
-				.acos((Math.pow(smallA, 2) + Math.pow(smallB, 2) - Math.pow(
-						smallC, 2)) / (2 * smallA * smallB));
-		double outAngle = 180 - (inAngle * 180 / Math.PI);
+		double aC = C.distance(B);
+		double aD = D.distance(B);
+		double c = A.distance(B);
+		double bD = A.distance(D);
+		double bC = A.distance(C);
+		
+		double inAngleC = Math
+				.acos((Math.pow(aC, 2) + Math.pow(c, 2) - Math.pow(
+						bC, 2)) / (2 * aC * c));
+		double inAngleD = Math
+				.acos((Math.pow(aD, 2) + Math.pow(c, 2) - Math.pow(
+						bD, 2)) / (2 * aD * c));
+		if ((inAngleC * 180/Math.PI)>90){
+			outAngle = 180 - (inAngleD * 180/Math.PI);
+		} else {
+			outAngle = 180 - (inAngleC *180/Math.PI);
+	
+		}
+		
+		
 		return outAngle;
 	}
-
-	private static Point2 getReboundPoint(Point2 intersection, Point2 ball,
-			Point2 temp, double angle) {
-		double distance = Math.sqrt(Math.pow(
-				(temp.getX() - intersection.getX()), 2)
-				+ Math.pow((temp.getY() - intersection.getY()), 2));
-		double x = intersection.getX() + distance * Math.cos(angle);
-		double y = intersection.getY() + distance * Math.sin(angle);
+	/**
+	 * Calculates the angle between three points using arc cos.
+	 * 
+	 * @param ball
+	 *            - Location of the ball on the pitch.
+	 * @param intersection
+	 *            - Point of collision with boundary.
+	 * @param diatance
+	 *            - distance from collision to estimated before rebound
+	 * @param angle
+	 *            - angle return by getOutwardAngle function
+	 *            
+	 * @return Expected point after rebound
+	 */            
+	 
+	// could take a distance
+	public static Point2 getReboundPoint(Point2 ball, Point2 intersection,
+			double distance, double angle) {
+		double x = 0;
+		double y = 0;
+		Point2 top = new Point2(intersection.getX(),0);
+		double angleTrue = 0;
+		int quad = getQuadrant(ball, intersection,top);
+		if(quad==0){
+			System.out.println("0 : " +angle);
+			angleTrue = 90 - angle;
+			x = intersection.getX() + distance * Math.cos(angle);
+			y = intersection.getY() - distance * Math.sin(angle);
+		}
+		else if(quad==1){
+			System.out.println("1 : " +angle);
+			angleTrue = 270 + angle;
+			x = intersection.getX() - distance * Math.cos(angle);
+			y = intersection.getY() - distance * Math.sin(angle);
+		}
+		else if (quad== 2){		
+			System.out.println("2 : " +angle);
+			//
+			x = intersection.getX() - distance * Math.cos(angle);
+			y = intersection.getY() + distance * Math.sin(angle);
+		} else if(quad==3){
+			System.out.println("3 : " +angle);
+			x = intersection.getX() + distance * Math.cos(angle);
+			y = intersection.getY() + distance * Math.sin(angle);
+		}
 		Point2 estimation = new Point2((int) x, (int) y);
-		// System.out.println("Estimation after rebound:" +
-		// estimation.toString());
-		drawLine(intersection, estimation);
 		return estimation;
+	}
+	/**
+	 * 
+	 * @param collide
+	 * @return
+	 */
+	public static int[] getCollisionWall(Point2 collide){
+		Pitch pitch = state.getPitch();
+		ArrayList<Point2> points = pitch.getArrayListOfPoints();
+		double minA = 1000;
+		double minB = 1000;
+		Point2 wallPointA = new Point2(0,0);
+		Point2 wallPointB = new Point2(0,0);
+		for (Point2 point : points){
+			double distance = collide.distance(point);
+			if (distance < minA){
+				wallPointA = point;
+				minA = distance;
+			} 
+			else if(distance > minA && distance < minB){
+				wallPointB = point;
+				minB = distance;
+			}
+		}
+		int[] twoPoints = {wallPointA.getX(),wallPointA.getY(),wallPointB.getX(),wallPointB.getY()};
+		return twoPoints;
+		
+	}
+	
+	public static int getQuadrant(Point2 A, Point2 B, Point2 C) {
+		double a = C.distance(B);
+		double b = A.distance(C);
+		double c = A.distance(B);
+		//System.out.println();
+		double angleR = Math
+				.acos((Math.pow(a, 2) + Math.pow(c, 2) - Math.pow(
+						b, 2)) / (2*a*c));
+		
+		double angleD = angleR * (180/Math.PI);
+		if(angleD > 90){
+			if(A.getX()<B.getX()){
+				return 2;
+			} else {
+				return 3;
+			}
+		} else {
+			if(A.getX()<B.getX()){
+				return 1;
+			} else {
+				return 0;
+			}
+		}
 	}
 
 }
