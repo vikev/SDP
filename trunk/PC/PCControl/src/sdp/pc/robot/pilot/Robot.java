@@ -6,6 +6,7 @@ import sdp.pc.vision.Point2;
 import sdp.pc.vision.Vision;
 import sdp.pc.vision.WorldState;
 import sdp.pc.vision.relay.Driver;
+import sdp.pc.vision.relay.TCPClient;
 import sdp.pc.vision.Alg;
 
 import static sdp.pc.vision.Alg.*;
@@ -106,13 +107,37 @@ public class Robot {
 	 *            - the WorldState <b>this</b> should get data from
 	 * 
 	 * @param myTeam
-	 *            - the integer identifier which refers to this Robot's team.
+	 *            - the integer identifier which refers to this Robot's team -
+	 *            (0, 1) are (yellow, blue) respectively
 	 * @param myId
 	 *            - the integer identifier which uniquely identifies one of the
 	 *            4 robots, with the help of myTeam
 	 */
 	public Robot(Driver driver, WorldState state, int myTeam, int myId) {
 		this.driver = driver;
+		this.state = state;
+		this.myTeam = myTeam;
+		this.myIdentifier = myId;
+	}
+
+	/**
+	 * Constructor which builds a Driver from a robot id
+	 * 
+	 * @param robotCode
+	 *            - use ChooseRobot.x
+	 * @param state
+	 *            - the worldstate the robot exists in
+	 * @param myTeam
+	 *            - team (0, 1) for (yellow, blue) respectively
+	 * @param myId
+	 *            - the id for the robot (0, or 1)
+	 * @throws Exception
+	 */
+	public Robot(int robotCode, WorldState state, int myTeam, int myId)
+			throws Exception {
+		TCPClient conn = new TCPClient(robotCode);
+		Driver drv = new Driver(conn);
+		this.driver = drv;
 		this.state = state;
 		this.myTeam = myTeam;
 		this.myIdentifier = myId;
@@ -134,7 +159,7 @@ public class Robot {
 	public void defendBall() throws Exception {
 
 		// Get predicted ball stop point
-		Point2 predBallPos = state.getFutureData().getResult();
+		Point2 predBallPos = state.getFutureData().getDeflection();
 
 		// If that position exists, go to its Y coordinate, otherwise stop.
 		if (!predBallPos.equals(Point2.EMPTY)) {
@@ -145,30 +170,24 @@ public class Robot {
 	}
 
 	/**
-	 * In theory this method would be used for defending against the attacker
-	 * while the ball isn't moving, by estimating the robots facing angle and
-	 * cutting it off. In practice, we never used this method (and its
-	 * implementation does nothing like what's documented here)
-	 * 
-	 * TODO: Defending against a robot is useful, and we should implement,
-	 * abstract, and modularise this.
+	 * Synchronous method which performs the goal of defending the robot.
+	 * It should only be called when the ball is not moving (or ball is
+	 * not on the pitch) and the opponent's attacker is on the pitch.
+	 * It checks the predicted stop location of the imaginary ball if
+	 * the attacking robot would kick now and moves to predicted position's
+	 * Y coordinate by going forwards or backwards.
 	 */
-	public void defendRobot(int team, int robot) throws Exception {
-		Point2 pos = state.getRobotPosition(team, robot);
-		double facing = state.getRobotFacing(team, robot);
+	public void defendRobot() throws Exception {
+		//Get defending robot's position
+		Point2 pos = state.getRobotPosition(this.myTeam, this.myIdentifier);
+		
+		//Get attacker's position and facing
+		Point2 attPos = state.getRobotPosition(1 - this.myTeam, 1 - this.myIdentifier);
+		double attFacing = state.getRobotFacing(1 - this.myTeam,  1 - this.myIdentifier);
 
-		// Add some huge velocity
-		int x = 200;
-		int y = 200;
-		if (facing < 180) {
-			y = -y;
-		}
-		if (facing > 270 || facing < 90) {
-			x = -x;
-		}
-
+		//Get predicted ball position if the attacker shot now
 		Point2 predBallPos = FutureBall
-				.estimateStopPoint(new Point2(x, y), pos).getResult();
+				.estimateMatchingYCoord(attPos, attFacing, pos);
 		// Move robot to this position
 		if (!predBallPos.equals(Point2.EMPTY)) {
 			defendToY(predBallPos.getY(), DEFEND_EPSILON_DISTANCE);
@@ -190,6 +209,7 @@ public class Robot {
 		double rotateBy = normalizeToBiDirection(state.getRobotFacing(myTeam,
 				myIdentifier) - deg);
 		double speed = getRotateSpeed(rotateBy, epsilon);
+		System.out.println(rotateBy);
 		if (rotateBy > epsilon && speed > 1.0) {
 			driver.turnLeft(speed);
 		} else if (rotateBy < -epsilon && speed > 1.0) {
@@ -200,21 +220,20 @@ public class Robot {
 		return false;
 	}
 
-	
-	
 	/**
-	 * Checks if robot can actually make turn without hitting wall, entering goal mouth or going
-	 * through center line. 5 pixels is an estimate from testing in Milestone 1 and 3
+	 * Checks if robot can actually make turn without hitting wall, entering
+	 * goal mouth or going through center line. 5 pixels is an estimate from
+	 * testing in Milestone 1 and 3
 	 */
 	public boolean canTurn() {
-		return (Math.abs(state.getRobotPosition(myTeam, myIdentifier).getY() - 
-					state.getPitch().getYBegin()) < 5 && 
-					Math.abs(state.getRobotPosition(myTeam, myIdentifier).getY() - 
-							state.getPitch().getYEnd()) < 5 && 
-							Math.abs(state.getRobotPosition(myTeam, myIdentifier).getX() - 
-									state.getPitch().getXBegin()) < 5 && 
-									Math.abs(state.getRobotPosition(myTeam, myIdentifier).getX() - 
-											state.getPitch().getXEnd()) < 5);
+		return (Math.abs(state.getRobotPosition(myTeam, myIdentifier).getY()
+				- state.getPitch().getYBegin()) < 5
+				&& Math.abs(state.getRobotPosition(myTeam, myIdentifier).getY()
+						- state.getPitch().getYEnd()) < 5
+				&& Math.abs(state.getRobotPosition(myTeam, myIdentifier).getX()
+						- state.getPitch().getXBegin()) < 5 && Math.abs(state
+				.getRobotPosition(myTeam, myIdentifier).getX()
+				- state.getPitch().getXEnd()) < 5);
 	}
 
 	/**
@@ -244,14 +263,16 @@ public class Robot {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Calculates distance to opposite team's goal.
 	 */
 	public double getDistanceToOppositeGoal() {
 		if (state.getDirection() == 0)
-			return state.getRobotPosition(myTeam, myIdentifier).distance(state.getLeftGoalCentre());
-		return state.getRobotPosition(myTeam, myIdentifier).distance(state.getRightGoalCentre());
+			return state.getRobotPosition(myTeam, myIdentifier).distance(
+					state.getLeftGoalCentre());
+		return state.getRobotPosition(myTeam, myIdentifier).distance(
+				state.getRightGoalCentre());
 	}
 
 	/**
@@ -624,100 +645,6 @@ public class Robot {
 		// and is only for keeping points in Quadrant I
 		return approachPoint.invertY();
 	}
-
-	// Deprecated: Use goTo() instead. (TODO: Code to be removed fully sometime
-	// later)
-
-	// /**
-	// * Faces and travels to the designated point.
-	// *
-	// */
-	// public void faceAndGoTo(Driver driver, Point2 target)
-	// throws InterruptedException, Exception {
-	//
-	// // Turn to the desired angle without yielding the thread
-	// while (!turnTo(target, SAFE_ANGLE_EPSILON)) {
-	// Thread.sleep(50);
-	// }
-	// driver.stop();
-	// while (!(traveltoPoint(target.getX(), target.getY()))) {
-	// while (!turnTo(target, SAFE_ANGLE_EPSILON)) {
-	// Thread.sleep(50);
-	// }
-	// driver.stop();
-	// Thread.sleep(50);
-	// }
-	// driver.stop();
-	// }
-
-	// This travel to point method was unused - it's sort of duplicate code
-	// anyway. TODO: Remove this code eventually
-
-	// /**
-	// * Orders the attacking robot to travel forwards until it is reasonably
-	// * close to the target point. If the attacker robots orientation deviates
-	// * from its initial orientation by a set amount then the the robot is
-	// * commanded to stop and the travel is reported back as unsuccessful. Then
-	// * the a method needs to be called externally to correct the robots
-	// * orientation before this method should be called again (auxiliary
-	// method)
-	// *
-	// * @param driver
-	// * @param targetX
-	// * @param targetY
-	// * @param movingTowardsBall
-	// * @return
-	// */
-	// public boolean traveltoPoint(int targetX, int targetY) throws Exception {
-	// double initialOrientation = state.getRobotFacing(state.getOurColor(),
-	// state.getDirection());
-	// Point2 robotPos = state.getRobotPosition(state.getOurColor(),
-	// state.getDirection());
-	// double robotFacing = state.getRobotFacing(state.getOurColor(),
-	// state.getDirection());
-	// driver.forward(115);
-	// /*
-	// *
-	// * @param ballPosition
-	// *
-	// * @param robotPosition
-	// *
-	// * @return
-	// *//*
-	// * public static int setSpeed(int targetPointX, int targetPointY,
-	// * Point2 robotPosition){ double distanceToTarget = 0; int diffX =
-	// * Math.abs(targetPointX - robotPosition.getX()); int diffY =
-	// * Math.abs(targetPointY - robotPosition.getY()); distanceToTarget =
-	// * Math.sqrt(diffX*diffX + diffY*diffY); if (distanceToTarget >
-	// * MAX_SPEED_THRESHOLD) return MAX_SPEED; if (distanceToTarget >
-	// * MEDIUM_SPEED_THRESHOLD) return MEDIUM_SPEED; return SLOW_SPEED; }
-	// *
-	// * public static boolean traveltoPointAlt(Driver driver, int
-	// * targetX, int targetY, int movingTowardsBall) throws Exception {
-	// * double initialOrientation =
-	// * state.getRobotFacing(state.getOurColor(), state.getDirection());
-	// * double robotFacing = state.getRobotFacing(state.getOurColor(),
-	// * state.getDirection()); Point2 robotPos =
-	// * state.getRobotPosition(state.getOurColor(),
-	// * state.getDirection()); int threshold = 10; if (movingTowardsBall
-	// * == 1){ threshold = SAFE_DIST; } driver.forward(setSpeed(targetX,
-	// * targetY, robotPos));
-	// */
-	// while (Math.abs(robotFacing - initialOrientation) < SAFE_ANGLE_EPSILON) {
-	// if (Math.abs(robotPos.getX() - targetX) < SAFE_APPROACH_DIST
-	// && (Math.abs(robotPos.getY() - targetY) < SAFE_APPROACH_DIST)) {
-	// driver.stop();
-	// return true;
-	// }
-	// robotPos = state.getRobotPosition(state.getOurColor(),
-	// state.getDirection());
-	// robotFacing = state.getRobotFacing(state.getOurColor(),
-	// state.getDirection());
-	// }
-	// driver.stop();
-	//
-	// return false;
-	// }
 
 	/**
 	 * Static class for referencing robot states once we start making the AI

@@ -417,19 +417,7 @@ public class Point2 implements java.io.Serializable {
 		int dot = ((b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x));
 		return dot > 0 || (dot == 0 && a.distanceSq(b) < a.distanceSq(this));
 	}
-
-	// TODO: This was essentially the same as point2.modulus. Can be removed I
-	// guess.
-
-	// /**
-	// * Gets the distance from the origin (0,0) to this point i.e. the length
-	// of
-	// * this vector.
-	// */
-	// public double length() {
-	// return Point2.EMPTY.distance(this);
-	// }
-
+	
 	/**
 	 * Gets the angle from the origin to <b>this</b>. In other words, the angle
 	 * of <b>this</b> as a vector.

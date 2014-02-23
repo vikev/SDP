@@ -7,14 +7,11 @@ import sdp.pc.common.ChooseRobot;
 import sdp.pc.vision.Point2;
 import sdp.pc.vision.Vision;
 import sdp.pc.vision.WorldState;
-import sdp.pc.vision.relay.Driver;
-import sdp.pc.vision.relay.TCPClient;
 
 /**
  * Strategy is the global static class for running a match in SDP. Here we
- * initialise a Vision and Robot pair.
- * 
- * TODO: Better Docu
+ * initialise a Vision and Robot pair, and conduct all the state-based decision
+ * model related data to command the robot pair.
  * 
  * @author s1133141
  * 
@@ -57,23 +54,23 @@ public class Strategy {
 	 */
 	private static WorldState state = new WorldState();
 
-	
 	@SuppressWarnings("unused")
 	private static Point2 basicGoalTarget() {
 		if (state.getDirection() == 0) {
-			if (state.getRobotPosition(MY_TEAM ^ 1, DEFENDER_ID).getY() > state.getLeftGoalCentre().getY())
+			if (state.getRobotPosition(MY_TEAM ^ 1, DEFENDER_ID).getY() > state
+					.getLeftGoalCentre().getY())
 				return WorldState.leftGoalTop;
 			else
 				return WorldState.leftGoalBottom;
-		}
-		else {
-			if (state.getRobotPosition(MY_TEAM ^ 1, DEFENDER_ID).getY() > state.getRightGoalCentre().getY())
+		} else {
+			if (state.getRobotPosition(MY_TEAM ^ 1, DEFENDER_ID).getY() > state
+					.getRightGoalCentre().getY())
 				return WorldState.rightGoalTop;
 			else
 				return WorldState.rightGoalBottom;
 		}
 	}
-	
+
 	/**
 	 * Builds the vision system
 	 * 
@@ -100,16 +97,13 @@ public class Strategy {
 	 */
 	private static void connectRobots() throws Exception {
 		Thread.sleep(1000);
-		// TODO: Change this to connect to both robots with a different? dialog.
 		// TODO: Having two different versions of TCPClient and Driver is
 		// extremely difficult to deal with. Can someone familiar with both
 		// classes refactor/remove something please
-		TCPClient conn = new TCPClient(ChooseRobot.dialog());
-		TCPClient conn2 = new TCPClient(ChooseRobot.dialog());
-		Driver driver = new Driver(conn);
-		Driver driver2 = new Driver(conn2);
-		defender = new Robot(driver, state, MY_TEAM, DEFENDER_ID);
-		attacker = new Robot(driver2, state, MY_TEAM, ATTACKER_ID);
+		defender = new Robot(ChooseRobot.defender(), state, MY_TEAM,
+				DEFENDER_ID);
+		attacker = new Robot(ChooseRobot.attacker(), state, MY_TEAM,
+				ATTACKER_ID);
 	}
 
 	/**
@@ -138,18 +132,26 @@ public class Strategy {
 
 	/**
 	 * Main logic branching mechanism for attacker. Use robot.myState as well
+	 * 
+	 * @throws Exception
 	 */
-	public static void parseAttacker() {
+	public static void parseAttacker() throws Exception {
 		// TODO: Logic
+		if (attacker.assertPerpendicular(10.0)) {
+		}
 	}
 
 	/**
 	 * Main logic branching mechanism for defender. Use robot.myState as well
+	 * 
+	 * @throws Exception
 	 */
-	public static void parseDefender() {
+	public static void parseDefender() throws Exception {
 		// TODO: Logic
+		if (defender.assertPerpendicular(10.0)) {
+		}
 	}
-	
+
 	/**
 	 * Loops indefinitely, ordering the robots to do things
 	 * 
@@ -158,12 +160,16 @@ public class Strategy {
 	public static void executeStrategy() throws InterruptedException {
 		Thread.sleep(1000);
 		while (true) {
-			parseAttacker();
-			parseDefender();
+			try {
+				parseAttacker();
+				parseDefender();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			Thread.sleep((int) PERIOD);
 		}
 	}
-	
+
 	/**
 	 * Main method
 	 * 

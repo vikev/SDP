@@ -205,22 +205,22 @@ public class FutureBall {
 	 * Estimates the intersection point of a moving ball, with a robot whose x
 	 * co-ordinate remains static.
 	 * 
-	 * @param ball
-	 *            - the position of the ball (moving object with arbitrary
+	 * @param movingPos
+	 *            - the position of the object (moving object with arbitrary
 	 *            facing angle)
-	 * @param ballFacing
-	 *            - the facing angle of ball
+	 * @param movingFacing
+	 *            - the facing angle of object
 	 * @param staticPos
 	 *            - the position of the robot whose x co-ordinate should remain
 	 *            static
-	 * @return estimated position of the robot to intersect the ball
+	 * @return estimated position of the robot to intersect the object
 	 */
-	public static Point2 estimateMatchingYCoord(Point2 ball, double ballFacing,
+	public static Point2 estimateMatchingYCoord(Point2 movingPos, double movingFacing,
 			Point2 staticPos) {
 
 		// Assume the ball is moving very fast, give it a velocity of 1000.
 		int x = 1000;
-		double angle = ballFacing;
+		double angle = movingFacing;
 
 		// Do Lukas-style maths, lose brownie points
 
@@ -243,35 +243,65 @@ public class FutureBall {
 		int y = (int) (x * Math.tan(angle * Math.PI / 180));
 
 		// assert y on first two quadrants
-		if (ballFacing < 180) {
+		if (movingFacing < 180) {
 			y = -y;
 		}
 		// mirror on y-axis if facing angle is on 1st or 4th quadrant
-		if (ballFacing > 270 || ballFacing < 90) {
+		if (movingFacing > 270 || movingFacing < 90) {
 			x = -x;
 		}
-
-		// TODO: I refuse to believe this works
-		Intersect stopPos = estimateStopPoint(new Point2(x, y), ball);
-
-		// What the fuck does this do? Nothing
-		double deltaY = Math.abs(stopPos.getDeflection().getY() - ball.getY())
-				* Math.abs(staticPos.getX() - ball.getX())
-				/ Math.abs(stopPos.getDeflection().getX() - ball.getX());
+		
+		Intersect stopPos = estimateStopPoint(new Point2(x, y), movingPos);
+		
+		Point2 intersection = stopPos.getIntersection();
+		Point2 estimatedPoint = stopPos.getDeflection();
+		
+		if (betweenTwoPoints(staticPos.getX(), intersection.getX(), movingPos.getX())) {
+			estimatedPoint = intersection; 
+		} 
+		
+		double a = (movingPos.getY() - estimatedPoint.getY())/(double)(movingPos.getX() - estimatedPoint.getX());
+		double b = movingPos.getY() - a * movingPos.getX();
+		
+		double predY = a * staticPos.getX() + b; 
+		//double deltaY = Math.abs(estimatedPoint.getY() - movingPos.getY())
+		//		* Math.abs(staticPos.getX() - movingPos.getX())
+		//		/ Math.abs(estimatedPoint.getX() - movingPos.getX());
 
 		// Does nothing
-		double predY;
-		if (ballFacing < 180) {
-			predY = deltaY + ball.getY();
-		} else {
-			predY = ball.getY() - deltaY;
-		}
+		//double predY;
+		//if (movingFacing < 180) {
+		//	predY = deltaY + movingPos.getY();
+		//} else {
+		//	predY = movingPos.getY() - deltaY;
+		//}
+		
 		// check if point is within the boundaries and if not return (0,0)
 		Point2 target = new Point2(staticPos.getX(), (int) predY);
 		if (pitchContains(target)) {
 			return target;
 		}
 		return Point2.EMPTY;
+	}
+
+	/**
+	 * Returns true if point x is between other two points xStart and xEnd
+	 * @param x
+	 * @param xStart
+	 * @param xEnd
+	 * @return boolean value 
+	 */
+	private static boolean betweenTwoPoints(int x, int xStart, int xEnd) {
+		if (xStart < xEnd) {
+			if (xStart <= x && x <= xEnd) {
+				return true;
+			}
+		} else {
+			if (xEnd <= x && x <= xStart) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
