@@ -134,7 +134,7 @@ public class Robot {
 	public void defendBall() throws Exception {
 
 		// Get predicted ball stop point
-		Point2 predBallPos = state.getFutureData().getResult();
+		Point2 predBallPos = state.getFutureData().getDeflection();
 
 		// If that position exists, go to its Y coordinate, otherwise stop.
 		if (!predBallPos.equals(Point2.EMPTY)) {
@@ -145,30 +145,24 @@ public class Robot {
 	}
 
 	/**
-	 * In theory this method would be used for defending against the attacker
-	 * while the ball isn't moving, by estimating the robots facing angle and
-	 * cutting it off. In practice, we never used this method (and its
-	 * implementation does nothing like what's documented here)
-	 * 
-	 * TODO: Defending against a robot is useful, and we should implement,
-	 * abstract, and modularise this.
+	 * Synchronous method which performs the goal of defending the robot.
+	 * It should only be called when the ball is not moving (or ball is
+	 * not on the pitch) and the opponent's attacker is on the pitch.
+	 * It checks the predicted stop location of the imaginary ball if
+	 * the attacking robot would kick now and moves to predicted position's
+	 * Y coordinate by going forwards or backwards.
 	 */
-	public void defendRobot(int team, int robot) throws Exception {
-		Point2 pos = state.getRobotPosition(team, robot);
-		double facing = state.getRobotFacing(team, robot);
+	public void defendRobot() throws Exception {
+		//Get defending robot's position
+		Point2 pos = state.getRobotPosition(this.myTeam, this.myIdentifier);
+		
+		//Get attacker's position and facing
+		Point2 attPos = state.getRobotPosition(1 - this.myTeam, 1 - this.myIdentifier);
+		double attFacing = state.getRobotFacing(1 - this.myTeam,  1 - this.myIdentifier);
 
-		// Add some huge velocity
-		int x = 200;
-		int y = 200;
-		if (facing < 180) {
-			y = -y;
-		}
-		if (facing > 270 || facing < 90) {
-			x = -x;
-		}
-
+		//Get predicted ball position if the attacker shot now
 		Point2 predBallPos = FutureBall
-				.estimateStopPoint(new Point2(x, y), pos).getResult();
+				.estimateMatchingYCoord(attPos, attFacing, pos);
 		// Move robot to this position
 		if (!predBallPos.equals(Point2.EMPTY)) {
 			defendToY(predBallPos.getY(), DEFEND_EPSILON_DISTANCE);
