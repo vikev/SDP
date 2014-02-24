@@ -514,9 +514,11 @@ public class Milestone3att {
 		try {
 			double speed = getRotateSpeed(rotateBy, epsilon);
 			if (rotateBy > epsilon) {
-				driver.turnLeft(speed);
+				// TODO: cast to int was added. Check if that breaks anything
+				driver.turnLeft((int) speed);
 			} else if (rotateBy < -epsilon) {
-				driver.turnRight(speed);
+				// TODO: cast to int was added. Check if that breaks anything
+				driver.turnRight((int) speed);
 			} else {
 				return true;
 			}

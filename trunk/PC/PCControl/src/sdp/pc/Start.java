@@ -16,7 +16,7 @@ import sdp.pc.robot.btcomm.BTConnection;
 
 /**
  * TODO: What is this class and why do we have it?
- *
+ * 
  */
 public class Start {
 
@@ -80,8 +80,7 @@ public class Start {
 								break;
 							}
 							char c = input.charAt(0);
-							double dist = Double.parseDouble(fromClient
-									.readLine());
+							int dist = Integer.parseInt(fromClient.readLine());
 							conn1.sendCommand(c, dist);
 							System.out.println("Command sent to the robot: "
 									+ c + " " + dist);

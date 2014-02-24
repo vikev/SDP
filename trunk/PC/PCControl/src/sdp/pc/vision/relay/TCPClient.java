@@ -1,7 +1,12 @@
 package sdp.pc.vision.relay;
 
-import java.io.*;
-import java.net.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 import sdp.pc.common.Constants;
 
@@ -66,7 +71,7 @@ public class TCPClient {
 		return false;
 	}
 
-	public boolean sendCommand(char command, double arg) throws Exception {
+	public boolean sendCommand(char command, int arg) throws Exception {
 		if (connected) {
 			toServer.println(command);
 			toServer.println(arg);
