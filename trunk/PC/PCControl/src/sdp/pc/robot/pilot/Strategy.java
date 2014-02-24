@@ -11,7 +11,8 @@ import sdp.pc.vision.WorldState;
 /**
  * Strategy is the global static class for running a match in SDP. Here we
  * initialise a Vision and Robot pair, and conduct all the state-based decision
- * model related data to command the robot pair.
+ * model related data to command the robot pair. Then we iterate several times
+ * per second, parsing the game state and ordering the robots to do things.
  * 
  * @author s1133141
  * 
@@ -21,7 +22,7 @@ public class Strategy {
 	/**
 	 * Team ID of our team (could be refactored?)
 	 */
-	private static final int MY_TEAM = 0;
+	private static final int MY_TEAM = 1;
 
 	/**
 	 * ID for the defending robot (could be refactored?)
@@ -38,6 +39,12 @@ public class Strategy {
 	 * times per second
 	 */
 	private static final double PERIOD = 1.0 / 7.0 * 1000.0;
+
+	/**
+	 * The minimum speed for the ball to be considered fast, in pixels per
+	 * second.
+	 */
+	private static final double FAST_BALL_SPEED = 50.0;
 
 	/**
 	 * the defending robot
@@ -131,8 +138,49 @@ public class Strategy {
 	}
 
 	/**
-	 * TODO: Implement this method
+	 * Turns a quadrant into the correct description of the ball as a String.
+	 * Possible results include:
 	 * 
+	 * <ul>
+	 * <li>Enemy Defender</li>
+	 * <li>Our Attacker</li>
+	 * <li>Enemy Attacker</li>
+	 * <li>Our Defender</li>
+	 * <li>"" Empty String (unrecognised input)</li>
+	 * </ul>
+	 * 
+	 * This method assumes state.getDirection() works as intended.
+	 * 
+	 * @param quad
+	 *            - the integer quadrant the ball is in (0, 1, 2, 3, or 4)
+	 * @return - String describing ball position
+	 */
+	private static String parseQuadrant(int quad) {
+		if (state.getDirection() == 0) {
+			if (quad == 1) {
+				return "Enemy Defender";
+			} else if (quad == 2) {
+				return "Our Attacker";
+			} else if (quad == 3) {
+				return "Enemy Attacker";
+			} else if (quad == 4) {
+				return "Our Defender";
+			}
+		} else {
+			if (quad == 1) {
+				return "Our Defender";
+			} else if (quad == 2) {
+				return "Enemy Attacker";
+			} else if (quad == 3) {
+				return "Our Attacker";
+			} else if (quad == 4) {
+				return "Enemy Defender";
+			}
+		}
+		return "";
+	}
+
+	/**
 	 * The robots should follow a state-based pattern depending on the ball's
 	 * location and velocity. Use this to update the states automatically.
 	 * 
@@ -149,35 +197,168 @@ public class Strategy {
 	 * </tr>
 	 * <tr>
 	 * <td>Enemy Defender</td>
-	 * <td>TODO:
+	 * <td>Fast Ball ? Defend Ball : Defend Goal Line</td>
+	 * <td>Fast Ball ? Intercept Ball : Get Ball</td>
+	 * </tr>
+	 * <tr>
+	 * <td>Our Attacker</td>
+	 * <td>Fast Ball ? Defend Ball : Defend Goal Line</td>
+	 * <td>Fast Ball ? Intercept Ball : Get Ball</td>
+	 * </tr>
+	 * <tr>
+	 * <td>Our Defender</td>
+	 * <td>Fast Ball ? Defend Ball : Pass to Attacker</td>
+	 * <td>Fast Ball ? Intercept Ball : Prepare for Pass</td>
 	 * </tr>
 	 * </table>
 	 */
 	@SuppressWarnings("unused")
 	private static void updateStates() {
+
+		// Calculate Ball Position
+		int quad = state.getBallQuadrant();
+		String position = parseQuadrant(quad);
+
+		// Calculate relative velocities
+		Point2 ballPos = state.getBallPosition();
+		Point2 vel = state.getBallVelocity();
+		double speedWrtAttacker = getSpeedWrt(ballPos, vel, attacker);
+		double speedWrtDefender = getSpeedWrt(ballPos, vel, defender);
+
+		// Since getSpeedWrt is unimplemented, just use the literal ball speed:
+		double speed = vel.modulus();
+
+		// Set states
+		if (position.equals("Enemy Attacker")) {
+			attacker.setState(Robot.State.WAIT_RECEIVE_PASS);
+			if (speed > FAST_BALL_SPEED) {
+				defender.setState(Robot.State.DEFEND_BALL);
+			} else {
+				defender.setState(Robot.State.DEFEND_ENEMY_ATTACKER);
+			}
+		} else if (position.equals("Enemy Defender")) {
+			if (speed > FAST_BALL_SPEED) {
+				defender.setState(Robot.State.DEFEND_BALL);
+				attacker.setState(Robot.State.DEFEND_BALL);
+			} else {
+				defender.setState(Robot.State.DEFEND_GOAL_LINE);
+				attacker.setState(Robot.State.DEFEND_ENEMY_DEFENDER);
+			}
+		} else if (position.equals("Our Attacker")) {
+			if (speed > FAST_BALL_SPEED) {
+				defender.setState(Robot.State.DEFEND_BALL);
+				attacker.setState(Robot.State.DEFEND_BALL);
+			} else {
+				defender.setState(Robot.State.DEFEND_BALL);
+				attacker.setState(Robot.State.GET_BALL);
+			}
+		} else if (position.equals("Our Defender")) {
+			if (speed > FAST_BALL_SPEED) {
+				defender.setState(Robot.State.DEFEND_BALL);
+				attacker.setState(Robot.State.DEFEND_BALL);
+			} else {
+				defender.setState(Robot.State.PASS_TO_ATTACKER);
+				attacker.setState(Robot.State.WAIT_RECEIVE_PASS);
+			}
+		} else {
+			// If something is unrecognised, we can either assert an unknown
+			// state, or just leave states the way they were.
+
+			// TODO: Consider making unknown state force our robots to do "safe"
+			// defensive plays, but only assert an unknown state if the ball is
+			// moving fast?
+		}
 	}
 
 	/**
-	 * Main logic branching mechanism for attacker. Use robot.myState as well
+	 * TODO: Implement a method to get the speed of a ball with respect to a
+	 * robot
+	 * 
+	 * @param ballPos
+	 * @param vel
+	 * @param attacker2
+	 * @return
+	 */
+	private static double getSpeedWrt(Point2 ballPos, Point2 ballVel, Robot bot) {
+		return 0.0;
+	}
+
+	/**
+	 * Main logic branching mechanism for attacker. Use attacker.getState() as
+	 * well.
+	 * <p />
+	 * States an attacker can be in:
+	 * <ul>
+	 * <li>Robot.State.WAIT_RECEIVE_PASS</li>
+	 * <li>Robot.State.DEFEND_BALL</li>
+	 * <li>Robot.State.DEFEND_ENEMY_DEFENDER</li>
+	 * <li>Robot.State.GET_BALL</li>
+	 * </ul>
 	 * 
 	 * @throws Exception
 	 */
 	private static void parseAttacker() throws Exception {
-		// TODO: Logic
-		if (attacker.assertPerpendicular(10.0)) {
+		if (attacker.getState() == Robot.State.WAIT_RECEIVE_PASS) {
+			attacker.assertPerpendicular(10.0);
+		} else if (attacker.getState() == Robot.State.DEFEND_BALL) {
+			if(attacker.assertPerpendicular(10.0)){
+				attacker.defendBall();
+			}
+		} else if (attacker.getState() == Robot.State.DEFEND_ENEMY_DEFENDER) {
+			attacker.defendRobot();
+		} else if (attacker.getState() == Robot.State.GET_BALL) {
+			attacker.kickStationaryBall();
+		} else {
+			attacker.assertPerpendicular(10.0);
 		}
 	}
 
 	/**
-	 * Main logic branching mechanism for defender. Use robot.myState as well
+	 * Main logic branching mechanism for defender. Use defender.getState() as
+	 * well.
+	 * <p />
+	 * States a defender can be in:
+	 * <ul>
+	 * <li>Robot.State.DEFEND_BALL</li>
+	 * <li>Robot.State.DEFEND_ENEMY_ATTACKER</li>
+	 * <li>Robot.State.DEFEND_GOAL_LINE</li>
+	 * <li>Robot.State.PASS_TO_ATTACKER</li>
+	 * </ul>
 	 * 
 	 * @throws Exception
 	 */
 	private static void parseDefender() throws Exception {
-		// TODO: Logic
-		System.out.println("yo");
-		if (defender.approachStationaryBall()) {
+		if (defender.getState() == Robot.State.DEFEND_BALL) {
+			if (defender.assertNearGoalLine(10.0)) {
+				if (defender.assertPerpendicular(10.0)) {
+					defender.defendBall();
+				}
+			}
+		} else if (defender.getState() == Robot.State.DEFEND_ENEMY_ATTACKER) {
+			if (defender.assertPerpendicular(10.0)) {
+				defender.defendRobot();
+			}
+		} else if (defender.getState() == Robot.State.DEFEND_GOAL_LINE) {
+			if (defender.assertNearGoalLine(10.0)) {
+				defender.goTo(getDefendGoalCentre(), 10.0);
+			}
+		} else if (defender.getState() == Robot.State.PASS_TO_ATTACKER) {
+			defender.kickStationaryBall();
+		} else {
+			defender.assertPerpendicular(10.0);
 		}
+	}
+
+	/**
+	 * Returns the centre of the goal of the defender
+	 * 
+	 * @return
+	 */
+	private static Point2 getDefendGoalCentre() {
+		if (state.getDirection() == 0) {
+			return state.getRightGoalCentre();
+		}
+		return state.getLeftGoalCentre();
 	}
 
 	/**
@@ -189,6 +370,7 @@ public class Strategy {
 		Thread.sleep(1000);
 		while (true) {
 			try {
+				updateStates();
 				parseAttacker();
 				parseDefender();
 			} catch (Exception e) {

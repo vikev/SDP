@@ -58,6 +58,7 @@ public class FutureBall {
 	 * @param b
 	 *            - The other Point2
 	 */
+	@SuppressWarnings("unused")
 	private static void drawLine(Point2 a, Point2 b) {
 		// Attempt to draw collision boundary
 		Graphics g = Vision.frameLabel.getGraphics();
@@ -121,10 +122,10 @@ public class FutureBall {
 			}
 		}
 
-		double angleInDegrees = pts[p[0]].angleTo(pts[p[1]]);
-		double ang = angleInDegrees * Math.PI / 180.0;
-		Point2 offsPt = new Point2((int) (50.0 * Math.cos(ang)),
-				(int) (50.0 * Math.sin(ang)));
+//		double angleInDegrees = pts[p[0]].angleTo(pts[p[1]]);
+//		double ang = angleInDegrees * Math.PI / 180.0;
+//		Point2 offsPt = new Point2((int) (50.0 * Math.cos(ang)),
+//				(int) (50.0 * Math.sin(ang)));
 		//drawLine(pts[p[0]].add(offsPt), pts[p[1]].sub(offsPt));
 
 		Point2 A = new Point2((int) x, (int) y); //Ball
@@ -185,7 +186,7 @@ public class FutureBall {
 					collision = new Point2((int) iteratorX, (int) iteratorY);
 
 					inter = collide8(iteratorX, iteratorY, inter);
-					Point2 temp = new Point2((int) tarX, (int) tarY);
+//					Point2 temp = new Point2((int) tarX, (int) tarY);
 					Point2 reboundPoint = getReboundPoint(
 							inter.getIntersection(), inter.getBall(), 5,
 							inter.getAngle());
@@ -366,17 +367,17 @@ public class FutureBall {
 		double x = 0;
 		double y = 0;
 		Point2 top = new Point2(intersection.getX(),0);
-		double angleTrue = 0;
+//		double angleTrue = 0;
 		int quad = getQuadrant(ball, intersection,top);
 		if(quad==0){
 			System.out.println("0 : " +angle);
-			angleTrue = 90 - angle;
+//			angleTrue = 90 - angle;
 			x = intersection.getX() + distance * Math.cos(angle);
 			y = intersection.getY() - distance * Math.sin(angle);
 		}
 		else if(quad==1){
 			System.out.println("1 : " +angle);
-			angleTrue = 270 + angle;
+//			angleTrue = 270 + angle;
 			x = intersection.getX() - distance * Math.cos(angle);
 			y = intersection.getY() - distance * Math.sin(angle);
 		}

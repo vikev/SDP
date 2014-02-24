@@ -101,6 +101,19 @@ public class Robot {
 	private int myState = State.UNKNOWN;
 
 	/**
+	 * An incremental "sub-state" value which can be used to handle sub-tasks
+	 * within a state. For example, if a robot's state is "pass to attacker",
+	 * sub-states could be:
+	 * <ol>
+	 * <li>Go to the ball</li>
+	 * <li>Grab the ball</li>
+	 * <li>Turn to the new point</li>
+	 * <li>Kick the ball</li>
+	 * </ol>
+	 */
+	private int subState = 0;
+
+	/**
 	 * Class for controlling a robot from a more abstract point of view
 	 * 
 	 * @param driver
@@ -192,11 +205,12 @@ public class Robot {
 		// Get predicted ball position if the attacker shot now
 		Point2 predBallPos = FutureBall.estimateMatchingYCoord(attPos,
 				attFacing, pos);
+
 		// Move robot to this position
 		if (!predBallPos.equals(Point2.EMPTY)) {
 			defendToY(predBallPos.getY(), DEFEND_EPSILON_DISTANCE);
 		} else {
-			driver.stop();
+			defendBall();
 		}
 	}
 
@@ -354,12 +368,14 @@ public class Robot {
 	 * </ul>
 	 * 
 	 * TODO: Should be checked to conform to defender standards for modularity.
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 **/
 	public boolean approachStationaryBall() throws Exception {
 
 		// Get the robot, ball, and targets as Point2
-		Point2 robotPosition = state.getRobotPosition(this.myTeam, this.myIdentifier);
+		Point2 robotPosition = state.getRobotPosition(this.myTeam,
+				this.myIdentifier);
 		Point2 ballPosition = state.getBallPosition();
 		double angleBetween = calculateAngleBetween(robotPosition, ballPosition);
 
@@ -372,7 +388,7 @@ public class Robot {
 			System.out.println("Could not assign Approach Point");
 			return false;
 		}
-		
+
 		// If angleBetween is large, the robot is nearly in line with the goal
 		// already (small angle means the robot is between the ball and goal)
 		if ((angleBetween > 90.0)) {
@@ -389,11 +405,14 @@ public class Robot {
 			if (Math.abs(robotPosition.getY() - ballPosition.getY()) < ATTACKER_LENGTH) {
 				int newY;
 				if (robotPosition.getY() > ballPosition.getY()) {
-					newY = robotPosition.getY() + ATTACKER_LENGTH + SAFE_APPROACH_DIST;
+					newY = robotPosition.getY() + ATTACKER_LENGTH
+							+ SAFE_APPROACH_DIST;
 				} else {
-					newY = robotPosition.getY() - ATTACKER_LENGTH - SAFE_APPROACH_DIST;
+					newY = robotPosition.getY() - ATTACKER_LENGTH
+							- SAFE_APPROACH_DIST;
 				}
-				if (!goTo(new Point2(robotPosition.getX(), newY), SAFE_DIST_EPSILON)) {
+				if (!goTo(new Point2(robotPosition.getX(), newY),
+						SAFE_DIST_EPSILON)) {
 					return false;
 				}
 			}
@@ -410,7 +429,7 @@ public class Robot {
 				return false;
 			}
 		}
-		//Finally, kick the ball
+		// Finally, kick the ball
 		if (kickStationaryBall()) {
 			return true;
 		}
@@ -419,11 +438,13 @@ public class Robot {
 
 	/**
 	 * Calculates angle between robot, ball and ball target positions
+	 * 
 	 * @param robotPosition
 	 * @param ballPosition
 	 * @return angle between given values
 	 */
-	private double calculateAngleBetween(Point2 robotPosition, Point2 ballPosition) {
+	private double calculateAngleBetween(Point2 robotPosition,
+			Point2 ballPosition) {
 		Point2 targetPoint = getBallTarget();
 
 		// Get y-inverted versions
@@ -443,8 +464,10 @@ public class Robot {
 
 		return angleBetween;
 	}
+
 	/**
 	 * Kicks stationary ball. Assumes robot is already at the approach point.
+	 * 
 	 * @throws InterruptedException
 	 * @throws Exception
 	 */
@@ -483,6 +506,21 @@ public class Robot {
 		this.myState = newState;
 	}
 
+	/**
+	 * Getter method for the sub-state of the robot.
+	 * 
+	 * @return
+	 */
+	public int getSubState() {
+		return this.subState;
+	}
+	
+	/**
+	 * Setter method for the sub-state of the robot.
+	 */
+	public void setSubState(int s){
+		this.subState = s;
+	}
 	/**
 	 * Makes the robot, which should already be perpendicular, move forward or
 	 * backward to cut off the estimated ball postion's Y coordinate. The method
@@ -684,5 +722,12 @@ public class Robot {
 	 */
 	public static class State {
 		public static int UNKNOWN = 0;
+		public static int DEFEND_BALL = 1;
+		public static int DEFEND_ENEMY_ATTACKER = 2;
+		public static int WAIT_RECEIVE_PASS = 3;
+		public static int DEFEND_GOAL_LINE = 4;
+		public static int PASS_TO_ATTACKER = 5;
+		public static int DEFEND_ENEMY_DEFENDER = 6;
+		public static int GET_BALL = 7;
 	}
 }
