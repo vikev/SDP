@@ -8,6 +8,7 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 import static sdp.pc.common.Constants.*;
 
@@ -246,35 +247,44 @@ public class WorldStatePainter {
 				}
 			}
 
-		/*
-		 * // Basic rebound testing using and inverse function. Probably
-		 * redundant with Blake's FutureBall collide8 being improved. Point2
-		 * start = new Point2(381,174); Point2 end = new Point2(800,800);
-		 * 
-		 * if (!Vision.stateListener.pointInPitch(end)){ double m =
-		 * (start.getY() -end.getY())/(start.getX() - end.getX()); Point2
-		 * current = new Point2(start.getX(),start.getY()); Point2 next = new
-		 * Point2(current.getX(),start.getY()); int incrementsY; if
-		 * (end.getY()<start.getY()){ incrementsY = -1; } else { incrementsY =
-		 * 1; }
-		 * 
-		 * int incrementsX; if (end.getX()<start.getX()){ incrementsX = -1; }
-		 * else { incrementsX = 1; }
-		 * while(Vision.stateListener.pointInPitch(current)){
-		 * next.setY(next.getY()+incrementsY); int x = (int)
-		 * Math.round((next.getX()+(incrementsX/m))); next.setX(x); current =
-		 * next; } g.drawLine(start.getX(), start.getY(), current.getX(),
-		 * current.getY()); double revisedM = m /-1; double vHatY =
-		 * Math.abs(current.getX() - start.getY());
-		 * 
-		 * int predictedY = (int) (current.getY() - vHatY/2); int predictedX =
-		 * (int) (((predictedY - current.getY())/revisedM)+ current.getX());
-		 * Point2 predicted = new Point2(predictedX,predictedY);
-		 * g.drawLine(current.getX(), current.getY(), predicted.getX(),
-		 * predicted.getY()); } else { g.drawLine(start.getX(), start.getY(),
-		 * end.getX(), end.getY()); }
-		 */
 
+		/*
+		//For Testing rebound code.
+		Pitch pitch2 = state.getPitch();
+		if (pitch2 != null) {
+		//if (1 ==2){
+			Graphics h = image.getGraphics();
+			h.setColor(BLUE_BLEND);
+		
+			Point2 inA = new Point2(369,322); // Ball
+			Point2 hitA = new Point2(344,358); // collision
+			double angleA = FutureBall.getOutwardAngle(inA, hitA);
+			Point2 reboundA = FutureBall.getReboundPoint(inA,hitA,50,angleA);
+			drawCircle(h, Color.RED, inA, 2);
+			drawCircle(h, Color.RED, hitA, 2);		
+			drawCircle(h, Color.WHITE, reboundA, 2);
+		 
+			Point2 inB = new Point2(273,117);
+			Point2 hitB = new Point2(241,84);
+			double angleB = FutureBall.getOutwardAngle(inB, hitB);
+			Point2 reboundB = FutureBall.getReboundPoint(inB,hitB,50,angleB);
+			drawCircle(h, Color.RED, inB, 2);
+			drawCircle(h, Color.RED, hitB, 2);
+			drawCircle(h, Color.RED, reboundB, 2);
+			
+			Point2 inC = new Point2(136,118);
+			Point2 hitC = new Point2(80,110);
+			double angleC = FutureBall.getOutwardAngle(inC, hitC);
+			Point2 reboundC = FutureBall.getReboundPoint(inC,hitC,50,angleC);
+			drawCircle(h, Color.RED, inC, 2);
+			drawCircle(h, Color.RED, hitC, 2);
+			drawCircle(h, Color.RED, reboundC, 2);
+			
+		}
+		*/
+		
+	
+		//drawCircle(g, Color.WHITE, state.getPitch().pitchCornerX, 1);
 		// draw centre line
 		g.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
 		g.drawLine(TABLE_CENTRE_X, TABLE_MIN_Y + 1, TABLE_CENTRE_X,
@@ -344,11 +354,13 @@ public class WorldStatePainter {
 		// pitch borders
 		Pitch pitch = state.getPitch();
 		if (pitch != null) {
+			Graphics l = image.getGraphics();
+			ArrayList<Point2> points = new ArrayList<Point2>();
 			g.drawLine(pitch.goalLineX[0], pitch.goalLineY[0],
 					pitch.goalLineX[0], pitch.goalLineY[1]);
 			g.drawLine(pitch.goalLineX[1], pitch.goalLineY[0],
 					pitch.goalLineX[1], pitch.goalLineY[1]);
-			g.drawLine(pitch.pitchCornerX[0], pitch.pitchY[0],
+			g.drawLine(pitch.pitchCornerX[0], pitch.pitchY[0],		
 					pitch.pitchCornerX[1], pitch.pitchY[0]);
 			g.drawLine(pitch.pitchCornerX[0], pitch.pitchY[1],
 					pitch.pitchCornerX[1], pitch.pitchY[1]);
@@ -366,6 +378,13 @@ public class WorldStatePainter {
 					pitch.pitchCornerX[1], pitch.pitchY[0]);
 			g.drawLine(pitch.goalLineX[1], pitch.goalLineY[1],
 					pitch.pitchCornerX[1], pitch.pitchY[1]);
+			points = pitch.getArrayListOfPoints();
+			for (Point2 point : points){
+				drawCircle(l,Color.BLUE,point,2);
+			}
+			
+			
+			
 		}
 
 		if (isRawBoundaryShown())

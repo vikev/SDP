@@ -21,12 +21,12 @@ public class Constants {
 	/**
 	 * Port for bluetooth send/receive
 	 */
-	public static final int ATTACKER_PORT = 5595;
+	public static final int ATTACKER_PORT = 5597;
 
 	/**
 	 * Port for bluetooth send/receive
 	 */
-	public static final int DEFENDER_PORT = 1451;
+	public static final int DEFENDER_PORT = 1459;
 
 	/**
 	 * Port for bluetooth host (can be changed to an IP address but incurs

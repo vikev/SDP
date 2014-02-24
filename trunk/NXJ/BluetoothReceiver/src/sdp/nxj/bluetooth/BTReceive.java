@@ -90,7 +90,14 @@ public class BTReceive {
 							if (kicker == null || !kicker.isAlive()) {
 								kicker = new Kicker(speed);
 								kicker.setDaemon(true);
-								kicker.start();
+								kicker.run();
+							}
+							break;
+						case 'g':
+							if (kicker == null || !kicker.isAlive()) {
+								kicker = new Kicker(speed);
+								kicker.setDaemon(true);
+								kicker.grab();
 							}
 							break;
 						case 'p':

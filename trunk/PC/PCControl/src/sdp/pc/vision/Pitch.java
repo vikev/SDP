@@ -196,6 +196,32 @@ public class Pitch {
 	public int getXBegin() {
 		return X_BEGIN;
 	}
+	public ArrayList<Point2> getArrayListOfPoints(){
+		ArrayList<Point2> points = new ArrayList<Point2>();
+		points.add(new Point2(goalLineX[0],goalLineY[0])); // goal top left
+		points.add(new Point2(goalLineX[0], goalLineY[1])); // goal bottom left
+		points.add(new Point2(goalLineX[1], goalLineY[0])); // goal top right
+		points.add(new Point2( goalLineX[1], goalLineY[1])); // goal bottom right
+		points.add(new Point2( pitchCornerX[0], pitchY[0]));
+		points.add(new Point2( pitchCornerX[1],  pitchY[0]));
+		points.add(new Point2( pitchCornerX[0],  pitchY[1]));
+		points.add(new Point2( pitchCornerX[1],  pitchY[1]));
+		points.add(new Point2(zoneX[0], pitchY[0]));
+		points.add(new Point2(zoneX[0],pitchY[1]));
+		points.add(new Point2(zoneX[1], pitchY[0]));
+		points.add(new Point2(zoneX[1],pitchY[1]));
+		points.add(new Point2(zoneX[2], pitchY[0]));
+		points.add(new Point2(zoneX[2],pitchY[1]));
+		points.add(new Point2(goalLineX[0], goalLineY[0]));
+		points.add(new Point2(pitchCornerX[0], pitchY[0]));
+		points.add(new Point2(goalLineX[0], goalLineY[1]));
+		points.add(new Point2(pitchCornerX[0], pitchY[1]));
+		points.add(new Point2(goalLineX[1], goalLineY[0]));
+		points.add(new Point2(pitchCornerX[1], pitchY[0]));
+		points.add(new Point2(goalLineX[1], goalLineY[1]));
+		points.add(new Point2(pitchCornerX[1], pitchY[1]));
+		return points;
+	}
 
 	public Point2 getLeftGoalCentre() {
 		return new Point2(goalLineX[0], (goalLineY[0] + goalLineY[1]) / 2);

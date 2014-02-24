@@ -32,11 +32,11 @@ public class Driver {
 	 * @throws Exception
 	 */
 	public boolean forward(double dist) throws Exception {
-		return conn.sendCommand('f', dist);
+		return conn.sendCommand('b', dist);
 	}
 
 	/**
-	 * Travel farward at maximum speed.
+	 * Travel forward at maximum speed.
 	 * 
 	 * @throws Exception
 	 */
@@ -51,7 +51,7 @@ public class Driver {
 	 * @throws Exception
 	 */
 	public boolean backward(double dist) throws Exception {
-		return conn.sendCommand('b', dist);
+		return conn.sendCommand('f', dist);
 	}
 
 	/**
@@ -71,7 +71,7 @@ public class Driver {
 	 * @throws Exception
 	 */
 	public boolean turnLeft(double deg) throws Exception {
-		return conn.sendCommand('l', deg);
+		return conn.sendCommand('r', deg);
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class Driver {
 	 * @throws Exception
 	 */
 	public boolean turnRight(double deg) throws Exception {
-		return conn.sendCommand('r', deg);
+		return conn.sendCommand('l', deg);
 	}
 
 	/**
@@ -126,6 +126,17 @@ public class Driver {
 			Exception up = new Exception("Wrong robot id.");
 			throw up;
 		}
+	}
+	
+	/**
+	 * Close the grabber to grab the ball
+	 * 
+	 * @param speed
+	 * @return
+	 * @throws Exception 
+	 */
+	public boolean grab(double speed) throws Exception {
+		return conn.sendCommand('g', speed);
 	}
 
 	/**

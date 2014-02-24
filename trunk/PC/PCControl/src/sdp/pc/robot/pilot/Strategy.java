@@ -175,7 +175,8 @@ public class Strategy {
 	 */
 	private static void parseDefender() throws Exception {
 		// TODO: Logic
-		if (defender.assertPerpendicular(10.0)) {
+		System.out.println("yo");
+		if (defender.approachStationaryBall()) {
 		}
 	}
 

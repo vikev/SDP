@@ -135,8 +135,10 @@ public class SettingsGUI extends JFrame {
 		@Override
 		public void selectedChanged(JRadioButton newButton,
 				String command, boolean forced) {
-			if(!forced)
+			if(!forced) {
+				worldListener.getWorldState().setDirection(newButton == rdbtnLeft ? 0 : 1);
 				settingsManager.setShootingDirection(newButton == rdbtnLeft ? 0 : 1);
+			}
 		}
 
 	};
@@ -145,8 +147,10 @@ public class SettingsGUI extends JFrame {
 		@Override
 		public void selectedChanged(JRadioButton newButton,
 				String actionCommand, boolean forced) {
-			if(!forced)
+			if(!forced) {
+				worldListener.getWorldState().setOurColor(newButton == rdbtnYellow ? 0 : 1);
 				settingsManager.setOurTeam(newButton == rdbtnYellow ? 0 : 1);
+			}
 		}
 	};
 	

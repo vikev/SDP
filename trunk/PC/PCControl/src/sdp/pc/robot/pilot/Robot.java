@@ -213,7 +213,6 @@ public class Robot {
 		double rotateBy = normalizeToBiDirection(state.getRobotFacing(myTeam,
 				myIdentifier) - deg);
 		double speed = getRotateSpeed(rotateBy, epsilon);
-		System.out.println(rotateBy);
 		if (rotateBy > epsilon && speed > 1.0) {
 			driver.turnLeft(speed);
 		} else if (rotateBy < -epsilon && speed > 1.0) {
@@ -355,26 +354,82 @@ public class Robot {
 	 * </ul>
 	 * 
 	 * TODO: Should be checked to conform to defender standards for modularity.
+	 * @throws Exception 
 	 **/
-	public void kickStationaryBall() throws Exception {
+	public boolean approachStationaryBall() throws Exception {
 
 		// Get the robot, ball, and targets as Point2
-		Point2 robotPosition = state.getRobotPosition(state.getOurColor(),
-				state.getDirection());
+		Point2 robotPosition = state.getRobotPosition(this.myTeam, this.myIdentifier);
 		Point2 ballPosition = state.getBallPosition();
+		double angleBetween = calculateAngleBetween(robotPosition, ballPosition);
+
+		// check if the ball will obstruct a direct path to the approach
+		// point move to a point where a direct path can be taken to the
+		// approach point
+		Point2 approachPoint = calculateApproachPoint(ballPosition.invertY(),
+				getBallTarget().invertY(), state.getDirection());
+		if (approachPoint.equals(Point2.EMPTY)) {
+			System.out.println("Could not assign Approach Point");
+			return false;
+		}
+		
+		// If angleBetween is large, the robot is nearly in line with the goal
+		// already (small angle means the robot is between the ball and goal)
+		if ((angleBetween > 90.0)) {
+
+			// Attempt to navigate to the approach point and then kick it.
+			if (!goTo(approachPoint, SAFE_DIST_EPSILON)) {
+				return false;
+			}
+		} else {
+
+			// Checks if robot is between the ball and the goal
+			// If it is, move up or down
+			// *Need to also account for the ball's radius - Robaidh*
+			if (Math.abs(robotPosition.getY() - ballPosition.getY()) < ATTACKER_LENGTH) {
+				int newY;
+				if (robotPosition.getY() > ballPosition.getY()) {
+					newY = robotPosition.getY() + ATTACKER_LENGTH + SAFE_APPROACH_DIST;
+				} else {
+					newY = robotPosition.getY() - ATTACKER_LENGTH - SAFE_APPROACH_DIST;
+				}
+				if (!goTo(new Point2(robotPosition.getX(), newY), SAFE_DIST_EPSILON)) {
+					return false;
+				}
+			}
+
+			// Moves horizontally until it aligns with the Approach Point
+			Point2 intermediatePoint = new Point2(approachPoint.getX(),
+					robotPosition.getY());
+
+			if (goTo(intermediatePoint, SAFE_DIST_EPSILON)) {
+				if (!goTo(approachPoint, SAFE_DIST_EPSILON)) {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		}
+		//Finally, kick the ball
+		if (kickStationaryBall()) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Calculates angle between robot, ball and ball target positions
+	 * @param robotPosition
+	 * @param ballPosition
+	 * @return angle between given values
+	 */
+	private double calculateAngleBetween(Point2 robotPosition, Point2 ballPosition) {
 		Point2 targetPoint = getBallTarget();
 
 		// Get y-inverted versions
 		Point2 robotPositionInvertedY = robotPosition.invertY();
 		Point2 ballPositionInvertedY = ballPosition.invertY();
 		Point2 targetPointInvertedY = targetPoint.invertY();
-
-		if (targetPoint.equals(Point2.EMPTY)) {
-			System.out.println("Error: Null target point");
-
-			// could not set target point for ball, therefore cannot take shot
-			return;
-		}
 
 		// Y coordinates given must be already inverted
 		Point2 vectorBalltoTargetPoint = new Point2(ballPosition.getX()
@@ -386,73 +441,28 @@ public class Robot {
 		double angleBetween = calculateAngle(vectorBalltoTargetPoint,
 				vectorBalltoSelectedRobot);
 
-		// check if the ball will obstruct a direct path to the approach
-		// point move to a point where a direct path can be taken to the
-		// approach point
-		Point2 approachPoint = calculateApproachPoint(ballPositionInvertedY,
-				targetPointInvertedY, state.getDirection());
-		if (approachPoint.equals(Point2.EMPTY)) {
-			System.out.println("Could not assign Approach Point");
-			return;
-		}
-
-		// If angleBetween is large, the robot is nearly in line with the goal
-		// already (small angle means the robot is between the ball and goal)
-		if ((angleBetween > 90.0)) {
-
-			// Attempt to navigate to the approach point.
-			goTo(approachPoint, SAFE_DIST_EPSILON);
-		} else {
-
-			// Checks if robot is between the ball and the goal
-			// If it is, move up or down
-			// *Need to also account for the ball's radius - Robaidh*
-			if (Math.abs(robotPosition.y - ballPosition.y) < ATTACKER_LENGTH) {
-				if (robotPosition.y > ballPosition.y) {
-					int newy = robotPosition.y + ATTACKER_LENGTH
-							+ SAFE_APPROACH_DIST;
-					goTo(new Point2(robotPosition.x, newy), SAFE_DIST_EPSILON);
-				} else {
-					int newy = robotPosition.y - ATTACKER_LENGTH
-							- SAFE_APPROACH_DIST;
-					goTo(new Point2(robotPosition.x, newy), SAFE_DIST_EPSILON);
-				}
-			}
-			Thread.sleep(200);
-
-			// Moves horizontally until it aligns with the Approach Point
-			Point2 intermediatePoint = new Point2(approachPoint.x,
-					robotPosition.y);
-
-			// TODO: This is broken-ish with synchronous goto method
-			if (goTo(intermediatePoint, SAFE_DIST_EPSILON)) {
-				goTo(approachPoint, SAFE_DIST_EPSILON);
-			}
-			Thread.sleep(200);
-		}
-
-		// TODO: Assuming already at approach point (broken by synchronous
-		// change)
+		return angleBetween;
+	}
+	/**
+	 * Kicks stationary ball. Assumes robot is already at the approach point.
+	 * @throws InterruptedException
+	 * @throws Exception
+	 */
+	public boolean kickStationaryBall() throws InterruptedException, Exception {
+		Point2 ballPosition = state.getBallPosition();
 
 		// Turn towards ball
-		while (!turnTo(ballPosition, SAFE_ANGLE_EPSILON)) {
-			Thread.sleep(100);
-			while (!turnTo(ballPosition, SAFE_ANGLE_EPSILON)) {
-				Thread.sleep(100);
-			}
+		if (turnTo(ballPosition, SAFE_ANGLE_EPSILON)) {
 			driver.stop();
-			Thread.sleep(500);
+			Thread.sleep(100);
+			driver.stop();
+			// Move slightly forward and kick
+			driver.forward(80);
+			Thread.sleep(1000);
+			driver.kick(5000);
+			return true;
 		}
-		Thread.sleep(100);
-		driver.stop();
-
-		// Move slightly forward and kick
-		driver.forward(80);
-		Thread.sleep(1000);
-		driver.kick(5000);
-		Thread.sleep(100);
-		System.out.println("KICK");
-		driver.stop();
+		return false;
 	}
 
 	/**
@@ -538,8 +548,7 @@ public class Robot {
 		if (robLoc.distance(to) < epsilon) {
 			return true;
 		}
-		double speed = getMoveSpeed(robLoc.distance(to),
-				DEFEND_EPSILON_DISTANCE);
+		double speed = getMoveSpeed(robLoc.distance(to));
 		driver.forward(speed);
 		return false;
 	}
@@ -554,8 +563,7 @@ public class Robot {
 		if (robLoc.distance(to) < epsilon) {
 			return true;
 		}
-		double speed = getMoveSpeed(robLoc.distance(to),
-				DEFEND_EPSILON_DISTANCE);
+		double speed = getMoveSpeed(robLoc.distance(to));
 		driver.backward(speed);
 		return false;
 	}
@@ -566,15 +574,15 @@ public class Robot {
 	 * 
 	 * TODO: Units? motor velocity in radians per second or..?
 	 */
-	private static double getMoveSpeed(double distance, double eps) {
-		if (distance > 60.0) {
+	private static double getMoveSpeed(double distance) {
+		if (distance > 120.0) {
 			return 300.0;
-		} else if (distance > 25.0) {
-			return 140.0;
-		} else if (distance > eps) {
+		} else if (distance > 50.0) {
+			return 150.0;
+		} else if (distance > 20.0) {
 			return 30.0;
 		} else {
-			return 1.0;
+			return 10.0;
 		}
 	}
 
