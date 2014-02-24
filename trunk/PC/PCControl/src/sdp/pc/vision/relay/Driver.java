@@ -1,7 +1,5 @@
 package sdp.pc.vision.relay;
 
-import sdp.pc.common.Constants;
-
 /**
  * TODO:What is the difference between this and sdp.pc.robot.pilot.Driver ?? We
  * don't need two drivers, I'm quite sure.
@@ -20,19 +18,19 @@ public class Driver {
 		this.conn = conn;
 		this.robotId = conn.getRobotId();
 	}
-	
-	public void closeConnection(){
+
+	public void closeConnection() {
 		conn.closeConnection();
 	}
-	
+
 	/**
 	 * Travel forward at that speed. 0 = travel at max speed.
 	 * 
 	 * @param dist
 	 * @throws Exception
 	 */
-	public boolean forward(double dist) throws Exception {
-		return conn.sendCommand('b', dist);
+	public boolean forward(int power) throws Exception {
+		return conn.sendCommand('b', power);
 	}
 
 	/**
@@ -50,8 +48,8 @@ public class Driver {
 	 * @param dist
 	 * @throws Exception
 	 */
-	public boolean backward(double dist) throws Exception {
-		return conn.sendCommand('f', dist);
+	public boolean backward(int power) throws Exception {
+		return conn.sendCommand('b', power);
 	}
 
 	/**
@@ -70,7 +68,7 @@ public class Driver {
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean turnLeft(double deg) throws Exception {
+	public boolean turnLeft(int deg) throws Exception {
 		return conn.sendCommand('r', deg);
 	}
 
@@ -92,7 +90,7 @@ public class Driver {
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean turnRight(double deg) throws Exception {
+	public boolean turnRight(int deg) throws Exception {
 		return conn.sendCommand('l', deg);
 	}
 
@@ -116,27 +114,19 @@ public class Driver {
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean kick(double dist) throws Exception {
-		switch (robotId) {
-		case Constants.DEFENDER:
-			return conn.sendCommand('k', dist);
-		case Constants.ATTACKER:
-			return conn.sendCommand('p', dist);
-		default:
-			Exception up = new Exception("Wrong robot id.");
-			throw up;
-		}
+	public boolean kick(int dist) throws Exception {
+		return conn.sendCommand('k', dist);
 	}
-	
+
 	/**
 	 * Close the grabber to grab the ball
 	 * 
 	 * @param speed
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	public boolean grab(double speed) throws Exception {
-		return conn.sendCommand('g', speed);
+	public boolean grab() throws Exception {
+		return conn.sendCommand('g', 0);
 	}
 
 	/**
@@ -147,6 +137,10 @@ public class Driver {
 	 */
 	public boolean stop() throws Exception {
 		return conn.sendCommand('s', 0);
+	}
+
+	public boolean setSpeed(int power) throws Exception {
+		return conn.sendCommand('p', power);
 	}
 
 	/**

@@ -1,15 +1,18 @@
 package sdp.pc.robot.pilot;
 
-import static sdp.pc.common.Constants.*;
+import static sdp.pc.common.Constants.ATTACKER_LENGTH;
+import static sdp.pc.common.Constants.ATTACKER_WIDTH;
+import static sdp.pc.common.Constants.DIRECTION_LEFT;
+import static sdp.pc.common.Constants.DIRECTION_RIGHT;
+import static sdp.pc.vision.Alg.normalizeToBiDirection;
+import static sdp.pc.vision.Alg.normalizeToUnitDegrees;
+import sdp.pc.vision.Alg;
 import sdp.pc.vision.FutureBall;
 import sdp.pc.vision.Point2;
 import sdp.pc.vision.Vision;
 import sdp.pc.vision.WorldState;
 import sdp.pc.vision.relay.Driver;
 import sdp.pc.vision.relay.TCPClient;
-import sdp.pc.vision.Alg;
-
-import static sdp.pc.vision.Alg.*;
 
 /**
  * An abstract class for conducting non-trivial orders on a Robot. A delegator
@@ -226,7 +229,7 @@ public class Robot {
 	public boolean assertFacing(double deg, double epsilon) throws Exception {
 		double rotateBy = normalizeToBiDirection(getWorld().getRobotFacing(myTeam,
 				myIdentifier) - deg);
-		double speed = getRotateSpeed(rotateBy, epsilon);
+		int speed = getRotateSpeed(rotateBy, epsilon);
 		if (rotateBy > epsilon && speed > 1.0) {
 			driver.turnLeft(speed);
 		} else if (rotateBy < -epsilon && speed > 1.0) {
@@ -514,13 +517,14 @@ public class Robot {
 	public int getSubState() {
 		return this.subState;
 	}
-	
+
 	/**
 	 * Setter method for the sub-state of the robot.
 	 */
-	public void setSubState(int s){
+	public void setSubState(int s) {
 		this.subState = s;
 	}
+
 	/**
 	 * Makes the robot, which should already be perpendicular, move forward or
 	 * backward to cut off the estimated ball postion's Y coordinate. The method
@@ -563,16 +567,16 @@ public class Robot {
 	 * 
 	 * @return TODO: speed in motor-degrees (?) per second
 	 */
-	private static double getRotateSpeed(double rotateBy, double epsilon) {
+	private static int getRotateSpeed(double rotateBy, double epsilon) {
 		rotateBy = Math.abs(rotateBy);
 		if (rotateBy > 75.0) {
-			return 100.0;
+			return 100;
 		} else if (rotateBy > 25.0) {
-			return 35.0;
+			return 35;
 		} else if (rotateBy > epsilon) {
-			return 15.0;
+			return 15;
 		} else {
-			return 0.0;
+			return 0;
 		}
 	}
 
@@ -586,7 +590,7 @@ public class Robot {
 		if (robLoc.distance(to) < epsilon) {
 			return true;
 		}
-		double speed = getMoveSpeed(robLoc.distance(to));
+		int speed = getMoveSpeed(robLoc.distance(to));
 		driver.forward(speed);
 		return false;
 	}
@@ -601,7 +605,7 @@ public class Robot {
 		if (robLoc.distance(to) < epsilon) {
 			return true;
 		}
-		double speed = getMoveSpeed(robLoc.distance(to));
+		int speed = getMoveSpeed(robLoc.distance(to));
 		driver.backward(speed);
 		return false;
 	}
@@ -612,15 +616,15 @@ public class Robot {
 	 * 
 	 * TODO: Units? motor velocity in radians per second or..?
 	 */
-	private static double getMoveSpeed(double distance) {
+	private static int getMoveSpeed(double distance) {
 		if (distance > 120.0) {
-			return 300.0;
+			return 300;
 		} else if (distance > 50.0) {
-			return 150.0;
+			return 150;
 		} else if (distance > 20.0) {
-			return 30.0;
+			return 30;
 		} else {
-			return 10.0;
+			return 10;
 		}
 	}
 
