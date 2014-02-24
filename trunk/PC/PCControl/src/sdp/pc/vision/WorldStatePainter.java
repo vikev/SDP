@@ -248,7 +248,8 @@ public class WorldStatePainter {
 			}
 
 
-		
+		/*
+		//For Testing rebound code.
 		Pitch pitch2 = state.getPitch();
 		if (pitch2 != null) {
 		//if (1 ==2){
@@ -280,6 +281,7 @@ public class WorldStatePainter {
 			drawCircle(h, Color.RED, reboundC, 2);
 			
 		}
+		*/
 		
 	
 		//drawCircle(g, Color.WHITE, state.getPitch().pitchCornerX, 1);

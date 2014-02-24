@@ -196,7 +196,6 @@ public class Pitch {
 	public int getXBegin() {
 		return X_BEGIN;
 	}
-<<<<<<< HEAD
 	public ArrayList<Point2> getArrayListOfPoints(){
 		ArrayList<Point2> points = new ArrayList<Point2>();
 		points.add(new Point2(goalLineX[0],goalLineY[0])); // goal top left
@@ -222,7 +221,7 @@ public class Pitch {
 		points.add(new Point2(goalLineX[1], goalLineY[1]));
 		points.add(new Point2(pitchCornerX[1], pitchY[1]));
 		return points;
-=======
+	}
 
 	public Point2 getLeftGoalCentre() {
 		return new Point2(goalLineX[0], (goalLineY[0] + goalLineY[1]) / 2);
@@ -230,6 +229,5 @@ public class Pitch {
 
 	public Point2 getRightGoalCentre() {
 		return new Point2(goalLineX[1], (goalLineY[0] + goalLineY[1]) / 2);
->>>>>>> 959d223fb73bb5749f370e86e81c2ba1232d953a
 	}
 }
