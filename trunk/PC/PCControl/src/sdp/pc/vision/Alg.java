@@ -59,12 +59,14 @@ public class Alg {
 	 * @return ang on [-180, 180)
 	 */
 	public static double normalizeToBiDirection(double ang) {
-		while (ang < -180.0) {
-			ang += 360.0;
-		}
-		while (ang >= 180.0) {
-			ang -= 360.0;
-		}
+		ang%=360;
+
+		//Make angle between -179 and 180
+		if (ang>180) 
+			ang-=360;
+		
+		if(ang < -180)
+			ang += 360;
 		return ang;
 	}
 
