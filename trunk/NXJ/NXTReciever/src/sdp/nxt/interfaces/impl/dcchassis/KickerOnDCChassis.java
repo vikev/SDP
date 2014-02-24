@@ -16,27 +16,36 @@ public class KickerOnDCChassis implements Kicker {
 		}
 	}
 
-	Thread mechThr = new Thread(new Runnable() {
-		public void run() {
-			if (power < 50) {
-				power = 50;
-			}
-			if (closed) {
-				Motor.B.setSpeed(power);
-				Motor.B.rotate(-50);
-				Motor.B.setSpeed(50);
-				Motor.B.rotate(15);
-				closed = false;
-			} else {
-				Motor.B.setSpeed(150);
-				Motor.B.rotate(35);
-				closed = true;
-			}
-		}
-	});
+	Thread mechThr = null;
+
+	// new Thread(new Runnable() {
+	// public void run() {
+	// if (power < 50) {
+	// power = 50;
+	// }
+	// if (closed) {
+	// Motor.B.setSpeed(power);
+	// Motor.B.rotate(-50);
+	// Motor.B.setSpeed(50);
+	// Motor.B.rotate(15);
+	// closed = false;
+	// } else {
+	// Motor.B.setSpeed(150);
+	// Motor.B.rotate(35);
+	// closed = true;
+	// }
+	// }
+	// });
 
 	public void grab() {
-		if (!closed && !mechThr.isAlive()) {
+		if (!closed && (mechThr == null || !mechThr.isAlive())) {
+			mechThr = new Thread(new Runnable() {
+				public void run() {
+					Motor.B.setSpeed(150);
+					Motor.B.rotate(35);
+					closed = false;
+				}
+			});
 			mechThr.setDaemon(true);
 			mechThr.run();
 		}
@@ -46,7 +55,17 @@ public class KickerOnDCChassis implements Kicker {
 
 	public void kick(int power) {
 		this.power = power;
-		if (closed && !mechThr.isAlive()) {
+		final int p = power;
+		if (closed && (mechThr == null || !mechThr.isAlive())) {
+			mechThr = new Thread(new Runnable() {
+				public void run() {
+					Motor.B.setSpeed(p);
+					Motor.B.rotate(-50);
+					Motor.B.setSpeed(50);
+					Motor.B.rotate(15);
+					closed = false;
+				}
+			});
 			mechThr.setDaemon(true);
 			mechThr.run();
 		}

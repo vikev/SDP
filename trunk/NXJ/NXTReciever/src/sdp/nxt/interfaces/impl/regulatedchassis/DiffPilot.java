@@ -16,7 +16,8 @@ public class DiffPilot implements Pilot {
 
 	public void forward(int power) {
 		setPower(power);
-		pilot.travel(power, true); // true means command is interrupted
+		// pilot.travel(10000, true); // true means command is interrupted
+		pilot.forward();
 		// immediately by next command
 	}
 
@@ -27,28 +28,31 @@ public class DiffPilot implements Pilot {
 	 *            rotate speed in degrees per second
 	 */
 	public void setPower(int degPerSec) {
-		if (degPerSec == 0) {
-			degPerSec = 900000;
-		}
 		power = degPerSec;
 		pilot.setRotateSpeed(degPerSec);
 		pilot.setTravelSpeed(degPerSec);
 	}
 
 	public void backward(int power) {
+		if (power == 0) {
+			power = 90000;
+		}
 		setPower(power);
-		pilot.travel(-power, true); // true means command is interrupted
+		// pilot.travel(10000, true); // true means command is interrupted
+		pilot.forward();
 	}
 
 	public void turnLeft(int power) {
 		setPower(power);
-		pilot.rotate(power, true); // true means command is interrupted
+		// pilot.rotate(10000, true); // true means command is interrupted
+		pilot.rotateLeft();
 		// immediately by next command
 	}
 
 	public void turnRight(int power) {
 		setPower(power);
-		pilot.rotate(-power, true); // true means command is interrupted
+		// pilot.rotate(10000, true); // true means command is interrupted
+		pilot.rotateRight();
 		// immediately by next command
 	}
 

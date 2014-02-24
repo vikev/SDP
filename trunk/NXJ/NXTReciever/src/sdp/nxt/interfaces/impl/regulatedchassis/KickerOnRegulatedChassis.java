@@ -6,6 +6,7 @@ import sdp.nxt.interfaces.Kicker;
 public class KickerOnRegulatedChassis implements Kicker {
 
 	private boolean closed;
+	private int power;
 
 	public KickerOnRegulatedChassis(boolean isGrabberClosed) {
 		this.closed = isGrabberClosed;
@@ -42,8 +43,6 @@ public class KickerOnRegulatedChassis implements Kicker {
 			mechThr.run();
 		}
 	}
-
-	int power;
 
 	public void kick(int power) {
 		this.power = power;
