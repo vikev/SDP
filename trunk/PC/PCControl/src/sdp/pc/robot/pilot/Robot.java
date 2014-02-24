@@ -729,5 +729,6 @@ public class Robot {
 		public static int PASS_TO_ATTACKER = 5;
 		public static int DEFEND_ENEMY_DEFENDER = 6;
 		public static int GET_BALL = 7;
+		public static int ATTEMPT_GOAL = 8;
 	}
 }
