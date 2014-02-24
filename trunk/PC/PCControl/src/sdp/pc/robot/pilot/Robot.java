@@ -95,7 +95,9 @@ public class Robot {
 	 */
 	private int myIdentifier;
 
-	@SuppressWarnings("unused")
+	/**
+	 * The most recent calculated state of <b>this</b>
+	 */
 	private int myState = State.UNKNOWN;
 
 	/**
@@ -170,24 +172,26 @@ public class Robot {
 	}
 
 	/**
-	 * Synchronous method which performs the goal of defending the robot.
-	 * It should only be called when the ball is not moving (or ball is
-	 * not on the pitch) and the opponent's attacker is on the pitch.
-	 * It checks the predicted stop location of the imaginary ball if
-	 * the attacking robot would kick now and moves to predicted position's
-	 * Y coordinate by going forwards or backwards.
+	 * Synchronous method which performs the goal of defending the robot. It
+	 * should only be called when the ball is not moving (or ball is not on the
+	 * pitch) and the opponent's attacker is on the pitch. It checks the
+	 * predicted stop location of the imaginary ball if the attacking robot
+	 * would kick now and moves to predicted position's Y coordinate by going
+	 * forwards or backwards.
 	 */
 	public void defendRobot() throws Exception {
-		//Get defending robot's position
+		// Get defending robot's position
 		Point2 pos = state.getRobotPosition(this.myTeam, this.myIdentifier);
-		
-		//Get attacker's position and facing
-		Point2 attPos = state.getRobotPosition(1 - this.myTeam, 1 - this.myIdentifier);
-		double attFacing = state.getRobotFacing(1 - this.myTeam,  1 - this.myIdentifier);
 
-		//Get predicted ball position if the attacker shot now
-		Point2 predBallPos = FutureBall
-				.estimateMatchingYCoord(attPos, attFacing, pos);
+		// Get attacker's position and facing
+		Point2 attPos = state.getRobotPosition(1 - this.myTeam,
+				1 - this.myIdentifier);
+		double attFacing = state.getRobotFacing(1 - this.myTeam,
+				1 - this.myIdentifier);
+
+		// Get predicted ball position if the attacker shot now
+		Point2 predBallPos = FutureBall.estimateMatchingYCoord(attPos,
+				attFacing, pos);
 		// Move robot to this position
 		if (!predBallPos.equals(Point2.EMPTY)) {
 			defendToY(predBallPos.getY(), DEFEND_EPSILON_DISTANCE);
@@ -452,6 +456,24 @@ public class Robot {
 	}
 
 	/**
+	 * Get the most recent calculated state of <b>this</b>
+	 * 
+	 * @return
+	 */
+	public int getState() {
+		return this.myState;
+	}
+
+	/**
+	 * Set <b>this</b> to have a new state
+	 * 
+	 * @param newState
+	 */
+	public void setState(int newState) {
+		this.myState = newState;
+	}
+
+	/**
 	 * Makes the robot, which should already be perpendicular, move forward or
 	 * backward to cut off the estimated ball postion's Y coordinate. The method
 	 * is synchronous, and therefore must be called until it returns true if you
@@ -652,7 +674,7 @@ public class Robot {
 	 * 
 	 * @author s1143704
 	 */
-	private static class State {
+	public static class State {
 		public static int UNKNOWN = 0;
 	}
 }

@@ -179,7 +179,7 @@ public class FutureBall {
 		vHatY /= distToStop;
 		collision = Point2.EMPTY;
 		Intersect inter = new Intersect(ball, Point2.EMPTY, Point2.EMPTY,
-				Double.NaN);
+				Point2.EMPTY, Double.NaN);
 		if (vel.modulus() > MIN_ESTIMATE_VELOCITY) {
 			while (collision.equals(Point2.EMPTY) && distToStop > 0) {
 				if (!pitchContains(new Point2((int) iteratorX, (int) iteratorY))) {
@@ -216,8 +216,8 @@ public class FutureBall {
 	 *            static
 	 * @return estimated position of the robot to intersect the object
 	 */
-	public static Point2 estimateMatchingYCoord(Point2 movingPos, double movingFacing,
-			Point2 staticPos) {
+	public static Point2 estimateMatchingYCoord(Point2 movingPos,
+			double movingFacing, Point2 staticPos) {
 
 		// Assume the ball is moving very fast, give it a velocity of 1000.
 		int x = 1000;
@@ -251,32 +251,34 @@ public class FutureBall {
 		if (movingFacing > 270 || movingFacing < 90) {
 			x = -x;
 		}
-		
+
 		Intersect stopPos = estimateStopPoint(new Point2(x, y), movingPos);
-		
+
 		Point2 intersection = stopPos.getIntersection();
 		Point2 estimatedPoint = stopPos.getDeflection();
-		
-		if (betweenTwoPoints(staticPos.getX(), intersection.getX(), movingPos.getX())) {
-			estimatedPoint = intersection; 
-		} 
-		
-		double a = (movingPos.getY() - estimatedPoint.getY())/(double)(movingPos.getX() - estimatedPoint.getX());
+
+		if (betweenTwoPoints(staticPos.getX(), intersection.getX(),
+				movingPos.getX())) {
+			estimatedPoint = intersection;
+		}
+
+		double a = (movingPos.getY() - estimatedPoint.getY())
+				/ (double) (movingPos.getX() - estimatedPoint.getX());
 		double b = movingPos.getY() - a * movingPos.getX();
-		
-		double predY = a * staticPos.getX() + b; 
-		//double deltaY = Math.abs(estimatedPoint.getY() - movingPos.getY())
-		//		* Math.abs(staticPos.getX() - movingPos.getX())
-		//		/ Math.abs(estimatedPoint.getX() - movingPos.getX());
+
+		double predY = a * staticPos.getX() + b;
+		// double deltaY = Math.abs(estimatedPoint.getY() - movingPos.getY())
+		// * Math.abs(staticPos.getX() - movingPos.getX())
+		// / Math.abs(estimatedPoint.getX() - movingPos.getX());
 
 		// Does nothing
-		//double predY;
-		//if (movingFacing < 180) {
-		//	predY = deltaY + movingPos.getY();
-		//} else {
-		//	predY = movingPos.getY() - deltaY;
-		//}
-		
+		// double predY;
+		// if (movingFacing < 180) {
+		// predY = deltaY + movingPos.getY();
+		// } else {
+		// predY = movingPos.getY() - deltaY;
+		// }
+
 		// check if point is within the boundaries and if not return (0,0)
 		Point2 target = new Point2(staticPos.getX(), (int) predY);
 		if (pitchContains(target)) {
@@ -287,10 +289,11 @@ public class FutureBall {
 
 	/**
 	 * Returns true if point x is between other two points xStart and xEnd
+	 * 
 	 * @param x
 	 * @param xStart
 	 * @param xEnd
-	 * @return boolean value 
+	 * @return boolean value
 	 */
 	private static boolean betweenTwoPoints(int x, int xStart, int xEnd) {
 		if (xStart < xEnd) {

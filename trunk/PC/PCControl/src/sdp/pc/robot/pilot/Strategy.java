@@ -131,11 +131,38 @@ public class Strategy {
 	}
 
 	/**
+	 * TODO: Implement this method
+	 * 
+	 * The robots should follow a state-based pattern depending on the ball's
+	 * location and velocity. Use this to update the states automatically.
+	 * 
+	 * <table>
+	 * <tr>
+	 * <td>Ball Position</td>
+	 * <td>Defender</td>
+	 * <td>Attacker</td>
+	 * </tr>
+	 * <tr>
+	 * <td>Enemy Attacker</td>
+	 * <td>Fast Ball ? Defend Ball : Defend Enemy Attacker</td>
+	 * <td>Get Ready to receive pass</td>
+	 * </tr>
+	 * <tr>
+	 * <td>Enemy Defender</td>
+	 * <td>TODO:
+	 * </tr>
+	 * </table>
+	 */
+	@SuppressWarnings("unused")
+	private static void updateStates() {
+	}
+
+	/**
 	 * Main logic branching mechanism for attacker. Use robot.myState as well
 	 * 
 	 * @throws Exception
 	 */
-	public static void parseAttacker() throws Exception {
+	private static void parseAttacker() throws Exception {
 		// TODO: Logic
 		if (attacker.assertPerpendicular(10.0)) {
 		}
@@ -146,7 +173,7 @@ public class Strategy {
 	 * 
 	 * @throws Exception
 	 */
-	public static void parseDefender() throws Exception {
+	private static void parseDefender() throws Exception {
 		// TODO: Logic
 		if (defender.assertPerpendicular(10.0)) {
 		}
@@ -157,7 +184,7 @@ public class Strategy {
 	 * 
 	 * @throws InterruptedException
 	 */
-	public static void executeStrategy() throws InterruptedException {
+	private static void executeStrategy() throws InterruptedException {
 		Thread.sleep(1000);
 		while (true) {
 			try {
