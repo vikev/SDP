@@ -322,7 +322,7 @@ public class FutureBall {
 	 */
 	public static double getOutwardAngle(Point2 A, Point2 B) {
 		int[] twoPoints = getCollisionWall(B);
-		double outAngle;
+//		double outAngle;
 		Point2 C = new Point2(twoPoints[0],twoPoints[1]);
 		Point2 D = new Point2(twoPoints[2],twoPoints[3]);
 		System.out.println("C: "+C.toString() + ", D: "+ D.toString());
@@ -371,8 +371,8 @@ public class FutureBall {
 			double distance, double angle) {
 		double x = 0;
 		double y = 0;
-		Point2 top = new Point2(intersection.getX(),0);
-		double angleTrue = 0;
+//		Point2 top = new Point2(intersection.getX(),0);
+//		double angleTrue = 0;
 		/*
 		int quad = getQuadrant(ball, intersection,top);
 		System.out.println(quad);
