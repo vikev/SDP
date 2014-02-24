@@ -251,11 +251,12 @@ public class WorldStatePainter {
 		/*
 		//For Testing rebound code.
 		Pitch pitch2 = state.getPitch();
-		if (pitch2 != null) {
+		ArrayList<Point2> points2 = pitch2.getArrayListOfPoints();
+		if (!points2.get(0).equals(new Point2(0,0))) {
 		//if (1 ==2){
 			Graphics h = image.getGraphics();
 			h.setColor(BLUE_BLEND);
-		
+			
 			Point2 inA = new Point2(369,322); // Ball
 			Point2 hitA = new Point2(344,358); // collision
 			double angleA = FutureBall.getOutwardAngle(inA, hitA);
@@ -280,8 +281,8 @@ public class WorldStatePainter {
 			drawCircle(h, Color.RED, hitC, 2);
 			drawCircle(h, Color.RED, reboundC, 2);
 			
-		}
-		*/
+		}*/
+		 
 		
 	
 		//drawCircle(g, Color.WHITE, state.getPitch().pitchCornerX, 1);

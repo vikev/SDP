@@ -183,13 +183,15 @@ public class FutureBall {
 			while (collision.equals(Point2.EMPTY) && distToStop > 0) {
 				if (!pitchContains(new Point2((int) iteratorX, (int) iteratorY))) {
 					collision = new Point2((int) iteratorX, (int) iteratorY);
-
+					
+					
 					inter = collide8(iteratorX, iteratorY, inter);
 					Point2 temp = new Point2((int) tarX, (int) tarY);
 					Point2 reboundPoint = getReboundPoint(
 							inter.getIntersection(), inter.getBall(), 5,
 							inter.getAngle());
 					inter.setDeflection(reboundPoint);
+				
 				}
 				iteratorX += vHatX;
 				iteratorY += vHatY;
@@ -319,6 +321,7 @@ public class FutureBall {
 		double outAngle;
 		Point2 C = new Point2(twoPoints[0],twoPoints[1]);
 		Point2 D = new Point2(twoPoints[2],twoPoints[3]);
+		System.out.println("C: "+C.toString() + ", D: "+ D.toString());
 
 		double aC = C.distance(B);
 		double aD = D.distance(B);
@@ -332,15 +335,17 @@ public class FutureBall {
 		double inAngleD = Math
 				.acos((Math.pow(aD, 2) + Math.pow(c, 2) - Math.pow(
 						bD, 2)) / (2 * aD * c));
-		if ((inAngleC * 180/Math.PI)>90){
-			outAngle = 180 - (inAngleD * 180/Math.PI);
-		} else {
-			outAngle = 180 - (inAngleC *180/Math.PI);
+		double abc = inAngleC * 180/Math.PI;
+		double abd = inAngleD * 180/Math.PI;
+		System.out.println("For Ball at "+A.toString()+" and collison at "+B.toString()+", the angle for abc is "+abc+" and the angle for abd is "+abd);
 	
+		if ((abc)>90){
+			return abd;
+			
+		} else {
+			return abc;
 		}
-		
-		
-		return outAngle;
+
 	}
 	/**
 	 * Calculates the angle between three points using arc cos.
@@ -364,29 +369,30 @@ public class FutureBall {
 		double y = 0;
 		Point2 top = new Point2(intersection.getX(),0);
 		double angleTrue = 0;
+		/*
 		int quad = getQuadrant(ball, intersection,top);
+		System.out.println(quad);
 		if(quad==0){
-			System.out.println("0 : " +angle);
 			angleTrue = 90 - angle;
 			x = intersection.getX() + distance * Math.cos(angle);
 			y = intersection.getY() - distance * Math.sin(angle);
 		}
 		else if(quad==1){
-			System.out.println("1 : " +angle);
 			angleTrue = 270 + angle;
 			x = intersection.getX() - distance * Math.cos(angle);
 			y = intersection.getY() - distance * Math.sin(angle);
 		}
 		else if (quad== 2){		
-			System.out.println("2 : " +angle);
-			//
 			x = intersection.getX() - distance * Math.cos(angle);
 			y = intersection.getY() + distance * Math.sin(angle);
 		} else if(quad==3){
-			System.out.println("3 : " +angle);
-			x = intersection.getX() + distance * Math.cos(angle);
-			y = intersection.getY() + distance * Math.sin(angle);
+			angleTrue = 270 -angle;
+			x = intersection.getX() + distance * Math.cos(angleTrue);
+			y = intersection.getY() - distance * Math.sin(angleTrue);
 		}
+		*/
+		x = intersection.getX() - distance*Math.cos(angle);
+		y = intersection.getY() - distance*Math.sin(angle);
 		Point2 estimation = new Point2((int) x, (int) y);
 		return estimation;
 	}
@@ -422,12 +428,12 @@ public class FutureBall {
 		double a = C.distance(B);
 		double b = A.distance(C);
 		double c = A.distance(B);
-		//System.out.println();
 		double angleR = Math
 				.acos((Math.pow(a, 2) + Math.pow(c, 2) - Math.pow(
 						b, 2)) / (2*a*c));
 		
 		double angleD = angleR * (180/Math.PI);
+		System.out.println("Angle to true north: " + angleD);
 		if(angleD > 90){
 			if(A.getX()<B.getX()){
 				return 2;
