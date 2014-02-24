@@ -19,7 +19,7 @@ import sdp.pc.common.Constants;
  * TODO: What is this class for and are we using it?
  *
  */
-public class TCPClient {
+public class ManualControl {
 
 	public void run(int serverPort, final int robot) {
 
@@ -130,7 +130,7 @@ public class TCPClient {
 			Exception e = new Exception("Couldn't select a robot...");
 			throw e;
 		}
-		TCPClient client = new TCPClient();
+		ManualControl client = new ManualControl();
 		client.run(port, robot);
 	}
 }

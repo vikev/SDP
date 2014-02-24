@@ -9,11 +9,11 @@ import sdp.pc.vision.relay.Driver;
 import sdp.pc.vision.relay.TCPClient;
 
 public class GrabberTest {
-	
+
 	private final static double SAFE_ANGLE = 5;
 	private final static int SAFE_DIST = 30;
 	private final static int GRAB_DIST = 40;
-	
+
 	private static WorldState state = new WorldState();
 
 	public static void main(String[] args) throws Exception {
@@ -26,7 +26,7 @@ public class GrabberTest {
 		try {
 			driver.stop();
 		} catch (Exception e1) {
-			e1.printStackTrace();  
+			e1.printStackTrace();
 		}
 		Thread.sleep(500);
 
@@ -51,29 +51,28 @@ public class GrabberTest {
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		
+
 		int team = state.getOurColor();
 		int dir = state.getDirection();
-		
+
 		Robot robot = new Robot(driver, state, team, dir);
 		System.out.println(state.getRobotPosition(team, dir));
-		
+
 		while (true) {
 			Point2 ballPos = state.getBallPosition();
 			Point2 robotPos = state.getRobotPosition(team, dir);
 
 			if (robot.goTo(ballPos, SAFE_DIST)) {
 				driver.stop();
-				Thread.sleep(50);	
+				Thread.sleep(50);
 				if (ballPos.distance(robotPos) < GRAB_DIST) {
-					driver.grab(60);
+					driver.grab();
 					Thread.sleep(200);
 					if (ballPos.distance(robotPos) < GRAB_DIST) {
 						Point2 target = new Point2();
 						if (dir == Constants.DIRECTION_LEFT) {
 							target = state.getLeftGoalCentre();
-						}
-						else {
+						} else {
 							target = state.getRightGoalCentre();
 						}
 						while (!robot.turnTo(target, SAFE_ANGLE)) {
@@ -81,8 +80,7 @@ public class GrabberTest {
 						}
 						driver.stop();
 						driver.kick(2000);
-					}
-					else {
+					} else {
 						driver.kick(2000);
 					}
 				}
@@ -90,5 +88,5 @@ public class GrabberTest {
 			Thread.sleep(100);
 		}
 	}
-	
+
 }
