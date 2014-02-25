@@ -418,7 +418,7 @@ public class FutureBall {
 			} else {
 				wallPointB = points.get(min + 1);
 			}
-		} else {
+		} else if (min != points.size()-1){
 			Point2 A = points.get(min - 1);
 			Point2 B = points.get(min + 1);
 			distanceA = collide.distance(A);

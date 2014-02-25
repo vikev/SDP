@@ -1,5 +1,10 @@
 package sdp.pc.robot.pilot;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 import au.edu.jcu.v4l4j.exceptions.V4L4JException;
@@ -22,23 +27,23 @@ public class Strategy {
 	/**
 	 * Team ID of our team (could be refactored?)
 	 */
-	private static final int MY_TEAM = 1;
+	private static int MY_TEAM = 1;
 
 	/**
 	 * ID for the defending robot (could be refactored?)
 	 */
-	private static final int DEFENDER_ID = 0;
+	private static int DEFENDER_ID = 0;
 
 	/**
 	 * ID for the attacking robot (could be refactored?)
 	 */
-	private static final int ATTACKER_ID = 1;
+	private static int ATTACKER_ID = 1;
 
 	/**
 	 * Controls how often to parse/send commands to the robots. 1/7*1000 = 7
 	 * times per second
 	 */
-	private static final double PERIOD = 1.0 / 7.0 * 1000.0;
+	private static final double PERIOD = 1.0 / 7 * 1000.0;
 
 	/**
 	 * The minimum speed for the ball to be considered fast, in pixels per
@@ -393,9 +398,28 @@ public class Strategy {
 	public static void main(String[] args) {
 		try {
 			startVisionSystem();
+			
+			MY_TEAM = state.getOurColor();
+			ATTACKER_ID = state.getDirection();
+			DEFENDER_ID = 1 - state.getDirection();
+			
 			connectRobots();
 			addShutdownHook();
-			executeStrategy();
+			
+			JFrame frame = new JFrame("Ready and waiting!");
+			frame.setBounds(600, 200, 300, 150);
+			JButton start = new JButton();
+			start.setText("Start");
+			start.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try { executeStrategy();}
+					catch (Exception e1) { e1.printStackTrace(); }
+				}
+			});
+			frame.add(start);
+			frame.show();
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

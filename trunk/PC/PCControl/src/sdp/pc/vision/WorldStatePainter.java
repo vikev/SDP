@@ -391,9 +391,7 @@ public class WorldStatePainter {
 			points = pitch.getArrayListOfPoints();
 			for (Point2 point : points){
 				drawCircle(l,Color.BLUE,point,2);
-			}
-			
-			
+			}	
 			
 		}
 

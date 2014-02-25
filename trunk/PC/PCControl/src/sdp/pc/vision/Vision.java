@@ -292,6 +292,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				gui.setWorldListener(stateListener);
 				gui.setSettingsManager(SettingsManager.defaultSettings);
 				gui.setVisible(true);
+				state.setOurColor(gui.getSettingsManager().getOurTeam());
+				state.setDirection(gui.getSettingsManager().getShootingDirection());
 			}
 		});
 		frame.getContentPane().add(frameLabel);

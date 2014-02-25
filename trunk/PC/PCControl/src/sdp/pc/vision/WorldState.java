@@ -1,5 +1,7 @@
 package sdp.pc.vision;
 
+import java.util.ArrayList;
+
 /**
  * Class for recording and maintaining the positions and facing angles of
  * objects in "world". Must be instantiated.
@@ -404,15 +406,16 @@ public class WorldState {
 	 */
 	public int getBallQuadrant() {
 		int x = getBallPosition().getX();
-		if (x < pitch.goalLineX[0]) {
+		ArrayList<Point2> points = pitch.getArrayListOfPoints();
+		if (x < points.get(14).x) {
 			return 0;
-		} else if (x < pitch.pitchCornerX[0]) {
+		} else if (x < points.get(2).x) {
 			return 1;
-		} else if (x < pitch.getTableCentre().getX()) {
+		} else if (x < points.get(3).x) {
 			return 2;
-		} else if (x < pitch.pitchCornerX[1]) {
+		} else if (x < points.get(4).x) {
 			return 3;
-		} else if (x < pitch.goalLineX[1]) {
+		} else if (x < points.get(6).x) {
 			return 4;
 		}
 		return 0;

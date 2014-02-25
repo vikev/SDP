@@ -48,13 +48,13 @@ public class Robot {
 	 * The size of the extra buffer a defender can travel beyond the goalmouth,
 	 * in pixels.
 	 */
-	private static final int BETWEEN_GOALS_EPSILON = 3;
+	private static final int BETWEEN_GOALS_EPSILON = 15;
 
 	/**
 	 * If an epsilon value doesn't make sense to know in some context, this is a
 	 * safe angle value to use
 	 */
-	private static final double SAFE_ANGLE_EPSILON = 10.0;
+	private static final double SAFE_ANGLE_EPSILON = 8.0;
 
 	/**
 	 * The primitive driver used to control the NXT
@@ -153,7 +153,7 @@ public class Robot {
 	 * Y coordinate by going forwards or backwards.
 	 */
 	public void defendBall() throws Exception {
-		if (assertPerpendicular(10.0)) {
+		if (assertPerpendicular(SAFE_ANGLE_EPSILON)) {
 			// Get predicted ball stop point
 			Point2 predBallPos = state.getFutureData().getResult();
 
@@ -363,12 +363,12 @@ public class Robot {
 	public void kickBallToPoint(Point2 where) throws Exception {
 		// Turn to ball, move to ball, grab the ball, turn to the point, kick
 		if (subState == 0) {
-			if (goTo(state.getBallPosition(), 10.0)) {
+			if (goTo(state.getBallPosition(), 25.0)) {
 				driver.grab();
 				subState = 1;
 			}
 		}
-		if (subState == 11) {
+		if (subState == 1) {
 			if (turnTo(where, 10.0)) {
 				driver.kick(900);
 				subState = 0;

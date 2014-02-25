@@ -198,6 +198,7 @@ public class Pitch {
 
 	public ArrayList<Point2> getArrayListOfPoints() {
 		ArrayList<Point2> points = new ArrayList<Point2>();
+		points.add(new Point2()); // 0
 		points.add(new Point2( pitchCornerX[0], pitchY[0])); // 1
 		points.add(new Point2(zoneX[0], pitchY[0]));// 2
 		points.add(new Point2(zoneX[1], pitchY[0])); // 3
