@@ -8,7 +8,8 @@ public class DiffPilot implements Pilot {
 	private DifferentialPilot pilot;
 
 	public DiffPilot() {
-		pilot = new DifferentialPilot(56, 135, Motor.A, Motor.C, true);
+		pilot = new DifferentialPilot(56, 135, Motor.A, Motor.C);
+		// maximum power
 		setPower(0);
 	}
 
@@ -29,17 +30,17 @@ public class DiffPilot implements Pilot {
 	 */
 	public void setPower(int degPerSec) {
 		power = degPerSec;
-		pilot.setRotateSpeed(degPerSec);
-		pilot.setTravelSpeed(degPerSec);
-	}
-
-	public void backward(int power) {
 		if (power == 0) {
 			power = 90000;
 		}
+		pilot.setRotateSpeed(power);
+		pilot.setTravelSpeed(power);
+	}
+
+	public void backward(int power) {
 		setPower(power);
 		// pilot.travel(10000, true); // true means command is interrupted
-		pilot.forward();
+		pilot.backward();
 	}
 
 	public void turnLeft(int power) {

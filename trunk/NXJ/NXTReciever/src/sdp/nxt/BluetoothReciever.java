@@ -41,6 +41,7 @@ public class BluetoothReciever {
 					try {
 						char c = dis.readChar();
 						int power = dis.readInt();
+						System.out.println(c + " " + power);
 
 						switch (c) {
 						case 'f':
