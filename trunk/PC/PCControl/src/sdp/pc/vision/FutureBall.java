@@ -209,7 +209,44 @@ public class FutureBall {
 		// Return bundle
 		return inter;
 	}
+	
+	public static Point2 matchingYCoord(Point2 movingPos, double movingFacing, Point2 staticPos){
+		
+		// The ball position, robot position, and desired position form a
+		// triangle. Since two angles and one side can be trivially calculated,
+		// we can use the law of sines to calculate the diff side length, and
+		// therefore the estimated Y coordinate.
 
+		// Get the angle and distance from ball to robot
+		double ballToRobot = movingPos.angleTo(staticPos);
+		double distBallToRobot = movingPos.distance(staticPos);
+
+		// Calculate all the necessary angles:
+		// theta = angle between ball facing and robot
+		double theta = Alg.normalizeToBiDirection(movingFacing - ballToRobot);
+
+		// theta2 = angle between ball to robot and the perpendicular
+		double theta2 = Alg.normalizeToBiDirection(Math.min(ballToRobot - 90.0,
+				ballToRobot - 270.0));
+
+		// theta3 = the third angle (using sum of angles in a triangle)
+		double theta3 = 180 - (theta + theta2);
+
+		// Use the law of sines - a/sin(A) = b/sin(B) = c/sin(C)
+		// diff / sin(theta) = ballToRobotDist / (theta3) ->
+		// diff = ballToRobotDist * sin(theta)/sin(theta3)
+		double diff = distBallToRobot * Math.sin(theta*Math.PI/180) / Math.sin(theta3*Math.PI/180);
+
+		// If the angle between the balls facing and the static position is too
+		// large, the ball is moving away (return empty point), otherwise,
+		// return the static point offset by diff
+		if (Math.abs(theta) > 90.0) {
+			return Point2.EMPTY;
+		} else {
+			return new Point2(staticPos.getX(), staticPos.getY() + (int) diff);
+		}
+		
+	}
 	/**
 	 * Estimates the intersection point of a moving ball, with a robot whose x
 	 * co-ordinate remains static.
