@@ -125,13 +125,20 @@ public class FutureBall {
 		double ang = angleInDegrees * Math.PI / 180.0;
 		Point2 offsPt = new Point2((int) (50.0 * Math.cos(ang)),
 				(int) (50.0 * Math.sin(ang)));
-		//drawLine(pts[p[0]].add(offsPt), pts[p[1]].sub(offsPt));
+		// drawLine(pts[p[0]].add(offsPt), pts[p[1]].sub(offsPt));
 
-		Point2 A = new Point2((int) x, (int) y); //Ball
+		Point2 A = new Point2((int) x, (int) y); // Ball
 		Point2 B = pts[p[0]]; // Collision
-		double angle = getOutwardAngle(A, B);
-		inter.setIntersection(B);
-		inter.setAngle(angle);
+		// double angle = getOutwardAngle(A, B);
+
+		double[] pointAndAngle = getTrueAngle(A, B);
+		Point2 CD = new Point2((int)pointAndAngle[0],(int)pointAndAngle[1]);
+		double angle = pointAndAngle[2];
+		
+	
+		inter.setIntersection(B); // Point it meets wall
+		inter.setBall(CD);
+		inter.setAngle(angle); 
 		return inter;
 	}
 
@@ -184,14 +191,13 @@ public class FutureBall {
 				if (!pitchContains(new Point2((int) iteratorX, (int) iteratorY))) {
 					collision = new Point2((int) iteratorX, (int) iteratorY);
 					
-					
 					inter = collide8(iteratorX, iteratorY, inter);
+					
 					Point2 temp = new Point2((int) tarX, (int) tarY);
-					Point2 reboundPoint = getReboundPoint(
-							inter.getIntersection(), inter.getBall(), 5,
-							inter.getAngle());
-					inter.setDeflection(reboundPoint);
-				
+					double distance = temp.distance(ball);
+					Point2 rebound = getReboundPoint(inter.getIntersection(),inter.getBall(),distance,inter.getAngle());
+					inter.setDeflection(rebound);
+
 				}
 				iteratorX += vHatX;
 				iteratorY += vHatY;
@@ -217,8 +223,8 @@ public class FutureBall {
 	 *            static
 	 * @return estimated position of the robot to intersect the object
 	 */
-	public static Point2 estimateMatchingYCoord(Point2 movingPos, double movingFacing,
-			Point2 staticPos) {
+	public static Point2 estimateMatchingYCoord(Point2 movingPos,
+			double movingFacing, Point2 staticPos) {
 
 		// Assume the ball is moving very fast, give it a velocity of 1000.
 		int x = 1000;
@@ -252,32 +258,34 @@ public class FutureBall {
 		if (movingFacing > 270 || movingFacing < 90) {
 			x = -x;
 		}
-		
+
 		Intersect stopPos = estimateStopPoint(new Point2(x, y), movingPos);
-		
+
 		Point2 intersection = stopPos.getIntersection();
 		Point2 estimatedPoint = stopPos.getDeflection();
-		
-		if (betweenTwoPoints(staticPos.getX(), intersection.getX(), movingPos.getX())) {
-			estimatedPoint = intersection; 
-		} 
-		
-		double a = (movingPos.getY() - estimatedPoint.getY())/(double)(movingPos.getX() - estimatedPoint.getX());
+
+		if (betweenTwoPoints(staticPos.getX(), intersection.getX(),
+				movingPos.getX())) {
+			estimatedPoint = intersection;
+		}
+
+		double a = (movingPos.getY() - estimatedPoint.getY())
+				/ (double) (movingPos.getX() - estimatedPoint.getX());
 		double b = movingPos.getY() - a * movingPos.getX();
-		
-		double predY = a * staticPos.getX() + b; 
-		//double deltaY = Math.abs(estimatedPoint.getY() - movingPos.getY())
-		//		* Math.abs(staticPos.getX() - movingPos.getX())
-		//		/ Math.abs(estimatedPoint.getX() - movingPos.getX());
+
+		double predY = a * staticPos.getX() + b;
+		// double deltaY = Math.abs(estimatedPoint.getY() - movingPos.getY())
+		// * Math.abs(staticPos.getX() - movingPos.getX())
+		// / Math.abs(estimatedPoint.getX() - movingPos.getX());
 
 		// Does nothing
-		//double predY;
-		//if (movingFacing < 180) {
-		//	predY = deltaY + movingPos.getY();
-		//} else {
-		//	predY = movingPos.getY() - deltaY;
-		//}
-		
+		// double predY;
+		// if (movingFacing < 180) {
+		// predY = deltaY + movingPos.getY();
+		// } else {
+		// predY = movingPos.getY() - deltaY;
+		// }
+
 		// check if point is within the boundaries and if not return (0,0)
 		Point2 target = new Point2(staticPos.getX(), (int) predY);
 		if (pitchContains(target)) {
@@ -288,10 +296,11 @@ public class FutureBall {
 
 	/**
 	 * Returns true if point x is between other two points xStart and xEnd
+	 * 
 	 * @param x
 	 * @param xStart
 	 * @param xEnd
-	 * @return boolean value 
+	 * @return boolean value
 	 */
 	private static boolean betweenTwoPoints(int x, int xStart, int xEnd) {
 		if (xStart < xEnd) {
@@ -306,147 +315,115 @@ public class FutureBall {
 		return false;
 	}
 
-	/**
-	 * Calculates the angle between three points using arc cos.
-	 * 
-	 * @param A
-	 *            - Location of the ball on the pitch.
-	 * @param B
-	 *            - Point of collision with boundary.
-	 * 
-	 * @return angle between point A,B and two closest points on the boundary
-	 */
-	public static double getOutwardAngle(Point2 A, Point2 B) {
-		int[] twoPoints = getCollisionWall(B);
-		double outAngle;
-		Point2 C = new Point2(twoPoints[0],twoPoints[1]);
-		Point2 D = new Point2(twoPoints[2],twoPoints[3]);
-		System.out.println("C: "+C.toString() + ", D: "+ D.toString());
-
-		double aC = C.distance(B);
-		double aD = D.distance(B);
-		double c = A.distance(B);
-		double bD = A.distance(D);
-		double bC = A.distance(C);
-		
-		double inAngleC = Math
-				.acos((Math.pow(aC, 2) + Math.pow(c, 2) - Math.pow(
-						bC, 2)) / (2 * aC * c));
-		double inAngleD = Math
-				.acos((Math.pow(aD, 2) + Math.pow(c, 2) - Math.pow(
-						bD, 2)) / (2 * aD * c));
-		double abc = inAngleC * 180/Math.PI;
-		double abd = inAngleD * 180/Math.PI;
-		System.out.println("For Ball at "+A.toString()+" and collison at "+B.toString()+", the angle for abc is "+abc+" and the angle for abd is "+abd);
-	
-		if ((abc)>90){
-			return abd;
-			
-		} else {
-			return abc;
-		}
-
-	}
-	/**
-	 * Calculates the angle between three points using arc cos.
-	 * 
-	 * @param ball
-	 *            - Location of the ball on the pitch.
-	 * @param intersection
-	 *            - Point of collision with boundary.
-	 * @param diatance
-	 *            - distance from collision to estimated before rebound
-	 * @param angle
-	 *            - angle return by getOutwardAngle function
-	 *            
-	 * @return Expected point after rebound
-	 */            
-	 
 	// could take a distance
-	public static Point2 getReboundPoint(Point2 ball, Point2 intersection,
+	public static Point2 getReboundPoint(Point2 intersection, Point2 wallPoint,
 			double distance, double angle) {
 		double x = 0;
 		double y = 0;
-		Point2 top = new Point2(intersection.getX(),0);
-		double angleTrue = 0;
-		/*
-		int quad = getQuadrant(ball, intersection,top);
-		System.out.println(quad);
-		if(quad==0){
-			angleTrue = 90 - angle;
-			x = intersection.getX() + distance * Math.cos(angle);
-			y = intersection.getY() - distance * Math.sin(angle);
-		}
-		else if(quad==1){
-			angleTrue = 270 + angle;
-			x = intersection.getX() - distance * Math.cos(angle);
-			y = intersection.getY() - distance * Math.sin(angle);
-		}
-		else if (quad== 2){		
-			x = intersection.getX() - distance * Math.cos(angle);
-			y = intersection.getY() + distance * Math.sin(angle);
-		} else if(quad==3){
-			angleTrue = 270 -angle;
-			x = intersection.getX() + distance * Math.cos(angleTrue);
-			y = intersection.getY() - distance * Math.sin(angleTrue);
-		}
-		*/
-		x = intersection.getX() - distance*Math.cos(angle);
-		y = intersection.getY() - distance*Math.sin(angle);
+		x = intersection.getX() + distance * Math.cos(angle);
+		y = intersection.getY() + distance * Math.sin(angle);
 		Point2 estimation = new Point2((int) x, (int) y);
 		return estimation;
 	}
+
 	/**
 	 * 
 	 * @param collide
-	 * @return
+	 *            - point of collision with wall
+	 * 
+	 * @return array representation of the two closest points
 	 */
-	public static int[] getCollisionWall(Point2 collide){
+	public static int[] getCollisionWall(Point2 collide) {
 		Pitch pitch = state.getPitch();
 		ArrayList<Point2> points = pitch.getArrayListOfPoints();
 		double minA = 1000;
-		double minB = 1000;
-		Point2 wallPointA = new Point2(0,0);
-		Point2 wallPointB = new Point2(0,0);
-		for (Point2 point : points){
+		Point2 wallPointA = new Point2(0, 0);
+		Point2 wallPointB = new Point2(0, 0);
+		int min = 0;
+		for (Point2 point : points) {
 			double distance = collide.distance(point);
-			if (distance < minA){
+			if (distance < minA) {
+				min = points.indexOf(point);
 				wallPointA = point;
 				minA = distance;
-			} 
-			else if(distance > minA && distance < minB){
-				wallPointB = point;
-				minB = distance;
 			}
 		}
-		int[] twoPoints = {wallPointA.getX(),wallPointA.getY(),wallPointB.getX(),wallPointB.getY()};
-		return twoPoints;
-		
-	}
-	
-	public static int getQuadrant(Point2 A, Point2 B, Point2 C) {
-		double a = C.distance(B);
-		double b = A.distance(C);
-		double c = A.distance(B);
-		double angleR = Math
-				.acos((Math.pow(a, 2) + Math.pow(c, 2) - Math.pow(
-						b, 2)) / (2*a*c));
-		
-		double angleD = angleR * (180/Math.PI);
-		System.out.println("Angle to true north: " + angleD);
-		if(angleD > 90){
-			if(A.getX()<B.getX()){
-				return 2;
+		double distanceA;
+		double distanceB;
+
+		if (min == 0) {
+			Point2 A = points.get(points.size() - 1);
+			Point2 B = points.get(min + 1);
+			distanceA = collide.distance(A);
+			distanceB = collide.distance(B);
+			if (distanceA < distanceB) {
+				wallPointB = points.get(points.size() - 1);
 			} else {
-				return 3;
+				wallPointB = points.get(min + 1);
 			}
 		} else {
-			if(A.getX()<B.getX()){
-				return 1;
+			Point2 A = points.get(min - 1);
+			Point2 B = points.get(min + 1);
+			distanceA = collide.distance(A);
+			distanceB = collide.distance(B);
+			if (distanceA < distanceB) {
+				wallPointB = points.get(min - 1);
 			} else {
-				return 0;
+				wallPointB = points.get(min + 1);
 			}
+
 		}
+
+		int[] twoPoints = { wallPointA.getX(), wallPointA.getY(),
+				wallPointB.getX(), wallPointB.getY() };
+		return twoPoints;
+
 	}
+
+	public static double[] getTrueAngle(Point2 A, Point2 B) {
+		int[] twoPoints = getCollisionWall(B);
+		Point2 C = new Point2(twoPoints[0], twoPoints[1]);
+		Point2 D = new Point2(twoPoints[2], twoPoints[3]);
+		double trueAngle = 0;
+		double[] returnedList = { 0, 0, 0 };
+		// angle to left point of wall
+		double aC = C.distance(B);
+		double bC = A.distance(C);
+		double c = A.distance(B);
+		double angleCR = Math.acos((Math.pow(aC, 2) + Math.pow(c, 2) - Math
+				.pow(bC, 2)) / (2 * aC * c));
+		double angleCD = angleCR * (180 / Math.PI);
+		// angle to right point of wall
+		double aD = D.distance(B);
+		double bD = A.distance(D);
+		double angleDR = Math.acos((Math.pow(aD, 2) + Math.pow(c, 2) - Math
+				.pow(bD, 2)) / (2 * aD * c));
+		double angleDD = angleDR * (180 / Math.PI);
+		if (angleDD > 90) {
+			trueAngle = angleDD - angleCD;
+			System.out.println("trueAngle: " + trueAngle);
+			returnedList[0] = C.getX();
+			returnedList[1] = C.getY();
+			returnedList[2] = trueAngle;
+		} else {
+			trueAngle = angleCD - angleDD;
+			System.out.println("trueAngle: " + trueAngle);
+			returnedList[0] = D.getX();
+			returnedList[1] = D.getY();
+			returnedList[2] = trueAngle;
+		}
+		return returnedList;
+	}
+	/*
+	 * Useless code now public static int getQuadrant(Point2 A, Point2 B, Point2
+	 * C) { double a = C.distance(B); double b = A.distance(C); double c =
+	 * A.distance(B); double angleR = Math.acos((Math.pow(a, 2) + Math.pow(c, 2)
+	 * - Math.pow( b, 2)) / (2 * a * c));
+	 * 
+	 * double angleD = angleR * (180 / Math.PI);
+	 * System.out.println("Angle to true north: " + angleD); if (angleD > 90) {
+	 * if (A.getX() < B.getX()) { return 2; } else { return 3; } } else { if
+	 * (A.getX() < B.getX()) { return 1; } else { return 0; } } }
+	 */
 
 }

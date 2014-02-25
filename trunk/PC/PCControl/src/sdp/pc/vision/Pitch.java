@@ -198,29 +198,30 @@ public class Pitch {
 	}
 	public ArrayList<Point2> getArrayListOfPoints(){
 		ArrayList<Point2> points = new ArrayList<Point2>();
-		points.add(new Point2(goalLineX[0],goalLineY[0])); // goal top left
-		points.add(new Point2(goalLineX[0], goalLineY[1])); // goal bottom left
-		points.add(new Point2(goalLineX[1], goalLineY[0])); // goal top right
-		points.add(new Point2( goalLineX[1], goalLineY[1])); // goal bottom right
-		points.add(new Point2( pitchCornerX[0], pitchY[0]));
-		points.add(new Point2( pitchCornerX[1],  pitchY[0]));
-		points.add(new Point2( pitchCornerX[0],  pitchY[1]));
-		points.add(new Point2( pitchCornerX[1],  pitchY[1]));
-		points.add(new Point2(zoneX[0], pitchY[0]));
-		points.add(new Point2(zoneX[0],pitchY[1]));
-		points.add(new Point2(zoneX[1], pitchY[0]));
-		points.add(new Point2(zoneX[1],pitchY[1]));
-		points.add(new Point2(zoneX[2], pitchY[0]));
-		points.add(new Point2(zoneX[2],pitchY[1]));
-		points.add(new Point2(goalLineX[0], goalLineY[0]));
-		points.add(new Point2(pitchCornerX[0], pitchY[0]));
-		points.add(new Point2(goalLineX[0], goalLineY[1]));
-		points.add(new Point2(pitchCornerX[0], pitchY[1]));
-		points.add(new Point2(goalLineX[1], goalLineY[0]));
-		points.add(new Point2(pitchCornerX[1], pitchY[0]));
-		points.add(new Point2(goalLineX[1], goalLineY[1]));
-		points.add(new Point2(pitchCornerX[1], pitchY[1]));
+		points.add(new Point2( pitchCornerX[0], pitchY[0])); // 1
+		points.add(new Point2(zoneX[0], pitchY[0]));// 2
+		points.add(new Point2(zoneX[1], pitchY[0])); // 3
+		points.add(new Point2(zoneX[2], pitchY[0])); // 4
+		points.add(new Point2( pitchCornerX[1],  pitchY[0])); // 5
+		points.add(new Point2(goalLineX[1], goalLineY[0])); // 6
+		points.add(new Point2(goalLineX[1], goalLineY[1]));// 7
+		points.add(new Point2( pitchCornerX[1],  pitchY[1])); // 8
+		points.add(new Point2(zoneX[2],pitchY[1])); // 9
+		points.add(new Point2(zoneX[1],pitchY[1])); // 10
+		points.add(new Point2(zoneX[0],pitchY[1]));// 11
+		points.add(new Point2( pitchCornerX[0],  pitchY[1])); // 12
+		points.add(new Point2(goalLineX[0], goalLineY[1]));//13
+		points.add(new Point2(goalLineX[0], goalLineY[0])); //14				
 		return points;
+	}
+	public void printPoints(){
+		
+		ArrayList<Point2> points = getArrayListOfPoints();
+		int index = 1;
+		for (Point2 point : points){
+			System.out.println(index+ " = "+point.toString());
+			index++;
+		}
 	}
 
 	public Point2 getLeftGoalCentre() {

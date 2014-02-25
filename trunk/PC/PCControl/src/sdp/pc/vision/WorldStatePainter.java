@@ -248,7 +248,7 @@ public class WorldStatePainter {
 			}
 
 
-		/*
+/*		
 		//For Testing rebound code.
 		Pitch pitch2 = state.getPitch();
 		ArrayList<Point2> points2 = pitch2.getArrayListOfPoints();
@@ -257,33 +257,42 @@ public class WorldStatePainter {
 			Graphics h = image.getGraphics();
 			h.setColor(BLUE_BLEND);
 			
+			System.out.println("A");
 			Point2 inA = new Point2(369,322); // Ball
 			Point2 hitA = new Point2(344,358); // collision
-			double angleA = FutureBall.getOutwardAngle(inA, hitA);
-			Point2 reboundA = FutureBall.getReboundPoint(inA,hitA,50,angleA);
+			double[] angleListA = FutureBall.getTrueAngle(inA, hitA);
+			double angleA = angleListA[2];
+			Point2 ac = new Point2((int) angleListA[0],(int)angleListA[1]);
+			Point2 reboundA = FutureBall.getReboundPoint(hitA,ac,50,angleA);
 			drawCircle(h, Color.RED, inA, 2);
 			drawCircle(h, Color.RED, hitA, 2);		
 			drawCircle(h, Color.WHITE, reboundA, 2);
 		 
+			System.out.println("B");
 			Point2 inB = new Point2(273,117);
 			Point2 hitB = new Point2(241,84);
-			double angleB = FutureBall.getOutwardAngle(inB, hitB);
-			Point2 reboundB = FutureBall.getReboundPoint(inB,hitB,50,angleB);
+			double[] angleListB = FutureBall.getTrueAngle(inB, hitB);
+			double angleB = angleListB[2];
+			Point2 bc = new Point2((int) angleListB[0],(int)angleListB[1]);
+			Point2 reboundB = FutureBall.getReboundPoint(hitB,bc,50,angleB);
+
 			drawCircle(h, Color.RED, inB, 2);
 			drawCircle(h, Color.RED, hitB, 2);
 			drawCircle(h, Color.RED, reboundB, 2);
 			
+			System.out.println("C");
 			Point2 inC = new Point2(136,118);
 			Point2 hitC = new Point2(80,110);
-			double angleC = FutureBall.getOutwardAngle(inC, hitC);
-			Point2 reboundC = FutureBall.getReboundPoint(inC,hitC,50,angleC);
+			double[] angleListC = FutureBall.getTrueAngle(inC, hitC);
+			double angleC = angleListC[2];
+			Point2 cc = new Point2((int) angleListC[0],(int)angleListC[1]);
+			Point2 reboundC = FutureBall.getReboundPoint(hitC,cc,50,angleC);
 			drawCircle(h, Color.RED, inC, 2);
 			drawCircle(h, Color.RED, hitC, 2);
 			drawCircle(h, Color.RED, reboundC, 2);
-			
-		}*/
-		 
 		
+		}
+		 */
 	
 		//drawCircle(g, Color.WHITE, state.getPitch().pitchCornerX, 1);
 		// draw centre line
