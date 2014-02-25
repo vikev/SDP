@@ -220,39 +220,59 @@ public class FutureBall {
 	public static Point2 estimateMatchingYCoord(Point2 movingPos,
 			double movingFacing, Point2 staticPos) {
 
-		// The ball position, robot position, and desired position form a
-		// triangle. Since two angles and one side can be trivially calculated,
-		// we can use the law of sines to calculate the diff side length, and
-		// therefore the estimated Y coordinate.
+		// Assume the ball is moving very fast, give it a velocity of 1000.
+		int x = 1000;
+		double angle = movingFacing;
 
-		// Get the angle and distance from ball to robot
-		double ballToRobot = movingPos.angleTo(staticPos);
-		double distBallToRobot = movingPos.distance(staticPos);
+		// Note 90 degrees is south due to inverted co-ordinates.
+		// Change quadrant 3 to quadrant 1: (mirror on y=-x)
+		if (90 < angle && angle < 180) {
+			angle = 180 - angle;
 
-		// Calculate all the necessary angles:
-		// theta = angle between ball facing and robot
-		double theta = Alg.normalizeToBiDirection(movingFacing - ballToRobot);
+			// Change quadrant 2 to quadrant 4: (mirror on y=x)
+		} else if (180 < angle && angle < 270) {
+			angle -= 180;
 
-		// theta2 = angle between ball to robot and the perpendicular
-		double theta2 = Alg.normalizeToBiDirection(Math.min(ballToRobot - 90.0,
-				ballToRobot - 270.0));
-
-		// theta3 = the third angle (using sum of angles in a triangle)
-		double theta3 = 180 - (theta + theta2);
-
-		// Use the law of sines - a/sin(A) = b/sin(B) = c/sin(C)
-		// diff / sin(theta) = ballToRobotDist / (theta3) ->
-		// diff = ballToRobotDist * sin(theta)/sin(theta3)
-		double diff = distBallToRobot * Math.sin(theta) / Math.sin(theta3);
-
-		// If the angle between the balls facing and the static position is too
-		// large, the ball is moving away (return empty point), otherwise,
-		// return the static point offset by diff
-		if (Math.abs(theta) > 90.0) {
-			return Point2.EMPTY;
-		} else {
-			return new Point2(staticPos.getX(), staticPos.getY() + (int) diff);
+			// Change quadrant 1 to quadrant 4 (mirror on x-axis)
+		} else if (angle > 270) {
+			angle = 360 - angle;
 		}
+
+		// Projection: y <-- big number * tan(angle)
+		// small angle -> 0, large angle -> inf
+		int y = (int) (x * Math.tan(angle * Math.PI / 180));
+
+		// assert y on first two quadrants
+		if (movingFacing < 180) {
+			y = -y;
+		}
+		// mirror on y-axis if facing angle is on 1st or 4th quadrant
+		if (movingFacing > 270 || movingFacing < 90) {
+			x = -x;
+		}
+
+		Intersect stopPos = estimateStopPoint(new Point2(x, y), movingPos);
+
+		Point2 intersection = stopPos.getIntersection();
+		Point2 estimatedPoint = stopPos.getDeflection();
+
+		if (betweenTwoPoints(staticPos.getX(), intersection.getX(),
+				movingPos.getX())) {
+			estimatedPoint = intersection;
+		}
+
+		double a = (movingPos.getY() - estimatedPoint.getY())
+				/ (double) (movingPos.getX() - estimatedPoint.getX());
+		double b = movingPos.getY() - a * movingPos.getX();
+
+		double predY = a * staticPos.getX() + b;
+
+		// check if point is within the boundaries and if not return (0,0)
+		Point2 target = new Point2(staticPos.getX(), (int) predY);
+		if (pitchContains(target)) {
+			return target;
+		}
+		return Point2.EMPTY;
 	}
 
 	/**
@@ -263,8 +283,6 @@ public class FutureBall {
 	 * @param xEnd
 	 * @return boolean value
 	 */
-	// TODO: This method is no longer used, but is it useful?
-	@SuppressWarnings("unused")
 	private static boolean betweenTwoPoints(int x, int xStart, int xEnd) {
 		if (xStart < xEnd) {
 			if (xStart <= x && x <= xEnd) {
