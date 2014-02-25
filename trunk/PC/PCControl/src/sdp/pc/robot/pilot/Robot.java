@@ -203,7 +203,7 @@ public class Robot {
 			double otherFacing = state.getRobotFacing(team, robot);
 
 			// Get predicted ball position if that other robot shot just now
-			Point2 predictedBallPos = FutureBall.estimateMatchingYCoord(
+			Point2 predictedBallPos = FutureBall.matchingYCoord(
 					otherPos, otherFacing, robotPos);
 
 			// If that position exists, defend it, otherwise just defend the
