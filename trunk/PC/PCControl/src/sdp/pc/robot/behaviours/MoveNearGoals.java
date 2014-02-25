@@ -9,9 +9,11 @@ public class MoveNearGoals extends MyBehavior {
 
 	public MoveNearGoals(Robot robot) { super(robot); }
 
+	/**
+	 * Take control when the defending robot is at state DEFEND_GOAL_LINE
+	 */
 	@Override
 	public boolean takeControl() {
-		//TODO
 		return false;
 	}
 
