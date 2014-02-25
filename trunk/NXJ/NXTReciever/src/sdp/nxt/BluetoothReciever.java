@@ -41,31 +41,7 @@ public class BluetoothReciever {
 					try {
 						char c = dis.readChar();
 						int power = dis.readInt();
-						// if the power is negative reverse the direction of
-						// movement
-						// if (power < 0) {
-						// power = -power;
-						// switch (c) {
-						// case 'f':
-						// c = 'b';
-						// break;
-						// case 'b':
-						// c = 'f';
-						// break;
-						// case 'l':
-						// c = 'r';
-						// break;
-						// case 'r':
-						// c = 'l';
-						// break;
-						// }
-						// }
 
-						// dos.writeChar(c);
-						// dos.writeDouble(power);
-						// dos.flush();
-						// power is the rotation power in degrees per second
-						pilot.setPower((int) power);
 						switch (c) {
 						case 'f':
 							pilot.forward(power);
@@ -83,7 +59,7 @@ public class BluetoothReciever {
 							pilot.stop(); // stop robot immediately
 							break;
 						case 'k':
-							kicker.kick((int) power);
+							kicker.kick(power);
 							break;
 						case 'g':
 							kicker.grab();
