@@ -1,7 +1,5 @@
 package sdp.pc.robot.pilot;
 
-import static sdp.pc.common.Constants.ATTACKER_LENGTH;
-import static sdp.pc.common.Constants.ATTACKER_WIDTH;
 import static sdp.pc.common.Constants.DIRECTION_LEFT;
 import static sdp.pc.common.Constants.DIRECTION_RIGHT;
 import static sdp.pc.vision.Alg.normalizeToBiDirection;
@@ -9,7 +7,6 @@ import static sdp.pc.vision.Alg.normalizeToUnitDegrees;
 import sdp.pc.vision.Alg;
 import sdp.pc.vision.FutureBall;
 import sdp.pc.vision.Point2;
-import sdp.pc.vision.Vision;
 import sdp.pc.vision.WorldState;
 import sdp.pc.vision.relay.Driver;
 import sdp.pc.vision.relay.TCPClient;
@@ -58,25 +55,6 @@ public class Robot {
 	 * safe angle value to use
 	 */
 	private static final double SAFE_ANGLE_EPSILON = 10.0;
-
-	/**
-	 * The safe distance in pixels from which the attacker should approach the
-	 * ball.
-	 */
-	private static final int SAFE_APPROACH_DIST = 8;
-
-	/**
-	 * The maximum distance in pixels the ball can be away from the centre of
-	 * the table. This value is more adjustable for calibration than a precise
-	 * number. A higher value will reduce the scaling of projections.
-	 */
-	private static final double DISTORTION_DISTANCE_MAX = 600.0;
-
-	/**
-	 * A safe distance in pixels to use as a window size when a more calibrated
-	 * epsilon value isn't available in some context
-	 */
-	private static final double SAFE_DIST_EPSILON = 10.0;
 
 	/**
 	 * The primitive driver used to control the NXT
@@ -175,15 +153,16 @@ public class Robot {
 	 * Y coordinate by going forwards or backwards.
 	 */
 	public void defendBall() throws Exception {
+		if (assertPerpendicular(10.0)) {
+			// Get predicted ball stop point
+			Point2 predBallPos = state.getFutureData().getResult();
 
-		// Get predicted ball stop point
-		Point2 predBallPos = state.getFutureData().getDeflection();
-
-		// If that position exists, go to its Y coordinate, otherwise stop.
-		if (!predBallPos.equals(Point2.EMPTY)) {
-			defendToY(predBallPos.getY(), DEFEND_EPSILON_DISTANCE);
-		} else {
-			driver.stop();
+			// If that position exists, go to its Y coordinate, otherwise stop.
+			if (!predBallPos.equals(Point2.EMPTY)) {
+				defendToY(predBallPos.getY(), DEFEND_EPSILON_DISTANCE);
+			} else {
+				driver.stop();
+			}
 		}
 	}
 
@@ -194,26 +173,46 @@ public class Robot {
 	 * predicted stop location of the imaginary ball if the attacking robot
 	 * would kick now and moves to predicted position's Y coordinate by going
 	 * forwards or backwards.
+	 * 
+	 * This method is for the defending robot. Assumes <b>this</b> is already
+	 * perpendicular.
 	 */
-	public void defendRobot() throws Exception {
-		// Get defending robot's position
-		Point2 pos = state.getRobotPosition(this.myTeam, this.myIdentifier);
+	public void defendEnemyAttacker() throws Exception {
 
-		// Get attacker's position and facing
-		Point2 attPos = state.getRobotPosition(1 - this.myTeam,
-				1 - this.myIdentifier);
-		double attFacing = state.getRobotFacing(1 - this.myTeam,
-				1 - this.myIdentifier);
+		// The enemy attacker is the opposite team, and opposite id (since this
+		// is a defender)
+		defendRobot(1 - this.myTeam, 1 - this.myIdentifier);
+	}
 
-		// Get predicted ball position if the attacker shot now
-		Point2 predBallPos = FutureBall.estimateMatchingYCoord(attPos,
-				attFacing, pos);
+	/**
+	 * Synchronous method which defends against a given robot. Assumes
+	 * <b>this</b> is already perpendicular.
+	 * 
+	 * @param team
+	 * @param robot
+	 * @throws Exception
+	 */
+	public void defendRobot(int team, int robot) throws Exception {
 
-		// Move robot to this position
-		if (!predBallPos.equals(Point2.EMPTY)) {
-			defendToY(predBallPos.getY(), DEFEND_EPSILON_DISTANCE);
-		} else {
-			defendBall();
+		if (assertPerpendicular(10.0)) {
+			// Get my location
+			Point2 robotPos = state.getRobotPosition(myTeam, myIdentifier);
+
+			// Get position and facing of the robot we wish to defend against
+			Point2 otherPos = state.getRobotPosition(team, robot);
+			double otherFacing = state.getRobotFacing(team, robot);
+
+			// Get predicted ball position if that other robot shot just now
+			Point2 predictedBallPos = FutureBall.estimateMatchingYCoord(
+					otherPos, otherFacing, robotPos);
+
+			// If that position exists, defend it, otherwise just defend the
+			// ball
+			if (!predictedBallPos.equals(Point2.EMPTY)) {
+				defendToY(predictedBallPos.getY(), DEFEND_EPSILON_DISTANCE);
+			} else {
+				defendBall();
+			}
 		}
 	}
 
@@ -356,116 +355,25 @@ public class Robot {
 	}
 
 	/**
-	 * WIP Attempts to kick the ball by first navigating to a point
-	 * (apprachPoint) from which it can then approach the ball and kick it
-	 * towards the target goal.
+	 * Method for telling the robot to kick the ball to a point
 	 * 
-	 * <ul>
-	 * <li>Navigate the robot around the ball when the ball obstructs the direct
-	 * path to the approach point.</li>
-	 * <li>Look into how to behave if the ball is too close to the white
-	 * boundary to get behind it to take a shot at the goal. -> Calculate an
-	 * angle to bounce off the wall in this case, and adjust your approach angle
-	 * accordingly -Blake</li>
-	 * <li>Create meaningful exception handling code</li>
-	 * </ul>
-	 * 
-	 * TODO: Should be checked to conform to defender standards for modularity.
-	 * 
+	 * @param where
 	 * @throws Exception
-	 **/
-	public boolean approachStationaryBall() throws Exception {
-
-		// Get the robot, ball, and targets as Point2
-		Point2 robotPosition = state.getRobotPosition(this.myTeam,
-				this.myIdentifier);
-		Point2 ballPosition = state.getBallPosition();
-		double angleBetween = calculateAngleBetween(robotPosition, ballPosition);
-
-		// check if the ball will obstruct a direct path to the approach
-		// point move to a point where a direct path can be taken to the
-		// approach point
-		Point2 approachPoint = calculateApproachPoint(ballPosition.invertY(),
-				getBallTarget().invertY(), state.getDirection());
-		if (approachPoint.equals(Point2.EMPTY)) {
-			System.out.println("Could not assign Approach Point");
-			return false;
-		}
-
-		// If angleBetween is large, the robot is nearly in line with the goal
-		// already (small angle means the robot is between the ball and goal)
-		if ((angleBetween > 90.0)) {
-
-			// Attempt to navigate to the approach point and then kick it.
-			if (!goTo(approachPoint, SAFE_DIST_EPSILON)) {
-				return false;
-			}
-		} else {
-
-			// Checks if robot is between the ball and the goal
-			// If it is, move up or down
-			// *Need to also account for the ball's radius - Robaidh*
-			if (Math.abs(robotPosition.getY() - ballPosition.getY()) < ATTACKER_LENGTH) {
-				int newY;
-				if (robotPosition.getY() > ballPosition.getY()) {
-					newY = robotPosition.getY() + ATTACKER_LENGTH
-							+ SAFE_APPROACH_DIST;
-				} else {
-					newY = robotPosition.getY() - ATTACKER_LENGTH
-							- SAFE_APPROACH_DIST;
-				}
-				if (!goTo(new Point2(robotPosition.getX(), newY),
-						SAFE_DIST_EPSILON)) {
-					return false;
-				}
-			}
-
-			// Moves horizontally until it aligns with the Approach Point
-			Point2 intermediatePoint = new Point2(approachPoint.getX(),
-					robotPosition.getY());
-
-			if (goTo(intermediatePoint, SAFE_DIST_EPSILON)) {
-				if (!goTo(approachPoint, SAFE_DIST_EPSILON)) {
-					return false;
-				}
-			} else {
-				return false;
-			}
-		}
-		// Finally, kick the ball
-		if (kickStationaryBall()) {
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Calculates angle between robot, ball and ball target positions
-	 * 
-	 * @param robotPosition
-	 * @param ballPosition
-	 * @return angle between given values
 	 */
-	private double calculateAngleBetween(Point2 robotPosition,
-			Point2 ballPosition) {
-		Point2 targetPoint = getBallTarget();
-
-		// Get y-inverted versions
-		Point2 robotPositionInvertedY = robotPosition.invertY();
-		Point2 ballPositionInvertedY = ballPosition.invertY();
-		Point2 targetPointInvertedY = targetPoint.invertY();
-
-		// Y coordinates given must be already inverted
-		Point2 vectorBalltoTargetPoint = new Point2(ballPosition.getX()
-				- targetPoint.getX(), ballPositionInvertedY.getY()
-				- targetPointInvertedY.getY());
-		Point2 vectorBalltoSelectedRobot = new Point2(ballPosition.getX()
-				- robotPosition.getX(), ballPositionInvertedY.getY()
-				- robotPositionInvertedY.getY());
-		double angleBetween = calculateAngle(vectorBalltoTargetPoint,
-				vectorBalltoSelectedRobot);
-
-		return angleBetween;
+	public void kickBallToPoint(Point2 where) throws Exception {
+		// Turn to ball, move to ball, grab the ball, turn to the point, kick
+		if (subState == 0) {
+			if (goTo(state.getBallPosition(), 10.0)) {
+				driver.grab();
+				subState = 1;
+			}
+		}
+		if (subState == 11) {
+			if (turnTo(where, 10.0)) {
+				driver.kick(900);
+				subState = 0;
+			}
+		}
 	}
 
 	/**
@@ -644,6 +552,8 @@ public class Robot {
 	 * 
 	 * @return
 	 */
+	// TODO: No longer used, but maybe necessary
+	@SuppressWarnings("unused")
 	private Point2 getBallTarget() {
 		int dir = state.getDirection();
 
@@ -668,6 +578,8 @@ public class Robot {
 	 * @param vectorB
 	 * @return
 	 */
+	// TODO: Method no longer used, but seems useful..
+	@SuppressWarnings("unused")
 	private static double calculateAngle(Point2 vecA, Point2 vecB) {
 		double vecAMagnitude = vecA.modulus();
 		double vecBMagnitude = vecB.modulus();
@@ -677,45 +589,6 @@ public class Robot {
 		double ang = Math.acos(dotProduct / (vecAMagnitude * vecBMagnitude));
 
 		return Math.toDegrees(ang);
-	}
-
-	/**
-	 * Calculates the attacking robots approach point to the ball (auxiliary
-	 * method). Assumes that Y coordinates have already been inverted.
-	 * 
-	 * @param ballPosition
-	 * @param ballTargetPoint
-	 * @param targetGoal
-	 * @return
-	 */
-	private Point2 calculateApproachPoint(Point2 ballPosition,
-			Point2 ballTargetPoint, int targetGoal) {
-
-		// Initialise an empty point
-		Point2 approachPoint = Point2.EMPTY.copy();
-
-		// Calculate distortion scale. Bigger value = further away from the ball
-		double distortionScale = 1.0
-				+ Vision.getCameraCentre().distance(ballPosition)
-				/ DISTORTION_DISTANCE_MAX;
-
-		// TODO: Where did this 50.0 come from?
-		double gradBallToGoal = ballPosition.gradTo(ballTargetPoint) * 50.0;
-
-		// Use -1^z to calculate if left or right desired
-		double pow = Math.pow(-1, targetGoal);
-
-		double attackerSize = new Point2(ATTACKER_LENGTH, ATTACKER_WIDTH)
-				.modulus();
-		approachPoint.setX((int) (ballPosition.getX() + pow * attackerSize
-				* distortionScale));
-		approachPoint.setY((int) ((gradBallToGoal) + ballPosition.getY()));
-
-		// Y coordinate must be inverted to be positive
-
-		// TODO: Remove all instances of y inversion (it doesn't change anything
-		// and is only for keeping points in Quadrant I
-		return approachPoint.invertY();
 	}
 
 	/**
@@ -733,5 +606,35 @@ public class Robot {
 		public static int PASS_TO_ATTACKER = 5;
 		public static int DEFEND_ENEMY_DEFENDER = 6;
 		public static int GET_BALL = 7;
+		public static int ATTEMPT_GOAL = 8;
+	}
+
+	/**
+	 * Returns this robot's team.
+	 * 
+	 * @return
+	 */
+	public int getTeam() {
+		return this.myTeam;
+	}
+
+	/**
+	 * Returns the ID of the opposite robot. If <b>this</b>'s id is 0, returns
+	 * 1, and 0 otherwise.
+	 * 
+	 * @return
+	 */
+	public int getOtherId() {
+		return 1 - this.myIdentifier;
+	}
+
+	/**
+	 * Returns the team of the opposite team. If <b>this</b>'s team is 0,
+	 * returns 1, and 0 otherwise.
+	 * 
+	 * @return
+	 */
+	public int getOtherTeam() {
+		return 1 - this.myTeam;
 	}
 }

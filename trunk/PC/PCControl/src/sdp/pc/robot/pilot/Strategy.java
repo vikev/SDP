@@ -104,9 +104,6 @@ public class Strategy {
 	 */
 	private static void connectRobots() throws Exception {
 		Thread.sleep(1000);
-		// TODO: Having two different versions of TCPClient and Driver is
-		// extremely difficult to deal with. Can someone familiar with both
-		// classes refactor/remove something please
 		defender = new Robot(ChooseRobot.defender(), state, MY_TEAM,
 				DEFENDER_ID);
 		attacker = new Robot(ChooseRobot.attacker(), state, MY_TEAM,
@@ -198,7 +195,7 @@ public class Strategy {
 	 * <tr>
 	 * <td>Enemy Defender</td>
 	 * <td>Fast Ball ? Defend Ball : Defend Goal Line</td>
-	 * <td>Fast Ball ? Intercept Ball : Get Ball</td>
+	 * <td>Fast Ball ? Intercept Ball : Defend Enemy Defender</td>
 	 * </tr>
 	 * <tr>
 	 * <td>Our Attacker</td>
@@ -299,15 +296,13 @@ public class Strategy {
 	 */
 	private static void parseAttacker() throws Exception {
 		if (attacker.getState() == Robot.State.WAIT_RECEIVE_PASS) {
-			attacker.assertPerpendicular(10.0);
+			attacker.defendRobot(attacker.getTeam(), attacker.getOtherId());
 		} else if (attacker.getState() == Robot.State.DEFEND_BALL) {
-			if(attacker.assertPerpendicular(10.0)){
-				attacker.defendBall();
-			}
+			attacker.defendBall();
 		} else if (attacker.getState() == Robot.State.DEFEND_ENEMY_DEFENDER) {
-			attacker.defendRobot();
+			attacker.defendRobot(attacker.getOtherTeam(), attacker.getOtherId());
 		} else if (attacker.getState() == Robot.State.GET_BALL) {
-			attacker.kickStationaryBall();
+			attacker.kickBallToPoint(getTheirGoalCentre());
 		} else {
 			attacker.assertPerpendicular(10.0);
 		}
@@ -329,36 +324,46 @@ public class Strategy {
 	 */
 	private static void parseDefender() throws Exception {
 		if (defender.getState() == Robot.State.DEFEND_BALL) {
-			if (defender.assertNearGoalLine(10.0)) {
-				if (defender.assertPerpendicular(10.0)) {
-					defender.defendBall();
-				}
-			}
+			defender.defendBall();
 		} else if (defender.getState() == Robot.State.DEFEND_ENEMY_ATTACKER) {
-			if (defender.assertPerpendicular(10.0)) {
-				defender.defendRobot();
-			}
+			defender.defendRobot(defender.getOtherTeam(), defender.getOtherId());
 		} else if (defender.getState() == Robot.State.DEFEND_GOAL_LINE) {
+			// TODO: Robot code to defend a weighted goal line
 			if (defender.assertNearGoalLine(10.0)) {
-				defender.goTo(getDefendGoalCentre(), 10.0);
+				defender.goTo(getOurGoalCentre(), 10.0);
 			}
 		} else if (defender.getState() == Robot.State.PASS_TO_ATTACKER) {
-			defender.kickStationaryBall();
+			defender.kickBallToPoint(state.getRobotPosition(defender.getTeam(),
+					defender.getOtherId()));
 		} else {
-			defender.assertPerpendicular(10.0);
+			if (defender.assertNearGoalLine(10.0)) {
+				defender.assertPerpendicular(10.0);
+			}
 		}
 	}
 
 	/**
-	 * Returns the centre of the goal of the defender
+	 * Returns the centre of the goal of our defender
 	 * 
 	 * @return
 	 */
-	private static Point2 getDefendGoalCentre() {
+	private static Point2 getOurGoalCentre() {
 		if (state.getDirection() == 0) {
 			return state.getRightGoalCentre();
 		}
 		return state.getLeftGoalCentre();
+	}
+
+	/**
+	 * Returns the centre of the goal of their defender
+	 * 
+	 * @return
+	 */
+	private static Point2 getTheirGoalCentre() {
+		if (state.getDirection() == 0) {
+			return state.getLeftGoalCentre();
+		}
+		return state.getRightGoalCentre();
 	}
 
 	/**
