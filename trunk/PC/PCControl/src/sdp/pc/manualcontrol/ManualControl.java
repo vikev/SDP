@@ -1,4 +1,4 @@
-package sdp.pc.relay;
+package sdp.pc.manualcontrol;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -17,9 +17,9 @@ import sdp.pc.common.Constants;
 
 /**
  * TODO: What is this class for and are we using it?
- *
+ * 
  */
-public class TCPClient {
+public class ManualControl {
 
 	public void run(int serverPort, final int robot) {
 
@@ -48,45 +48,34 @@ public class TCPClient {
 					/* Turn left - arrow left */
 					if (code == 37) {
 						toServer.println("l");
-						toServer.println(0);
+						toServer.println(50);
 					}
 					/* Forwards - arrow up */
 					if (code == 38) {
 						toServer.println("f");
-						toServer.println(0);
+						toServer.println(50);
 					}
 					/* Turn right - arrow right */
 					if (code == 39) {
 						toServer.println("r");
-						toServer.println(0);
+						toServer.println(50);
 					}/* Backwards - arrow down */
 					if (code == 40) {
 						toServer.println("b");
-						toServer.println(0);
+						toServer.println(50);
 					}/* Stop when s is pressed */
 					if (code == 83) {
 						toServer.println("s");
-						toServer.println(0);
+						toServer.println(50);
 					}
 					/* Kcik - spacebar */
 					if (code == 32) {
-						switch (robot) {
-						case Constants.ATTACKER:
-							toServer.println("p");
-							break;
-						case Constants.DEFENDER:
-							toServer.println("k");
-							break;
-						}
+						toServer.println("k");
 						toServer.println(2222);
 					}
 					/* Grab - g */
 					if (code == 71) {
-						switch (robot) {
-						case Constants.DEFENDER:
-							toServer.println("g");
-							break;
-						}
+						toServer.println("g");
 						toServer.println(2222);
 					}
 				}
@@ -130,7 +119,7 @@ public class TCPClient {
 			Exception e = new Exception("Couldn't select a robot...");
 			throw e;
 		}
-		TCPClient client = new TCPClient();
+		ManualControl client = new ManualControl();
 		client.run(port, robot);
 	}
 }

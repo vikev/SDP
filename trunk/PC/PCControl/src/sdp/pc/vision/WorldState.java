@@ -390,4 +390,31 @@ public class WorldState {
 	public Pitch getPitch() {
 		return pitch;
 	}
+
+	/**
+	 * Returns which quadrant the ball is currently in, where quadrant 1, 2, 3,
+	 * 4 are the left defender, left attacker, right attacker, right defender
+	 * slots, respectively.
+	 * 
+	 * <p />
+	 * 
+	 * A value of 0 is an unknown quadrant.
+	 * 
+	 * @return
+	 */
+	public int getBallQuadrant() {
+		int x = getBallPosition().getX();
+		if (x < pitch.goalLineX[0]) {
+			return 0;
+		} else if (x < pitch.pitchCornerX[0]) {
+			return 1;
+		} else if (x < pitch.getTableCentre().getX()) {
+			return 2;
+		} else if (x < pitch.pitchCornerX[1]) {
+			return 3;
+		} else if (x < pitch.goalLineX[1]) {
+			return 4;
+		}
+		return 0;
+	}
 }

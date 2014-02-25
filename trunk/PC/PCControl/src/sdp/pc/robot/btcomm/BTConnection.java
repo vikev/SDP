@@ -139,11 +139,11 @@ public class BTConnection {
 	 *            the command parameter (e.g. 500.0 is a kick with speed 500)
 	 * @return
 	 */
-	public boolean sendCommand(char code, double param) {
+	public boolean sendCommand(char code, int param) {
 		boolean success = true;
 		try {
 			dos.writeChar(code);
-			dos.writeDouble(param);
+			dos.writeInt(param);
 			dos.flush();
 		} catch (IOException ioe) {
 			success = false;

@@ -58,6 +58,7 @@ public class FutureBall {
 	 * @param b
 	 *            - The other Point2
 	 */
+	@SuppressWarnings("unused")
 	private static void drawLine(Point2 a, Point2 b) {
 		// Attempt to draw collision boundary
 		Graphics g = Vision.frameLabel.getGraphics();
@@ -185,14 +186,14 @@ public class FutureBall {
 		vHatY /= distToStop;
 		collision = Point2.EMPTY;
 		Intersect inter = new Intersect(ball, Point2.EMPTY, Point2.EMPTY,
-				Double.NaN);
+				Point2.EMPTY, Double.NaN);
 		if (vel.modulus() > MIN_ESTIMATE_VELOCITY) {
 			while (collision.equals(Point2.EMPTY) && distToStop > 0) {
 				if (!pitchContains(new Point2((int) iteratorX, (int) iteratorY))) {
 					collision = new Point2((int) iteratorX, (int) iteratorY);
+
 					
 					inter = collide8(iteratorX, iteratorY, inter);
-					
 					Point2 temp = new Point2((int) tarX, (int) tarY);
 					double distance = temp.distance(ball);
 					Point2 rebound = getReboundPoint(inter.getIntersection(),inter.getBall(),distance,inter.getAngle());
@@ -229,8 +230,6 @@ public class FutureBall {
 		// Assume the ball is moving very fast, give it a velocity of 1000.
 		int x = 1000;
 		double angle = movingFacing;
-
-		// Do Lukas-style maths, lose brownie points
 
 		// Note 90 degrees is south due to inverted co-ordinates.
 		// Change quadrant 3 to quadrant 1: (mirror on y=-x)
@@ -315,6 +314,63 @@ public class FutureBall {
 		return false;
 	}
 
+	/**
+	 * Calculates the angle between three points using arc cos.
+	 * 
+	 * @param A
+	 *            - Location of the ball on the pitch.
+	 * @param B
+	 *            - Point of collision with boundary.
+	 * 
+	 * @return angle between point A,B and two closest points on the boundary
+	 */
+	public static double getOutwardAngle(Point2 A, Point2 B) {
+		int[] twoPoints = getCollisionWall(B);
+		// double outAngle;
+		Point2 C = new Point2(twoPoints[0], twoPoints[1]);
+		Point2 D = new Point2(twoPoints[2], twoPoints[3]);
+		System.out.println("C: " + C.toString() + ", D: " + D.toString());
+
+		double aC = C.distance(B);
+		double aD = D.distance(B);
+		double c = A.distance(B);
+		double bD = A.distance(D);
+		double bC = A.distance(C);
+
+		double inAngleC = Math.acos((Math.pow(aC, 2) + Math.pow(c, 2) - Math
+				.pow(bC, 2)) / (2 * aC * c));
+		double inAngleD = Math.acos((Math.pow(aD, 2) + Math.pow(c, 2) - Math
+				.pow(bD, 2)) / (2 * aD * c));
+		double abc = inAngleC * 180 / Math.PI;
+		double abd = inAngleD * 180 / Math.PI;
+		System.out.println("For Ball at " + A.toString() + " and collison at "
+				+ B.toString() + ", the angle for abc is " + abc
+				+ " and the angle for abd is " + abd);
+
+		if ((abc) > 90) {
+			return abd;
+
+		} else {
+			return abc;
+		}
+
+	}
+
+	/**
+	 * Calculates the angle between three points using arc cos.
+	 * 
+	 * @param ball
+	 *            - Location of the ball on the pitch.
+	 * @param intersection
+	 *            - Point of collision with boundary.
+	 * @param diatance
+	 *            - distance from collision to estimated before rebound
+	 * @param angle
+	 *            - angle return by getOutwardAngle function
+	 * 
+	 * @return Expected point after rebound
+	 */
+
 	// could take a distance
 	public static Point2 getReboundPoint(Point2 intersection, Point2 wallPoint,
 			double distance, double angle) {
@@ -358,6 +414,7 @@ public class FutureBall {
 			distanceB = collide.distance(B);
 			if (distanceA < distanceB) {
 				wallPointB = points.get(points.size() - 1);
+
 			} else {
 				wallPointB = points.get(min + 1);
 			}

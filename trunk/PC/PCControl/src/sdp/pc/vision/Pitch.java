@@ -102,7 +102,6 @@ public class Pitch {
 	}
 
 	public Pitch() {
-
 	}
 
 	private Point2 horizontalSwipe(Color[][] rgb, float[][][] hsb, int y) {
@@ -196,7 +195,8 @@ public class Pitch {
 	public int getXBegin() {
 		return X_BEGIN;
 	}
-	public ArrayList<Point2> getArrayListOfPoints(){
+
+	public ArrayList<Point2> getArrayListOfPoints() {
 		ArrayList<Point2> points = new ArrayList<Point2>();
 		points.add(new Point2( pitchCornerX[0], pitchY[0])); // 1
 		points.add(new Point2(zoneX[0], pitchY[0]));// 2
@@ -224,11 +224,31 @@ public class Pitch {
 		}
 	}
 
+	/**
+	 * Gets a point in the centre of the right goal.
+	 * 
+	 * @return
+	 */
 	public Point2 getLeftGoalCentre() {
 		return new Point2(goalLineX[0], (goalLineY[0] + goalLineY[1]) / 2);
 	}
 
+	/**
+	 * Gets a point in the centre of the left goal.
+	 * 
+	 * @return
+	 */
 	public Point2 getRightGoalCentre() {
 		return new Point2(goalLineX[1], (goalLineY[0] + goalLineY[1]) / 2);
+	}
+
+	/**
+	 * Returns a point in the centre of the 4 pitch corners.
+	 * 
+	 * @return
+	 */
+	public Point2 getTableCentre() {
+		return new Point2((pitchCornerX[0] + pitchCornerX[1]) / 2,
+				(pitchY[0] + pitchY[1]) / 2);
 	}
 }

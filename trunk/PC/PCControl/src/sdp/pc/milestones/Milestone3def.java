@@ -400,9 +400,11 @@ public class Milestone3def {
 		try {
 			double speed = getRotateSpeed(rotateBy, epsilon);
 			if (rotateBy > epsilon && speed > 1.0) {
-				driver.turnLeft(speed);
+				// TODO: cast to int was added. Check if that breaks anything
+				driver.turnLeft((int) speed);
 			} else if (rotateBy < -epsilon && speed > 1.0) {
-				driver.turnRight(speed);
+				// TODO: cast to int was added. Check if that breaks anything
+				driver.turnRight((int) speed);
 			} else {
 				return true;
 			}
@@ -424,7 +426,8 @@ public class Milestone3def {
 			return true;
 		}
 		double speed = getMoveSpeed(robLoc.distance(to), NEAR_EPSILON_DIST);
-		driver.forward(speed);
+		// TODO: cast to int was added. Check if that breaks anything
+		driver.forward((int) speed);
 		return false;
 	}
 
@@ -440,7 +443,8 @@ public class Milestone3def {
 			return true;
 		}
 		double speed = getMoveSpeed(robLoc.distance(to), NEAR_EPSILON_DIST);
-		driver.backward(speed);
+		// TODO: cast to int was added. Check if that breaks anything
+		driver.backward((int) speed);
 		return false;
 	}
 

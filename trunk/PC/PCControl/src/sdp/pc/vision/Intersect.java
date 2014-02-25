@@ -26,7 +26,15 @@ public class Intersect {
 	private Point2 deflection;
 
 	/**
-	 * The angle TODO: Of the wall that caused the reflection?
+	 * The location of the initial estimated stopping point
+	 */
+	private Point2 initialEstimate;
+
+	/**
+	 * The rebound angle of the wall that caused the reflection
+	 * 
+	 * TODO: Which angle? How to distinguish if the acute angle comes from the
+	 * wall or from the wall's normal?
 	 */
 	private double angle;
 
@@ -37,6 +45,7 @@ public class Intersect {
 		this.ball = Point2.EMPTY;
 		this.intersection = Point2.EMPTY;
 		this.deflection = Point2.EMPTY;
+		this.initialEstimate = Point2.EMPTY;
 		this.angle = Double.NaN;
 	}
 
@@ -44,15 +53,22 @@ public class Intersect {
 	 * Full constructor
 	 * 
 	 * @param ball
+	 *            - real location of the ball
 	 * @param intersection
+	 *            - the point the ball would hit a boundary, if it exists
 	 * @param deflection
+	 *            - the point after the ball hits a boundary, if it exists
+	 * @param initialEstimate
+	 *            - the initial estimated stopping point of the ball
 	 * @param angle
+	 *            - the rebound angle after a collision
 	 */
 	public Intersect(Point2 ball, Point2 intersection, Point2 deflection,
-			double angle) {
+			Point2 initialEstimate, double angle) {
 		this.ball = ball;
 		this.intersection = intersection;
 		this.deflection = deflection;
+		this.initialEstimate = initialEstimate;
 		this.angle = angle;
 	}
 
@@ -106,6 +122,22 @@ public class Intersect {
 	}
 
 	/**
+	 * Getter method for the initial estimate point
+	 * 
+	 * @return
+	 */
+	public Point2 getInitialEstimate() {
+		return this.initialEstimate;
+	}
+
+	/**
+	 * Setter method for the initial estimate point
+	 */
+	public void setInitialEstimate(Point2 pt) {
+		this.initialEstimate = pt;
+	}
+
+	/**
 	 * Getter method for the TODO: Deflection? angle
 	 * 
 	 * @return angle in TODO: degrees?
@@ -152,6 +184,8 @@ public class Intersect {
 			return this.deflection;
 		} else if (!this.intersection.equals(Point2.EMPTY)) {
 			return this.intersection;
+		} else if (!this.initialEstimate.equals(Point2.EMPTY)) {
+			return this.initialEstimate;
 		}
 		return Point2.EMPTY;
 	}
