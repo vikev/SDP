@@ -203,8 +203,8 @@ public class Robot {
 			double otherFacing = state.getRobotFacing(team, robot);
 
 			// Get predicted ball position if that other robot shot just now
-			Point2 predictedBallPos = FutureBall.matchingYCoord(
-					otherPos, otherFacing, robotPos);
+			Point2 predictedBallPos = FutureBall.matchingYCoord(otherPos,
+					otherFacing, robotPos);
 
 			// If that position exists, defend it, otherwise just defend the
 			// ball
@@ -362,8 +362,11 @@ public class Robot {
 	 */
 	public void kickBallToPoint(Point2 where) throws Exception {
 		// Turn to ball, move to ball, grab the ball, turn to the point, kick
+		Point2 ball = state.getBallPosition();
+		Point2 robo = state.getRobotPosition(myTeam, myIdentifier);
 		if (subState == 0) {
-			if (goTo(state.getBallPosition(), 25.0)) {
+			if (goTo(ball.offset(20.0, ball.angleTo(robo)), 25.0)) {
+				System.out.println("goto");
 				driver.grab();
 				subState = 1;
 			}
@@ -478,11 +481,11 @@ public class Robot {
 	private static int getRotateSpeed(double rotateBy, double epsilon) {
 		rotateBy = Math.abs(rotateBy);
 		if (rotateBy > 75.0) {
-			return 100;
+			return 80;
 		} else if (rotateBy > 25.0) {
-			return 35;
+			return 30;
 		} else if (rotateBy > epsilon) {
-			return 15;
+			return 10;
 		} else {
 			return 0;
 		}
@@ -499,6 +502,7 @@ public class Robot {
 			return true;
 		}
 		int speed = getMoveSpeed(robLoc.distance(to));
+		System.out.println(speed);
 		driver.forward(speed);
 		return false;
 	}
@@ -526,11 +530,11 @@ public class Robot {
 	 */
 	private static int getMoveSpeed(double distance) {
 		if (distance > 120.0) {
-			return 300;
+			return 400;
 		} else if (distance > 50.0) {
-			return 150;
+			return 200;
 		} else if (distance > 20.0) {
-			return 30;
+			return 50;
 		} else {
 			return 10;
 		}
@@ -607,6 +611,39 @@ public class Robot {
 		public static int DEFEND_ENEMY_DEFENDER = 6;
 		public static int GET_BALL = 7;
 		public static int ATTEMPT_GOAL = 8;
+
+		public static void print(int q) {
+			switch (q) {
+			case 0:
+				System.out.println("UNKNOWN");
+				break;
+			case 1:
+				System.out.println("DEFEND_BALL");
+				break;
+			case 2:
+				System.out.println("DEFEND_ENEMY_ATTACKER");
+				break;
+			case 3:
+				System.out.println("WAIT_RECEIVE_PASS");
+				break;
+			case 4:
+				System.out.println("DEFEND_GOAL_LINE");
+				break;
+			case 5:
+				System.out.println("PASS_TO_ATTACKER");
+				break;
+			case 6:
+				System.out.println("DEFEND_ENEMY_DEFENDER");
+				break;
+			case 7:
+				System.out.println("GET_BALL");
+				break;
+			case 8:
+				System.out.println("ATTEMPT_GOAL");
+				break;
+			}
+
+		}
 	}
 
 	/**

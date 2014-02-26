@@ -122,10 +122,10 @@ public class FutureBall {
 			}
 		}
 
-		double angleInDegrees = pts[p[0]].angleTo(pts[p[1]]);
-		double ang = angleInDegrees * Math.PI / 180.0;
-		Point2 offsPt = new Point2((int) (50.0 * Math.cos(ang)),
-				(int) (50.0 * Math.sin(ang)));
+//		double angleInDegrees = pts[p[0]].angleTo(pts[p[1]]);
+//		double ang = angleInDegrees * Math.PI / 180.0;
+//		Point2 offsPt = new Point2((int) (50.0 * Math.cos(ang)),
+//				(int) (50.0 * Math.sin(ang)));
 		// drawLine(pts[p[0]].add(offsPt), pts[p[1]].sub(offsPt));
 
 		Point2 A = new Point2((int) x, (int) y); // Ball
@@ -495,13 +495,11 @@ public class FutureBall {
 		double angleDD = angleDR * (180 / Math.PI);
 		if (angleDD > 90) {
 			trueAngle = angleDD - angleCD;
-			System.out.println("trueAngle: " + trueAngle);
 			returnedList[0] = C.getX();
 			returnedList[1] = C.getY();
 			returnedList[2] = trueAngle;
 		} else {
 			trueAngle = angleCD - angleDD;
-			System.out.println("trueAngle: " + trueAngle);
 			returnedList[0] = D.getX();
 			returnedList[1] = D.getY();
 			returnedList[2] = trueAngle;

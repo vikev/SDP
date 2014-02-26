@@ -417,7 +417,7 @@ public class Point2 implements java.io.Serializable {
 		int dot = ((b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x));
 		return dot > 0 || (dot == 0 && a.distanceSq(b) < a.distanceSq(this));
 	}
-	
+
 	/**
 	 * Gets the angle from the origin to <b>this</b>. In other words, the angle
 	 * of <b>this</b> as a vector.
@@ -483,5 +483,18 @@ public class Point2 implements java.io.Serializable {
 	 */
 	public double gradTo(Point2 vecB) {
 		return (vecB.y - this.y / vecB.y - this.y);
+	}
+
+	/**
+	 * Returns a point from the intial point offset by d towards angleTo
+	 * 
+	 * @param d
+	 * @param angleTo
+	 * @return
+	 */
+	public Point2 offset(double d, double angleTo) {
+		return new Point2((int) (this.getX() + d
+				* Math.cos(angleTo * Math.PI / 180.0)), (int) (this.getY() + d
+				* Math.sin(angleTo * Math.PI / 180.0)));
 	}
 }

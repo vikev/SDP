@@ -27,29 +27,30 @@ public class Strategy {
 	/**
 	 * Team ID of our team (could be refactored?)
 	 */
-	private static int MY_TEAM = 1;
+	private static int myTeam = 1;
 
 	/**
 	 * ID for the defending robot (could be refactored?)
 	 */
-	private static int DEFENDER_ID = 0;
+	private static int defenderId = 0;
 
 	/**
 	 * ID for the attacking robot (could be refactored?)
 	 */
-	private static int ATTACKER_ID = 1;
+	private static int attackerId = 1;
 
 	/**
 	 * Controls how often to parse/send commands to the robots. 1/7*1000 = 7
-	 * times per second
+	 * times per second. Never use integer values to describe double precision
+	 * numbers. 7 != 7.0
 	 */
-	private static final double PERIOD = 1.0 / 7 * 1000.0;
+	private static final double PERIOD = 1.0 / 7.0 * 1000.0;
 
 	/**
 	 * The minimum speed for the ball to be considered fast, in pixels per
 	 * second.
 	 */
-	private static final double FAST_BALL_SPEED = 50.0;
+	private static final double FAST_BALL_SPEED = 80.0;
 
 	/**
 	 * the defending robot
@@ -69,13 +70,13 @@ public class Strategy {
 	@SuppressWarnings("unused")
 	private static Point2 basicGoalTarget() {
 		if (state.getDirection() == 0) {
-			if (state.getRobotPosition(MY_TEAM ^ 1, DEFENDER_ID).getY() > state
+			if (state.getRobotPosition(myTeam ^ 1, defenderId).getY() > state
 					.getLeftGoalCentre().getY())
 				return WorldState.leftGoalTop;
 			else
 				return WorldState.leftGoalBottom;
 		} else {
-			if (state.getRobotPosition(MY_TEAM ^ 1, DEFENDER_ID).getY() > state
+			if (state.getRobotPosition(myTeam ^ 1, defenderId).getY() > state
 					.getRightGoalCentre().getY())
 				return WorldState.rightGoalTop;
 			else
@@ -109,10 +110,8 @@ public class Strategy {
 	 */
 	private static void connectRobots() throws Exception {
 		Thread.sleep(1000);
-		defender = new Robot(ChooseRobot.defender(), state, MY_TEAM,
-				DEFENDER_ID);
-		attacker = new Robot(ChooseRobot.attacker(), state, MY_TEAM,
-				ATTACKER_ID);
+		defender = new Robot(ChooseRobot.defender(), state, myTeam, defenderId);
+		attacker = new Robot(ChooseRobot.attacker(), state, myTeam, attackerId);
 	}
 
 	/**
@@ -371,6 +370,9 @@ public class Strategy {
 		return state.getRightGoalCentre();
 	}
 
+	// temporary frame counter (trash)
+	private static int q = 0;
+
 	/**
 	 * Loops indefinitely, ordering the robots to do things
 	 * 
@@ -381,6 +383,18 @@ public class Strategy {
 		while (true) {
 			try {
 				updateStates();
+
+				// Print out the states every 10 frames (don't flood the
+				// console)
+				q++;
+				if (q == 10) {
+					System.out.println();
+					System.out.println("Attacker, Defender states:");
+					Robot.State.print(attacker.getState());
+					Robot.State.print(defender.getState());
+					q = 0;
+				}
+				
 				parseAttacker();
 				parseDefender();
 			} catch (Exception e) {
@@ -398,14 +412,19 @@ public class Strategy {
 	public static void main(String[] args) {
 		try {
 			startVisionSystem();
-			
-			MY_TEAM = state.getOurColor();
-			ATTACKER_ID = state.getDirection();
-			DEFENDER_ID = 1 - state.getDirection();
-			
+
+			// Set our team and direction
+			state.setOurColor(1);
+			state.setDirection(1);
+
+			myTeam = state.getOurColor();
+			attackerId = state.getDirection();
+			defenderId = 1 - state.getDirection();
+
 			connectRobots();
 			addShutdownHook();
-			
+
+			// Add a start button so we can have time to calibrate etc
 			JFrame frame = new JFrame("Ready and waiting!");
 			frame.setBounds(600, 200, 300, 150);
 			JButton start = new JButton();
@@ -413,13 +432,17 @@ public class Strategy {
 			start.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					try { executeStrategy();}
-					catch (Exception e1) { e1.printStackTrace(); }
+					try {
+
+						// Begin looping through the strategy functionality
+						executeStrategy();
+					} catch (Exception e1) {
+						e1.printStackTrace();
+					}
 				}
 			});
 			frame.add(start);
-			frame.show();
-			
+			frame.setVisible(true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
