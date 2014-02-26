@@ -155,7 +155,10 @@ public class Robot {
 	public void defendBall() throws Exception {
 		if (assertPerpendicular(SAFE_ANGLE_EPSILON)) {
 			// Get predicted ball stop point
-			Point2 predBallPos = state.getFutureData().getResult();
+			//Point2 predBallPos = state.getFutureData().getResult();
+			Point2 predBallPos = new Point2 (
+					state.getRobotPosition(myTeam, myIdentifier).x,
+					state.getBallPosition().y);
 
 			// If that position exists, go to its Y coordinate, otherwise stop.
 			if (!predBallPos.equals(Point2.EMPTY)) {
