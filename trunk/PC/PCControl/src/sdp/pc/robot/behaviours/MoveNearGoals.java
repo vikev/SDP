@@ -10,7 +10,9 @@ public class MoveNearGoals extends MyBehavior {
 	public MoveNearGoals(Robot robot) { super(robot); }
 
 	/**
-	 * Take control when the defending robot is not near the goal line
+	 * Take control when all of the following are true:
+	 *  - Defending (this) robot is not near the goal line
+	 *  - Ball is in our attacker's or opponent's defender quadrants
 	 */
 	@Override
 	public boolean takeControl() {

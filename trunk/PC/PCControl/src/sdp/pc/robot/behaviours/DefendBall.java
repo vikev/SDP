@@ -16,8 +16,9 @@ public class DefendBall extends MyBehavior {
 	public DefendBall(Robot robot) { super(robot); }
 
 	/**
-	 * Take control when the ball is moving with sufficient velocity
-	 * and the ball is not initially in our defenders zone
+	 * Take control when the all of the following are true:
+	 *  - ball is moving with sufficient velocity
+	 *  - ball is moving into the robot's direction
 	 */
 	@Override
 	public boolean takeControl() {
