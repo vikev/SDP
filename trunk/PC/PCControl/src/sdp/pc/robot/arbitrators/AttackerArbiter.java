@@ -11,13 +11,13 @@ import sdp.pc.robot.pilot.Robot;
  * @author s1141301
  *
  */
-public class DefenderArbiter extends Arbitrator {
+public class AttackerArbiter extends Arbitrator {
 	
 	/**
-	 * Constructs a new <b>DefenderArbiter</b> using the default behaviours that constitute it. 
+	 * Constructs a new <b>AttackerArbiter</b> using the default behaviours that constitute it. 
 	 * @param r The robot for which to create the arbiter
 	 */
-	public DefenderArbiter(Robot r) {
+	public AttackerArbiter(Robot r) {
 		super(new Behavior[] {
 				//TODO: add behaviours
 				new TurnPerpendicular(r),
