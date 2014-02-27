@@ -208,6 +208,7 @@ public class WorldStateUpdater extends WorldStateListener {
 				clusters[3].getMean());
 
 		// Loop through teams' robots
+		System.out.println("Team: " + state.getOurColor() + ", Direction: " + state.getDirection());
 		for (int team = 0; team < 2; team++)
 			for (int robot = 0; robot < 2; robot++) {
 

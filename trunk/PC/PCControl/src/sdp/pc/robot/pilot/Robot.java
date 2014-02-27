@@ -30,7 +30,7 @@ public class Robot {
 	 * Use getGoalOffset() to get a negative version if we're defending the
 	 * right goal.
 	 */
-	private static final int GOAL_OFFSET = 20;
+	private static final int GOAL_OFFSET = 25;
 
 	/**
 	 * How far, at most, from the goalmouth centre the defending robot should
@@ -162,7 +162,8 @@ public class Robot {
 
 			// If that position exists, go to its Y coordinate, otherwise stop.
 			if (!predBallPos.equals(Point2.EMPTY)) {
-				defendToY(predBallPos.getY(), DEFEND_EPSILON_DISTANCE);
+				goTo(predBallPos, 10);
+				//defendToY(predBallPos.getY(), DEFEND_EPSILON_DISTANCE);
 			} else {
 				driver.stop();
 			}
@@ -368,7 +369,8 @@ public class Robot {
 		Point2 ball = state.getBallPosition();
 		Point2 robo = state.getRobotPosition(myTeam, myIdentifier);
 		if (subState == 0) {
-			if (goTo(ball.offset(20.0, ball.angleTo(robo)), 25.0)) {
+			//if (goTo(ball.offset(20.0, ball.angleTo(robo)), 20.0)) {
+			if (goTo(ball, 30.0)) {
 				System.out.println("goto");
 				driver.grab();
 				subState = 1;
@@ -484,11 +486,11 @@ public class Robot {
 	private static int getRotateSpeed(double rotateBy, double epsilon) {
 		rotateBy = Math.abs(rotateBy);
 		if (rotateBy > 75.0) {
-			return 80;
-		} else if (rotateBy > 25.0) {
-			return 30;
+			return 100;
+		} else if (rotateBy > 30.0) {
+			return 50;
 		} else if (rotateBy > epsilon) {
-			return 10;
+			return 15;
 		} else {
 			return 0;
 		}
@@ -534,12 +536,12 @@ public class Robot {
 	private static int getMoveSpeed(double distance) {
 		if (distance > 120.0) {
 			return 400;
-		} else if (distance > 50.0) {
+		} else if (distance > 80.0) {
 			return 200;
-		} else if (distance > 20.0) {
+		} else if (distance > 40.0) {
 			return 50;
 		} else {
-			return 10;
+			return 30;
 		}
 	}
 

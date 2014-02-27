@@ -50,7 +50,7 @@ public class Strategy {
 	 * The minimum speed for the ball to be considered fast, in pixels per
 	 * second.
 	 */
-	private static final double FAST_BALL_SPEED = 80.0;
+	private static final double FAST_BALL_SPEED = 100.0;
 
 	/**
 	 * the defending robot
@@ -110,8 +110,8 @@ public class Strategy {
 	 */
 	private static void connectRobots() throws Exception {
 		Thread.sleep(1000);
-		defender = new Robot(ChooseRobot.defender(), state, myTeam, defenderId);
-		attacker = new Robot(ChooseRobot.attacker(), state, myTeam, attackerId);
+		defender = new Robot(ChooseRobot.attacker(), state, myTeam, defenderId);
+		attacker = new Robot(ChooseRobot.defender(), state, myTeam, attackerId);
 	}
 
 	/**
@@ -269,6 +269,7 @@ public class Strategy {
 			// defensive plays, but only assert an unknown state if the ball is
 			// moving fast?
 		}
+		
 	}
 
 	/**
@@ -370,7 +371,7 @@ public class Strategy {
 		return state.getRightGoalCentre();
 	}
 
-	// temporary frame counter (trash)
+	// temporary frame counter (trafendersh)
 	private static int q = 0;
 
 	/**
@@ -414,7 +415,9 @@ public class Strategy {
 			startVisionSystem();
 
 			// Set our team and direction
-			state.setOurColor(1);
+			// Yellow = 0; Blue = 1
+			// Left = 0; Right = 1
+			state.setOurColor(0);
 			state.setDirection(1);
 
 			myTeam = state.getOurColor();
