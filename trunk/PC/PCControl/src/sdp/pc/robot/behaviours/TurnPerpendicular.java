@@ -33,10 +33,13 @@ public class TurnPerpendicular extends MyBehavior {
 	
 	@Override
 	public boolean takeControl() {
+		
 		double f = robot.getFacing();
+		
 		//turn angle to upper/lower perpendicular
 		double dUp = Alg.normalizeToBiDirection(Math.abs(f - CORRECT_ROTATION - 180));
 		double dDown = Alg.normalizeToBiDirection(Math.abs(f - CORRECT_ROTATION));
+		
 		//the lower turn angle
 		double d = Math.min(dUp, dDown);
 		
