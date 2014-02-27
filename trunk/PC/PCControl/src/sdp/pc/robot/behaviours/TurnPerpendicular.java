@@ -31,6 +31,11 @@ public class TurnPerpendicular extends MyBehavior {
 	//copy-paste that
 	public TurnPerpendicular(Robot robot) { super(robot); }
 	
+	/**
+	 * Take control when all of the following are true:
+	 * 	- Ball is not in the robot's quadrant
+	 *  - Robot is not asserting perpendicular
+	 */
 	@Override
 	public boolean takeControl() {
 		
