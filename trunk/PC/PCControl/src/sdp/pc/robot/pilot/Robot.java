@@ -34,7 +34,7 @@ public class Robot {
 	 * Use getGoalOffset() to get a negative version if we're defending the
 	 * right goal.
 	 */
-	private static final int GOAL_OFFSET = 25;
+	private static final int GOAL_OFFSET = 35;
 
 	/**
 	 * How far, at most, from the goalmouth centre the defending robot should
@@ -58,7 +58,7 @@ public class Robot {
 	 * If an epsilon value doesn't make sense to know in some context, this is a
 	 * safe angle value to use
 	 */
-	private static final double SAFE_ANGLE_EPSILON = 8.0;
+	private static final double SAFE_ANGLE_EPSILON = 10.0;
 
 	/**
 	 * The primitive driver used to control the NXT
@@ -157,7 +157,8 @@ public class Robot {
 	 * Y coordinate by going forwards or backwards.
 	 */
 	public void defendBall() throws Exception {
-		if (assertPerpendicular(SAFE_ANGLE_EPSILON)) {
+		//if (assertPerpendicular(SAFE_ANGLE_EPSILON)) {
+		if (assertFacing(270,SAFE_ANGLE_EPSILON)) {
 			// Get predicted ball stop point
 			//Point2 predBallPos = state.getFutureData().getResult();
 			Point2 predBallPos = new Point2 (
@@ -166,8 +167,7 @@ public class Robot {
 
 			// If that position exists, go to its Y coordinate, otherwise stop.
 			if (!predBallPos.equals(Point2.EMPTY)) {
-				goTo(predBallPos, 10);
-				//defendToY(predBallPos.getY(), DEFEND_EPSILON_DISTANCE);
+				defendToY(predBallPos.getY(), DEFEND_EPSILON_DISTANCE);
 			} else {
 				driver.stop();
 			}
@@ -214,6 +214,7 @@ public class Robot {
 			Point2 predictedBallPos = FutureBall.matchingYCoord(otherPos,
 					otherFacing, robotPos);
 
+
 			// If that position exists, defend it, otherwise just defend the
 			// ball
 			if (!predictedBallPos.equals(Point2.EMPTY)) {
@@ -227,7 +228,7 @@ public class Robot {
 	/**
 	 * Synchronous method which must be called continuously which makes a robot
 	 * face a specific angle in degrees. The robot will rotate the direction
-	 * which gets their faster.
+	 * which gets there faster.
 	 * 
 	 * @return true if the robot is already facing deg within a window of
 	 *         epsilon
@@ -237,9 +238,9 @@ public class Robot {
 		double rotateBy = normalizeToBiDirection(state.getRobotFacing(myTeam,
 				myIdentifier) - deg);
 		int speed = getRotateSpeed(rotateBy, epsilon);
-		if (rotateBy > epsilon && speed > 1.0) {
+		if (rotateBy > epsilon) {
 			driver.turnLeft(speed);
-		} else if (rotateBy < -epsilon && speed > 1.0) {
+		} else if (rotateBy < -epsilon) {
 			driver.turnRight(speed);
 		} else {
 			return true;
@@ -374,7 +375,7 @@ public class Robot {
 		Point2 robo = state.getRobotPosition(myTeam, myIdentifier);
 		if (subState == 0) {
 			//if (goTo(ball.offset(20.0, ball.angleTo(robo)), 20.0)) {
-			if (goTo(ball, 30.0)) {
+			if (goTo(ball, 35.0)) {
 				System.out.println("goto");
 				driver.grab();
 				subState = 1;
@@ -411,6 +412,9 @@ public class Robot {
 		return false;
 	}
 	
+	/**
+	 * Not using it atm - don't touch unless you're Iain
+	 */
 	public boolean passBall() throws Exception{
 		// Turn to ball, move to ball, grab the ball, turn to the point, kick
 		Point2 ball = state.getBallPosition();
@@ -435,6 +439,9 @@ public class Robot {
 		
 	}
 	
+	/**
+	 * Not using it atm - don't touch unless you're Iain
+	 */
 	public Point2 getPassPoint(){
 		// get shooting direction.
 		// get enemy attacker position
@@ -471,6 +478,9 @@ public class Robot {
 		
 	}
 	
+	/**
+	 * Not using it atm - don't touch unless you're Iain
+	 */
 	public Boolean recievePass(){
 		Point2 where = getPassPoint();
 		try {
@@ -524,32 +534,30 @@ public class Robot {
 	 * expect it to be finished.
 	 */
 	private boolean defendToY(int y, double eps) throws Exception {
-
-		double botFacing = state.getRobotFacing(myTeam, myIdentifier);
+		
 		Point2 botPosition = state.getRobotPosition(myTeam, myIdentifier);
-		int botX = botPosition.getX();
-		double angleToBall = botPosition.angleTo(new Point2(botX, y));
-		boolean between = Alg.pointBetweenGoals(new Point2(y), myIdentifier,
-				BETWEEN_GOALS_EPSILON);
-		int estStopY = state.getFutureData().getResult().getY();
-
-		// Compare robot facing with angle to ball
-		double diff = normalizeToBiDirection(botFacing - angleToBall);
-
-		// If the robot is far enough from the target, and between the goals:
-		if (botPosition.distance(new Point2(botX, estStopY)) > eps && between) {
-
-			// Assert the robot is near the target, by going forward or backward
-			if (Math.abs(diff) > 90) {
-				moveBackwardTo(new Point2(botX, estStopY), eps);
-			} else {
-				moveForwardTo(new Point2(botX, estStopY), eps);
+		double botFacing = state.getRobotFacing(myTeam, myIdentifier);
+		if (botPosition.y - y > DEFEND_EPSILON_DISTANCE) {
+			if (Alg.withinBounds((float) botFacing, 270,
+					(float) SAFE_ANGLE_EPSILON)) {
+				moveForwardTo(new Point2(botPosition.x,y),DEFEND_EPSILON_DISTANCE);
+			} else if (Alg.withinBounds((float) botFacing, 90,
+					(float) SAFE_ANGLE_EPSILON)) {
+				moveBackwardTo(new Point2(botPosition.x,y),DEFEND_EPSILON_DISTANCE);
 			}
-		} else {
-			driver.stop();
-			return true;
+			return false;
 		}
-		return false;
+		if (y - botPosition.y > DEFEND_EPSILON_DISTANCE) {
+			if (Alg.withinBounds((float) botFacing, 270,
+					(float) SAFE_ANGLE_EPSILON)) {
+				moveBackwardTo(new Point2(botPosition.x,y),DEFEND_EPSILON_DISTANCE);
+			} else if (Alg.withinBounds((float) botFacing, 90,
+					(float) SAFE_ANGLE_EPSILON)) {
+				moveForwardTo(new Point2(botPosition.x,y),DEFEND_EPSILON_DISTANCE);
+			}
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -562,11 +570,11 @@ public class Robot {
 	private static int getRotateSpeed(double rotateBy, double epsilon) {
 		rotateBy = Math.abs(rotateBy);
 		if (rotateBy > 75.0) {
-			return 100;
+			return 120;
 		} else if (rotateBy > 30.0) {
-			return 50;
+			return 60;
 		} else if (rotateBy > epsilon) {
-			return 15;
+			return 20;
 		} else {
 			return 0;
 		}
@@ -583,7 +591,7 @@ public class Robot {
 			return true;
 		}
 		int speed = getMoveSpeed(robLoc.distance(to));
-		System.out.println(speed);
+		System.out.println("Robot " + myIdentifier + " moving to " + to + " at speed " + speed);
 		driver.forward(speed);
 		return false;
 	}
@@ -610,14 +618,14 @@ public class Robot {
 	 * TODO: Units? motor velocity in radians per second or..?
 	 */
 	private static int getMoveSpeed(double distance) {
-		if (distance > 120.0) {
+		if (distance > 180.0) {
 			return 400;
-		} else if (distance > 80.0) {
-			return 200;
-		} else if (distance > 40.0) {
-			return 50;
+		} else if (distance > 120.0) {
+			return 250;
+		} else if (distance > 60.0) {
+			return 100;
 		} else {
-			return 30;
+			return 50;
 		}
 	}
 

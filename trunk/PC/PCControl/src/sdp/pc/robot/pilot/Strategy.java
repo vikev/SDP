@@ -27,17 +27,17 @@ public class Strategy {
 	/**
 	 * Team ID of our team (could be refactored?)
 	 */
-	private static int myTeam = 1;
+	private static int myTeam;
 
 	/**
 	 * ID for the defending robot (could be refactored?)
 	 */
-	private static int defenderId = 0;
+	private static int defenderId;
 
 	/**
 	 * ID for the attacking robot (could be refactored?)
 	 */
-	private static int attackerId = 1;
+	private static int attackerId;
 
 	/**
 	 * Controls how often to parse/send commands to the robots. 1/7*1000 = 7
@@ -110,8 +110,8 @@ public class Strategy {
 	 */
 	private static void connectRobots() throws Exception {
 		Thread.sleep(1000);
-		defender = new Robot(ChooseRobot.attacker(), state, myTeam, defenderId);
-		attacker = new Robot(ChooseRobot.defender(), state, myTeam, attackerId);
+		defender = new Robot(ChooseRobot.defender(), state, myTeam, defenderId);
+		attacker = new Robot(ChooseRobot.attacker(), state, myTeam, attackerId);
 	}
 
 	/**
@@ -396,7 +396,7 @@ public class Strategy {
 					q = 0;
 				}
 				
-				parseAttacker();
+				//parseAttacker();
 				parseDefender();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -414,37 +414,38 @@ public class Strategy {
 		try {
 			startVisionSystem();
 
-			// Set our team and direction
-			// Yellow = 0; Blue = 1
-			// Left = 0; Right = 1
-			state.setOurColor(0);
-			state.setDirection(1);
-
-			myTeam = state.getOurColor();
-			attackerId = state.getDirection();
-			defenderId = 1 - state.getDirection();
-
-			connectRobots();
-			addShutdownHook();
-
 			// Add a start button so we can have time to calibrate etc
 			JFrame frame = new JFrame("Ready and waiting!");
 			frame.setBounds(600, 200, 300, 150);
-			JButton start = new JButton();
-			start.setText("Start");
-			start.addActionListener(new ActionListener() {
+			final JButton button = new JButton();
+			button.setText("Connect");
+			button.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					try {
+						if (button.getText().equals("Connect")) {
+							// Set our team and direction
+							myTeam = state.getOurColor();
+							attackerId = state.getDirection();
+							defenderId = 1 - state.getDirection();
+							System.out.println(myTeam + " " + defenderId);		
+							// Connect to robots
+							connectRobots();
+							addShutdownHook();
 
-						// Begin looping through the strategy functionality
-						executeStrategy();
+							// Change the button
+							button.setText("Start");
+						}
+						else {
+							// Begin looping through the strategy functionality
+							executeStrategy();
+						}
 					} catch (Exception e1) {
 						e1.printStackTrace();
 					}
 				}
 			});
-			frame.add(start);
+			frame.add(button);
 			frame.setVisible(true);
 		} catch (Exception e) {
 			e.printStackTrace();
