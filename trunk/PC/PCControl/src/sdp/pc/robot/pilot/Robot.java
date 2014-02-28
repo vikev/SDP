@@ -7,6 +7,7 @@ import static sdp.pc.vision.Alg.normalizeToUnitDegrees;
 
 import java.util.ArrayList;
 
+import sdp.pc.common.Constants;
 import sdp.pc.vision.Alg;
 import sdp.pc.vision.FutureBall;
 import sdp.pc.vision.Pitch;
@@ -58,7 +59,7 @@ public class Robot {
 	 * If an epsilon value doesn't make sense to know in some context, this is a
 	 * safe angle value to use
 	 */
-	private static final double SAFE_ANGLE_EPSILON = 10.0;
+	private static final double SAFE_ANGLE_EPSILON = 8.0;
 
 	/**
 	 * The primitive driver used to control the NXT
@@ -84,6 +85,7 @@ public class Robot {
 	 * The most recent calculated state of <b>this</b>
 	 */
 	private int myState = State.UNKNOWN;
+	private static int ms = State.UNKNOWN;
 
 	/**
 	 * An incremental "sub-state" value which can be used to handle sub-tasks
@@ -157,8 +159,7 @@ public class Robot {
 	 * Y coordinate by going forwards or backwards.
 	 */
 	public void defendBall() throws Exception {
-		//if (assertPerpendicular(SAFE_ANGLE_EPSILON)) {
-		if (assertFacing(270,SAFE_ANGLE_EPSILON)) {
+		if (assertPerpendicular(SAFE_ANGLE_EPSILON)) {
 			// Get predicted ball stop point
 			//Point2 predBallPos = state.getFutureData().getResult();
 			Point2 predBallPos = new Point2 (
@@ -167,7 +168,9 @@ public class Robot {
 
 			// If that position exists, go to its Y coordinate, otherwise stop.
 			if (!predBallPos.equals(Point2.EMPTY)) {
-				defendToY(predBallPos.getY(), DEFEND_EPSILON_DISTANCE);
+				if (defendToY(predBallPos.getY(), DEFEND_EPSILON_DISTANCE)) {
+					driver.stop();
+				}
 			} else {
 				driver.stop();
 			}
@@ -218,7 +221,9 @@ public class Robot {
 			// If that position exists, defend it, otherwise just defend the
 			// ball
 			if (!predictedBallPos.equals(Point2.EMPTY)) {
-				defendToY(predictedBallPos.getY(), DEFEND_EPSILON_DISTANCE);
+				if (defendToY(predictedBallPos.getY(), DEFEND_EPSILON_DISTANCE)) {
+					driver.stop();
+				}
 			} else {
 				defendBall();
 			}
@@ -357,7 +362,6 @@ public class Robot {
 
 		// Do it
 		if (assertFacing(target, eps)) {
-			driver.stop();
 			return true;
 		}
 		return false;
@@ -373,14 +377,24 @@ public class Robot {
 		// Turn to ball, move to ball, grab the ball, turn to the point, kick
 		Point2 ball = state.getBallPosition();
 		Point2 robo = state.getRobotPosition(myTeam, myIdentifier);
+		// The offset stuff doesn't really work too well - there are problems
+		// with the defender catching the ball
+		double xOffset = 
+			((double) (Math.abs(ball.x-Constants.TABLE_CENTRE_X)))/320;
+		double angOffset = 1 - Math.abs(robo.angleTo(ball))/180;
+		xOffset = Math.pow(xOffset, 3);
+		angOffset = Math.pow(angOffset, 3);
+		//System.out.println("X: " + xOffset + ", ang: " + angOffset);
+		
 		if (subState == 0) {
-			//if (goTo(ball.offset(20.0, ball.angleTo(robo)), 20.0)) {
-			if (goTo(ball, 35.0)) {
+			//if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
+			if (goTo(ball,35+5*(xOffset+angOffset))) {
 				System.out.println("goto");
 				driver.grab();
 				subState = 1;
 			}
 		}
+		//if (subState == 1 && )
 		if (subState == 1) {
 			if (turnTo(where, 10.0)) {
 				driver.kick(900);
@@ -509,6 +523,7 @@ public class Robot {
 	 */
 	public void setState(int newState) {
 		this.myState = newState;
+		ms = newState;
 	}
 
 	/**
@@ -557,6 +572,7 @@ public class Robot {
 			}
 			return false;
 		}
+		driver.stop();
 		return true;
 	}
 
@@ -618,14 +634,17 @@ public class Robot {
 	 * TODO: Units? motor velocity in radians per second or..?
 	 */
 	private static int getMoveSpeed(double distance) {
+		if (ms==State.DEFEND_BALL || ms==State.DEFEND_ENEMY_ATTACKER) {
+			return (int) ((distance+30)*2.5);
+		} 
 		if (distance > 180.0) {
-			return 400;
+			return 300;
 		} else if (distance > 120.0) {
-			return 250;
-		} else if (distance > 60.0) {
-			return 100;
+			return 150;
+		} else if (distance > 50.0) {
+			return 60;
 		} else {
-			return 50;
+			return 30;
 		}
 	}
 

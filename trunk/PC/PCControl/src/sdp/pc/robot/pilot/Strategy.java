@@ -50,7 +50,7 @@ public class Strategy {
 	 * The minimum speed for the ball to be considered fast, in pixels per
 	 * second.
 	 */
-	private static final double FAST_BALL_SPEED = 100.0;
+	private static final double FAST_BALL_SPEED = 150.0;
 
 	/**
 	 * the defending robot
@@ -111,7 +111,7 @@ public class Strategy {
 	private static void connectRobots() throws Exception {
 		Thread.sleep(1000);
 		defender = new Robot(ChooseRobot.defender(), state, myTeam, defenderId);
-		attacker = new Robot(ChooseRobot.attacker(), state, myTeam, attackerId);
+		attacker = new Robot(ChooseRobot.defender(), state, myTeam, attackerId);
 	}
 
 	/**
@@ -396,8 +396,8 @@ public class Strategy {
 					q = 0;
 				}
 				
-				//parseAttacker();
-				parseDefender();
+				parseAttacker();
+				//parseDefender();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
