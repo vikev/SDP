@@ -4,8 +4,12 @@ import static sdp.pc.common.Constants.DIRECTION_LEFT;
 import static sdp.pc.common.Constants.DIRECTION_RIGHT;
 import static sdp.pc.vision.Alg.normalizeToBiDirection;
 import static sdp.pc.vision.Alg.normalizeToUnitDegrees;
+
+import java.util.ArrayList;
+
 import sdp.pc.vision.Alg;
 import sdp.pc.vision.FutureBall;
+import sdp.pc.vision.Pitch;
 import sdp.pc.vision.Point2;
 import sdp.pc.vision.WorldState;
 import sdp.pc.vision.relay.Driver;
@@ -405,6 +409,78 @@ public class Robot {
 			return true;
 		}
 		return false;
+	}
+	
+	public boolean passBall() throws Exception{
+		// Turn to ball, move to ball, grab the ball, turn to the point, kick
+		Point2 ball = state.getBallPosition();
+		Point2 robo = state.getRobotPosition(myTeam, myIdentifier);
+		
+		Point2 where = getPassPoint();
+		if (subState == 0) {
+			//if (goTo(ball.offset(20.0, ball.angleTo(robo)), 20.0)) {
+			if (goTo(ball, 30.0)) {
+				System.out.println("goto");
+				driver.grab();
+				subState = 1;
+			}
+		}
+		if (subState == 1) {
+			if (turnTo(where, 10.0)) {
+				driver.kick(900);
+				subState = 0;
+			}
+		}
+		return true;
+		
+	}
+	
+	public Point2 getPassPoint(){
+		// get shooting direction.
+		// get enemy attacker position
+		Pitch pitch = state.getPitch();
+		Point2 pass = Point2.EMPTY;
+		int passY,passX;
+		state.getDirection();
+		ArrayList<Point2> points = pitch.getArrayListOfPoints();
+		Point2 robo = state.getRobotPosition(1-myTeam, 1-myIdentifier);
+		Boolean bottom =false;
+		if(robo.getY()>225){
+			bottom = true;
+		}
+		
+		if (state.getDirection() == 0){
+			// shooting right
+			passX =	((points.get(4).getX() - points.get(3).getX())/2) + points.get(3).getX();
+			if(bottom){
+				passY = points.get(4).getY()+40;
+			} else {
+				passY = points.get(9).getY() - 40;
+			}
+		} else {
+			passX =	((points.get(3).getX() - points.get(3).getX())/2) + points.get(2).getX();
+			if(bottom){
+				passY = points.get(2).getY()+40;
+			} else {
+				passY = points.get(11).getY() - 40;
+			}
+		}
+		pass.setX(passX);
+		pass.setY(passY);
+		return pass;
+		
+	}
+	
+	public Boolean recievePass(){
+		Point2 where = getPassPoint();
+		try {
+			goTo(where,10.0);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return true;
+		
 	}
 
 	/**
