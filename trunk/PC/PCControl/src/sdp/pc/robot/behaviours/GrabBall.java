@@ -29,46 +29,38 @@ public class GrabBall extends RobotBehavior {
 	 * TODO: check whether the robot is attacker/defender
 	 */
 	private int myQuadrant() {
-		return robot.getWorldState().getDefenderQuadrant();
+		return robot.getWorldState().getAttackerQuadrant();
 	}
 
 	@Override
-	public void action() {
-		boolean turning = false;
+	public boolean actionFrame() throws Exception {
 		Driver driver = robot.getDriver();
 		
-		while (!suppressed && takeControl()) {
-			try {
-				
-				Point2 ballPos = getWorldState().getBallPosition();
-				Point2 myPos = robot.getPosition();
-				
-				double ballRobotAngle = myPos.angleTo(ballPos);
-				double ballRobotDist = myPos.distance(ballPos);
-				
-				if(ballRobotAngle > ANGLE_EPSILON) {
-					if(ballRobotAngle > 0)
-						driver.turnLeft();
-					else
-						driver.turnRight();
-				}
-				else if(ballRobotDist > DISTANCE_EPSILON) {
-					//start moving
-
-					driver.forward();
-				}
-				else if(!robot.hasBall()) {
-					//grab!
-					robot.getDriver().grab();
-				}
-				else
-					break;
-				
-				sleep();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		Point2 ballPos = getWorldState().getBallPosition();
+		Point2 myPos = robot.getPosition();
+		
+		double ballRobotAngle = myPos.angleTo(ballPos);
+		double ballRobotDist = myPos.distance(ballPos);
+		
+		if(ballRobotAngle > ANGLE_EPSILON) {
+			//turn
+			if(ballRobotAngle > 0)
+				driver.turnLeft();
+			else
+				driver.turnRight();
 		}
+		else if(ballRobotDist > DISTANCE_EPSILON) {
+			//move
+			driver.forward();
+		}
+		else if(!robot.hasBall()) {
+			//grab!
+			driver.stop();
+			driver.grab();
+		}
+		else
+			return true;
+		
+		return false;
 	}	
 }

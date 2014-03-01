@@ -29,9 +29,8 @@ public class DefendRobot extends RobotBehavior {
 		}
 
 	@Override
-	public void action() {
-		while (!suppressed) {
-			//TODO Implement this (by referring to Robot.java)
-		}
+	public boolean actionFrame() {
+		//TODO Implement this (by referring to Robot.java)
+		return true;
 	}
 }

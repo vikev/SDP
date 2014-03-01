@@ -59,11 +59,7 @@ public class TurnPerpendicular extends RobotBehavior {
 		try {
 			
 			while(takeControl() && !suppressed) {
-				if(direction == LEFT)
-					robot.getDriver().turnLeft();
-				else
-					robot.getDriver().turnRight();
-				Thread.sleep(DEFAULT_SLEEP_DURATION);
+
 			}
 			
 			robot.getDriver().stop(); 
@@ -72,5 +68,15 @@ public class TurnPerpendicular extends RobotBehavior {
 			//TODO: how do we handle such exceptions?
 			// - hope it never happens...
 		}
+	}
+
+	@Override
+	public boolean actionFrame() throws Exception {
+		if(direction == LEFT)
+			robot.getDriver().turnLeft();
+		else
+			robot.getDriver().turnRight();
+
+		return false;
 	}
 }

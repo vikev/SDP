@@ -37,12 +37,11 @@ public class DefendBall extends RobotBehavior {
 	}
 
 	@Override
-	public void action() {
-		while (!suppressed) {
-			//check predicted ball position
-			//see if we are close enough
-			//move?
-			//when to end?
-		}
+	public boolean actionFrame() {
+		//check predicted ball position
+		//see if we are close enough
+		//move?
+		//when to end?
+		return true;
 	}
 }

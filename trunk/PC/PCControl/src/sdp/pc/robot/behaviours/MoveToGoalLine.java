@@ -18,11 +18,11 @@ public class MoveToGoalLine extends RobotBehavior {
 	public boolean takeControl() {
 		return true;
 	}
-
+	
 	@Override
-	public void action() {
-		while (!suppressed) {
-			//TODO Implement this (by referring to Robot.java)
-		}
+	public boolean actionFrame() throws Exception {
+		// TODO Auto-generated method stub
+		//TODO Implement this (by referring to Robot.java)
+		return false;
 	}
 }
