@@ -440,4 +440,8 @@ public class WorldState {
 	public int getAttackerQuadrant() {
 		return (shootingDirection == 0) ? 2 : 3;
 	}
+	
+	public Point2 getOpponentGoalCenter() {
+		return (shootingDirection == 0) ? pitch.getLeftGoalCentre() : pitch.getRightGoalCentre();
+	}
 }

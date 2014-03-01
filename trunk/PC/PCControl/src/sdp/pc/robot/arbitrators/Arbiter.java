@@ -94,6 +94,7 @@ public class Arbiter
       }// monotor released before action is called
       if (_active != NONE)  //_highestPrioirty could be NONE
       {
+    	  System.out.println("Starting behavior " + _active);
         _behavior[_active].action();
         _active = NONE;  // no active behavior at the moment
       }

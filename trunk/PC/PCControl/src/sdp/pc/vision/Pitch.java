@@ -216,7 +216,7 @@ public class Pitch {
 		//printPoints();
 		return points;
 	}
-	public void printPoints(){
+	public void printPoints() {
 		
 		ArrayList<Point2> points = getArrayListOfPoints();
 		int index = 1;

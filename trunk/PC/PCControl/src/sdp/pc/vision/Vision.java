@@ -143,6 +143,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		 * Anyone know why we use invokeLater to start the video feed? Does this
 		 * simply mean "run after swing has initialised the frame"?
 		 */
+		InvokeNew(state);
+	}
+
+	public static void InvokeNew(final WorldState state) {		
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -154,7 +158,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			}
 		});
 	}
-
+	
 	/**
 	 * Builds the WebcamViewer object and initialises state data and thresholds
 	 * 
