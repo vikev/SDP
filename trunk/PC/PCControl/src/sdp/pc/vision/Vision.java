@@ -178,7 +178,10 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		// create state painter
 		statePainter = new WorldStatePainter(stateListener, state);
 
-		Colors.setSettingsManager(SettingsManager.defaultSettings);
+		SettingsManager defSet = SettingsManager.defaultSettings;
+		Colors.setSettingsManager(defSet);
+		state.setOurColor(defSet.getOurTeam());
+		state.setDirection(defSet.getShootingDirection());
 
 		// Initialise the frame fetcher
 		try {
@@ -292,8 +295,6 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				gui.setWorldListener(stateListener);
 				gui.setSettingsManager(SettingsManager.defaultSettings);
 				gui.setVisible(true);
-				state.setOurColor(gui.getSettingsManager().getOurTeam());
-				state.setDirection(gui.getSettingsManager().getShootingDirection());
 			}
 		});
 		frame.getContentPane().add(frameLabel);

@@ -191,10 +191,8 @@ public class WorldStateUpdater extends WorldStateListener {
 			if (ballPastPos.size() > PAST_BALL_POSITIONS)
 				ballPastPos.removeLast();
 
-			// Update estimated stop/collide points
+			// Update estimated data
 			state.setFutureData(FutureBall.estimateRealStopPoint());
-			//FutureBall.estimateMatchingYCoord(new Point2(528,206),
-			//170, new Point2(81,227)));
 		} else {
 			// If the ball position doesn't exist, update world state
 			// accordingly.
@@ -215,7 +213,7 @@ public class WorldStateUpdater extends WorldStateListener {
 				int ptCount = robotPtsCount[team][robot];
 				if (ptCount > MINIMUM_ROBOT_POINTS) {
 
-					// Remove team-color pixels if they're not within a green
+					// Remove team-colour pixels if they're not within a green
 					// plate
 					Point2 tempPos = new Point2(0, 0);
 					ArrayList<Point2> tempPts = new ArrayList<Point2>();
@@ -275,9 +273,9 @@ public class WorldStateUpdater extends WorldStateListener {
 	 * @param robotCentroid
 	 *            the centroid of the robot
 	 * @param cRgbs
-	 *            the RGB colors of the image
+	 *            the RGB colours of the image
 	 * @param cHsbs
-	 *            the HSB colors of the image
+	 *            the HSB colours of the image
 	 * @return the angle the robot is facing in degrees in range [0,360] where
 	 *         clockwise is the positive direction
 	 */

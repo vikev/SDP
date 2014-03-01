@@ -2,7 +2,6 @@ package sdp.pc.vision;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.util.ArrayList;
 
 /**
  * Class for estimating the real trajectories of the ball. Feeds data it
@@ -15,10 +14,15 @@ import java.util.ArrayList;
 public class FutureBall {
 
 	/**
+	 * The factor to apply to a moving body after hitting a wall in order to
+	 * predict energy lost. A higher COR produces a more elastic collision.
+	 */
+	private static final double COEFFICIENT_OF_RESTITUTION = 0.4;
+	/**
 	 * The minimum velocity of the ball in pixels per second to estimate its
 	 * stopping point.
 	 */
-	private static final int MIN_ESTIMATE_VELOCITY = 10;
+	private static final int MIN_ESTIMATE_VELOCITY = 30;
 
 	/**
 	 * The estimated fraction of the ball velocity lost per second
@@ -67,83 +71,6 @@ public class FutureBall {
 	}
 
 	/**
-	 * Calculate if the pitch contains the 8 surrounding pixels around (x,y) and
-	 * therefore determine the deflection angle.
-	 * 
-	 * @param x
-	 * @param y
-	 */
-	public static Intersect collide8(double x, double y, Intersect inter) {
-		boolean[] q = new boolean[8];
-		Point2[] pts = new Point2[8];
-
-		pts[0] = new Point2((int) x + 1, (int) y);
-		q[0] = pitchContains(pts[0]);
-
-		pts[1] = new Point2((int) x + 1, (int) y - 1);
-		q[1] = pitchContains(pts[1]);
-
-		pts[2] = new Point2((int) x, (int) y - 1);
-		q[2] = pitchContains(pts[2]);
-
-		pts[3] = new Point2((int) x - 1, (int) y - 1);
-		q[3] = pitchContains(pts[3]);
-
-		pts[4] = new Point2((int) x - 1, (int) y);
-		q[4] = pitchContains(pts[4]);
-
-		pts[5] = new Point2((int) x - 1, (int) y + 1);
-		q[5] = pitchContains(pts[5]);
-
-		pts[6] = new Point2((int) x, (int) y + 1);
-		q[6] = pitchContains(pts[6]);
-
-		pts[7] = new Point2((int) x + 1, (int) y + 1);
-		q[7] = pitchContains(pts[7]);
-
-		boolean here = q[0];
-		int[] p = new int[2];
-		int found = -1;
-		boolean b = true;
-		for (int i = 1; i < 8; i++) {
-			if (!here == q[i]) {
-				here = !here;
-				if (found > -1) {
-					p[found] = i;
-				}
-				found++;
-				if (found > 1) {
-					break;
-				}
-				if (i == 7 && b) {
-					i = 0;
-					b = false;
-				}
-			}
-		}
-
-//		double angleInDegrees = pts[p[0]].angleTo(pts[p[1]]);
-//		double ang = angleInDegrees * Math.PI / 180.0;
-//		Point2 offsPt = new Point2((int) (50.0 * Math.cos(ang)),
-//				(int) (50.0 * Math.sin(ang)));
-		// drawLine(pts[p[0]].add(offsPt), pts[p[1]].sub(offsPt));
-
-		Point2 A = new Point2((int) x, (int) y); // Ball
-		Point2 B = pts[p[0]]; // Collision
-		// double angle = getOutwardAngle(A, B);
-
-		double[] pointAndAngle = getTrueAngle(A, B);
-		Point2 CD = new Point2((int)pointAndAngle[0],(int)pointAndAngle[1]);
-		double angle = pointAndAngle[2];
-		
-	
-		inter.setIntersection(B); // Point it meets wall
-		inter.setBall(CD);
-		inter.setAngle(angle); 
-		return inter;
-	}
-
-	/**
 	 * Estimates ball stop point given velocity and position of the ball
 	 * 
 	 * @return predicted ball position
@@ -160,14 +87,16 @@ public class FutureBall {
 	 * @param vel
 	 *            - the velocity of the ball in vector format
 	 * @param ball
-	 *            - the position of the ball in co-ordinate format
+	 *            - the position of the ball in coordinate format
 	 * @return predicted position
 	 */
 	public static Intersect estimateStopPoint(Point2 vel, Point2 ball) {
+
+		// Initialise components used by algorithm
 		double delX = vel.getX(), delY = vel.getY();
 		double tarX = ball.getX(), tarY = ball.getY();
-		// How much friction to apply to the ball
 
+		// How much friction to apply to the ball
 		double frameFriction = 1.0 - ESTIMATED_BALL_FRICTION;
 
 		// Apply geometric series
@@ -180,38 +109,53 @@ public class FutureBall {
 		double distToStop = (new Point2((int) (tarX - iteratorX),
 				(int) (tarY - iteratorY)).modulus());
 
+		// Compute a normalised del pair with modulus 1.0
 		double vHatX = tarX - iteratorX;
 		double vHatY = tarY - iteratorY;
 		vHatX /= distToStop;
 		vHatY /= distToStop;
-		collision = Point2.EMPTY;
-		Intersect inter = new Intersect(ball, Point2.EMPTY, Point2.EMPTY,
-				Point2.EMPTY, Double.NaN);
+
+		// Initialise empty collision point and Intersection
+		Intersect inter = new Intersect(ball, ball);
+
+		// Only estimate data if the ball is moving at a reasonable velocity
 		if (vel.modulus() > MIN_ESTIMATE_VELOCITY) {
-			while (collision.equals(Point2.EMPTY) && distToStop > 0) {
-				if (!pitchContains(new Point2((int) iteratorX, (int) iteratorY))) {
-					collision = new Point2((int) iteratorX, (int) iteratorY);
 
-					
-					inter = collide8(iteratorX, iteratorY, inter);
-					Point2 temp = new Point2((int) tarX, (int) tarY);
-					double distance = temp.distance(ball);
-					Point2 rebound = getReboundPoint(inter.getIntersection(),inter.getBall(),distance,inter.getAngle());
-					inter.setDeflection(rebound);
+			// Loop until a collision is recognised or the the iterator reaches
+			// the initial estimate
+			while (distToStop > 0) {
 
+				// Collision found if the point found is off the field
+				Point2 iteratorPt = new Point2((int) iteratorX, (int) iteratorY);
+				if (!pitchContains(iteratorPt)) {
+
+					// Apply COR
+					distToStop *= COEFFICIENT_OF_RESTITUTION;
+
+					inter.addIntersection(iteratorPt);
+					double newAng = getDeflectionAngle(ball, iteratorPt)
+							* Math.PI / 180.0;
+					vHatX = Math.cos(newAng);
+					vHatY = Math.sin(newAng);
 				}
+
+				// Increment the iterator (go to the next pixel on a line
+				// between ball and initialEstimate)
 				iteratorX += vHatX;
 				iteratorY += vHatY;
 				distToStop -= 1;
 			}
 		}
 
+		inter.setEstimate(new Point2((int) iteratorX, (int) iteratorY));
+		
 		// Return bundle
 		return inter;
 	}
-	
-	public static Point2 matchingYCoord(Point2 movingPos, double movingFacing, Point2 staticPos){
-		
+
+	public static Point2 matchingYCoord(Point2 movingPos, double movingFacing,
+			Point2 staticPos) {
+
 		// The ball position, robot position, and desired position form a
 		// triangle. Since two angles and one side can be trivially calculated,
 		// we can use the law of sines to calculate the diff side length, and
@@ -235,7 +179,8 @@ public class FutureBall {
 		// Use the law of sines - a/sin(A) = b/sin(B) = c/sin(C)
 		// diff / sin(theta) = ballToRobotDist / (theta3) ->
 		// diff = ballToRobotDist * sin(theta)/sin(theta3)
-		double diff = distBallToRobot * Math.sin(theta*Math.PI/180) / Math.sin(theta3*Math.PI/180);
+		double diff = distBallToRobot * Math.sin(theta * Math.PI / 180)
+				/ Math.sin(theta3 * Math.PI / 180);
 
 		// If the angle between the balls facing and the static position is too
 		// large, the ball is moving away (return empty point), otherwise,
@@ -245,8 +190,9 @@ public class FutureBall {
 		} else {
 			return new Point2(staticPos.getX(), staticPos.getY() + (int) diff);
 		}
-		
+
 	}
+
 	/**
 	 * Estimates the intersection point of a moving ball, with a robot whose x
 	 * co-ordinate remains static.
@@ -297,8 +243,8 @@ public class FutureBall {
 
 		Intersect stopPos = estimateStopPoint(new Point2(x, y), movingPos);
 
-		Point2 intersection = stopPos.getIntersection();
-		Point2 estimatedPoint = stopPos.getDeflection();
+		Point2 intersection = stopPos.getIntersections().get(0);
+		Point2 estimatedPoint = stopPos.getEstimate();
 
 		if (betweenTwoPoints(staticPos.getX(), intersection.getX(),
 				movingPos.getX())) {
@@ -352,170 +298,85 @@ public class FutureBall {
 	}
 
 	/**
-	 * Calculates the angle between three points using arc cos.
-	 * 
-	 * @param A
-	 *            - Location of the ball on the pitch.
-	 * @param B
-	 *            - Point of collision with boundary.
-	 * 
-	 * @return angle between point A,B and two closest points on the boundary
-	 */
-	public static double getOutwardAngle(Point2 A, Point2 B) {
-		int[] twoPoints = getCollisionWall(B);
-		// double outAngle;
-		Point2 C = new Point2(twoPoints[0], twoPoints[1]);
-		Point2 D = new Point2(twoPoints[2], twoPoints[3]);
-		System.out.println("C: " + C.toString() + ", D: " + D.toString());
-
-		double aC = C.distance(B);
-		double aD = D.distance(B);
-		double c = A.distance(B);
-		double bD = A.distance(D);
-		double bC = A.distance(C);
-
-		double inAngleC = Math.acos((Math.pow(aC, 2) + Math.pow(c, 2) - Math
-				.pow(bC, 2)) / (2 * aC * c));
-		double inAngleD = Math.acos((Math.pow(aD, 2) + Math.pow(c, 2) - Math
-				.pow(bD, 2)) / (2 * aD * c));
-		double abc = inAngleC * 180 / Math.PI;
-		double abd = inAngleD * 180 / Math.PI;
-		System.out.println("For Ball at " + A.toString() + " and collison at "
-				+ B.toString() + ", the angle for abc is " + abc
-				+ " and the angle for abd is " + abd);
-
-		if ((abc) > 90) {
-			return abd;
-
-		} else {
-			return abc;
-		}
-
-	}
-
-	/**
-	 * Calculates the angle between three points using arc cos.
-	 * 
-	 * @param ball
-	 *            - Location of the ball on the pitch.
-	 * @param intersection
-	 *            - Point of collision with boundary.
-	 * @param diatance
-	 *            - distance from collision to estimated before rebound
-	 * @param angle
-	 *            - angle return by getOutwardAngle function
-	 * 
-	 * @return Expected point after rebound
-	 */
-
-	// could take a distance
-	public static Point2 getReboundPoint(Point2 intersection, Point2 wallPoint,
-			double distance, double angle) {
-		double x = 0;
-		double y = 0;
-		x = intersection.getX() + distance * Math.cos(angle);
-		y = intersection.getY() + distance * Math.sin(angle);
-		Point2 estimation = new Point2((int) x, (int) y);
-		return estimation;
-	}
-
-	/**
+	 * method for getting the two points which form the border that collision
+	 * point 'collide' lies between. Works by getting the closest border point
+	 * and then comparing its angle with the two immediate neighbours of that
+	 * one. Such is necessary because getting the two closest points will have
+	 * unexpected behaviour since some boundary panels are longer than others.
 	 * 
 	 * @param collide
 	 *            - point of collision with wall
 	 * 
-	 * @return array representation of the two closest points
+	 * @return two points which represent the points that form the boundary.
 	 */
-	public static int[] getCollisionWall(Point2 collide) {
+	public static Point2[] getCollisionWall(Point2 collide) {
+
+		// Initialise components used by algorithm
 		Pitch pitch = state.getPitch();
-		ArrayList<Point2> points = pitch.getArrayListOfPoints();
-		double minA = 1000;
-		Point2 wallPointA = new Point2(0, 0);
-		Point2 wallPointB = new Point2(0, 0);
-		int min = 0;
-		for (Point2 point : points) {
-			double distance = collide.distance(point);
-			if (distance < minA) {
-				min = points.indexOf(point);
-				wallPointA = point;
-				minA = distance;
-			}
-		}
-		double distanceA;
-		double distanceB;
+		Point2[] vals = new Point2[2];
 
-		if (min == 0) {
-			Point2 A = points.get(points.size() - 1);
-			Point2 B = points.get(min + 1);
-			distanceA = collide.distance(A);
-			distanceB = collide.distance(B);
-			if (distanceA < distanceB) {
-				wallPointB = points.get(points.size() - 1);
+		// Get the closest boundary vertex to collide
+		Point2 nearest = pitch.getVertexNearest(collide);
+		vals[0] = nearest;
 
-			} else {
-				wallPointB = points.get(min + 1);
-			}
-		} else if (min != points.size()-1){
-			Point2 A = points.get(min - 1);
-			Point2 B = points.get(min + 1);
-			distanceA = collide.distance(A);
-			distanceB = collide.distance(B);
-			if (distanceA < distanceB) {
-				wallPointB = points.get(min - 1);
-			} else {
-				wallPointB = points.get(min + 1);
-			}
+		// Get the two boundary vertices that neighbour 'nearest' as candidates
+		Point2[] candidates = pitch.getBoundariesNeighbouring(nearest);
 
-		}
+		// Get the angles formed between collision point -> nearest vertex ->
+		// candidate. The candidate which produces a smaller angle is the
+		// correct one.
+		double theta = collide.angleTo(nearest);
+		double theta2 = nearest.angleTo(candidates[0]);
+		double theta3 = nearest.angleTo(candidates[1]);
+		double cand1Ang = Math.abs(Alg.normalizeToBiDirection(theta - theta2));
+		double cand2Ang = Math.abs(Alg.normalizeToBiDirection(theta - theta3));
 
-		int[] twoPoints = { wallPointA.getX(), wallPointA.getY(),
-				wallPointB.getX(), wallPointB.getY() };
-		return twoPoints;
-
-	}
-
-	public static double[] getTrueAngle(Point2 A, Point2 B) {
-		int[] twoPoints = getCollisionWall(B);
-		Point2 C = new Point2(twoPoints[0], twoPoints[1]);
-		Point2 D = new Point2(twoPoints[2], twoPoints[3]);
-		double trueAngle = 0;
-		double[] returnedList = { 0, 0, 0 };
-		// angle to left point of wall
-		double aC = C.distance(B);
-		double bC = A.distance(C);
-		double c = A.distance(B);
-		double angleCR = Math.acos((Math.pow(aC, 2) + Math.pow(c, 2) - Math
-				.pow(bC, 2)) / (2 * aC * c));
-		double angleCD = angleCR * (180 / Math.PI);
-		// angle to right point of wall
-		double aD = D.distance(B);
-		double bD = A.distance(D);
-		double angleDR = Math.acos((Math.pow(aD, 2) + Math.pow(c, 2) - Math
-				.pow(bD, 2)) / (2 * aD * c));
-		double angleDD = angleDR * (180 / Math.PI);
-		if (angleDD > 90) {
-			trueAngle = angleDD - angleCD;
-			returnedList[0] = C.getX();
-			returnedList[1] = C.getY();
-			returnedList[2] = trueAngle;
+		// Compare candidate angles and return the correct wall.
+		if (cand1Ang < cand2Ang) {
+			vals[1] = candidates[0];
 		} else {
-			trueAngle = angleCD - angleDD;
-			returnedList[0] = D.getX();
-			returnedList[1] = D.getY();
-			returnedList[2] = trueAngle;
+			vals[1] = candidates[1];
 		}
-		return returnedList;
+		return vals;
 	}
-	/*
-	 * Useless code now public static int getQuadrant(Point2 A, Point2 B, Point2
-	 * C) { double a = C.distance(B); double b = A.distance(C); double c =
-	 * A.distance(B); double angleR = Math.acos((Math.pow(a, 2) + Math.pow(c, 2)
-	 * - Math.pow( b, 2)) / (2 * a * c));
-	 * 
-	 * double angleD = angleR * (180 / Math.PI);
-	 * System.out.println("Angle to true north: " + angleD); if (angleD > 90) {
-	 * if (A.getX() < B.getX()) { return 2; } else { return 3; } } else { if
-	 * (A.getX() < B.getX()) { return 1; } else { return 0; } } }
-	 */
 
+	/**
+	 * Given a ball point and collision point, return the resultant angle of the
+	 * ball were it to reflect off the boundary.
+	 * 
+	 * @param ball
+	 *            - current ball position
+	 * @param collision
+	 *            - the point of collision
+	 * @return the new angle about the horizontal (the angle with respect to 0)
+	 */
+	public static double getDeflectionAngle(Point2 ball, Point2 collision) {
+
+		// Get some basic angles to use in calculations
+		Point2[] boundaries = getCollisionWall(collision);
+		double boundaryAngle = boundaries[0].angleTo(boundaries[1]);
+		double boundaryNormal = Alg
+				.normalizeToBiDirection(boundaryAngle + 90.0);
+		double collisionToBall = Alg.normalizeToBiDirection(collision
+				.angleTo(ball));
+
+		// Get the angle between the boundary's normal and the angle from ball
+		// to collision
+		double diff = Alg.normalizeToBiDirection(boundaryNormal
+				- collisionToBall);
+
+		// Calculate one of two possible results
+		double resultCandidate = Alg.normalizeToBiDirection(collisionToBall
+				+ diff * 2.0);
+
+		// Build an arbitrary point 50 pixels away to see if the candidate works
+		// TODO: Bounds checking
+		Point2 candChecker = collision.offset(50.0, resultCandidate);
+		if (pitchContains(candChecker)) {
+			return resultCandidate;
+		}
+
+		// Otherwise the result is just the candidate's opposite
+		return Alg.normalizeToBiDirection(resultCandidate + 180.0);
+	}
 }

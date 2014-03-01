@@ -36,7 +36,6 @@ public class SettingsManager implements java.io.Serializable {
 	 *  - N_SETTINGS++
 	 *  - add the appropriate highlighting mode for the world painter, if any
 	 */
-
 	public static final int COLOR_CODE_BALL = 0;
 	public static final int COLOR_CODE_PLATE = 1;
 	public static final int COLOR_CODE_BLUE = 2;
@@ -137,8 +136,10 @@ public class SettingsManager implements java.io.Serializable {
 	private transient boolean hasChanges = false;
 	
 
-	public transient ActionListener changeListener;
+	/* getters setters for serializable fields */
 	
+	public transient ActionListener changeListener;
+
 	/**
 	 * Registers that a change has occurred. 
 	 * <p>
