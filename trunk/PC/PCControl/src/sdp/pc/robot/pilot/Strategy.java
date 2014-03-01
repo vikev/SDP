@@ -1,5 +1,10 @@
 package sdp.pc.robot.pilot;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 import au.edu.jcu.v4l4j.exceptions.V4L4JException;
@@ -22,21 +27,22 @@ public class Strategy {
 	/**
 	 * Team ID of our team (could be refactored?)
 	 */
-	private static final int MY_TEAM = 1;
+	private static int myTeam;
 
 	/**
 	 * ID for the defending robot (could be refactored?)
 	 */
-	private static final int DEFENDER_ID = 0;
+	private static int defenderId;
 
 	/**
 	 * ID for the attacking robot (could be refactored?)
 	 */
-	private static final int ATTACKER_ID = 1;
+	private static int attackerId;
 
 	/**
 	 * Controls how often to parse/send commands to the robots. 1/7*1000 = 7
-	 * times per second
+	 * times per second. Never use integer values to describe double precision
+	 * numbers. 7 != 7.0
 	 */
 	private static final double PERIOD = 1.0 / 7.0 * 1000.0;
 
@@ -44,7 +50,7 @@ public class Strategy {
 	 * The minimum speed for the ball to be considered fast, in pixels per
 	 * second.
 	 */
-	private static final double FAST_BALL_SPEED = 50.0;
+	private static final double FAST_BALL_SPEED = 150.0;
 
 	/**
 	 * the defending robot
@@ -64,13 +70,13 @@ public class Strategy {
 	@SuppressWarnings("unused")
 	private static Point2 basicGoalTarget() {
 		if (state.getDirection() == 0) {
-			if (state.getRobotPosition(MY_TEAM ^ 1, DEFENDER_ID).getY() > state
+			if (state.getRobotPosition(myTeam ^ 1, defenderId).getY() > state
 					.getLeftGoalCentre().getY())
 				return WorldState.leftGoalTop;
 			else
 				return WorldState.leftGoalBottom;
 		} else {
-			if (state.getRobotPosition(MY_TEAM ^ 1, DEFENDER_ID).getY() > state
+			if (state.getRobotPosition(myTeam ^ 1, defenderId).getY() > state
 					.getRightGoalCentre().getY())
 				return WorldState.rightGoalTop;
 			else
@@ -104,13 +110,8 @@ public class Strategy {
 	 */
 	private static void connectRobots() throws Exception {
 		Thread.sleep(1000);
-		// TODO: Having two different versions of TCPClient and Driver is
-		// extremely difficult to deal with. Can someone familiar with both
-		// classes refactor/remove something please
-		defender = new Robot(ChooseRobot.defender(), state, MY_TEAM,
-				DEFENDER_ID);
-		attacker = new Robot(ChooseRobot.attacker(), state, MY_TEAM,
-				ATTACKER_ID);
+		defender = new Robot(ChooseRobot.defender(), state, myTeam, defenderId);
+		attacker = new Robot(ChooseRobot.attacker(), state, myTeam, attackerId);
 	}
 
 	/**
@@ -198,7 +199,7 @@ public class Strategy {
 	 * <tr>
 	 * <td>Enemy Defender</td>
 	 * <td>Fast Ball ? Defend Ball : Defend Goal Line</td>
-	 * <td>Fast Ball ? Intercept Ball : Get Ball</td>
+	 * <td>Fast Ball ? Intercept Ball : Defend Enemy Defender</td>
 	 * </tr>
 	 * <tr>
 	 * <td>Our Attacker</td>
@@ -268,6 +269,7 @@ public class Strategy {
 			// defensive plays, but only assert an unknown state if the ball is
 			// moving fast?
 		}
+		
 	}
 
 	/**
@@ -299,15 +301,13 @@ public class Strategy {
 	 */
 	private static void parseAttacker() throws Exception {
 		if (attacker.getState() == Robot.State.WAIT_RECEIVE_PASS) {
-			attacker.assertPerpendicular(10.0);
+			attacker.defendRobot(attacker.getTeam(), attacker.getOtherId());
 		} else if (attacker.getState() == Robot.State.DEFEND_BALL) {
-			if(attacker.assertPerpendicular(10.0)){
-				attacker.defendBall();
-			}
+			attacker.defendBall();
 		} else if (attacker.getState() == Robot.State.DEFEND_ENEMY_DEFENDER) {
-			attacker.defendRobot();
+			attacker.defendRobot(attacker.getOtherTeam(), attacker.getOtherId());
 		} else if (attacker.getState() == Robot.State.GET_BALL) {
-			attacker.kickStationaryBall();
+			attacker.kickBallToPoint(getTheirGoalCentre());
 		} else {
 			attacker.assertPerpendicular(10.0);
 		}
@@ -329,37 +329,50 @@ public class Strategy {
 	 */
 	private static void parseDefender() throws Exception {
 		if (defender.getState() == Robot.State.DEFEND_BALL) {
-			if (defender.assertNearGoalLine(10.0)) {
-				if (defender.assertPerpendicular(10.0)) {
-					defender.defendBall();
-				}
-			}
+			defender.defendBall();
 		} else if (defender.getState() == Robot.State.DEFEND_ENEMY_ATTACKER) {
-			if (defender.assertPerpendicular(10.0)) {
-				defender.defendRobot();
-			}
+			defender.defendRobot(defender.getOtherTeam(), defender.getOtherId());
 		} else if (defender.getState() == Robot.State.DEFEND_GOAL_LINE) {
+			// TODO: Robot code to defend a weighted goal line
 			if (defender.assertNearGoalLine(10.0)) {
-				defender.goTo(getDefendGoalCentre(), 10.0);
+				defender.goTo(getOurGoalCentre(), 10.0);
 			}
 		} else if (defender.getState() == Robot.State.PASS_TO_ATTACKER) {
-			defender.kickStationaryBall();
+			defender.kickBallToPoint(state.getRobotPosition(defender.getTeam(),
+					defender.getOtherId()));
 		} else {
-			defender.assertPerpendicular(10.0);
+			if (defender.assertNearGoalLine(10.0)) {
+				defender.assertPerpendicular(10.0);
+			}
 		}
 	}
 
 	/**
-	 * Returns the centre of the goal of the defender
+	 * Returns the centre of the goal of our defender
 	 * 
 	 * @return
 	 */
-	private static Point2 getDefendGoalCentre() {
+	private static Point2 getOurGoalCentre() {
 		if (state.getDirection() == 0) {
 			return state.getRightGoalCentre();
 		}
 		return state.getLeftGoalCentre();
 	}
+
+	/**
+	 * Returns the centre of the goal of their defender
+	 * 
+	 * @return
+	 */
+	private static Point2 getTheirGoalCentre() {
+		if (state.getDirection() == 0) {
+			return state.getLeftGoalCentre();
+		}
+		return state.getRightGoalCentre();
+	}
+
+	// temporary frame counter (trafendersh)
+	private static int q = 0;
 
 	/**
 	 * Loops indefinitely, ordering the robots to do things
@@ -371,7 +384,19 @@ public class Strategy {
 		while (true) {
 			try {
 				updateStates();
-				parseAttacker();
+
+				// Print out the states every 10 frames (don't flood the
+				// console)
+				q++;
+				if (q == 10) {
+					System.out.println();
+					System.out.println("Attacker, Defender states:");
+					Robot.State.print(attacker.getState());
+					Robot.State.print(defender.getState());
+					q = 0;
+				}
+				
+				//parseAttacker();
 				parseDefender();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -388,9 +413,41 @@ public class Strategy {
 	public static void main(String[] args) {
 		try {
 			startVisionSystem();
-			connectRobots();
-			addShutdownHook();
-			executeStrategy();
+
+			// Add a start button so we can have time to calibrate etc
+			JFrame frame = new JFrame("Ready and waiting!");
+			frame.setBounds(600, 200, 300, 150);
+			final JButton button = new JButton();
+			button.setText("Connect");
+			button.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						if (button.getText().equals("Connect")) {
+							// Set our team and direction
+							myTeam = state.getOurColor();
+							attackerId = state.getDirection();
+							defenderId = 1 - state.getDirection();
+							System.out.println("Sanity Check! " + "Our Team: "
+								+ myTeam + ", Defender Side: " + defenderId);		
+							// Connect to robots
+							connectRobots();
+							addShutdownHook();
+
+							// Change the button
+							button.setText("Start");
+						}
+						else {
+							// Begin looping through the strategy functionality
+							executeStrategy();
+						}
+					} catch (Exception e1) {
+						e1.printStackTrace();
+					}
+				}
+			});
+			frame.add(button);
+			frame.setVisible(true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

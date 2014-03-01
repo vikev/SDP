@@ -1,5 +1,7 @@
 package sdp.pc.vision;
 
+import java.util.ArrayList;
+
 /**
  * Class for recording and maintaining the positions and facing angles of
  * objects in "world". Must be instantiated.
@@ -392,6 +394,31 @@ public class WorldState {
 	}
 
 	/**
+	 * Returns the quadrant of a point. Useful for figuring out which zone a
+	 * ball or robot is in, or what quadrant an arbitrary point is in before you
+	 * call goTo on the robot
+	 * 
+	 * @param q
+	 * @return
+	 */
+	public int quadrantFromPoint(Point2 q) {
+		int x = q.getX();
+		ArrayList<Point2> points = pitch.getArrayListOfPoints();
+		if (x < points.get(14).x) {
+			return 0;
+		} else if (x < points.get(2).x) {
+			return 1;
+		} else if (x < points.get(3).x) {
+			return 2;
+		} else if (x < points.get(4).x) {
+			return 3;
+		} else if (x < points.get(6).x) {
+			return 4;
+		}
+		return 0;
+	}
+
+	/**
 	 * Returns which quadrant the ball is currently in, where quadrant 1, 2, 3,
 	 * 4 are the left defender, left attacker, right attacker, right defender
 	 * slots, respectively.
@@ -403,18 +430,6 @@ public class WorldState {
 	 * @return
 	 */
 	public int getBallQuadrant() {
-		int x = getBallPosition().getX();
-		if (x < pitch.goalLineX[0]) {
-			return 0;
-		} else if (x < pitch.pitchCornerX[0]) {
-			return 1;
-		} else if (x < pitch.getTableCentre().getX()) {
-			return 2;
-		} else if (x < pitch.pitchCornerX[1]) {
-			return 3;
-		} else if (x < pitch.goalLineX[1]) {
-			return 4;
-		}
-		return 0;
+		return quadrantFromPoint(getBallPosition());
 	}
 }

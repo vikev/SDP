@@ -38,12 +38,14 @@ public class KickerOnDCChassis implements Kicker {
 	// });
 
 	public void grab() {
+		System.out.println("Grabbing! Closed: " + closed);
 		if (!closed && (mechThr == null || !mechThr.isAlive())) {
 			mechThr = new Thread(new Runnable() {
 				public void run() {
 					Motor.B.setSpeed(150);
 					Motor.B.rotate(35);
-					closed = false;
+					closed = true;
+					System.out.println("Finished!");
 				}
 			});
 			mechThr.setDaemon(true);
@@ -54,6 +56,7 @@ public class KickerOnDCChassis implements Kicker {
 	int power;
 
 	public void kick(int power) {
+		System.out.println("Kicking! Closed: " + closed);
 		this.power = power;
 		final int p = power;
 		if (closed && (mechThr == null || !mechThr.isAlive())) {

@@ -177,12 +177,15 @@ public class Intersect {
 	 * Method for getting the best result of an intersection - looks for the
 	 * final estimated ball position
 	 * 
+	 * TODO: Deflection disabled while it doesn't work
+	 * 
 	 * @return
 	 */
 	public Point2 getResult() {
-		if (!this.deflection.equals(Point2.EMPTY)) {
-			return this.deflection;
-		} else if (!this.intersection.equals(Point2.EMPTY)) {
+		// if (!this.deflection.equals(Point2.EMPTY)) {
+		// return this.deflection;
+		// } else if (!this.intersection.equals(Point2.EMPTY)) {
+		if (!this.intersection.equals(Point2.EMPTY)) {
 			return this.intersection;
 		} else if (!this.initialEstimate.equals(Point2.EMPTY)) {
 			return this.initialEstimate;

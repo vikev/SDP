@@ -30,7 +30,7 @@ public class Driver {
 	 * @throws Exception
 	 */
 	public boolean forward(int power) throws Exception {
-		return conn.sendCommand('b', power);
+		return conn.sendCommand('f', power);
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class Driver {
 	 * @throws Exception
 	 */
 	public boolean turnLeft(int deg) throws Exception {
-		return conn.sendCommand('r', deg);
+		return conn.sendCommand('l', deg);
 	}
 
 	/**
@@ -91,7 +91,7 @@ public class Driver {
 	 * @throws Exception
 	 */
 	public boolean turnRight(int deg) throws Exception {
-		return conn.sendCommand('l', deg);
+		return conn.sendCommand('r', deg);
 	}
 
 	/**
@@ -114,8 +114,8 @@ public class Driver {
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean kick(int dist) throws Exception {
-		return conn.sendCommand('k', dist);
+	public boolean kick(int power) throws Exception {
+		return conn.sendCommand('k', power);
 	}
 
 	/**

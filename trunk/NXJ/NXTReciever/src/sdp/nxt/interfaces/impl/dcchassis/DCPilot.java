@@ -11,13 +11,19 @@ public class DCPilot implements Pilot {
 	private int power;
 
 	public DCPilot() {
+		// maximum power
 		setPower(0);
+		m1.stop();
+		m2.stop();
 	}
 
 	/**
 	 * The power is percentage. 0-100
 	 */
 	public void forward(int power) {
+		if (power == 0) {
+			power = 90000;
+		}
 		this.setPower(power);
 		m1.forward();
 		m2.backward();
@@ -57,6 +63,9 @@ public class DCPilot implements Pilot {
 	}
 
 	public void setPower(int power) {
+		if (power == 0) {
+			power = 90000;
+		}
 		m1.setPower(power);
 		m2.setPower(power);
 	}
