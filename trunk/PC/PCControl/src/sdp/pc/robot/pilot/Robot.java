@@ -697,7 +697,7 @@ public class Robot {
 	 * 
 	 * @return
 	 */
-	private int getGoalOffset() {
+	public int getGoalOffset() {
 		return (int) (Math.pow(-1, getWorld().getDirection() + 1) * GOAL_OFFSET);
 	}
 
@@ -900,6 +900,41 @@ public class Robot {
 		
 		return Math.abs(ballRobotAngle) < ANGLE_EPSILON 
 				&& 0 < ballRobotDist && ballRobotDist < DIST_EPSILON;
+	}
+	/**
+	 * Return if *this* robot is our attacker 
+	 * @return
+	 */
+	public boolean isOurAttacker() {
+		if (myIdentifier == state.getDirection()) {
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Return whether *this* robot is our defender
+	 * @return
+	 */
+	public boolean isOurDefender() {
+		if (myIdentifier != state.getDirection()) {
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Return our goals centre
+	 * @return
+	 */
+	public Point2 ourGoalCentre() {
+		Point2 goal_centre;
+		if (myIdentifier == 0) {
+			goal_centre = state.getLeftGoalCentre();
+		} else {
+			goal_centre = state.getRightGoalCentre();
+		}
+		return goal_centre;
 	}
 	
 	
