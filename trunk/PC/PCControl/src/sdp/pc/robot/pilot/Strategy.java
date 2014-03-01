@@ -269,7 +269,7 @@ public class Strategy {
 			// defensive plays, but only assert an unknown state if the ball is
 			// moving fast?
 		}
-		
+
 	}
 
 	/**
@@ -333,32 +333,17 @@ public class Strategy {
 		} else if (defender.getState() == Robot.State.DEFEND_ENEMY_ATTACKER) {
 			defender.defendRobot(defender.getOtherTeam(), defender.getOtherId());
 		} else if (defender.getState() == Robot.State.DEFEND_GOAL_LINE) {
-			// TODO: Robot code to defend a weighted goal line
-			if (defender.assertNearGoalLine(10.0)) {
-				defender.goTo(getOurGoalCentre(), 10.0);
-			}
+			defender.defendWeightedGoalLine(0.5);
 		} else if (defender.getState() == Robot.State.PASS_TO_ATTACKER) {
 			defender.kickBallToPoint(state.getRobotPosition(defender.getTeam(),
 					defender.getOtherId()));
 		} else {
 			if (defender.assertNearGoalLine(10.0)) {
-				if(defender.assertPerpendicular(10.0)){
+				if (defender.assertPerpendicular(10.0)) {
 					defender.stop();
 				}
 			}
 		}
-	}
-
-	/**
-	 * Returns the centre of the goal of our defender
-	 * 
-	 * @return
-	 */
-	private static Point2 getOurGoalCentre() {
-		if (state.getDirection() == 0) {
-			return state.getRightGoalCentre();
-		}
-		return state.getLeftGoalCentre();
 	}
 
 	/**
@@ -397,7 +382,7 @@ public class Strategy {
 					Robot.State.print(defender.getState());
 					q = 0;
 				}
-				
+
 				parseAttacker();
 				parseDefender();
 			} catch (Exception e) {
@@ -430,16 +415,17 @@ public class Strategy {
 							myTeam = state.getOurColor();
 							attackerId = state.getDirection();
 							defenderId = 1 - state.getDirection();
-							System.out.println("Sanity Check! " + "Our Team: "
-								+ myTeam + ", Defender Side: " + defenderId);		
+							System.out
+									.println("Sanity Check! " + "Our Team: "
+											+ myTeam + ", Defender Side: "
+											+ defenderId);
 							// Connect to robots
 							connectRobots();
 							addShutdownHook();
 
 							// Change the button
 							button.setText("Start");
-						}
-						else {
+						} else {
 							// Begin looping through the strategy functionality
 							executeStrategy();
 						}

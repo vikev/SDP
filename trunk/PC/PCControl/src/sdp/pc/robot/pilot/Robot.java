@@ -1,7 +1,5 @@
 package sdp.pc.robot.pilot;
 
-import static sdp.pc.common.Constants.DIRECTION_LEFT;
-import static sdp.pc.common.Constants.DIRECTION_RIGHT;
 import static sdp.pc.vision.Alg.normalizeToBiDirection;
 import static sdp.pc.vision.Alg.normalizeToUnitDegrees;
 
@@ -86,7 +84,6 @@ public class Robot {
 	 * The most recent calculated state of <b>this</b>
 	 */
 	private int myState = State.UNKNOWN;
-	private static int ms = State.UNKNOWN;
 
 	/**
 	 * An incremental "sub-state" value which can be used to handle sub-tasks
@@ -171,6 +168,28 @@ public class Robot {
 				}
 			} else {
 				driver.stop();
+			}
+		}
+	}
+
+	/**
+	 * Defends a goal line weighting between the goal line's centre and the
+	 * estimated ball position.
+	 * 
+	 * @param weight
+	 *            - how much to weight the goal centre a weight of 1.0
+	 *            essentially goes to the goal centre)
+	 * @throws Exception
+	 */
+	public void defendWeightedGoalLine(double weight) throws Exception {
+		assert (weight <= 1.0);
+		if (assertNearGoalLine(10.0)) {
+			if (assertPerpendicular(10.0)) {
+				double y = 0;
+				y += state.getPitch().getRightGoalCentre().getY() * weight;
+				y += state.getFutureData().getEstimate().getY()
+						* (1.0 - weight);
+				defendToY((int) y, 10.0);
 			}
 		}
 	}
@@ -312,6 +331,11 @@ public class Robot {
 	/**
 	 * Method for sending the robot to the goalmouth. Must be called
 	 * continuously because it is synchronous.
+	 * 
+	 * @param eps
+	 *            - Epsilon window for how close to the goal line centre to get
+	 *            <i>in the case that the robot isn't already near the goal
+	 *            line</i>
 	 */
 	public boolean assertNearGoalLine(double eps) {
 		try {
@@ -538,7 +562,6 @@ public class Robot {
 		try {
 			goTo(where, 10.0);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return true;
@@ -561,7 +584,6 @@ public class Robot {
 	 */
 	public void setState(int newState) {
 		this.myState = newState;
-		ms = newState;
 	}
 
 	/**
@@ -674,8 +696,9 @@ public class Robot {
 	 * 
 	 * TODO: Units? motor velocity in radians per second or..?
 	 */
-	private static int getMoveSpeed(double distance) {
-		if (ms == State.DEFEND_BALL || ms == State.DEFEND_ENEMY_ATTACKER) {
+	private int getMoveSpeed(double distance) {
+		if (myState == State.DEFEND_BALL
+				|| myState == State.DEFEND_ENEMY_ATTACKER) {
 			return (int) ((distance + 30) * 2.5);
 		}
 		if (distance > 180.0) {
@@ -697,25 +720,6 @@ public class Robot {
 	 */
 	private int getGoalOffset() {
 		return (int) (Math.pow(-1, state.getDirection() + 1) * GOAL_OFFSET);
-	}
-
-	/**
-	 * Gets a point we desire to kick towards. Currently only returns the centre
-	 * of the target goal.
-	 * 
-	 * @return
-	 */
-	// TODO: No longer used, but maybe necessary
-	@SuppressWarnings("unused")
-	private Point2 getBallTarget() {
-		int dir = state.getDirection();
-
-		// If the target goal is the right-side one
-		if (dir == DIRECTION_RIGHT)
-			return state.getRightGoalCentre();
-		if (dir == DIRECTION_LEFT)
-			return state.getLeftGoalCentre();
-		return Point2.EMPTY;
 	}
 
 	/**
