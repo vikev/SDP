@@ -161,10 +161,7 @@ public class Robot {
 	public void defendBall() throws Exception {
 		if (assertPerpendicular(SAFE_ANGLE_EPSILON)) {
 			// Get predicted ball stop point
-			//Point2 predBallPos = state.getFutureData().getResult();
-			Point2 predBallPos = new Point2 (
-					state.getRobotPosition(myTeam, myIdentifier).x,
-					state.getBallPosition().y);
+			Point2 predBallPos = state.getFutureData().getEstimate();
 
 			// If that position exists, go to its Y coordinate, otherwise stop.
 			if (!predBallPos.equals(Point2.EMPTY)) {
@@ -377,24 +374,59 @@ public class Robot {
 		// Turn to ball, move to ball, grab the ball, turn to the point, kick
 		Point2 ball = state.getBallPosition();
 		Point2 robo = state.getRobotPosition(myTeam, myIdentifier);
+		double distortion = getDistortion(robo); // distortion return negative values if left of centre and positive if right
 		// The offset stuff doesn't really work too well - there are problems
 		// with the defender catching the ball
 		double xOffset = 
 			((double) (Math.abs(ball.x-Constants.TABLE_CENTRE_X)))/320;
-		double angOffset = 1 - Math.abs(robo.angleTo(ball))/180;
+		double angOffset = 0;
+		if (robo.x > Constants.TABLE_CENTRE_X) {
+			angOffset = 1 - Math.abs(robo.angleTo(ball))/180;
+		}
+		else {
+			angOffset = Math.abs(robo.angleTo(ball))/180;
+		}
 		xOffset = Math.pow(xOffset, 3);
 		angOffset = Math.pow(angOffset, 3);
-		//System.out.println("X: " + xOffset + ", ang: " + angOffset);
+		System.out.println("X: " + xOffset + ", ang: " + angOffset);
 		
 		if (subState == 0) {
 			//if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
-			if (goTo(ball,35+5*(xOffset+angOffset))) {
+			if (goTo(ball,32+5*xOffset*angOffset)) {
 				System.out.println("goto");
 				driver.grab();
 				subState = 1;
 			}
 		}
 		//if (subState == 1 && )
+		if (subState == 1) {
+			if (turnTo(where, 10.0)) {
+				driver.kick(900);
+				subState = 0;
+			}
+		}
+	}
+	
+	/**
+	 * Method for telling the robot to kick the ball to a point
+	 * 
+	 * @param where
+	 * @throws Exception
+	 */
+	public void kickBallToPointWithDistortion(Point2 where) throws Exception {
+		// Turn to ball, move to ball, grab the ball, turn to the point, kick
+		Point2 ball = state.getBallPosition();
+		Point2 robo = state.getRobotPosition(myTeam, myIdentifier);
+		double distortion = getDistortion(robo); // distortion return negative values if left of centre and positive if right
+		if (subState == 0) {
+			//if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
+			ball.setX((int) Math.round(ball.getX()-distortion));
+			if (goTo(ball,30.0)) {
+				System.out.println("goto");
+				driver.grab();
+				subState = 1;
+			}
+		}
 		if (subState == 1) {
 			if (turnTo(where, 10.0)) {
 				driver.kick(900);
@@ -751,6 +783,22 @@ public class Robot {
 				break;
 			}
 
+		}
+	}
+	
+	public static double getDistortion(Point2 point){
+		double distanceToGoal = 250;
+		double maxDistortion = 25;
+		double midDistortion = 10;
+		double distortion;
+		if (point.getX()-250>0){
+			double distanceRight = point.getX()-313;
+			distortion = (maxDistortion/100) * (distanceRight/distanceToGoal);
+			return distortion;
+		} else {
+			double distanceLeft = 313-point.getX();
+			distortion = (-1)*(maxDistortion/100) * (distanceLeft/distanceToGoal);
+			return distortion;
 		}
 	}
 

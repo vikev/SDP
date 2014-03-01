@@ -213,6 +213,7 @@ public class Pitch {
 		points.add(new Point2(pitchCornerX[0], pitchY[1])); // 12
 		points.add(new Point2(goalLineX[0], goalLineY[1]));// 13
 		points.add(new Point2(goalLineX[0], goalLineY[0])); // 14
+		//printPoints();
 		return points;
 	}
 
