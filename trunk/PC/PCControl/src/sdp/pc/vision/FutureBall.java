@@ -27,7 +27,7 @@ public class FutureBall {
 	/**
 	 * The estimated fraction of the ball velocity lost per second
 	 */
-	private static final double ESTIMATED_BALL_FRICTION = 0.6;
+	private static final double ESTIMATED_BALL_FRICTION = 0.7;
 
 	/**
 	 * The world state attached to FutureBall.

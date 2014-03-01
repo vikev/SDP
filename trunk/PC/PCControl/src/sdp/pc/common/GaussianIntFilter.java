@@ -60,7 +60,6 @@ public class GaussianIntFilter implements Filter<Integer>{
 		}
 		for(int i = 0; i < size; i++)
 			kernel[i] /= sum;
-		int k = 123;
 	}
 	
 	/**
