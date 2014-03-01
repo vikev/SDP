@@ -1,6 +1,7 @@
 package sdp.pc.robot.behaviours;
 
 import sdp.pc.robot.pilot.Robot;
+import sdp.pc.vision.Point2;
 
 /**
  * Behaviour for sending the robot to the goal mouth.
@@ -8,8 +9,12 @@ import sdp.pc.robot.pilot.Robot;
 public class MoveToGoalLine extends RobotBehavior {
 
 	private static final int SAFE_DIST_FROM_GOAL = 30;
+	
+	private static final double EPSILON = 10.0;
 
 	public MoveToGoalLine(Robot robot) { super(robot); }
+	
+	private Point2 goal_centre = new Point2(0,0);
 
 	/**
 	 * Take control when all of the following are true:
@@ -18,7 +23,8 @@ public class MoveToGoalLine extends RobotBehavior {
 	 */
 	@Override
 	public boolean takeControl() {
-		boolean nearTheGoal = robot.getPosition().distance(robot.ourGoalCentre()) <= SAFE_DIST_FROM_GOAL;
+		goal_centre = robot.ourGoalCentre();
+		boolean nearTheGoal = robot.getPosition().distance(goal_centre) <= SAFE_DIST_FROM_GOAL;
 		int ballQuadrant = robot.getWorldState().getBallQuadrant();
 		int ourAttQuadrant = robot.getWorld().getAttackerQuadrant();
 		int oppDefQuadrant;
@@ -32,8 +38,9 @@ public class MoveToGoalLine extends RobotBehavior {
 	
 	@Override
 	public boolean actionFrame() throws Exception {
-		// TODO Auto-generated method stub
-		//TODO Implement this (by referring to Robot.java)
+		if (robot.goTo(new Point2(goal_centre.getX() + robot.getGoalOffset(), goal_centre.getY()), EPSILON)) {
+			return true;
+		}
 		return false;
 	}
 }

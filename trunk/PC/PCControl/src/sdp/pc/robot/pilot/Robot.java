@@ -697,7 +697,7 @@ public class Robot {
 	 * 
 	 * @return
 	 */
-	private int getGoalOffset() {
+	public int getGoalOffset() {
 		return (int) (Math.pow(-1, getWorld().getDirection() + 1) * GOAL_OFFSET);
 	}
 
@@ -924,46 +924,17 @@ public class Robot {
 	}
 	
 	/**
-	 * Return the closest point to the init
-	 * @param init
-	 * @param one
-	 * @param two
-	 * @return
-	 */
-	public Point2 nearest(Point2 init, Point2 one, Point2 two) {
-		if (init.distance(one) > init.distance(two)) {
-			return two;
-		} else
-			return one;
-	}
-	
-	/**
-	 * Return the farthest point from the init
-	 * @param init
-	 * @param one
-	 * @param two
-	 * @return
-	 */
-	public Point2 farthest(Point2 init, Point2 one, Point2 two) {
-		if (init.distance(one) <= init.distance(two)) {
-			return two;
-		} else
-			return one;
-	}
-	
-	/**
 	 * Return our goals centre
 	 * @return
 	 */
 	public Point2 ourGoalCentre() {
-		Point2 myPos = state.getRobotPosition(myTeam, myIdentifier);
-		Point2 leftGoal = state.getLeftGoalCentre();
-		Point2 rightGoal = state.getRightGoalCentre();
-		if (isOurDefender()) {
-			return nearest(myPos, leftGoal, rightGoal);	
+		Point2 goal_centre;
+		if (myIdentifier == 0) {
+			goal_centre = state.getLeftGoalCentre();
 		} else {
-			return farthest(myPos, leftGoal, rightGoal);
+			goal_centre = state.getRightGoalCentre();
 		}
+		return goal_centre;
 	}
 	
 }
