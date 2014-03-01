@@ -10,7 +10,7 @@ import sdp.pc.vision.Alg;
  * 
  * @author s1141301
  */
-public class TurnPerpendicular extends MyBehavior {
+public class TurnPerpendicular extends RobotBehavior {
 	
 	/**
 	 * The allowed error from the vertical
@@ -66,11 +66,11 @@ public class TurnPerpendicular extends MyBehavior {
 				Thread.sleep(DEFAULT_SLEEP_DURATION);
 			}
 			
-			robot.getDriver().stop();
+			robot.getDriver().stop(); 
 		}
 		catch (Exception e) {
 			//TODO: how do we handle such exceptions?
-			//hope it never happens...
+			// - hope it never happens...
 		}
 	}
 }

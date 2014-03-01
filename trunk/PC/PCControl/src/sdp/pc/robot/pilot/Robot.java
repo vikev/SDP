@@ -861,4 +861,39 @@ public class Robot {
 	public void setDriver(Driver driver) {
 		this.driver = driver;
 	}
+
+	public WorldState getWorldState() {
+		return state;
+	}
+	
+	/**
+	 * Gets the id of the robot. 
+	 * @return
+	 */
+	public int getId() {
+		return myIdentifier;
+	}
+	
+	/**
+	 * Gets the position of this robot on the pitch.
+	 * @return		
+	 */
+	public Point2 getPosition() {
+		return state.getRobotPosition(myTeam, myIdentifier);
+	}
+
+	/**
+	 * Gets whether the robot holds the ball in its kicker
+	 * TODO: has arbitrary (untested) constants
+	 * @return
+	 */
+	public boolean hasBall() {
+		Point2 myPos = state.getRobotPosition(myTeam, myIdentifier);
+		Point2 ballPos = state.getBallPosition();
+		
+		double ballRobotAngle = myPos.angleTo(ballPos);
+		double ballRobotDist = myPos.distance(ballPos);
+		return false;
+	}
+	
 }

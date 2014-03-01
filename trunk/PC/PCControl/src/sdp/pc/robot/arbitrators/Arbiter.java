@@ -21,7 +21,7 @@ import sdp.pc.robot.behaviours.Behavior;
  * @see Behavior
  * @author Roger Glassey
  */
-public class Arbitrator
+public class Arbiter
 {
 
   private final int NONE = -1;
@@ -47,7 +47,7 @@ public class Arbitrator
    * @param behaviorList an array of Behavior objects.
    * @param returnWhenInactive if <B>true</B>, the <B>start()</B> method returns when no Behavior is active.
    */
-  public Arbitrator(Behavior[] behaviorList, boolean returnWhenInactive)
+  public Arbiter(Behavior[] behaviorList, boolean returnWhenInactive)
   {
     _behavior = behaviorList;
     _returnWhenInactive = returnWhenInactive;
@@ -59,7 +59,7 @@ public class Arbitrator
    * Same as Arbitrator(behaviorList, false) Arbitrator start() never exits
    * @param behaviorList An array of Behavior objects.
    */
-  public Arbitrator(Behavior[] behaviorList)
+  public Arbiter(Behavior[] behaviorList)
   {
     this(behaviorList, false);
   }

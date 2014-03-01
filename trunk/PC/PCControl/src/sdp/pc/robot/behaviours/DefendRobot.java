@@ -11,7 +11,7 @@ import sdp.pc.robot.pilot.Robot;
  * forwards or backwards.
  * TODO Currently works only for defender
  */
-public class DefendRobot extends MyBehavior {
+public class DefendRobot extends RobotBehavior {
 
 	private static final double BALL_SPEED_THRESHOLD = 30.0;
 	private static final double DEFEND_EPSILON_DISTANCE = 8.0;

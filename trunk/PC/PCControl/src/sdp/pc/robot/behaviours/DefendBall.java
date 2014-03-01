@@ -6,9 +6,9 @@ import sdp.pc.robot.pilot.Robot;
  * Behaviour which performs (briefly) the goal of defending the
  * ball. It checks the predicted stop location of the ball and moves to its
  * Y coordinate by going forwards or backwards.
- * TODO Currently works only for defender
+ * TODO: Currently works only for defender
  */
-public class DefendBall extends MyBehavior {
+public class DefendBall extends RobotBehavior {
 
 	private static final double BALL_SPEED_THRESHOLD = 30.0;
 	private static final double DEFEND_EPSILON_DISTANCE = 8.0;
@@ -22,19 +22,27 @@ public class DefendBall extends MyBehavior {
 	 */
 	@Override
 	public boolean takeControl() {
-		return robot.getWorld().getBallSpeed() > BALL_SPEED_THRESHOLD && robot.getWorld().getBallQuadrant() != myQuadrant();
+		// it should rather check whether end position is sufficiently close to the goal line
+		// no matter speed/quadrant
+		return robot.getWorldState().getBallSpeed() > BALL_SPEED_THRESHOLD 
+				&& robot.getWorldState().getBallQuadrant() != myQuadrant();
 	}
 
+	/**
+	 * Gets the quadrant we are supposed to be in
+	 * TODO: check whether the robot is attacker/defender
+	 */
 	private int myQuadrant() {
-		int myDi = robot.getWorld().getDirection();
-		int ourDefQ = (myDi == 0) ? 4 : 1;
-		return ourDefQ;
+		return robot.getWorldState().getDefenderQuadrant();
 	}
 
 	@Override
 	public void action() {
 		while (!suppressed) {
-			//TODO Implement this (by referring to Robot.java)
+			//check predicted ball position
+			//see if we are close enough
+			//move?
+			//when to end?
 		}
 	}
 }
