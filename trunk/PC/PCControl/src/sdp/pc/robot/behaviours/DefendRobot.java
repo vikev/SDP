@@ -19,8 +19,8 @@ public class DefendRobot extends MyBehavior {
 	public DefendRobot(Robot robot) { super(robot); }
 
 	/**
-	 * Take control when the ball is not moving (or not on the pitch)
-	 * and the opponent's attacker is on the pitch
+	 * Take control when:
+	 *  - Ball is moving with insufficient velocity
 	 */
 	@Override
 	public boolean takeControl() {

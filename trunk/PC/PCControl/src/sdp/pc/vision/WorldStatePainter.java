@@ -294,12 +294,12 @@ public class WorldStatePainter {
 		}
 		 */
 	
-		//drawCircle(g, Color.WHITE, state.getPitch().pitchCornerX, 1);
+/*		//drawCircle(g, Color.WHITE, state.getPitch().pitchCornerX, 1);
 		// draw centre line
 		g.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
 		g.drawLine(TABLE_CENTRE_X, TABLE_MIN_Y + 1, TABLE_CENTRE_X,
 				TABLE_MAX_Y - 1);
-
+*/
 		// calculate/get the different FPS
 		long nowRun = System.currentTimeMillis();
 		int drawFps = (int) (1000 / (nowRun - lastRun));
@@ -405,6 +405,9 @@ public class WorldStatePainter {
 			customPaintCode.actionPerformed(new ActionEvent(image, 0, ""));
 
 	}
+	
+	//Pitch pitch3 = state.getPitch();
+	//ArrayList<Point2> points3 = pitch3.getArrayListOfPoints();
 
 	private void drawPreprocessOverlay(BufferedImage image, Graphics g,
 			Point2 mousePos) {
