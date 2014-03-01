@@ -5,16 +5,16 @@ import sdp.pc.robot.pilot.Robot;
 /**
  * Behaviour for sending the robot to the goal mouth.
  */
-public class MoveNearGoals extends MyBehavior {
+public class MoveToGoalLine extends RobotBehavior {
 
-	public MoveNearGoals(Robot robot) { super(robot); }
+	public MoveToGoalLine(Robot robot) { super(robot); }
 
 	/**
 	 * Take control when the defending robot is not near the goal line
 	 */
 	@Override
 	public boolean takeControl() {
-		return false;
+		return true;
 	}
 
 	@Override

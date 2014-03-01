@@ -1,6 +1,6 @@
 package sdp.pc.robot.behaviours;
 
-import sdp.pc.robot.arbitrators.Arbitrator;
+import sdp.pc.robot.arbitrators.Arbiter;
 
 
 /**
@@ -18,7 +18,7 @@ import sdp.pc.robot.arbitrators.Arbitrator;
 * these objects, create an array of them and use that array to initialize an
 * Arbitrator object.
 *
-* @see Arbitrator
+* @see Arbiter
   
 * @version 0.9  May 2011
 */

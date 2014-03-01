@@ -8,7 +8,7 @@ public class Intersect {
 	/**
 	 * A blank Intersect, for comparisons
 	 */
-	public static Intersect EMPTY = new Intersect();
+	public static final Intersect EMPTY = new Intersect();
 
 	/**
 	 * The real location of the ball

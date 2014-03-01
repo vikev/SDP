@@ -67,6 +67,7 @@ public class Alg {
 		
 		if(ang < -180)
 			ang += 360;
+		
 		return ang;
 	}
 

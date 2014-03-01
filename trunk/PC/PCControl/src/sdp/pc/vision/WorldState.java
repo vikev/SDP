@@ -432,4 +432,12 @@ public class WorldState {
 	public int getBallQuadrant() {
 		return quadrantFromPoint(getBallPosition());
 	}
+
+	public int getDefenderQuadrant() {
+		return (shootingDirection == 0) ? 4 : 1;
+	}
+	
+	public int getAttackerQuadrant() {
+		return (shootingDirection == 0) ? 2 : 3;
+	}
 }

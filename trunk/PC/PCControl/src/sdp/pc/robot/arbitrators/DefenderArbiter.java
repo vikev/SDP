@@ -11,7 +11,7 @@ import sdp.pc.robot.pilot.Robot;
  * @author s1141301
  *
  */
-public class DefenderArbiter extends Arbitrator {
+public class DefenderArbiter extends Arbiter {
 	
 	/**
 	 * Constructs a new <b>DefenderArbiter</b> using the default behaviours that constitute it. 
