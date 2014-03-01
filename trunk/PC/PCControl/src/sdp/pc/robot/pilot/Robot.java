@@ -888,12 +888,18 @@ public class Robot {
 	 * @return
 	 */
 	public boolean hasBall() {
+		//TODO: Figure out a better method
+		final double DIST_EPSILON = 10;
+		final double ANGLE_EPSILON = 5;
+		
 		Point2 myPos = state.getRobotPosition(myTeam, myIdentifier);
 		Point2 ballPos = state.getBallPosition();
 		
 		double ballRobotAngle = myPos.angleTo(ballPos);
 		double ballRobotDist = myPos.distance(ballPos);
-		return false;
+		
+		return Math.abs(ballRobotAngle) < ANGLE_EPSILON 
+				&& 0 < ballRobotDist && ballRobotDist < DIST_EPSILON;
 	}
 	/**
 	 * Return if *this* robot is our attacker 

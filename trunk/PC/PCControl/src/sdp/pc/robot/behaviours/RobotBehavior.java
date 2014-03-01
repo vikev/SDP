@@ -63,4 +63,25 @@ public abstract class RobotBehavior implements Behavior {
 		sleep(DEFAULT_SLEEP_DURATION);
 	}
 	
+	@Override
+	public void action() {
+		while(!suppressed && takeControl())
+		try {
+			if(actionFrame())
+				break;
+			sleep();
+		}
+		catch(Exception e) {
+			System.out.println("Exception while running " + this.toString());
+		}
+	}
+
+	/**
+	 * Same as default action() but doesn't need to check for suppressed or takeControl().
+	 * <p>
+	 * All implementing functions should be short (non-blocking)!
+	 * @return Whether the behaviour should release control. 
+	 */
+	public abstract boolean actionFrame() throws Exception;
+	
 }
