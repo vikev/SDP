@@ -895,5 +895,69 @@ public class Robot {
 		double ballRobotDist = myPos.distance(ballPos);
 		return false;
 	}
+	/**
+	 * Return if *this* robot is our attacker 
+	 * @return
+	 */
+	public boolean isOurAttacker() {
+		if (myIdentifier == state.getDirection()) {
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Return whether *this* robot is our defender
+	 * @return
+	 */
+	public boolean isOurDefender() {
+		if (myIdentifier != state.getDirection()) {
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Return the closest point to the init
+	 * @param init
+	 * @param one
+	 * @param two
+	 * @return
+	 */
+	public Point2 nearest(Point2 init, Point2 one, Point2 two) {
+		if (init.distance(one) > init.distance(two)) {
+			return two;
+		} else
+			return one;
+	}
+	
+	/**
+	 * Return the farthest point from the init
+	 * @param init
+	 * @param one
+	 * @param two
+	 * @return
+	 */
+	public Point2 farthest(Point2 init, Point2 one, Point2 two) {
+		if (init.distance(one) <= init.distance(two)) {
+			return two;
+		} else
+			return one;
+	}
+	
+	/**
+	 * Return our goals centre
+	 * @return
+	 */
+	public Point2 ourGoalCentre() {
+		Point2 myPos = state.getRobotPosition(myTeam, myIdentifier);
+		Point2 leftGoal = state.getLeftGoalCentre();
+		Point2 rightGoal = state.getRightGoalCentre();
+		if (isOurDefender()) {
+			return nearest(myPos, leftGoal, rightGoal);	
+		} else {
+			return farthest(myPos, leftGoal, rightGoal);
+		}
+	}
 	
 }

@@ -7,6 +7,8 @@ import sdp.pc.robot.pilot.Robot;
  */
 public class MoveToGoalLine extends RobotBehavior {
 
+	private static final int SAFE_DIST_FROM_GOAL = 30;
+
 	public MoveToGoalLine(Robot robot) { super(robot); }
 
 	/**
@@ -16,7 +18,16 @@ public class MoveToGoalLine extends RobotBehavior {
 	 */
 	@Override
 	public boolean takeControl() {
-		return true;
+		boolean nearTheGoal = robot.getPosition().distance(robot.ourGoalCentre()) <= SAFE_DIST_FROM_GOAL;
+		int ballQuadrant = robot.getWorldState().getBallQuadrant();
+		int ourAttQuadrant = robot.getWorld().getAttackerQuadrant();
+		int oppDefQuadrant;
+		if (ourAttQuadrant == 3) {
+			oppDefQuadrant = 4;
+		} else {
+			oppDefQuadrant = 1;
+		}
+		return !nearTheGoal && (ballQuadrant == ourAttQuadrant || ballQuadrant == oppDefQuadrant);
 	}
 
 	@Override
