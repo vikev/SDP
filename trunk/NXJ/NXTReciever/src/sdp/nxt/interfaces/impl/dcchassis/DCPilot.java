@@ -66,6 +66,9 @@ public class DCPilot implements Pilot {
 		if (power == 0) {
 			power = 90000;
 		}
+		if (power < 40) {
+			power = 40;
+		}
 		m1.setPower(power);
 		m2.setPower(power);
 	}
