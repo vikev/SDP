@@ -186,7 +186,7 @@ public class FutureBall {
 		vHatY /= distToStop;
 		collision = Point2.EMPTY;
 		Intersect inter = new Intersect(ball, Point2.EMPTY, Point2.EMPTY,
-				Point2.EMPTY, Double.NaN);
+				ball, Double.NaN);
 		if (vel.modulus() > MIN_ESTIMATE_VELOCITY) {
 			while (collision.equals(Point2.EMPTY) && distToStop > 0) {
 				if (!pitchContains(new Point2((int) iteratorX, (int) iteratorY))) {

@@ -111,7 +111,7 @@ public class Strategy {
 	private static void connectRobots() throws Exception {
 		Thread.sleep(1000);
 		defender = new Robot(ChooseRobot.defender(), state, myTeam, defenderId);
-		attacker = new Robot(ChooseRobot.defender(), state, myTeam, attackerId);
+		attacker = new Robot(ChooseRobot.attacker(), state, myTeam, attackerId);
 	}
 
 	/**
@@ -396,8 +396,8 @@ public class Strategy {
 					q = 0;
 				}
 				
-				parseAttacker();
-				//parseDefender();
+				//parseAttacker();
+				parseDefender();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -428,7 +428,8 @@ public class Strategy {
 							myTeam = state.getOurColor();
 							attackerId = state.getDirection();
 							defenderId = 1 - state.getDirection();
-							System.out.println(myTeam + " " + defenderId);		
+							System.out.println("Sanity Check! " + "Our Team: "
+								+ myTeam + ", Defender Side: " + defenderId);		
 							// Connect to robots
 							connectRobots();
 							addShutdownHook();

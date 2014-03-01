@@ -405,6 +405,9 @@ public class WorldStatePainter {
 			customPaintCode.actionPerformed(new ActionEvent(image, 0, ""));
 
 	}
+	
+	//Pitch pitch3 = state.getPitch();
+	//ArrayList<Point2> points3 = pitch3.getArrayListOfPoints();
 
 	private void drawPreprocessOverlay(BufferedImage image, Graphics g,
 			Point2 mousePos) {

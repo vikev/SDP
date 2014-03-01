@@ -161,10 +161,7 @@ public class Robot {
 	public void defendBall() throws Exception {
 		if (assertPerpendicular(SAFE_ANGLE_EPSILON)) {
 			// Get predicted ball stop point
-			//Point2 predBallPos = state.getFutureData().getResult();
-			Point2 predBallPos = new Point2 (
-					state.getRobotPosition(myTeam, myIdentifier).x,
-					state.getBallPosition().y);
+			Point2 predBallPos = state.getFutureData().getResult();
 
 			// If that position exists, go to its Y coordinate, otherwise stop.
 			if (!predBallPos.equals(Point2.EMPTY)) {
@@ -381,14 +378,20 @@ public class Robot {
 		// with the defender catching the ball
 		double xOffset = 
 			((double) (Math.abs(ball.x-Constants.TABLE_CENTRE_X)))/320;
-		double angOffset = 1 - Math.abs(robo.angleTo(ball))/180;
+		double angOffset = 0;
+		if (robo.x > Constants.TABLE_CENTRE_X) {
+			angOffset = 1 - Math.abs(robo.angleTo(ball))/180;
+		}
+		else {
+			angOffset = Math.abs(robo.angleTo(ball))/180;
+		}
 		xOffset = Math.pow(xOffset, 3);
 		angOffset = Math.pow(angOffset, 3);
-		//System.out.println("X: " + xOffset + ", ang: " + angOffset);
+		System.out.println("X: " + xOffset + ", ang: " + angOffset);
 		
 		if (subState == 0) {
 			//if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
-			if (goTo(ball,35+5*(xOffset+angOffset))) {
+			if (goTo(ball,32+5*xOffset*angOffset)) {
 				System.out.println("goto");
 				driver.grab();
 				subState = 1;
