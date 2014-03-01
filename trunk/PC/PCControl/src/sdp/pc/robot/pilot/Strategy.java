@@ -305,7 +305,7 @@ public class Strategy {
 		} else if (attacker.getState() == Robot.State.DEFEND_BALL) {
 			attacker.defendBall();
 		} else if (attacker.getState() == Robot.State.DEFEND_ENEMY_DEFENDER) {
-			attacker.defendRobot(attacker.getOtherTeam(), attacker.getOtherId());
+			attacker.defendRobot(attacker.getOtherTeam(), attacker.getId());
 		} else if (attacker.getState() == Robot.State.GET_BALL) {
 			attacker.kickBallToPoint(getTheirGoalCentre());
 		} else {
@@ -331,7 +331,7 @@ public class Strategy {
 		if (defender.getState() == Robot.State.DEFEND_BALL) {
 			defender.defendBall();
 		} else if (defender.getState() == Robot.State.DEFEND_ENEMY_ATTACKER) {
-			defender.defendRobot(defender.getOtherTeam(), defender.getOtherId());
+			defender.defendRobot(defender.getOtherTeam(), defender.getId());
 		} else if (defender.getState() == Robot.State.DEFEND_GOAL_LINE) {
 			// TODO: Robot code to defend a weighted goal line
 			if (defender.assertNearGoalLine(10.0)) {

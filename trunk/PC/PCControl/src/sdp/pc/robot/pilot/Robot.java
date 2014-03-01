@@ -374,59 +374,30 @@ public class Robot {
 	 * @param where
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unused")
 	public void kickBallToPoint(Point2 where) throws Exception {
 		// Turn to ball, move to ball, grab the ball, turn to the point, kick
 		Point2 ball = state.getBallPosition();
 		Point2 robo = state.getRobotPosition(myTeam, myIdentifier);
-		double distortion = getDistortion(robo); // distortion return negative
-													// values if left of centre
-													// and positive if right
+		
+		// Distortion due to height - returns negative values if left of centre
+		// and positive if right
+		double distortion = getDistortion(robo); 
+		
 		// The offset stuff doesn't really work too well - there are problems
-		// with the defender catching the ball
-		double xOffset = ((double) (Math.abs(ball.x - Constants.TABLE_CENTRE_X))) / 320;
+		// with the defender catching the ball (attacker's fine-ish though)
+		double xOffset = ((double) (Math.abs(ball.x - Constants.TABLE_CENTRE_X))) / 240;
 		double angOffset = 0;
 		if (robo.x > Constants.TABLE_CENTRE_X) {
 			angOffset = 1 - Math.abs(robo.angleTo(ball)) / 180;
 		} else {
 			angOffset = Math.abs(robo.angleTo(ball)) / 180;
 		}
-		xOffset = Math.pow(xOffset, 3);
-		angOffset = Math.pow(angOffset, 3);
-
+		xOffset = Math.pow(xOffset, 4);
+		angOffset = Math.pow(angOffset, 4);
 		if (subState == 0) {
-			// if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
-			if (goTo(ball, 32 + 5 * xOffset * angOffset)) {
-				driver.grab();
-				subState = 1;
-			}
-		}
-		// if (subState == 1 && )
-		if (subState == 1) {
-			if (turnTo(where, 10.0)) {
-				driver.kick(900);
-				subState = 0;
-			}
-		}
-	}
-
-	/**
-	 * Method for telling the robot to kick the ball to a point
-	 * 
-	 * @param where
-	 * @throws Exception
-	 */
-	public void kickBallToPointWithDistortion(Point2 where) throws Exception {
-		// Turn to ball, move to ball, grab the ball, turn to the point, kick
-		Point2 ball = state.getBallPosition();
-		Point2 robo = state.getRobotPosition(myTeam, myIdentifier);
-		double distortion = getDistortion(robo); // distortion return negative
-													// values if left of centre
-													// and positive if right
-		if (subState == 0) {
-			// if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
-			ball.setX((int) Math.round(ball.getX() - distortion));
-			if (goTo(ball, 30.0)) {
+			ball.setX((int) Math.round(ball.getX() - distortion/4));
+			//if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
+			if (goTo(ball, 35 + 3 * xOffset * angOffset)) {
 				driver.grab();
 				subState = 1;
 			}
@@ -681,11 +652,11 @@ public class Robot {
 		if (distance > 180.0) {
 			return 300;
 		} else if (distance > 120.0) {
-			return 150;
+			return 200;
 		} else if (distance > 50.0) {
-			return 60;
+			return 100;
 		} else {
-			return 30;
+			return 40;
 		}
 	}
 
@@ -822,6 +793,15 @@ public class Robot {
 	public int getTeam() {
 		return this.myTeam;
 	}
+	
+	/**
+	 * Returns the robot's identifier.
+	 *
+	 */
+	public int getId() {
+		return this.myIdentifier;
+	}
+	
 
 	/**
 	 * Returns the ID of the opposite robot. If <b>this</b>'s id is 0, returns
