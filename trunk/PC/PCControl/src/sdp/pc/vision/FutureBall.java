@@ -40,6 +40,12 @@ public class FutureBall {
 	public static Point2 collision = Point2.EMPTY;
 
 	/**
+	 * Flag that's used internally. Gets set to true if a goal line is found and
+	 * false otherwise.
+	 */
+	private static boolean goalLine = false;
+
+	/**
 	 * Returns true if the pitch contains point q. As long as the isWhite method
 	 * is calibrated for your pitch (the convex hull is working properly), it
 	 * will work!
@@ -135,6 +141,9 @@ public class FutureBall {
 					inter.addIntersection(iteratorPt);
 					double newAng = getDeflectionAngle(ball, iteratorPt)
 							* Math.PI / 180.0;
+					if (goalLine) {
+						distToStop = 0;
+					}
 					vHatX = Math.cos(newAng);
 					vHatY = Math.sin(newAng);
 				}
@@ -148,7 +157,7 @@ public class FutureBall {
 		}
 
 		inter.setEstimate(new Point2((int) iteratorX, (int) iteratorY));
-		
+
 		// Return bundle
 		return inter;
 	}
@@ -328,8 +337,8 @@ public class FutureBall {
 		double theta = collide.angleTo(nearest);
 		double theta2 = nearest.angleTo(candidates[0]);
 		double theta3 = nearest.angleTo(candidates[1]);
-		double cand1Ang = Math.abs(Alg.normalizeToBiDirection(theta - theta2));
-		double cand2Ang = Math.abs(Alg.normalizeToBiDirection(theta - theta3));
+		double cand1Ang = Math.abs(Alg.normalizeToUnitDegrees(theta - theta2));
+		double cand2Ang = Math.abs(Alg.normalizeToUnitDegrees(theta - theta3));
 
 		// Compare candidate angles and return the correct wall.
 		if (cand1Ang < cand2Ang) {
@@ -337,12 +346,32 @@ public class FutureBall {
 		} else {
 			vals[1] = candidates[1];
 		}
+		goalLine = checkForGoalLine(vals);
 		return vals;
+	}
+
+	/**
+	 * Returns whether or not the given point pair is a goalmouth or not.
+	 * 
+	 * @param vals
+	 * @return
+	 */
+	private static boolean checkForGoalLine(Point2[] vals) {
+		int ind1 = state.getPitch().getListIndFromPt(vals[0]);
+		int ind2 = state.getPitch().getListIndFromPt(vals[1]);
+		if ((ind1 == 6 && ind2 == 7) || (ind1 == 13 && ind2 == 14)
+				|| (ind1 == 7 && ind2 == 6) || (ind1 == 14 && ind2 == 13)) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
 	 * Given a ball point and collision point, return the resultant angle of the
 	 * ball were it to reflect off the boundary.
+	 * <p />
+	 * <b>Sets the static flag goalLine if the border is a goal line, and unsets
+	 * otherwise</b>
 	 * 
 	 * @param ball
 	 *            - current ball position

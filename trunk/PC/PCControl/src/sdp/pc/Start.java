@@ -26,8 +26,8 @@ public class Start {
 	public static void main(String[] args) throws Exception {
 		ServerSocket serverSocket = null;
 		NXTInfo nxt = null;
-		NXTInfo defender = new NXTInfo(NXTCommFactory.BLUETOOTH, B_NAME, B_MAC);
-		NXTInfo attacker = new NXTInfo(NXTCommFactory.BLUETOOTH, A_NAME, A_MAC);
+		NXTInfo attacker = new NXTInfo(NXTCommFactory.BLUETOOTH, B_NAME, B_MAC);
+		NXTInfo defender = new NXTInfo(NXTCommFactory.BLUETOOTH, A_NAME, A_MAC);
 		int port;
 
 		switch (ChooseRobot.dialog()) {

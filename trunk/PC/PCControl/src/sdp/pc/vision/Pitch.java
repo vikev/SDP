@@ -382,7 +382,7 @@ public class Pitch {
 	 * @param nearest
 	 * @return
 	 */
-	private int getListIndFromPt(Point2 nearest) {
+	public int getListIndFromPt(Point2 nearest) {
 
 		// Initialise required components
 		ArrayList<Point2> pts = getArrayListOfPoints();

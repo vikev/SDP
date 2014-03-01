@@ -44,7 +44,7 @@ public class Strategy {
 	 * times per second. Never use integer values to describe double precision
 	 * numbers. 7 != 7.0
 	 */
-	private static final double PERIOD = 1.0 / 7.0 * 1000.0;
+	private static final double PERIOD = 1.0 / 5.0 * 1000.0;
 
 	/**
 	 * The minimum speed for the ball to be considered fast, in pixels per
@@ -342,7 +342,9 @@ public class Strategy {
 					defender.getOtherId()));
 		} else {
 			if (defender.assertNearGoalLine(10.0)) {
-				defender.assertPerpendicular(10.0);
+				if(defender.assertPerpendicular(10.0)){
+					defender.stop();
+				}
 			}
 		}
 	}
@@ -396,7 +398,7 @@ public class Strategy {
 					q = 0;
 				}
 				
-				//parseAttacker();
+				parseAttacker();
 				parseDefender();
 			} catch (Exception e) {
 				e.printStackTrace();
