@@ -399,7 +399,7 @@ public class FutureBall {
 				+ diff * 2.0);
 
 		// Build an arbitrary point 50 pixels away to see if the candidate works
-		// TODO: Bounds checking
+		// This is bounds safe since pitchContains just uses a hashset
 		Point2 candChecker = collision.offset(50.0, resultCandidate);
 		if (pitchContains(candChecker)) {
 			return resultCandidate;
