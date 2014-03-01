@@ -420,7 +420,7 @@ public class Robot {
 		double distortion = getDistortion(robo); // distortion return negative values if left of centre and positive if right
 		if (subState == 0) {
 			//if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
-			ball.setX((int) Math.round(ball.getX()+distortion));
+			ball.setX((int) Math.round(ball.getX()-distortion));
 			if (goTo(ball,30.0)) {
 				System.out.println("goto");
 				driver.grab();
