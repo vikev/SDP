@@ -735,6 +735,7 @@ public class Robot {
 		public static int DEFEND_ENEMY_DEFENDER = 6;
 		public static int GET_BALL = 7;
 		public static int ATTEMPT_GOAL = 8;
+		public static int DO_NOTHING = 9;
 
 		public static void print(int q) {
 			switch (q) {
@@ -764,6 +765,9 @@ public class Robot {
 				break;
 			case 8:
 				System.out.println("ATTEMPT_GOAL");
+				break;
+			case 9:
+				System.out.println("DO_NOTHING");
 				break;
 			}
 

@@ -269,6 +269,12 @@ public class Strategy {
 			// defensive plays, but only assert an unknown state if the ball is
 			// moving fast?
 		}
+		if (state.getRobotPosition(defender.getTeam(), defender.getId())
+				.equals(Point2.EMPTY))
+			defender.setState(Robot.State.DO_NOTHING);
+		if (state.getRobotPosition(attacker.getTeam(), attacker.getId())
+				.equals(Point2.EMPTY))
+			attacker.setState(Robot.State.DO_NOTHING);
 
 	}
 
@@ -300,13 +306,16 @@ public class Strategy {
 	 * @throws Exception
 	 */
 	private static void parseAttacker() throws Exception {
-		if (attacker.getState() == Robot.State.WAIT_RECEIVE_PASS) {
+		int botState = attacker.getState();
+		if (botState == Robot.State.DO_NOTHING) {
+			attacker.stop();
+		} else if (botState == Robot.State.WAIT_RECEIVE_PASS) {
 			attacker.defendRobot(attacker.getTeam(), attacker.getOtherId());
-		} else if (attacker.getState() == Robot.State.DEFEND_BALL) {
+		} else if (botState == Robot.State.DEFEND_BALL) {
 			attacker.defendBall();
-		} else if (attacker.getState() == Robot.State.DEFEND_ENEMY_DEFENDER) {
+		} else if (botState == Robot.State.DEFEND_ENEMY_DEFENDER) {
 			attacker.defendRobot(attacker.getOtherTeam(), attacker.getId());
-		} else if (attacker.getState() == Robot.State.GET_BALL) {
+		} else if (botState == Robot.State.GET_BALL) {
 			attacker.kickBallToPoint(getTheirGoalCentre());
 		} else {
 			attacker.assertPerpendicular(10.0);
@@ -328,13 +337,16 @@ public class Strategy {
 	 * @throws Exception
 	 */
 	private static void parseDefender() throws Exception {
-		if (defender.getState() == Robot.State.DEFEND_BALL) {
+		int botState = attacker.getState();
+		if (botState == Robot.State.DO_NOTHING) {
+			defender.stop();
+		} else if (botState == Robot.State.DEFEND_BALL) {
 			defender.defendBall();
-		} else if (defender.getState() == Robot.State.DEFEND_ENEMY_ATTACKER) {
+		} else if (botState == Robot.State.DEFEND_ENEMY_ATTACKER) {
 			defender.defendRobot(defender.getOtherTeam(), defender.getId());
-		} else if (defender.getState() == Robot.State.DEFEND_GOAL_LINE) {
+		} else if (botState == Robot.State.DEFEND_GOAL_LINE) {
 			defender.defendWeightedGoalLine(0.5);
-		} else if (defender.getState() == Robot.State.PASS_TO_ATTACKER) {
+		} else if (botState == Robot.State.PASS_TO_ATTACKER) {
 			defender.kickBallToPoint(state.getRobotPosition(defender.getTeam(),
 					defender.getOtherId()));
 		} else {

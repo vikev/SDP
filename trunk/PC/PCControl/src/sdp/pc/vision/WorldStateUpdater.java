@@ -227,7 +227,6 @@ public class WorldStateUpdater extends WorldStateListener {
 		// Loop through teams' robots
 		for (int team = 0; team < 2; team++)
 			for (int robot = 0; robot < 2; robot++) {
-				System.out.println(greenPlatePoints.get(2*team+robot).size());
 
 				int ptCount = robotPtsCount[team][robot];
 
