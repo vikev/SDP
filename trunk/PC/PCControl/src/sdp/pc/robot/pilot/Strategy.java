@@ -72,15 +72,15 @@ public class Strategy {
 		if (state.getDirection() == 0) {
 			if (state.getRobotPosition(myTeam ^ 1, defenderId).getY() > state
 					.getLeftGoalCentre().getY())
-				return WorldState.leftGoalTop;
+				return state.leftGoalTop;
 			else
-				return WorldState.leftGoalBottom;
+				return state.leftGoalBottom;
 		} else {
 			if (state.getRobotPosition(myTeam ^ 1, defenderId).getY() > state
 					.getRightGoalCentre().getY())
-				return WorldState.rightGoalTop;
+				return state.rightGoalTop;
 			else
-				return WorldState.rightGoalBottom;
+				return state.rightGoalBottom;
 		}
 	}
 
@@ -262,13 +262,11 @@ public class Strategy {
 				attacker.setState(Robot.State.WAIT_RECEIVE_PASS);
 			}
 		} else {
-			// If something is unrecognised, we can either assert an unknown
-			// state, or just leave states the way they were.
-
-			// TODO: Consider making unknown state force our robots to do "safe"
-			// defensive plays, but only assert an unknown state if the ball is
-			// moving fast?
+			// We have a state for unknown robot positions, which means unknown
+			// state can just persist the previous state
 		}
+
+		// Reset states to "nothing" if the robot positions are unknown
 		if (state.getRobotPosition(defender.getTeam(), defender.getId())
 				.equals(Point2.EMPTY))
 			defender.setState(Robot.State.DO_NOTHING);
@@ -279,16 +277,30 @@ public class Strategy {
 	}
 
 	/**
-	 * TODO: Implement a method to get the speed of a ball with respect to a
-	 * robot
+	 * The speed of the ball with respect to the robot is just the ball's
+	 * velocity vector dotted to the vector between the ball and the robot,
+	 * divided by the modulus of the vector between ball and robot. See
+	 * http://goo.gl/mJdekQ for example
 	 * 
 	 * @param ballPos
-	 * @param vel
-	 * @param attacker2
-	 * @return
+	 *            - position of the ball
+	 * @param ballVel
+	 *            - velocity of the ball
+	 * @param bot
+	 *            - a Robot object
+	 * @return - the speed of the ball with respect to the robot (how fast the
+	 *         ball is moving towards the the robot
 	 */
 	private static double getSpeedWrt(Point2 ballPos, Point2 ballVel, Robot bot) {
-		return 0.0;
+
+		// Initialise necessary components for calculation
+		Point2 robotPosition = state.getRobotPosition(bot.getTeam(),
+				bot.getId());
+		Point2 ballToBot = robotPosition.sub(ballPos);
+		double dist = ballToBot.modulus();
+
+		// Calculate the projection
+		return (ballVel.dot(ballToBot) / dist);
 	}
 
 	/**

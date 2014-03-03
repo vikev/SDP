@@ -2,6 +2,8 @@ package sdp.pc.vision;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.util.LinkedList;
+import sdp.pc.common.GaussianPointFilter;
 
 /**
  * Class for estimating the real trajectories of the ball. Feeds data it
@@ -18,11 +20,12 @@ public class FutureBall {
 	 * predict energy lost. A higher COR produces a more elastic collision.
 	 */
 	private static final double COEFFICIENT_OF_RESTITUTION = 0.4;
+
 	/**
 	 * The minimum velocity of the ball in pixels per second to estimate its
 	 * stopping point.
 	 */
-	private static final int MIN_ESTIMATE_VELOCITY = 30;
+	private static final int MIN_ESTIMATE_VELOCITY = 40;
 
 	/**
 	 * The estimated fraction of the ball velocity lost per second
@@ -44,6 +47,8 @@ public class FutureBall {
 	 * false otherwise.
 	 */
 	private static boolean goalLine = false;
+	
+	private static GaussianPointFilter gpf = new GaussianPointFilter(3);
 
 	/**
 	 * Returns true if the pitch contains point q. As long as the isWhite method
@@ -54,10 +59,8 @@ public class FutureBall {
 	 * @return
 	 */
 	public static boolean pitchContains(Point2 q) {
-		if (Vision.stateListener.pointInPitch(q)) {
-			return true;
-		}
-		return false;
+		return Alg.isInHull(new LinkedList<Point2>(state.getPitch()
+				.getArrayListOfPoints()), q);
 	}
 
 	/**
@@ -155,8 +158,9 @@ public class FutureBall {
 				distToStop -= 1;
 			}
 		}
-
-		inter.setEstimate(new Point2((int) iteratorX, (int) iteratorY));
+		
+		Point2 est = new Point2((int) iteratorX, (int) iteratorY);
+		inter.setEstimate(gpf.apply(est));
 
 		// Return bundle
 		return inter;

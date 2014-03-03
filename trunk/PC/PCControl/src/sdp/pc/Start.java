@@ -15,15 +15,45 @@ import sdp.pc.common.Constants;
 import sdp.pc.robot.btcomm.BTConnection;
 
 /**
- * TODO: What is this class and why do we have it?
+ * This is the class which is run when the ant buildfile is run. You can swap
+ * which brick 'a' and 'd' refers to by exchanging 'attacker' and 'defender'
+ * below.
  * 
+ * If you get an "Address already in use" error, change the port in Constants to
+ * some other 4-digit number above 1024
  */
 public class Start {
 
-	private static final String A_NAME = "SDP 9A", A_MAC = "0016530BB5A3",
-			B_NAME = "SDP 9B", B_MAC = "001653077531";
+	/**
+	 * The device name by which to refer to brick A
+	 */
+	private static final String A_NAME = "SDP 9A";
 
+	/**
+	 * The device MAC address by which to refer to brick A
+	 */
+	private static final String A_MAC = "0016530BB5A3";
+
+	/**
+	 * The device name by which to refer to brick B
+	 */
+	private static final String B_NAME = "SDP 9B";
+
+	/**
+	 * The device MAC address by which to refer to brick B
+	 */
+	private static final String B_MAC = "001653077531";
+
+	/**
+	 * Main method run when the ant buildfile is finished, which selects a robot
+	 * and connects it. Also has a few other features implemented by Lubo
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
+
+		// Connect a robot
 		ServerSocket serverSocket = null;
 		NXTInfo nxt = null;
 		NXTInfo attacker = new NXTInfo(NXTCommFactory.BLUETOOTH, B_NAME, B_MAC);
@@ -40,24 +70,20 @@ public class Start {
 			port = Constants.DEFENDER_PORT;
 			break;
 		default:
-			Exception e = new Exception("Couldn't select a robot...");
-			throw e;
+			throw new Exception("Couldn't select a robot...");
 		}
-		boolean work = true;
-
 		BTConnection conn1 = new BTConnection(nxt, NXTComm.PACKET);
-		while (work) {
 
+		// Persist the connection
+		boolean work = true;
+		while (work) {
 			try {
 				String input = "";
 				serverSocket = new ServerSocket(port);
-				// If you get an "Address already in use" error, change the
-				// port in Constants to some other 4-digit number above 1024
 				while (true) {
 					if ("quit".equalsIgnoreCase(input)) {
 						break;
 					}
-
 					System.out.println("Waiting for client on port "
 							+ serverSocket.getLocalPort() + "...");
 
@@ -98,7 +124,6 @@ public class Start {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
 			try {
 				serverSocket.close();
 			} catch (IOException e) {

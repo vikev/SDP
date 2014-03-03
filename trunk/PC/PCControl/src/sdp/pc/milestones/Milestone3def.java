@@ -246,10 +246,10 @@ public class Milestone3def {
 	 */
 	private static boolean betweenGoals(int y, int side, int eps) {
 		if (side == 0) {
-			return (y + eps < WorldState.leftGoalBottom.getY() && y - eps > WorldState.leftGoalTop
+			return (y + eps < state.leftGoalBottom.getY() && y - eps > state.leftGoalTop
 					.getY());
 		} else {
-			return (y + eps < WorldState.rightGoalBottom.getY() && y - eps > WorldState.rightGoalTop
+			return (y + eps < state.rightGoalBottom.getY() && y - eps > state.rightGoalTop
 					.getY());
 		}
 	}

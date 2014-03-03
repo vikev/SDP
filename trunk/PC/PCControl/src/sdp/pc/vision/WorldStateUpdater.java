@@ -72,8 +72,7 @@ public class WorldStateUpdater extends WorldStateListener {
 	/**
 	 * List of points belonging to the green plates
 	 */
-	private ArrayList<ArrayList<Point2>> greenPlatePoints = 
-		new ArrayList<ArrayList<Point2>>();
+	private ArrayList<ArrayList<Point2>> greenPlatePoints = new ArrayList<ArrayList<Point2>>();
 
 	/**
 	 * Clusters giving the positions of the four green plates The given points
@@ -84,10 +83,18 @@ public class WorldStateUpdater extends WorldStateListener {
 			new Cluster(new Point2(390, 220)),
 			new Cluster(new Point2(520, 220)) };
 
-	// TODO: Docu
+	/**
+	 * Here we have a gaussian point filter which smoothes the position of the
+	 * ball over 5 frames. The sigma parameter in the gaussian implementation
+	 * may be worth changing if the ball position seems to lag too much.
+	 */
 	private GaussianPointFilter ballVelocityFilter = new GaussianPointFilter(5);
 
-	// TODO: Docu
+	/**
+	 * Here we have a gaussian point filter which smoothes the velocity of the
+	 * ball over 5 frames. The sigma parameter in the gaussian implementation
+	 * may be worth changing if the ball position seems to lag too much.
+	 */
 	private GaussianPointFilter ballPositionFilter = new GaussianPointFilter(5);
 
 	/**
@@ -117,7 +124,7 @@ public class WorldStateUpdater extends WorldStateListener {
 		ballPtsCount = 0;
 		ballPos = new Point2();
 		greenPlatePoints.clear();
-		for (int i=0; i<4; i++)
+		for (int i = 0; i < 4; i++)
 			greenPlatePoints.add(new ArrayList<Point2>());
 		for (int i = 0; i < 2; i++)
 			for (int j = 0; j < 2; j++) {
@@ -152,7 +159,7 @@ public class WorldStateUpdater extends WorldStateListener {
 
 			// Check if it's a green plate
 			if (Colors.isGreen(cRgb, cHsb)) {
-				int quad = state.quadrantFromPoint(p)-1;
+				int quad = state.quadrantFromPoint(p) - 1;
 				if (quad >= 0 && quad <= 3)
 					greenPlatePoints.get(quad).add(p);
 			}
@@ -216,12 +223,12 @@ public class WorldStateUpdater extends WorldStateListener {
 		}
 
 		// Find the green plate clusters
-		for (int i=0; i<4; i++) {
+		for (int i = 0; i < 4; i++) {
 			if (greenPlatePoints.get(i).size() > 10) {
-				clusters[i] = Kmeans.doKmeans(greenPlatePoints.get(i), 
+				clusters[i] = Kmeans.doKmeans(greenPlatePoints.get(i),
 						clusters[i].getMean())[0];
-			}
-			else clusters[i] = new Cluster(new ArrayList<Point2>(), Point2.EMPTY);
+			} else
+				clusters[i] = new Cluster(new ArrayList<Point2>(), Point2.EMPTY);
 		}
 
 		// Loop through teams' robots
@@ -238,8 +245,7 @@ public class WorldStateUpdater extends WorldStateListener {
 				for (Point2 p : robotPts[team][robot]) {
 					boolean isPointInPlate = false;
 					for (Cluster cluster : clusters) {
-						if (p.distance(cluster.getMean()) 
-								< Constants.ROBOT_CIRCLE_RADIUS / 2) {
+						if (p.distance(cluster.getMean()) < Constants.ROBOT_CIRCLE_RADIUS / 2) {
 							isPointInPlate = true;
 						}
 					}

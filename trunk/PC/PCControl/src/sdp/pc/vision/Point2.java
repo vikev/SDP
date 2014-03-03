@@ -307,7 +307,8 @@ public class Point2 implements java.io.Serializable {
 	}
 
 	/**
-	 * gets a point which is <b>this</b> minus the components of p.
+	 * Gets a new point which is <b>this</b> minus the components of p. Useful
+	 * for calculating a vector between two points, as well.
 	 * 
 	 * @param p
 	 * @return
@@ -350,18 +351,6 @@ public class Point2 implements java.io.Serializable {
 	}
 
 	/**
-	 * Vector operation Returns a vector perpendicular to this one
-	 * 
-	 * TODO: This method mirrors the vector on y=x (doesn't actually return a
-	 * perpendicular vector, as far as I can tell)
-	 * 
-	 * @return a point with coordinates (y; x)
-	 */
-	public Point2 getPerpendicular() {
-		return new Point2(y, x);
-	}
-
-	/**
 	 * Gets a Point2D representation of this point
 	 * 
 	 * @return
@@ -395,7 +384,8 @@ public class Point2 implements java.io.Serializable {
 	}
 
 	/**
-	 * Returns the angle to a given Point2 from <b>this</b> in degrees.
+	 * Returns the angle to a given Point2 from <b>this</b> (as a position) in
+	 * degrees.
 	 * 
 	 * @param p
 	 *            Target position
@@ -406,8 +396,26 @@ public class Point2 implements java.io.Serializable {
 	}
 
 	/**
-	 * TODO: Does this method return whether <b>this</b> is to the left of a
-	 * line built by a->b ?
+	 * Returns the acute angle between <b>this</b> as a vector and v as a
+	 * vector, not to be confused with angleTo which interprets both parameters
+	 * as positions.
+	 * 
+	 * @param v
+	 * @return
+	 */
+	public double angleBetween(Point2 v) {
+		double vecAMagnitude = this.modulus();
+		double vecBMagnitude = v.modulus();
+
+		int dotProduct = this.dot(v);
+
+		double ang = Math.acos(dotProduct / (vecAMagnitude * vecBMagnitude));
+
+		return Math.toDegrees(ang);
+	}
+
+	/**
+	 * Returns true if <b>this</b> is to the left of a line formed by a and b
 	 * 
 	 * @param a
 	 * @param b

@@ -43,6 +43,11 @@ public class WorldStatePainter {
 	private static final int TEXT_HEIGHT = 15;
 
 	/**
+	 * The most recent requested data point which we draw a circle around.
+	 */
+	private Point2 lastPoint = Point2.EMPTY;
+
+	/**
 	 * the timestamp of the last run; used for FPS calculation
 	 */
 	private long lastRun;
@@ -146,6 +151,16 @@ public class WorldStatePainter {
 	}
 
 	/**
+	 * Primitive method for printing out a float array
+	 * 
+	 * @param s
+	 * @return
+	 */
+	private static String floatArrayToString(float[] s) {
+		return "(" + s[0] + ", " + s[1] + ", " + s[2] + ")";
+	}
+
+	/**
 	 * Draws the world state overlay on the specified image using this.state and
 	 * this.stateListener.
 	 * <p />
@@ -192,6 +207,21 @@ public class WorldStatePainter {
 					System.out.println("Attemped to highlight null object");
 				}
 			}
+		}
+
+		// Draw the most recently requested data
+		Point2 q = Vision.getRequestedPoint();
+		if (!q.equals(Point2.EMPTY)) {
+			lastPoint = q;
+			String hsb = floatArrayToString(stateListener.getNormalisedHsb(
+					lastPoint.x, lastPoint.y));
+			String rgb = stateListener.getNormalisedRgb(lastPoint.x,
+					lastPoint.y).toString();
+			System.out.println("\nRequested Data: \nNormalised HSB: " + hsb
+					+ "\nNormalised RGB: " + rgb);
+		}
+		if (!lastPoint.equals(Point2.EMPTY)) {
+			drawCircle(g, GRAY_BLEND, lastPoint, 3);
 		}
 
 		// ball location and velocity

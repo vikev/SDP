@@ -1,9 +1,8 @@
 package sdp.pc.vision.relay;
 
 /**
- * TODO:What is the difference between this and sdp.pc.robot.pilot.Driver ?? We
- * don't need two drivers, I'm quite sure.
- * 
+ * A driver is an abstract controller for a robot. Drivers send basic commands
+ * to an NXT brick which are parsed by the brick's receiver.
  */
 public class Driver {
 	private TCPClient conn;

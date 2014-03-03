@@ -694,32 +694,6 @@ public class Robot {
 	}
 
 	/**
-	 * Calculates the (smallest) angle between two vectors represented by
-	 * Point2s, in degrees
-	 * 
-	 * TODO: This method has no business being static inside Robot.
-	 * calculateAngle performs some maths which can be accomplished
-	 * (differently) by existing code. Either update kickStationaryBall to
-	 * behave like the defender code (comparing angles) or move this to Alg (?)
-	 * 
-	 * @param vectorA
-	 * @param vectorB
-	 * @return
-	 */
-	// TODO: Method no longer used, but seems useful..
-	@SuppressWarnings("unused")
-	private static double calculateAngle(Point2 vecA, Point2 vecB) {
-		double vecAMagnitude = vecA.modulus();
-		double vecBMagnitude = vecB.modulus();
-
-		int dotProduct = vecA.dot(vecB);
-
-		double ang = Math.acos(dotProduct / (vecAMagnitude * vecBMagnitude));
-
-		return Math.toDegrees(ang);
-	}
-
-	/**
 	 * Static class for referencing robot states once we start making the AI
 	 * decision model. Should probably be an Enum but I can't be bothered.
 	 * 

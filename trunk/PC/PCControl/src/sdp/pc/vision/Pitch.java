@@ -8,8 +8,9 @@ import java.util.ArrayList;
  * supposed to be in. Currently only checks X values; works well given that
  * Colors.isWhite() returns proper values
  * 
- * TODO: add Y values checks TODO: detect goal positions automatically (would it
- * be reliable enough?)
+ * TODO: add Y values checks
+ * 
+ * TODO: detect goal positions automatically (would it be reliable enough?)
  * 
  * @author s1141301
  * 
@@ -28,9 +29,11 @@ public class Pitch {
 	private static final int X_END = 570, X_BEGIN = 310;
 
 	/**
-	 * The radius of a robot TODO: figure out a value for this
+	 * The radius of a robot
+	 * 
+	 * TODO: Get a real value for this
 	 */
-	private int robotRadius = 0;
+	private int robotRadius = 20;
 
 	/**
 	 * The x coordinates of the goal lines
@@ -213,7 +216,7 @@ public class Pitch {
 		points.add(new Point2(pitchCornerX[0], pitchY[1])); // 12
 		points.add(new Point2(goalLineX[0], goalLineY[1]));// 13
 		points.add(new Point2(goalLineX[0], goalLineY[0])); // 14
-		//printPoints();
+		// printPoints();
 		return points;
 	}
 
@@ -349,7 +352,7 @@ public class Pitch {
 	 * @return
 	 */
 	public Point2[] getBoundariesNeighbouring(Point2 nearest) {
-		
+
 		// Initialise required components
 		ArrayList<Point2> pts = getArrayListOfPoints();
 		int nearestInd = getListIndFromPt(nearest);
@@ -357,22 +360,21 @@ public class Pitch {
 
 		// Check corner cases
 		if (nearestInd == 0) {
-			return null;
+			rets[0] = Point2.EMPTY;
+			rets[1] = Point2.EMPTY;
 		} else if (nearestInd == 1) {
 			rets[0] = pts.get(14);
 			rets[1] = pts.get(2);
-			return rets;
 		} else if (nearestInd == 14) {
 			rets[0] = pts.get(13);
 			rets[1] = pts.get(1);
-			return rets;
 		} else {
 
 			// No corner case, send the immediate decrement and increment
 			rets[0] = pts.get(nearestInd - 1);
 			rets[1] = pts.get(nearestInd + 1);
-			return rets;
 		}
+		return rets;
 	}
 
 	/**

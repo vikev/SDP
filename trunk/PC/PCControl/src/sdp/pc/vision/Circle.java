@@ -3,7 +3,7 @@ package sdp.pc.vision;
 import java.awt.geom.Point2D;
 
 /**
- * Our implementation of a Circle which essentially contains a center and
+ * Our implementation of a Circle which essentially contains a centre and
  * radius.
  * 
  */

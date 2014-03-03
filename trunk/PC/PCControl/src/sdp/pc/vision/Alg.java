@@ -11,32 +11,33 @@ import java.util.LinkedList;
 public class Alg {
 
 	/**
-	 * Returns true if a given Y coordinate is between the specified goalmouth
-	 * endpoints, with some epsilon value.
+	 * A double comparator using an epsilon threshold. If a is less than b,
+	 * returns -1, if a is greater than b, returns 1, otherwise returns 0.
 	 * 
-	 * @param p
-	 * @param side
+	 * @param a
+	 * @param b
 	 * @param eps
+	 *            - epsilon threshold with which to compare
 	 * @return
 	 */
-	public static boolean pointBetweenGoals(Point2 p, int side, int eps) {
-		int y = p.getY();
-		if (side == 0) {
-			return (y + eps < WorldState.leftGoalBottom.getY() && y - eps > WorldState.leftGoalTop
-					.getY());
+	public static int doubleComparator(double a, double b, double eps) {
+		double diff = b - a;
+		double modu = Math.abs(diff);
+		if (modu < eps) {
+			return 0;
+		} else if (diff < 0) {
+			return -1;
+		} else {
+			return 1;
 		}
-		return (y + eps < WorldState.rightGoalBottom.getY() && y - eps > WorldState.rightGoalTop
-				.getY());
 	}
 
 	/**
 	 * Returns an angle ang in degrees on [0,360).
 	 * 
-	 * TODO: Should be abstracted to an Angle class, I guess.
-	 * 
 	 * @param ang
 	 *            angle in degrees
-	 * @return ang on [0,360)
+	 * @return ang equivalent on [0,360)
 	 */
 	public static double normalizeToUnitDegrees(double ang) {
 		while (ang < 0.0) {
@@ -52,11 +53,9 @@ public class Alg {
 	 * Returns an angle ang in degrees on [-180,180), useful for comparing
 	 * angles.
 	 * 
-	 * TODO: Should be abstracted to an Angle class, I guess.
-	 * 
 	 * @param ang
 	 *            angle in degrees
-	 * @return ang on [-180, 180)
+	 * @return ang equivalent on [-180, 180)
 	 */
 	public static double normalizeToBiDirection(double ang) {
 		while (ang < -180.0) {
@@ -120,9 +119,6 @@ public class Alg {
 
 		// If the desired points are not all included in the minimum circle, the
 		// function recurses and increases its boundary size.
-
-		// TODO: I can find a trivial example of this algorithm proceeding
-		// infinitely!
 		for (int i = 0; i < desiredPoints; i++)
 			if (points.get(i).distance(minC.getPosition()) > minC.getRadius()) {
 				// ... Compute B <--- B union P[i].

@@ -58,7 +58,6 @@ public class BTConnection {
 			 */
 			public void logEvent(String message) {
 				System.out.println("BTSend Log.listener: " + message);
-
 			}
 
 			/**
@@ -71,14 +70,6 @@ public class BTConnection {
 			}
 		});
 		conn.connectTo(info, mode);
-
-		// TODO: Why is the following commented out? Does it not work?
-
-		// while (!conn.connectTo(info, mode)) {
-		// System.out.println("Failed to connect to the NXT " +
-		// getDeviceName());
-		// System.out.println("Will try again...");
-		// }
 
 		// TODO: Is it valid to assert the connection completed here?
 		isConnected = true;
@@ -150,19 +141,6 @@ public class BTConnection {
 			System.out.println("IO Exception writing bytes:");
 			System.out.println(ioe.getMessage());
 		}
-
-		// TODO: Previously was code that read an echoed command from the robot,
-		// disabled because it was unnecessary and potentially increased
-		// performance. Remove this code completely?
-
-		// try {
-		// System.out.println("Received " + dis.readChar());
-		// System.out.println("Received " + dis.readDouble());
-		// } catch (IOException ioe) {
-		// success = false;
-		// System.out.println("IO Exception reading bytes:");
-		// System.out.println(ioe.getMessage());
-		// }
 		return success;
 	}
 }

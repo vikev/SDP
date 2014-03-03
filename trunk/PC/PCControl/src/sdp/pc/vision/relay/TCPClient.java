@@ -11,9 +11,8 @@ import java.net.UnknownHostException;
 import sdp.pc.common.Constants;
 
 /**
- * TODO: What's the difference between this and sdp.pc.relay.TCPClient ? I'm
- * sure we don't need two of them.
- * 
+ * TCPClient is the class used by our bluetooth relay/receiver for ensuring
+ * commands.
  */
 public class TCPClient {
 	private PrintWriter toServer;
