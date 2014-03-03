@@ -16,11 +16,11 @@ public class AttackerArbiter extends Arbiter {
 	 * Constructs a new <b>AttackerArbiter</b> using the default behaviours that constitute it. 
 	 * @param r The robot for which to create the arbiter
 	 */
-	public AttackerArbiter(Robot r) {
+	public AttackerArbiter(Robot robot) {
 		super(new Behavior[] {
 				//TODO: add behaviours
-				new GrabBall(r),
-				new KickToGoal(r)
+				new GrabBall(robot),
+				new KickToGoal(robot)
 		}, false);
 	}
 }

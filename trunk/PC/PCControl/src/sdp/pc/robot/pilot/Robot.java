@@ -581,7 +581,7 @@ public class Robot {
 	 * is synchronous, and therefore must be called until it returns true if you
 	 * expect it to be finished.
 	 */
-	private boolean defendToY(int y, double eps) throws Exception {
+	public boolean defendToY(int y, double eps) throws Exception {
 
 		double botFacing = getWorld().getRobotFacing(myTeam, myIdentifier);
 		Point2 botPosition = getWorld().getRobotPosition(myTeam, myIdentifier);
