@@ -337,7 +337,7 @@ public class Strategy {
 	 * @throws Exception
 	 */
 	private static void parseDefender() throws Exception {
-		int botState = attacker.getState();
+		int botState = defender.getState();
 		if (botState == Robot.State.DO_NOTHING) {
 			defender.stop();
 		} else if (botState == Robot.State.DEFEND_BALL) {
