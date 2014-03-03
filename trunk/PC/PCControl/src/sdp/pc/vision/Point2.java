@@ -389,7 +389,7 @@ public class Point2 implements java.io.Serializable {
 	 * 
 	 * @param p
 	 *            Target position
-	 * @return angle on [0,360)
+	 * @return angle on [-180,180)
 	 */
 	public double angleTo(Point2 p) {
 		return Math.atan2(p.y - y, p.x - x) * 180 / Math.PI;

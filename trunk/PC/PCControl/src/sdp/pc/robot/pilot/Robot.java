@@ -411,17 +411,25 @@ public class Robot {
 		// with the defender catching the ball (attacker's fine-ish though)
 		double xOffset = ((double) (Math.abs(ball.x - Constants.TABLE_CENTRE_X))) / 240;
 		double angOffset = 0;
+		/*
 		if (robo.x > Constants.TABLE_CENTRE_X) {
 			angOffset = 1 - Math.abs(robo.angleTo(ball)) / 180;
 		} else {
 			angOffset = Math.abs(robo.angleTo(ball)) / 180;
 		}
-		xOffset = Math.pow(xOffset, 4);
-		angOffset = Math.pow(angOffset, 4);
+		*/
+		
+		if (robo.x > Constants.TABLE_CENTRE_X)
+			angOffset = 2*Math.abs(robo.angleTo(ball)) / 180  - 1;
+		else
+			angOffset = 1 - 2*Math.abs(robo.angleTo(ball)) / 180;
+		
+		xOffset = Math.pow(xOffset, 3);
+		angOffset = Math.pow(angOffset, 3);
 		if (subState == 0) {
 			ball.setX((int) Math.round(ball.getX() - distortion/4));
 			//if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
-			if (goTo(ball, 35 + 3 * xOffset * angOffset)) {
+			if (goTo(ball, 30 + 10 * xOffset * angOffset)) {
 				driver.grab();
 				subState = 1;
 			}
