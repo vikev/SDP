@@ -175,8 +175,9 @@ public class Alg {
 				p.add(pHull);
 				endPoint = pts.get(0);
 				for (int j = 1; j < pts.size(); j++) {
-					if (endPoint == pHull
-							|| (pts.get(j).isToLeft(p.getLast(), endPoint)))
+					boolean h2l = hullIsToLeft(pts.get(j), p.getLast(),
+							endPoint);
+					if (endPoint == pHull || h2l)
 						endPoint = pts.get(j);
 				}
 				pHull = endPoint;
@@ -186,6 +187,22 @@ public class Alg {
 		}
 		System.out.println("Empty hull!");
 		return new LinkedList<Point2>();
+	}
+
+	/**
+	 * Auxiliary method for the isInHull algorithm. Used for calculating if
+	 * point q is to the polar "left" of a line between a and b.
+	 * 
+	 * @param q
+	 *            - test subject
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	private static boolean hullIsToLeft(Point2 q, Point2 a, Point2 b) {
+		// Calculate using algorithm
+		int dot = ((b.x - a.x) * (q.y - a.y) - (b.y - a.y) * (q.x - a.x));
+		return dot > 0 || (dot == 0 && a.distanceSq(b) < a.distanceSq(q));
 	}
 
 	/**

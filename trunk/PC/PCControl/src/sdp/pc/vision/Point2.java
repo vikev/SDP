@@ -415,19 +415,6 @@ public class Point2 implements java.io.Serializable {
 	}
 
 	/**
-	 * Returns true if <b>this</b> is to the left of a line formed by a and b
-	 * 
-	 * @param a
-	 * @param b
-	 * @return
-	 */
-	public boolean isToLeft(Point2 a, Point2 b) {
-		// Calculate using algorithm
-		int dot = ((b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x));
-		return dot > 0 || (dot == 0 && a.distanceSq(b) < a.distanceSq(this));
-	}
-
-	/**
 	 * Gets the angle from the origin to <b>this</b>. In other words, the angle
 	 * of <b>this</b> as a vector.
 	 * 
