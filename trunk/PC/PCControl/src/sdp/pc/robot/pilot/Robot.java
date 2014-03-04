@@ -402,33 +402,31 @@ public class Robot {
 		// Turn to ball, move to ball, grab the ball, turn to the point, kick
 		Point2 ball = state.getBallPosition();
 		Point2 robo = state.getRobotPosition(myTeam, myIdentifier);
-		
+
 		// Distortion due to height - returns negative values if left of centre
 		// and positive if right
-		double distortion = getDistortion(robo); 
-		
+		double distortion = getDistortion(robo);
+
 		// The offset stuff doesn't really work too well - there are problems
 		// with the defender catching the ball (attacker's fine-ish though)
 		double xOffset = ((double) (Math.abs(ball.x - Constants.TABLE_CENTRE_X))) / 240;
 		double angOffset = 0;
 		/*
-		if (robo.x > Constants.TABLE_CENTRE_X) {
-			angOffset = 1 - Math.abs(robo.angleTo(ball)) / 180;
-		} else {
-			angOffset = Math.abs(robo.angleTo(ball)) / 180;
-		}
-		*/
-		
+		 * if (robo.x > Constants.TABLE_CENTRE_X) { angOffset = 1 -
+		 * Math.abs(robo.angleTo(ball)) / 180; } else { angOffset =
+		 * Math.abs(robo.angleTo(ball)) / 180; }
+		 */
+
 		if (robo.x > Constants.TABLE_CENTRE_X)
-			angOffset = 2*Math.abs(robo.angleTo(ball)) / 180  - 1;
+			angOffset = 2 * Math.abs(robo.angleTo(ball)) / 180 - 1;
 		else
-			angOffset = 1 - 2*Math.abs(robo.angleTo(ball)) / 180;
-		
+			angOffset = 1 - 2 * Math.abs(robo.angleTo(ball)) / 180;
+
 		xOffset = Math.pow(xOffset, 3);
 		angOffset = Math.pow(angOffset, 3);
 		if (subState == 0) {
-			ball.setX((int) Math.round(ball.getX() - distortion/4));
-			//if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
+			ball.setX((int) Math.round(ball.getX() - distortion / 4));
+			// if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
 			if (goTo(ball, 30 + 10 * xOffset * angOffset)) {
 				driver.grab();
 				subState = 1;
@@ -627,16 +625,21 @@ public class Robot {
 	 * @return TODO: speed in motor-degrees (?) per second
 	 */
 	private static int getRotateSpeed(double rotateBy, double epsilon) {
+		// TODO: Should be refactored (constants)
+		double maxSpeed = 300.0;
+		double minSpeed = 20.0;
+		double maxRotate = 180.0;
+		double minRotate = epsilon;
 		rotateBy = Math.abs(rotateBy);
-		if (rotateBy > 75.0) {
-			return 120;
-		} else if (rotateBy > 30.0) {
-			return 60;
-		} else if (rotateBy > epsilon) {
-			return 20;
-		} else {
+
+		// If the value is under the epsilon distance don't turn at all
+		if (rotateBy < epsilon) {
 			return 0;
 		}
+
+		// Don't change this, just change the constants.
+		return (int) ((maxSpeed - minSpeed) / (maxRotate - minRotate)
+				* (rotateBy - minRotate) + minSpeed);
 	}
 
 	/**
@@ -675,20 +678,16 @@ public class Robot {
 	 * 
 	 * TODO: Units? motor velocity in radians per second or..?
 	 */
-	private int getMoveSpeed(double distance) {
-		if (myState == State.DEFEND_BALL
-				|| myState == State.DEFEND_ENEMY_ATTACKER) {
-			return (int) ((distance + 30) * 2.5);
-		}
-		if (distance > 180.0) {
-			return 300;
-		} else if (distance > 120.0) {
-			return 200;
-		} else if (distance > 50.0) {
-			return 100;
-		} else {
-			return 40;
-		}
+	private int getMoveSpeed(double dist) {
+		// TODO: Need to test with final gear ratios and robots! Also refactor
+		// out these constants
+		double maxSpeed = 300.0;
+		double minSpeed = 40.0;
+		double maxDist = 125.0;
+		dist = Math.abs(dist);
+
+		// Don't change this! Change the constants
+		return (int) (((maxSpeed - minSpeed) / (maxDist) * dist) + minSpeed);
 	}
 
 	/**
@@ -783,15 +782,14 @@ public class Robot {
 	public int getTeam() {
 		return this.myTeam;
 	}
-	
+
 	/**
 	 * Returns the robot's identifier.
-	 *
+	 * 
 	 */
 	public int getId() {
 		return this.myIdentifier;
 	}
-	
 
 	/**
 	 * Returns the ID of the opposite robot. If <b>this</b>'s id is 0, returns

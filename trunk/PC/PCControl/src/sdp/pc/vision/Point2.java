@@ -178,7 +178,7 @@ public class Point2 implements java.io.Serializable {
 
 	/**
 	 * Given a list of points and their centroid, removes all points further
-	 * than const standard deviations from the centroid
+	 * than <b>STD_DEV_THRESHOLD</b> standard deviations from the centroid
 	 * 
 	 * @param points
 	 * @param centroid
@@ -422,6 +422,7 @@ public class Point2 implements java.io.Serializable {
 	 * @return
 	 */
 	public boolean isToLeft(Point2 a, Point2 b) {
+		// Calculate using algorithm
 		int dot = ((b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x));
 		return dot > 0 || (dot == 0 && a.distanceSq(b) < a.distanceSq(this));
 	}

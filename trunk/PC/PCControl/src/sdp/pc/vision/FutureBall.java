@@ -222,7 +222,9 @@ public class FutureBall {
 	 */
 	public static Point2 estimateMatchingYCoord(Point2 movingPos,
 			double movingFacing, Point2 staticPos) {
-
+		
+		// TODO: Implement working version
+		
 		// Assume the ball is moving very fast, give it a velocity of 1000.
 		int x = 1000;
 		double angle = movingFacing;
@@ -269,17 +271,6 @@ public class FutureBall {
 		double b = movingPos.getY() - a * movingPos.getX();
 
 		double predY = a * staticPos.getX() + b;
-		// double deltaY = Math.abs(estimatedPoint.getY() - movingPos.getY())
-		// * Math.abs(staticPos.getX() - movingPos.getX())
-		// / Math.abs(estimatedPoint.getX() - movingPos.getX());
-
-		// Does nothing
-		// double predY;
-		// if (movingFacing < 180) {
-		// predY = deltaY + movingPos.getY();
-		// } else {
-		// predY = movingPos.getY() - deltaY;
-		// }
 
 		// check if point is within the boundaries and if not return (0,0)
 		Point2 target = new Point2(staticPos.getX(), (int) predY);

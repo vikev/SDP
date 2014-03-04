@@ -131,26 +131,6 @@ public class Alg {
 		return minC;
 	}
 
-	// We deprecated this method. I commented it out and nothing seems to be
-	// using it. Code can be deleted.
-
-	// /**
-	// * Calculates the length of a line between two points, i.e. the distance
-	// * between the points
-	// *
-	// * @param a
-	// * - the first point
-	// * @param b
-	// * - the second point
-	// * @return distance between a and b
-	// * @deprecated Use a.distance(b) instead
-	// */
-	// public static double lineSize(Point2 a, Point2 b) {
-	// double s = (double) (b.getX() - a.getX());
-	// double t = (double) (b.getY() - b.getY());
-	// return Math.sqrt(s * s + t * t);
-	// }
-
 	/**
 	 * Checks if the given value is within a certain range (epsilon) of the
 	 * target value. To be used for pixel thresholding.
