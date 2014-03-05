@@ -211,8 +211,10 @@ public class WorldStateUpdater extends WorldStateListener {
 				ballPastPos.removeLast();
 
 			// Update estimated data
-			Point2 position = ballPositionFilter.apply(state.getBallPosition());
-			Point2 velocity = ballVelocityFilter.apply(state.getBallVelocity());
+//			Point2 position = ballPositionFilter.apply(state.getBallPosition());
+//			Point2 velocity = ballVelocityFilter.apply(state.getBallVelocity());
+			Point2 position = state.getBallPosition();
+			Point2 velocity = state.getBallVelocity();
 			state.setFutureData(FutureBall
 					.estimateStopPoint(velocity, position));
 		} else {

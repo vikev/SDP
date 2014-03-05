@@ -203,7 +203,6 @@ public class WorldState {
 	 */
 	public Point2 getLeftGoalCentre() {
 		return pitch.getLeftGoalCentre();
-
 	}
 
 	/**

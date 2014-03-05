@@ -70,17 +70,17 @@ public class Strategy {
 	@SuppressWarnings("unused")
 	private static Point2 basicGoalTarget() {
 		if (state.getDirection() == 0) {
-			if (state.getRobotPosition(myTeam ^ 1, defenderId).getY() > state
+			if (state.getRobotPosition(1-myTeam, 1-defenderId).getY() > state
 					.getLeftGoalCentre().getY())
-				return state.leftGoalTop;
+				return new Point2(state.leftGoalTop.x,state.leftGoalTop.y+25);
 			else
-				return state.leftGoalBottom;
+				return new Point2(state.leftGoalBottom.x,state.leftGoalBottom.y-25);
 		} else {
-			if (state.getRobotPosition(myTeam ^ 1, defenderId).getY() > state
+			if (state.getRobotPosition(1-myTeam, 1-defenderId).getY() > state
 					.getRightGoalCentre().getY())
-				return state.rightGoalTop;
+				return new Point2(state.rightGoalTop.x,state.rightGoalTop.y+25);
 			else
-				return state.rightGoalBottom;
+				return new Point2(state.rightGoalBottom.x,state.rightGoalBottom.y-25);
 		}
 	}
 
@@ -248,7 +248,7 @@ public class Strategy {
 				attacker.setState(Robot.State.DEFEND_ENEMY_DEFENDER);
 			}
 		} else if (position.equals("Our Attacker")) {
-			if (speed > FAST_BALL_SPEED) {
+			if (speed > FAST_BALL_SPEED && attacker.getSubState()==0) {
 				defender.setState(Robot.State.DEFEND_BALL);
 				attacker.setState(Robot.State.DEFEND_BALL);
 			} else {
@@ -256,7 +256,7 @@ public class Strategy {
 				attacker.setState(Robot.State.GET_BALL);
 			}
 		} else if (position.equals("Our Defender")) {
-			if (speed > FAST_BALL_SPEED) {
+			if (speed > FAST_BALL_SPEED && defender.getSubState()==0) {
 				defender.setState(Robot.State.DEFEND_BALL);
 				attacker.setState(Robot.State.DEFEND_BALL);
 			} else {
@@ -275,12 +275,6 @@ public class Strategy {
 		if (state.getRobotPosition(attacker.getTeam(), attacker.getId())
 				.equals(Point2.EMPTY))
 			attacker.setState(Robot.State.DO_NOTHING);
-
-		// Set state to reset if near border
-		if (attacker.nearBoundary()) {
-			attacker.setState(Robot.State.RESET);
-			defender.setState(Robot.State.RESET);
-		}
 	}
 
 	/**
@@ -401,11 +395,13 @@ public class Strategy {
 
 	/**
 	 * Loops indefinitely, ordering the robots to do things
-	 * 
-	 * @throws InterruptedException
+	 * @throws Exception 
 	 */
-	private static void executeStrategy() throws InterruptedException {
+	private static void executeStrategy() throws Exception {
 		Thread.sleep(1000);
+		attacker.getDriver().kick(900);
+		defender.getDriver().kick(900);
+		Thread.sleep(500);
 		while (true) {
 			try {
 				updateStates();
@@ -422,7 +418,7 @@ public class Strategy {
 				}
 
 				parseAttacker();
-				parseDefender();
+				//parseDefender();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

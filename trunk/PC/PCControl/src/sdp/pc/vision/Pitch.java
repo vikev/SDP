@@ -236,7 +236,14 @@ public class Pitch {
 	 * @return
 	 */
 	public Point2 getLeftGoalCentre() {
-		return new Point2(goalLineX[0], (goalLineY[0] + goalLineY[1]) / 2);
+		// return new Point2(goalLineX[0], (goalLineY[0] + goalLineY[1]) / 2);
+		return new Point2(goalLineX[0], goalLineY[0]
+				+ (goalLineY[1] - goalLineY[0]) / 2);
+	}
+
+	public Point2 getLeftGoalRandom() {
+		return new Point2(goalLineX[0], goalLineY[0]
+				+ (int) (Math.random() * (goalLineY[1] - goalLineY[0])));
 	}
 
 	/**
@@ -245,7 +252,14 @@ public class Pitch {
 	 * @return
 	 */
 	public Point2 getRightGoalCentre() {
-		return new Point2(goalLineX[1], (goalLineY[0] + goalLineY[1]) / 2);
+		// return new Point2(goalLineX[1], (goalLineY[0] + goalLineY[1]) / 2);
+		return new Point2(goalLineX[1], goalLineY[0]
+				+ (goalLineY[1] - goalLineY[0]) / 2);
+	}
+
+	public Point2 getRightGoalRandom() {
+		return new Point2(goalLineX[1], goalLineY[0]
+				+ (int) (Math.random() * (goalLineY[1] - goalLineY[0])));
 	}
 
 	/**
@@ -402,18 +416,20 @@ public class Pitch {
 
 	public Point2 getQuadrantCenter(int quadrant) {
 		ArrayList<Point2> pts = getArrayListOfPoints();
+		int yC = pts.get(2).getY() + (pts.get(11).getY() - pts.get(2).getY())
+				/ 2;
 		if (quadrant == 1) {
-			return new Point2(pts.get(2).getX() - pts.get(14).getX(), pts.get(
-					11).getY()
-					- pts.get(2).getY());
+			return new Point2(pts.get(14).getX()
+					+ (pts.get(2).getX() - pts.get(14).getX()) / 2, yC);
 		} else if (quadrant == 2) {
-			
+			return new Point2(pts.get(2).getX()
+					+ (pts.get(3).getX() - pts.get(2).getX()) / 2, yC);
 		} else if (quadrant == 3) {
-			return new Point2(pts.get(4).getX() - pts.get(3).getX(), pts
-					.get(11).getY() - pts.get(2).getY());
+			return new Point2(pts.get(3).getX()
+					+ (pts.get(4).getX() - pts.get(3).getX()) / 2, yC);
 		} else if (quadrant == 4) {
-			return new Point2(pts.get(6).getX() - pts.get(4).getX(), pts
-					.get(11).getY() - pts.get(2).getY());
+			return new Point2(pts.get(4).getX()
+					+ (pts.get(6).getX() - pts.get(4).getX()) / 2, yC);
 		}
 		return Point2.EMPTY;
 	}
