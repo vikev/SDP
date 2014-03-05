@@ -7,6 +7,8 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
+import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
+
 import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 import sdp.pc.common.ChooseRobot;
 import sdp.pc.vision.Point2;
@@ -70,17 +72,20 @@ public class Strategy {
 	@SuppressWarnings("unused")
 	private static Point2 basicGoalTarget() {
 		if (state.getDirection() == 0) {
-			if (state.getRobotPosition(1-myTeam, 1-defenderId).getY() > state
+			if (state.getRobotPosition(1 - myTeam, 1 - defenderId).getY() > state
 					.getLeftGoalCentre().getY())
-				return new Point2(state.leftGoalTop.x,state.leftGoalTop.y+25);
+				return new Point2(state.leftGoalTop.x, state.leftGoalTop.y + 25);
 			else
-				return new Point2(state.leftGoalBottom.x,state.leftGoalBottom.y-25);
+				return new Point2(state.leftGoalBottom.x,
+						state.leftGoalBottom.y - 25);
 		} else {
-			if (state.getRobotPosition(1-myTeam, 1-defenderId).getY() > state
+			if (state.getRobotPosition(1 - myTeam, 1 - defenderId).getY() > state
 					.getRightGoalCentre().getY())
-				return new Point2(state.rightGoalTop.x,state.rightGoalTop.y+25);
+				return new Point2(state.rightGoalTop.x,
+						state.rightGoalTop.y + 25);
 			else
-				return new Point2(state.rightGoalBottom.x,state.rightGoalBottom.y-25);
+				return new Point2(state.rightGoalBottom.x,
+						state.rightGoalBottom.y - 25);
 		}
 	}
 
@@ -248,15 +253,18 @@ public class Strategy {
 				attacker.setState(Robot.State.DEFEND_ENEMY_DEFENDER);
 			}
 		} else if (position.equals("Our Attacker")) {
-			if (speed > FAST_BALL_SPEED && attacker.getSubState()==0) {
+			if (speed > FAST_BALL_SPEED && attacker.getSubState() == 0) {
 				defender.setState(Robot.State.DEFEND_BALL);
 				attacker.setState(Robot.State.DEFEND_BALL);
 			} else {
 				defender.setState(Robot.State.DEFEND_BALL);
+				if (attacker.getState() != Robot.State.GET_BALL) {
+					target = getTheirGoalRandom();
+				}
 				attacker.setState(Robot.State.GET_BALL);
 			}
 		} else if (position.equals("Our Defender")) {
-			if (speed > FAST_BALL_SPEED && defender.getSubState()==0) {
+			if (speed > FAST_BALL_SPEED && defender.getSubState() == 0) {
 				defender.setState(Robot.State.DEFEND_BALL);
 				attacker.setState(Robot.State.DEFEND_BALL);
 			} else {
@@ -304,6 +312,8 @@ public class Strategy {
 		return (ballVel.dot(ballToBot) / dist);
 	}
 
+	private static Point2 target = Point2.EMPTY;
+
 	/**
 	 * Main logic branching mechanism for attacker. Use attacker.getState() as
 	 * well.
@@ -329,7 +339,7 @@ public class Strategy {
 		} else if (botState == Robot.State.DEFEND_ENEMY_DEFENDER) {
 			attacker.defendRobot(attacker.getOtherTeam(), attacker.getId());
 		} else if (botState == Robot.State.GET_BALL) {
-			attacker.kickBallToPoint(getTheirGoalCentre());
+			attacker.kickBallToPoint(target);
 		} else if (botState == Robot.State.RESET) {
 			attacker.goTo(
 					state.getPitch()
@@ -383,6 +393,7 @@ public class Strategy {
 	 * 
 	 * @return
 	 */
+	@SuppressWarnings("unused")
 	private static Point2 getTheirGoalCentre() {
 		if (state.getDirection() == 0) {
 			return state.getLeftGoalCentre();
@@ -390,12 +401,25 @@ public class Strategy {
 		return state.getRightGoalCentre();
 	}
 
+	/**
+	 * Returns the random of the goal of their defender
+	 * 
+	 * @return
+	 */
+	private static Point2 getTheirGoalRandom() {
+		if (state.getDirection() == 0) {
+			return state.getPitch().getLeftGoalRandom();
+		}
+		return state.getPitch().getRightGoalRandom();
+	}
+
 	// temporary frame counter (trafendersh)
 	private static int q = 0;
 
 	/**
 	 * Loops indefinitely, ordering the robots to do things
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
 	private static void executeStrategy() throws Exception {
 		Thread.sleep(1000);
@@ -418,7 +442,7 @@ public class Strategy {
 				}
 
 				parseAttacker();
-				//parseDefender();
+				parseDefender();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

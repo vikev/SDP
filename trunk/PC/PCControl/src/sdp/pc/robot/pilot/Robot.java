@@ -333,7 +333,7 @@ public class Robot {
 	 * true if complete)1
 	 */
 	public boolean goTo(Point2 to, double eps) throws Exception {
-		if (myState==Robot.State.RESET) {
+		if (myState == Robot.State.RESET) {
 			System.out.println(to);
 		}
 		if (turnTo(to, SAFE_ANGLE_EPSILON)) {
@@ -454,7 +454,7 @@ public class Robot {
 				angOffset = 1 - 2 * Math.abs(robo.angleTo(ball)) / 180;
 
 			xOffset = Math.pow(xOffset, 2);
-			//angOffset = Math.pow(angOffset, 3);
+			// angOffset = Math.pow(angOffset, 3);
 			if (subState == 0) {
 				// ball.setX((int) Math.round(ball.getX() - distortion / 4));
 				// if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
@@ -465,8 +465,7 @@ public class Robot {
 					driver.grab();
 					subState = 1;
 				}
-			}
-			else {
+			} else {
 				subState++;
 			}
 			if (subState >= 4) {
@@ -480,7 +479,7 @@ public class Robot {
 					}
 				}
 			}
-		//This is defender
+			// This is defender
 		} else {
 			double xOffset = ((double) (Math.abs(ball.x
 					- Constants.TABLE_CENTRE_X))) / 240;
@@ -542,7 +541,7 @@ public class Robot {
 	public void defenderPass() throws Exception {
 		// Point2 ball = state.getBallPosition();
 		// Point2 ourDefender = state.getRobotPosition(myTeam, 0);
-		Point2 ourAttacker = state.getRobotPosition(myTeam, 1);
+		Point2 ourAttacker = state.getRobotPosition(myTeam, 1 - myIdentifier);
 		// Point2 enemyAttacker = state.getRobotPosition(1 - myTeam, 1);
 		// if(!isOpposingStrikerBlocking(enemyAttacker, ourDefender,
 		// ourAttacker));
