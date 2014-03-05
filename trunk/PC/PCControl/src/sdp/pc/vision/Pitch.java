@@ -407,8 +407,7 @@ public class Pitch {
 					11).getY()
 					- pts.get(2).getY());
 		} else if (quadrant == 2) {
-			return new Point2(pts.get(3).getX() - pts.get(2).getX(), pts
-					.get(11).getY() - pts.get(2).getY());
+			
 		} else if (quadrant == 3) {
 			return new Point2(pts.get(4).getX() - pts.get(3).getX(), pts
 					.get(11).getY() - pts.get(2).getY());
