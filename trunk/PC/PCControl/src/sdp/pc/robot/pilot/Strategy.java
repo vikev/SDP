@@ -67,20 +67,25 @@ public class Strategy {
 	 */
 	private static WorldState state = new WorldState();
 
-	@SuppressWarnings("unused")
 	private static Point2 basicGoalTarget() {
-		if (state.getDirection() == 0) {
-			if (state.getRobotPosition(1-myTeam, 1-defenderId).getY() > state
-					.getLeftGoalCentre().getY())
-				return new Point2(state.leftGoalTop.x,state.leftGoalTop.y+25);
-			else
-				return new Point2(state.leftGoalBottom.x,state.leftGoalBottom.y-25);
-		} else {
+		if (state.getDirection() == 1) {
+			System.out.println(state.getRobotPosition(1-myTeam, 1-defenderId).getY() + " " + state
+					.getRightGoalCentre().getX());
 			if (state.getRobotPosition(1-myTeam, 1-defenderId).getY() > state
 					.getRightGoalCentre().getY())
-				return new Point2(state.rightGoalTop.x,state.rightGoalTop.y+25);
+				{System.out.println(state.rightGoalTop.x + " " + state.rightGoalTop.y+25);
+				return new Point2(state.getRightGoalCentre().getX(),state.getRightGoalCentre().getY()-45);
+				
+				}
 			else
-				return new Point2(state.rightGoalBottom.x,state.rightGoalBottom.y-25);
+				return new Point2(state.getRightGoalCentre().getX(),state.getRightGoalCentre().getY()+45);
+		} else {
+			System.out.print(0);
+			if (state.getRobotPosition(1-myTeam, 1-defenderId).getY() > state
+					.getLeftGoalCentre().getY())
+				return new Point2(state.getLeftGoalCentre().getX(),state.getLeftGoalCentre().getY()-45);
+			else
+				return new Point2(state.getLeftGoalCentre().getX(),state.getLeftGoalCentre().getY()+45);
 		}
 	}
 
@@ -329,7 +334,7 @@ public class Strategy {
 		} else if (botState == Robot.State.DEFEND_ENEMY_DEFENDER) {
 			attacker.defendRobot(attacker.getOtherTeam(), attacker.getId());
 		} else if (botState == Robot.State.GET_BALL) {
-			attacker.kickBallToPoint(getTheirGoalCentre());
+			attacker.kickBallToPoint(basicGoalTarget());
 		} else if (botState == Robot.State.RESET) {
 			attacker.goTo(
 					state.getPitch()
@@ -418,7 +423,7 @@ public class Strategy {
 				}
 
 				parseAttacker();
-				//parseDefender();
+				parseDefender();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

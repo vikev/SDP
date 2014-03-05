@@ -263,7 +263,7 @@ public class Robot {
 			if (!predictedBallPos.equals(Point2.EMPTY)
 					& FutureBall.pitchContains(predictedBallPos)) {
 				if (defendToY(
-						predictedBallPos.offset(50.0,
+						predictedBallPos.offset(10.0,
 								predictedBallPos.angleTo(robotPos)).getY(),
 						DEFEND_EPSILON_DISTANCE)) {
 					driver.stop();
@@ -460,7 +460,7 @@ public class Robot {
 				// if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
 				// if (goTo(ball.offset(15 * distortion, ball.angleTo(robo)),
 				// 10.0)) {
-				if (goTo(ball, 32 + 12 * xOffset * angOffset)) {
+				if (goTo(ball, 33 + 12 * xOffset * angOffset)) {
 					driver.stop();
 					driver.grab();
 					subState = 1;
@@ -475,7 +475,7 @@ public class Robot {
 						System.out.println("Kicking at " + where);
 						driver.kick(900);
 					}
-					if (subState >= 15) {
+					if (subState >= 18) {
 						subState = 0;
 					}
 				}
@@ -496,7 +496,7 @@ public class Robot {
 			if (subState == 0) {
 				ball.setX((int) Math.round(ball.getX() - distortion / 4));
 				// if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
-				if (goTo(ball, 30 + 10 * xOffset * angOffset)) {
+				if (goTo(ball, 34 + 10 * xOffset * angOffset)) {
 					driver.grab();
 					subState = 1;
 				}
@@ -542,7 +542,7 @@ public class Robot {
 	public void defenderPass() throws Exception {
 		// Point2 ball = state.getBallPosition();
 		// Point2 ourDefender = state.getRobotPosition(myTeam, 0);
-		Point2 ourAttacker = state.getRobotPosition(myTeam, 1);
+		Point2 ourAttacker = state.getRobotPosition(myTeam, 1-myIdentifier);
 		// Point2 enemyAttacker = state.getRobotPosition(1 - myTeam, 1);
 		// if(!isOpposingStrikerBlocking(enemyAttacker, ourDefender,
 		// ourAttacker));
