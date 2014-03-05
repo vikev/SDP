@@ -1028,6 +1028,8 @@ public class Robot {
 		if (vertices.size() > 2) {
 			return Alg.isInHull(new LinkedList<Point2>(vertices), pos);
 		} else {
+			System.err.println("Quadrant with vertices of size "
+					+ vertices.size());
 			return false;
 		}
 	}
