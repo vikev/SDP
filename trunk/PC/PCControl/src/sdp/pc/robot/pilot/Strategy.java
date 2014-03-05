@@ -70,17 +70,17 @@ public class Strategy {
 	@SuppressWarnings("unused")
 	private static Point2 basicGoalTarget() {
 		if (state.getDirection() == 0) {
-			if (state.getRobotPosition(myTeam ^ 1, defenderId).getY() > state
+			if (state.getRobotPosition(1-myTeam, 1-defenderId).getY() > state
 					.getLeftGoalCentre().getY())
-				return state.leftGoalTop;
+				return new Point2(state.leftGoalTop.x,state.leftGoalTop.y+25);
 			else
-				return state.leftGoalBottom;
+				return new Point2(state.leftGoalBottom.x,state.leftGoalBottom.y-25);
 		} else {
-			if (state.getRobotPosition(myTeam ^ 1, defenderId).getY() > state
+			if (state.getRobotPosition(1-myTeam, 1-defenderId).getY() > state
 					.getRightGoalCentre().getY())
-				return state.rightGoalTop;
+				return new Point2(state.rightGoalTop.x,state.rightGoalTop.y+25);
 			else
-				return state.rightGoalBottom;
+				return new Point2(state.rightGoalBottom.x,state.rightGoalBottom.y-25);
 		}
 	}
 
@@ -218,6 +218,8 @@ public class Strategy {
 
 		// Calculate Ball Position
 		int quad = state.getBallQuadrant();
+		boolean aQ = attacker.nearBoundary();
+		boolean dQ = defender.nearBoundary();
 		String position = parseQuadrant(quad);
 
 		// Calculate relative velocities
@@ -273,7 +275,6 @@ public class Strategy {
 		if (state.getRobotPosition(attacker.getTeam(), attacker.getId())
 				.equals(Point2.EMPTY))
 			attacker.setState(Robot.State.DO_NOTHING);
-
 	}
 
 	/**
@@ -329,6 +330,10 @@ public class Strategy {
 			attacker.defendRobot(attacker.getOtherTeam(), attacker.getId());
 		} else if (botState == Robot.State.GET_BALL) {
 			attacker.kickBallToPoint(getTheirGoalCentre());
+		} else if (botState == Robot.State.RESET) {
+			attacker.goTo(
+					state.getPitch()
+							.getQuadrantCenter(attacker.getMyQuadrant()), 10.0);
 		} else {
 			attacker.assertPerpendicular(10.0);
 		}
@@ -359,8 +364,11 @@ public class Strategy {
 		} else if (botState == Robot.State.DEFEND_GOAL_LINE) {
 			defender.defendWeightedGoalLine(0.5);
 		} else if (botState == Robot.State.PASS_TO_ATTACKER) {
-			defender.kickBallToPoint(state.getRobotPosition(defender.getTeam(),
-					defender.getOtherId()));
+			defender.defenderPass();
+		} else if (botState == Robot.State.RESET) {
+			defender.goTo(
+					state.getPitch()
+							.getQuadrantCenter(defender.getMyQuadrant()), 10.0);
 		} else {
 			if (defender.assertNearGoalLine(10.0)) {
 				if (defender.assertPerpendicular(10.0)) {
@@ -410,7 +418,7 @@ public class Strategy {
 				}
 
 				parseAttacker();
-				parseDefender();
+				//parseDefender();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

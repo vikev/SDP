@@ -2,8 +2,12 @@ package sdp.pc.robot.pilot;
 
 import static sdp.pc.vision.Alg.normalizeToBiDirection;
 import static sdp.pc.vision.Alg.normalizeToUnitDegrees;
+//import static sdp.pc.vision.FutureBall.getDeflectionAngle;
+import static sdp.pc.vision.Point2.getLinesIntersection;
 
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import sdp.pc.common.Constants;
 import sdp.pc.vision.Alg;
@@ -87,6 +91,11 @@ public class Robot {
 	private int myState = State.UNKNOWN;
 
 	/**
+	 * The quadrant on the field <b>this</b> should retain.
+	 */
+	private final int myQuadrant;
+
+	/**
 	 * An incremental "sub-state" value which can be used to handle sub-tasks
 	 * within a state. For example, if a robot's state is "pass to attacker",
 	 * sub-states could be:
@@ -98,6 +107,16 @@ public class Robot {
 	 * </ol>
 	 */
 	private int subState = 0;
+
+	/**
+	 * The most recently calculated bounce Point
+	 */
+	public Point2 bouncePoint;
+
+	// /**
+	// * The point the defender was at when the last bounce point was calculated
+	// */
+	// private Point2 defenderPosWhenBouncePointcalc;
 
 	/**
 	 * Class for controlling a robot from a more abstract point of view
@@ -119,6 +138,8 @@ public class Robot {
 		this.state = state;
 		this.myTeam = myTeam;
 		this.myIdentifier = myId;
+		this.myQuadrant = state.quadrantFromPoint(state.getRobotPosition(
+				myTeam, myId));
 	}
 
 	/**
@@ -142,6 +163,8 @@ public class Robot {
 		this.state = state;
 		this.myTeam = myTeam;
 		this.myIdentifier = myId;
+		this.myQuadrant = state.quadrantFromPoint(state.getRobotPosition(
+				myTeam, myId));
 	}
 
 	public void stop() throws Exception {
@@ -307,9 +330,12 @@ public class Robot {
 
 	/**
 	 * Makes the robot turn to the point then move forward to the point (returns
-	 * true if complete)
+	 * true if complete)1
 	 */
 	public boolean goTo(Point2 to, double eps) throws Exception {
+		if (myState==Robot.State.RESET) {
+			System.out.println(to);
+		}
 		if (turnTo(to, SAFE_ANGLE_EPSILON)) {
 			if (moveForwardTo(to, eps)) {
 				return true;
@@ -418,58 +444,58 @@ public class Robot {
 		 * Math.abs(robo.angleTo(ball)) / 180; } else { angOffset =
 		 * Math.abs(robo.angleTo(ball)) / 180; }
 		 */
+		// This is attacker
 		if (myIdentifier == state.getDirection()) {
-			double xOffset = Math.abs(robo.x-Constants.TABLE_CENTRE_X)/180, angOffset;
-	
+			double xOffset = Math.abs(robo.x - Constants.TABLE_CENTRE_X) / 240.0, angOffset;
+
 			if (robo.x > Constants.TABLE_CENTRE_X)
 				angOffset = 2 * Math.abs(robo.angleTo(ball)) / 180 - 1;
 			else
 				angOffset = 1 - 2 * Math.abs(robo.angleTo(ball)) / 180;
-	
+
 			xOffset = Math.pow(xOffset, 2);
-			System.out.print(xOffset + " ");
-			angOffset = Math.pow(angOffset, 3);
-			System.out.println(angOffset);
-			if (subState>0 && subState<4) {
-				subState++;
-			}
+			//angOffset = Math.pow(angOffset, 3);
 			if (subState == 0) {
 				// ball.setX((int) Math.round(ball.getX() - distortion / 4));
 				// if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
-				//if (goTo(ball.offset(15 * distortion, ball.angleTo(robo)), 10.0)) {
-				if (goTo(ball, 32 + 7 * xOffset * angOffset)) {
+				// if (goTo(ball.offset(15 * distortion, ball.angleTo(robo)),
+				// 10.0)) {
+				if (goTo(ball, 32 + 12 * xOffset * angOffset)) {
 					driver.stop();
-					driver.grab();			
-					subState=1;
+					driver.grab();
+					subState = 1;
 				}
+			}
+			else {
+				subState++;
 			}
 			if (subState >= 4) {
 				if (turnTo(where, 6.0)) {
-					subState++;
 					if (subState >= 8) {
 						System.out.println("Kicking at " + where);
 						driver.kick(900);
 					}
-					if (subState >= 12) {
+					if (subState >= 15) {
 						subState = 0;
 					}
 				}
 			}
-		}
-		else {
-			double xOffset = ((double) (Math.abs(ball.x - Constants.TABLE_CENTRE_X))) / 240;
+		//This is defender
+		} else {
+			double xOffset = ((double) (Math.abs(ball.x
+					- Constants.TABLE_CENTRE_X))) / 240;
 			double angOffset = 0;
 
 			if (robo.x > Constants.TABLE_CENTRE_X)
-				angOffset = 2*Math.abs(robo.angleTo(ball)) / 180 - 1;
+				angOffset = 2 * Math.abs(robo.angleTo(ball)) / 180 - 1;
 			else
-				angOffset = 1 - 2*Math.abs(robo.angleTo(ball)) / 180;
+				angOffset = 1 - 2 * Math.abs(robo.angleTo(ball)) / 180;
 
 			xOffset = Math.pow(xOffset, 3);
 			angOffset = Math.pow(angOffset, 3);
 			if (subState == 0) {
-				ball.setX((int) Math.round(ball.getX() - distortion/4));
-				//if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
+				ball.setX((int) Math.round(ball.getX() - distortion / 4));
+				// if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
 				if (goTo(ball, 30 + 10 * xOffset * angOffset)) {
 					driver.grab();
 					subState = 1;
@@ -506,6 +532,132 @@ public class Robot {
 		}
 		return false;
 	}
+
+	/**
+	 * Passes the ball from our Defender to our Attacker. Either with a direct
+	 * pass between them or with a bounce pass.
+	 * 
+	 * @throws Exception
+	 */
+	public void defenderPass() throws Exception {
+		// Point2 ball = state.getBallPosition();
+		// Point2 ourDefender = state.getRobotPosition(myTeam, 0);
+		Point2 ourAttacker = state.getRobotPosition(myTeam, 1);
+		// Point2 enemyAttacker = state.getRobotPosition(1 - myTeam, 1);
+		// if(!isOpposingStrikerBlocking(enemyAttacker, ourDefender,
+		// ourAttacker));
+		kickBallToPoint(ourAttacker);
+		// if(!(ourDefender.getX() == defenderPosWhenBouncePointcalc.getX() &&
+		// (ourDefender.getY() == defenderPosWhenBouncePointcalc.getY()))){
+		// setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
+		// }
+		// kickBallToPoint(bouncePoint);
+	}
+
+	/**
+	 * Attempts to discern whether the opposing team's striker would block a
+	 * direct pass between our robots. Currently only uses safe(large) estimates
+	 * for the opposing striker's dimensions. Calculates if a line drawn between
+	 * our defender and attacker intersects with any of the edges of a box drawn
+	 * around the enemy striker.
+	 * 
+	 * @param enemyStriker
+	 * @param thisRobot
+	 * @return
+	 */
+
+	public static boolean isOpposingStrikerBlocking(Point2 enemyStriker,
+			Point2 ourDefender, Point2 ourAttacker) {
+		int xrange = 60, yrange = 60;
+		int xrangediv2 = (int) Math.floor(xrange / 2);
+		int yrangediv2 = (int) Math.floor(yrange / 2);
+		// Set Points defining the dimensions of a box drawn around the enemy
+		// striker
+		Point2 topLeft = new Point2(enemyStriker.getX() - xrangediv2,
+				enemyStriker.getY() - yrangediv2);
+		Point2 topRight = new Point2(enemyStriker.getX() + xrangediv2,
+				enemyStriker.getY() - yrangediv2);
+		Point2 bottomLeft = new Point2(enemyStriker.getX() - xrangediv2,
+				enemyStriker.getY() + yrangediv2);
+		Point2 bottomRight = new Point2(enemyStriker.getX() + xrangediv2,
+				enemyStriker.getY() + yrangediv2);
+		// Calculate the intersection point between a line drawn between our
+		// Attacker and Defender
+		// and each edge of a box drawn around the enemy striker
+		Point2D.Double IntersectionTop = getLinesIntersection(ourDefender,
+				ourAttacker, topLeft, topRight);
+		Point2D.Double IntersectionBottom = getLinesIntersection(ourDefender,
+				ourAttacker, bottomLeft, bottomRight);
+		Point2D.Double IntersectionRight = getLinesIntersection(ourDefender,
+				ourAttacker, bottomRight, topRight);
+		Point2D.Double IntersectionLeft = getLinesIntersection(ourDefender,
+				ourAttacker, topLeft, bottomLeft);
+
+		boolean noIntersection = (IntersectionTop.getX()
+				+ IntersectionTop.getY() + IntersectionBottom.getX()
+				+ IntersectionBottom.getY() + IntersectionLeft.getX()
+				+ IntersectionLeft.getY() + IntersectionRight.getX() + IntersectionRight
+				.getY()) == 0;
+		return noIntersection;
+		// Point2 sumPoint =
+		// IntersectionTop.add(IntersectionBottom).add(IntersectionRight).add(IntersectionLeft);
+		// return ((sumPoint.getX() == 0) && (sumPoint.getY() == 0));
+	}
+
+	// /**
+	// * Searches for a bounce point on one of the long sides of the pitch
+	// * that would allow the ball to be deflected towards our attacker robot
+	// * if our defender were to kick the ball to that point from the point the
+	// * defender is currently occupying.
+	// *
+	// * @param enemyAttacker
+	// * @param ourDefender
+	// * @param ourAttacker
+	// */
+	// private void setBouncePoint(Point2 enemyAttacker, Point2 ourDefender,
+	// Point2 ourAttacker){
+	// int xBounce = 0, yBounce = 0, testy = ourDefender.getY(), testx =
+	// ourDefender.getX();
+	// int bounceAngleThresh = 1;
+	// Pitch pitch = state.getPitch();
+	// int direction = state.getDirection(); //0 for left
+	// boolean directionisleft = (direction == 0);
+	// boolean bouncetop = false;
+	// //Pick boundary of pitch to bounce off (could change y comparison but the
+	// decision
+	// //boundary doesn't need to be exact)
+	// if (enemyAttacker.getY() > pitch.getLeftGoalCentre().getY())
+	// bouncetop = true;
+	// //TODO: change testy to a value on one of the boundaries that matches the
+	// testx coordinate
+	// for (int i = 0; i < 200; i++){
+	// if(bouncetop && directionisleft){
+	// testx = testx + 1;
+	// testy = 1;
+	// }else if (bouncetop && !directionisleft){
+	// testx = testx - 1;
+	// testy = 1;
+	// }
+	// if(!bouncetop && directionisleft){
+	// testx = testx + 1;
+	// testy = 1;
+	// }else if (!bouncetop && !directionisleft){
+	// testx = testx - 1;
+	// testy = 1;
+	// }
+	// Point2 testPoint = new Point2(testx, testy);
+	// double deflectAngle = getDeflectionAngle(ourDefender, testPoint);
+	// //TODO: Modify testPoint.angleTo(ourAttacker) to account for boundary
+	// slope
+	// if(Math.abs(testPoint.angleTo(ourAttacker) - deflectAngle) <
+	// bounceAngleThresh)
+	// xBounce = testx;
+	// yBounce = testy;
+	// break;
+	// }
+	// bouncePoint.setX(xBounce);
+	// bouncePoint.setY(yBounce);
+	// }
 
 	/**
 	 * Not using it atm - don't touch unless you're Iain
@@ -671,7 +823,7 @@ public class Robot {
 	private static int getRotateSpeed(double rotateBy, double epsilon) {
 		// TODO: Should be refactored (constants)
 		double maxSpeed = 200.0;
-		double minSpeed = 10.0;
+		double minSpeed = 20.0;
 		double maxRotate = 180.0;
 		double minRotate = epsilon;
 		rotateBy = Math.abs(rotateBy);
@@ -732,8 +884,8 @@ public class Robot {
 		 * minSpeed) / (maxDist) * dist) + minSpeed);
 		 */
 
-		//return (int) ((dist + 30) * 2.5);
-		
+		// return (int) ((dist + 30) * 2.5);
+
 		if (myState == State.DEFEND_BALL
 				|| myState == State.DEFEND_ENEMY_ATTACKER) {
 			return (int) ((dist + 30) * 2.5);
@@ -776,6 +928,7 @@ public class Robot {
 		public static int GET_BALL = 7;
 		public static int ATTEMPT_GOAL = 8;
 		public static int DO_NOTHING = 9;
+		public static int RESET = 10;
 
 		public static void print(int q) {
 			switch (q) {
@@ -809,6 +962,9 @@ public class Robot {
 			case 9:
 				System.out.println("DO_NOTHING");
 				break;
+			case 10:
+				System.out.println("RESET");
+				break;
 			}
 
 		}
@@ -818,7 +974,8 @@ public class Robot {
 		double maxDist = 250.0;
 		double maxScale = 1.5;
 
-		return (maxScale - 1.0) / maxDist * point.distance(Vision.getCameraCentre()) + 1.0;
+		return (maxScale - 1.0) / maxDist
+				* point.distance(Vision.getCameraCentre()) + 1.0;
 	}
 
 	/**
@@ -860,5 +1017,73 @@ public class Robot {
 
 	public Driver getDriver() {
 		return this.driver;
+	}
+
+	/**
+	 * Returns the quadrant <b>this</b> was in when it was instanciated.
+	 * 
+	 * @return
+	 */
+	public int getMyQuadrant() {
+		return this.myQuadrant;
+	}
+
+	public boolean nearBoundary() {
+		int q = getMyQuadrant();
+		ArrayList<Point2> pts = state.getPitch().getArrayListOfPoints();
+		Point2 pos = state.getRobotPosition(myTeam, myIdentifier);
+		double distOffs = 5.0;
+		Point2 center = state.getPitch().getQuadrantCenter(q);
+		ArrayList<Point2> vertices = new ArrayList<Point2>();
+		if (q == 1) {
+			vertices.add(pts.get(1)
+					.offset(distOffs, pts.get(1).angleTo(center)));
+			vertices.add(pts.get(2)
+					.offset(distOffs, pts.get(2).angleTo(center)));
+			vertices.add(pts.get(11).offset(distOffs,
+					pts.get(11).angleTo(center)));
+			vertices.add(pts.get(12).offset(distOffs,
+					pts.get(12).angleTo(center)));
+			vertices.add(pts.get(13).offset(distOffs,
+					pts.get(13).angleTo(center)));
+			vertices.add(pts.get(14).offset(distOffs,
+					pts.get(14).angleTo(center)));
+		} else if (q == 2) {
+			vertices.add(pts.get(2)
+					.offset(distOffs, pts.get(2).angleTo(center)));
+			vertices.add(pts.get(3)
+					.offset(distOffs, pts.get(3).angleTo(center)));
+			vertices.add(pts.get(10).offset(distOffs,
+					pts.get(10).angleTo(center)));
+			vertices.add(pts.get(11).offset(distOffs,
+					pts.get(11).angleTo(center)));
+		} else if (q == 3) {
+			vertices.add(pts.get(4)
+					.offset(distOffs, pts.get(4).angleTo(center)));
+			vertices.add(pts.get(3)
+					.offset(distOffs, pts.get(3).angleTo(center)));
+			vertices.add(pts.get(9)
+					.offset(distOffs, pts.get(9).angleTo(center)));
+			vertices.add(pts.get(10).offset(distOffs,
+					pts.get(10).angleTo(center)));
+		} else if (q == 4) {
+			vertices.add(pts.get(4)
+					.offset(distOffs, pts.get(4).angleTo(center)));
+			vertices.add(pts.get(5)
+					.offset(distOffs, pts.get(5).angleTo(center)));
+			vertices.add(pts.get(6)
+					.offset(distOffs, pts.get(6).angleTo(center)));
+			vertices.add(pts.get(7)
+					.offset(distOffs, pts.get(7).angleTo(center)));
+			vertices.add(pts.get(8)
+					.offset(distOffs, pts.get(8).angleTo(center)));
+			vertices.add(pts.get(9)
+					.offset(distOffs, pts.get(9).angleTo(center)));
+		}
+		if (vertices.size() > 2) {
+			return Alg.isInHull(new LinkedList<Point2>(vertices), pos);
+		} else {
+			return false;
+		}
 	}
 }
