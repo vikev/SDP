@@ -10,6 +10,7 @@ import sdp.pc.vision.Alg;
 import sdp.pc.vision.FutureBall;
 import sdp.pc.vision.Pitch;
 import sdp.pc.vision.Point2;
+import sdp.pc.vision.Vision;
 import sdp.pc.vision.WorldState;
 import sdp.pc.vision.relay.Driver;
 import sdp.pc.vision.relay.TCPClient;
@@ -409,33 +410,76 @@ public class Robot {
 
 		// The offset stuff doesn't really work too well - there are problems
 		// with the defender catching the ball (attacker's fine-ish though)
-		double xOffset = ((double) (Math.abs(ball.x - Constants.TABLE_CENTRE_X))) / 240;
-		double angOffset = 0;
+		// double xOffset = ((double) (Math.abs(ball.x -
+		// Constants.TABLE_CENTRE_X))) / 240;
+		// double angOffset = 0;
 		/*
 		 * if (robo.x > Constants.TABLE_CENTRE_X) { angOffset = 1 -
 		 * Math.abs(robo.angleTo(ball)) / 180; } else { angOffset =
 		 * Math.abs(robo.angleTo(ball)) / 180; }
 		 */
-
-		if (robo.x > Constants.TABLE_CENTRE_X)
-			angOffset = 2 * Math.abs(robo.angleTo(ball)) / 180 - 1;
-		else
-			angOffset = 1 - 2 * Math.abs(robo.angleTo(ball)) / 180;
-
-		xOffset = Math.pow(xOffset, 3);
-		angOffset = Math.pow(angOffset, 3);
-		if (subState == 0) {
-			ball.setX((int) Math.round(ball.getX() - distortion / 4));
-			// if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
-			if (goTo(ball, 30 + 10 * xOffset * angOffset)) {
-				driver.grab();
-				subState = 1;
+		if (myIdentifier == state.getDirection()) {
+			double xOffset = Math.abs(robo.x-Constants.TABLE_CENTRE_X)/180, angOffset;
+	
+			if (robo.x > Constants.TABLE_CENTRE_X)
+				angOffset = 2 * Math.abs(robo.angleTo(ball)) / 180 - 1;
+			else
+				angOffset = 1 - 2 * Math.abs(robo.angleTo(ball)) / 180;
+	
+			xOffset = Math.pow(xOffset, 2);
+			System.out.print(xOffset + " ");
+			angOffset = Math.pow(angOffset, 3);
+			System.out.println(angOffset);
+			if (subState>0 && subState<4) {
+				subState++;
+			}
+			if (subState == 0) {
+				// ball.setX((int) Math.round(ball.getX() - distortion / 4));
+				// if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
+				//if (goTo(ball.offset(15 * distortion, ball.angleTo(robo)), 10.0)) {
+				if (goTo(ball, 32 + 7 * xOffset * angOffset)) {
+					driver.stop();
+					driver.grab();			
+					subState=1;
+				}
+			}
+			if (subState >= 4) {
+				if (turnTo(where, 6.0)) {
+					subState++;
+					if (subState >= 8) {
+						System.out.println("Kicking at " + where);
+						driver.kick(900);
+					}
+					if (subState >= 12) {
+						subState = 0;
+					}
+				}
 			}
 		}
-		if (subState == 1) {
-			if (turnTo(where, 10.0)) {
-				driver.kick(900);
-				subState = 0;
+		else {
+			double xOffset = ((double) (Math.abs(ball.x - Constants.TABLE_CENTRE_X))) / 240;
+			double angOffset = 0;
+
+			if (robo.x > Constants.TABLE_CENTRE_X)
+				angOffset = 2*Math.abs(robo.angleTo(ball)) / 180 - 1;
+			else
+				angOffset = 1 - 2*Math.abs(robo.angleTo(ball)) / 180;
+
+			xOffset = Math.pow(xOffset, 3);
+			angOffset = Math.pow(angOffset, 3);
+			if (subState == 0) {
+				ball.setX((int) Math.round(ball.getX() - distortion/4));
+				//if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
+				if (goTo(ball, 30 + 10 * xOffset * angOffset)) {
+					driver.grab();
+					subState = 1;
+				}
+			}
+			if (subState == 1) {
+				if (turnTo(where, 10.0)) {
+					driver.kick(900);
+					subState = 0;
+				}
 			}
 		}
 	}
@@ -626,8 +670,8 @@ public class Robot {
 	 */
 	private static int getRotateSpeed(double rotateBy, double epsilon) {
 		// TODO: Should be refactored (constants)
-		double maxSpeed = 300.0;
-		double minSpeed = 20.0;
+		double maxSpeed = 200.0;
+		double minSpeed = 10.0;
 		double maxRotate = 180.0;
 		double minRotate = epsilon;
 		rotateBy = Math.abs(rotateBy);
@@ -679,15 +723,30 @@ public class Robot {
 	 * TODO: Units? motor velocity in radians per second or..?
 	 */
 	private int getMoveSpeed(double dist) {
-		// TODO: Need to test with final gear ratios and robots! Also refactor
-		// out these constants
-		double maxSpeed = 300.0;
-		double minSpeed = 40.0;
-		double maxDist = 125.0;
-		dist = Math.abs(dist);
+		/*
+		 * // TODO: Need to test with final gear ratios and robots! Also
+		 * refactor // out these constants double maxSpeed = 300.0; double
+		 * minSpeed = 40.0; double maxDist = 200.0; dist = Math.abs(dist);
+		 * 
+		 * // Don't change this! Change the constants return (int) (((maxSpeed -
+		 * minSpeed) / (maxDist) * dist) + minSpeed);
+		 */
 
-		// Don't change this! Change the constants
-		return (int) (((maxSpeed - minSpeed) / (maxDist) * dist) + minSpeed);
+		//return (int) ((dist + 30) * 2.5);
+		
+		if (myState == State.DEFEND_BALL
+				|| myState == State.DEFEND_ENEMY_ATTACKER) {
+			return (int) ((dist + 30) * 2.5);
+		}
+		if (dist > 160.0) {
+			return 400;
+		} else if (dist > 100.0) {
+			return 250;
+		} else if (dist > 40.0) {
+			return 125;
+		} else {
+			return 50;
+		}
 	}
 
 	/**
@@ -755,23 +814,11 @@ public class Robot {
 		}
 	}
 
-	@SuppressWarnings("unused")
 	public static double getDistortion(Point2 point) {
-		double distanceToGoal = 250;
-		double maxDistortion = 25;
-		double midDistortion = 10;
-		double distortion;
-		if (point.getX() - 250 > 0) {
-			double distanceRight = point.getX() - 313;
-			distortion = (maxDistortion / 100)
-					* (distanceRight / distanceToGoal);
-			return distortion;
-		} else {
-			double distanceLeft = 313 - point.getX();
-			distortion = (-1) * (maxDistortion / 100)
-					* (distanceLeft / distanceToGoal);
-			return distortion;
-		}
+		double maxDist = 250.0;
+		double maxScale = 1.5;
+
+		return (maxScale - 1.0) / maxDist * point.distance(Vision.getCameraCentre()) + 1.0;
 	}
 
 	/**
@@ -809,5 +856,9 @@ public class Robot {
 	 */
 	public int getOtherTeam() {
 		return 1 - this.myTeam;
+	}
+
+	public Driver getDriver() {
+		return this.driver;
 	}
 }

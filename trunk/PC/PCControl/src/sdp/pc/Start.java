@@ -56,8 +56,8 @@ public class Start {
 		// Connect a robot
 		ServerSocket serverSocket = null;
 		NXTInfo nxt = null;
-		NXTInfo attacker = new NXTInfo(NXTCommFactory.BLUETOOTH, B_NAME, B_MAC);
-		NXTInfo defender = new NXTInfo(NXTCommFactory.BLUETOOTH, A_NAME, A_MAC);
+		NXTInfo attacker = new NXTInfo(NXTCommFactory.BLUETOOTH, A_NAME, A_MAC);
+		NXTInfo defender = new NXTInfo(NXTCommFactory.BLUETOOTH, B_NAME, B_MAC);
 		int port;
 
 		switch (ChooseRobot.dialog()) {

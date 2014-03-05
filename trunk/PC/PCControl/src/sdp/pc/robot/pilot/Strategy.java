@@ -246,7 +246,7 @@ public class Strategy {
 				attacker.setState(Robot.State.DEFEND_ENEMY_DEFENDER);
 			}
 		} else if (position.equals("Our Attacker")) {
-			if (speed > FAST_BALL_SPEED) {
+			if (speed > FAST_BALL_SPEED && attacker.getSubState()==0) {
 				defender.setState(Robot.State.DEFEND_BALL);
 				attacker.setState(Robot.State.DEFEND_BALL);
 			} else {
@@ -254,7 +254,7 @@ public class Strategy {
 				attacker.setState(Robot.State.GET_BALL);
 			}
 		} else if (position.equals("Our Defender")) {
-			if (speed > FAST_BALL_SPEED) {
+			if (speed > FAST_BALL_SPEED && defender.getSubState()==0) {
 				defender.setState(Robot.State.DEFEND_BALL);
 				attacker.setState(Robot.State.DEFEND_BALL);
 			} else {
@@ -387,11 +387,13 @@ public class Strategy {
 
 	/**
 	 * Loops indefinitely, ordering the robots to do things
-	 * 
-	 * @throws InterruptedException
+	 * @throws Exception 
 	 */
-	private static void executeStrategy() throws InterruptedException {
+	private static void executeStrategy() throws Exception {
 		Thread.sleep(1000);
+		attacker.getDriver().kick(900);
+		defender.getDriver().kick(900);
+		Thread.sleep(500);
 		while (true) {
 			try {
 				updateStates();
