@@ -218,6 +218,8 @@ public class Strategy {
 
 		// Calculate Ball Position
 		int quad = state.getBallQuadrant();
+		boolean aQ = attacker.nearBoundary();
+		boolean dQ = defender.nearBoundary();
 		String position = parseQuadrant(quad);
 
 		// Calculate relative velocities
@@ -274,6 +276,11 @@ public class Strategy {
 				.equals(Point2.EMPTY))
 			attacker.setState(Robot.State.DO_NOTHING);
 
+		// Set state to reset if near border
+		if (attacker.nearBoundary()) {
+			attacker.setState(Robot.State.RESET);
+			defender.setState(Robot.State.RESET);
+		}
 	}
 
 	/**
@@ -329,6 +336,10 @@ public class Strategy {
 			attacker.defendRobot(attacker.getOtherTeam(), attacker.getId());
 		} else if (botState == Robot.State.GET_BALL) {
 			attacker.kickBallToPoint(getTheirGoalCentre());
+		} else if (botState == Robot.State.RESET) {
+			attacker.goTo(
+					state.getPitch()
+							.getQuadrantCenter(attacker.getMyQuadrant()), 10.0);
 		} else {
 			attacker.assertPerpendicular(10.0);
 		}
@@ -360,6 +371,10 @@ public class Strategy {
 			defender.defendWeightedGoalLine(0.5);
 		} else if (botState == Robot.State.PASS_TO_ATTACKER) {
 			defender.defenderPass();
+		} else if (botState == Robot.State.RESET) {
+			defender.goTo(
+					state.getPitch()
+							.getQuadrantCenter(defender.getMyQuadrant()), 10.0);
 		} else {
 			if (defender.assertNearGoalLine(10.0)) {
 				if (defender.assertPerpendicular(10.0)) {

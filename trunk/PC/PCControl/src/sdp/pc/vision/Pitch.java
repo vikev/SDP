@@ -399,4 +399,23 @@ public class Pitch {
 		// Not found? Return 0
 		return 0;
 	}
+
+	public Point2 getQuadrantCenter(int quadrant) {
+		ArrayList<Point2> pts = getArrayListOfPoints();
+		if (quadrant == 1) {
+			return new Point2(pts.get(2).getX() - pts.get(14).getX(), pts.get(
+					11).getY()
+					- pts.get(2).getY());
+		} else if (quadrant == 2) {
+			return new Point2(pts.get(3).getX() - pts.get(2).getX(), pts
+					.get(11).getY() - pts.get(2).getY());
+		} else if (quadrant == 3) {
+			return new Point2(pts.get(4).getX() - pts.get(3).getX(), pts
+					.get(11).getY() - pts.get(2).getY());
+		} else if (quadrant == 4) {
+			return new Point2(pts.get(6).getX() - pts.get(4).getX(), pts
+					.get(11).getY() - pts.get(2).getY());
+		}
+		return Point2.EMPTY;
+	}
 }
