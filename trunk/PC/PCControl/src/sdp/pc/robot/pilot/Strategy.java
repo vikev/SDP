@@ -359,8 +359,7 @@ public class Strategy {
 		} else if (botState == Robot.State.DEFEND_GOAL_LINE) {
 			defender.defendWeightedGoalLine(0.5);
 		} else if (botState == Robot.State.PASS_TO_ATTACKER) {
-			defender.kickBallToPoint(state.getRobotPosition(defender.getTeam(),
-					defender.getOtherId()));
+			defender.defenderPass();
 		} else {
 			if (defender.assertNearGoalLine(10.0)) {
 				if (defender.assertPerpendicular(10.0)) {

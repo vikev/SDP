@@ -2,7 +2,10 @@ package sdp.pc.robot.pilot;
 
 import static sdp.pc.vision.Alg.normalizeToBiDirection;
 import static sdp.pc.vision.Alg.normalizeToUnitDegrees;
+import static sdp.pc.vision.FutureBall.getDeflectionAngle;
+import static sdp.pc.vision.Point2.getLinesIntersection;
 
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
 import sdp.pc.common.Constants;
@@ -97,6 +100,16 @@ public class Robot {
 	 * </ol>
 	 */
 	private int subState = 0;
+	
+	/**
+	 * The most recently calculated bounce Point
+	 */
+	public Point2 bouncePoint;
+	
+	/**
+	 * The point the defender was at when the last bounce point was calculated
+	 */
+	private Point2 defenderPosWhenBouncePointcalc;
 
 	/**
 	 * Class for controlling a robot from a more abstract point of view
@@ -462,7 +475,109 @@ public class Robot {
 		}
 		return false;
 	}
-
+	
+	/**
+	 * Passes the ball from our Defender to our Attacker. Either with a direct pass between them
+	 * or with a bounce pass.
+	 * 
+	 * @throws Exception
+	 */
+	public void defenderPass() throws Exception{
+		Point2 ball = state.getBallPosition();
+		Point2 ourDefender = state.getRobotPosition(myTeam, 0);
+		Point2 ourAttacker = state.getRobotPosition(myTeam, 1);
+		Point2 enemyAttacker = state.getRobotPosition(1 - myTeam, 1);
+		//if(!isOpposingStrikerBlocking(enemyAttacker, ourDefender, ourAttacker));
+		kickBallToPoint(ourAttacker);
+		//if(!(ourDefender.getX() == defenderPosWhenBouncePointcalc.getX() && (ourDefender.getY() == defenderPosWhenBouncePointcalc.getY()))){
+			//setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
+		//}
+		//kickBallToPoint(bouncePoint);
+	}
+	
+	/**
+	 * Attempts to discern whether the opposing team's striker would block a direct pass between
+	 * our robots. Currently only uses safe(large) estimates for the opposing striker's dimensions.
+	 * Calculates if a line drawn between our defender and attacker intersects with any of the edges
+	 * of a box drawn around the enemy striker.
+	 * 
+	 * @param enemyStriker
+	 * @param thisRobot
+	 * @return
+	 */
+		
+	public static boolean isOpposingStrikerBlocking(Point2 enemyStriker, Point2 ourDefender, Point2 ourAttacker){
+		int xrange = 60, yrange = 60;
+		int xrangediv2 = (int)Math.floor(xrange/2);
+		int yrangediv2 = (int)Math.floor(yrange/2);
+		//Set Points defining the dimensions of a box drawn around the enemy striker
+		Point2 topLeft = new Point2(enemyStriker.getX() - xrangediv2, enemyStriker.getY() - yrangediv2); 
+		Point2 topRight = new Point2(enemyStriker.getX() + xrangediv2, enemyStriker.getY() - yrangediv2);
+		Point2 bottomLeft = new Point2(enemyStriker.getX() - xrangediv2, enemyStriker.getY() + yrangediv2);
+		Point2 bottomRight = new Point2(enemyStriker.getX() + xrangediv2, enemyStriker.getY() + yrangediv2);
+		//Calculate the intersection point between a line drawn between our Attacker and Defender
+		//and each edge of a box drawn around the enemy striker
+		Point2D.Double IntersectionTop = getLinesIntersection(ourDefender, ourAttacker, topLeft, topRight);
+		Point2D.Double IntersectionBottom = getLinesIntersection(ourDefender, ourAttacker, bottomLeft, bottomRight);
+		Point2D.Double IntersectionRight = getLinesIntersection(ourDefender, ourAttacker, bottomRight, topRight);
+		Point2D.Double IntersectionLeft = getLinesIntersection(ourDefender, ourAttacker, topLeft, bottomLeft);
+		
+		boolean noIntersection = (IntersectionTop.getX() + IntersectionTop.getY() + IntersectionBottom.getX() + IntersectionBottom.getY()
+				+ IntersectionLeft.getX() + IntersectionLeft.getY() + IntersectionRight.getX() + IntersectionRight.getY()) == 0;
+		return noIntersection;
+		//Point2 sumPoint = IntersectionTop.add(IntersectionBottom).add(IntersectionRight).add(IntersectionLeft);
+		//return ((sumPoint.getX() == 0) && (sumPoint.getY() == 0));
+	}
+	
+	/**
+	 * Searches for a bounce point on one of the long sides of the pitch
+	 * that would allow the ball to be deflected towards our attacker robot
+	 * if our defender were to kick the ball to that point from the point the 
+	 * defender is currently occupying. 
+	 * 
+	 * @param enemyAttacker
+	 * @param ourDefender
+	 * @param ourAttacker
+	 */
+	private void setBouncePoint(Point2 enemyAttacker, Point2 ourDefender, Point2 ourAttacker){
+		int xBounce = 0, yBounce = 0, testy = ourDefender.getY(), testx = ourDefender.getX();
+		int bounceAngleThresh = 1;
+		Pitch pitch = state.getPitch();
+		int direction = state.getDirection(); //0 for left
+		boolean directionisleft = (direction == 0);
+		boolean bouncetop = false;
+		//Pick boundary of pitch to bounce off (could change y comparison but the decision
+		//boundary doesn't need to be exact)
+		if (enemyAttacker.getY() > pitch.getLeftGoalCentre().getY())
+			bouncetop = true;
+		//TODO: change testy to a value on one of the boundaries that matches the testx coordinate
+		for (int i = 0; i < 200; i++){
+			if(bouncetop && directionisleft){
+				testx = testx + 1;
+				testy = 1;
+			}else if (bouncetop && !directionisleft){
+					testx = testx - 1;
+					testy = 1;
+			}
+			if(!bouncetop && directionisleft){
+				testx = testx + 1;
+				testy = 1;
+			}else if (!bouncetop && !directionisleft){
+					testx = testx - 1;
+					testy = 1;
+			}
+			Point2 testPoint = new Point2(testx, testy);
+			double deflectAngle = getDeflectionAngle(ourDefender, testPoint);
+			//TODO: Modify testPoint.angleTo(ourAttacker) to account for boundary slope
+			if(Math.abs(testPoint.angleTo(ourAttacker) - deflectAngle) < bounceAngleThresh)
+				xBounce = testx;
+				yBounce = testy;
+				break;
+		}
+		bouncePoint.setX(xBounce);
+		bouncePoint.setY(yBounce);
+	}
+	
 	/**
 	 * Not using it atm - don't touch unless you're Iain
 	 */
