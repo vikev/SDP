@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 import sdp.pc.common.Constants;
-import sdp.pc.common.GaussianPointFilter;
 
 /**
  * Contains the code used to process (get RGB/HSB values) the current frame;
@@ -83,19 +82,19 @@ public class WorldStateUpdater extends WorldStateListener {
 			new Cluster(new Point2(390, 220)),
 			new Cluster(new Point2(520, 220)) };
 
-	/**
-	 * Here we have a gaussian point filter which smoothes the position of the
-	 * ball over 5 frames. The sigma parameter in the gaussian implementation
-	 * may be worth changing if the ball position seems to lag too much.
-	 */
-	private GaussianPointFilter ballVelocityFilter = new GaussianPointFilter(5);
-
-	/**
-	 * Here we have a gaussian point filter which smoothes the velocity of the
-	 * ball over 5 frames. The sigma parameter in the gaussian implementation
-	 * may be worth changing if the ball position seems to lag too much.
-	 */
-	private GaussianPointFilter ballPositionFilter = new GaussianPointFilter(5);
+//	/**
+//	 * Here we have a gaussian point filter which smoothes the position of the
+//	 * ball over 5 frames. The sigma parameter in the gaussian implementation
+//	 * may be worth changing if the ball position seems to lag too much.
+//	 */
+//	private GaussianPointFilter ballVelocityFilter = new GaussianPointFilter(5);
+//
+//	/**
+//	 * Here we have a gaussian point filter which smoothes the velocity of the
+//	 * ball over 5 frames. The sigma parameter in the gaussian implementation
+//	 * may be worth changing if the ball position seems to lag too much.
+//	 */
+//	private GaussianPointFilter ballPositionFilter = new GaussianPointFilter(5);
 
 	/**
 	 * Constructs a new WorldStateUpdater to look for new frames, as refreshed
@@ -211,8 +210,10 @@ public class WorldStateUpdater extends WorldStateListener {
 				ballPastPos.removeLast();
 
 			// Update estimated data
-			Point2 position = ballPositionFilter.apply(state.getBallPosition());
-			Point2 velocity = ballVelocityFilter.apply(state.getBallVelocity());
+//			Point2 position = ballPositionFilter.apply(state.getBallPosition());
+//			Point2 velocity = ballVelocityFilter.apply(state.getBallVelocity());
+			Point2 position = state.getBallPosition();
+			Point2 velocity = state.getBallVelocity();
 			state.setFutureData(FutureBall
 					.estimateStopPoint(velocity, position));
 		} else {

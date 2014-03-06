@@ -7,11 +7,11 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 import sdp.pc.common.ChooseRobot;
 import sdp.pc.vision.Point2;
 import sdp.pc.vision.Vision;
 import sdp.pc.vision.WorldState;
+import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 
 /**
  * Strategy is the global static class for running a match in SDP. Here we
@@ -22,7 +22,7 @@ import sdp.pc.vision.WorldState;
  * @author s1133141
  * 
  */
-public class Strategy {
+public class Strategy implements Runnable {
 
 	/**
 	 * Team ID of our team (could be refactored?)
@@ -53,6 +53,12 @@ public class Strategy {
 	private static final double FAST_BALL_SPEED = 150.0;
 
 	/**
+	 * A counter used to print statements to the screen without flooding the
+	 * console.
+	 */
+	private static int frameCounter = 0;
+
+	/**
 	 * the defending robot
 	 */
 	private static Robot defender;
@@ -67,20 +73,29 @@ public class Strategy {
 	 */
 	private static WorldState state = new WorldState();
 
+	private static int guiState = 0;
+
+	private static Strategy instance;
+
+	private boolean interrupted = false;
+
 	@SuppressWarnings("unused")
 	private static Point2 basicGoalTarget() {
 		if (state.getDirection() == 0) {
-			if (state.getRobotPosition(myTeam ^ 1, defenderId).getY() > state
+			if (state.getRobotPosition(1 - myTeam, 1 - defenderId).getY() > state
 					.getLeftGoalCentre().getY())
-				return state.leftGoalTop;
+				return new Point2(state.leftGoalTop.x, state.leftGoalTop.y + 25);
 			else
-				return state.leftGoalBottom;
+				return new Point2(state.leftGoalBottom.x,
+						state.leftGoalBottom.y - 25);
 		} else {
-			if (state.getRobotPosition(myTeam ^ 1, defenderId).getY() > state
+			if (state.getRobotPosition(1 - myTeam, 1 - defenderId).getY() > state
 					.getRightGoalCentre().getY())
-				return state.rightGoalTop;
+				return new Point2(state.rightGoalTop.x,
+						state.rightGoalTop.y + 25);
 			else
-				return state.rightGoalBottom;
+				return new Point2(state.rightGoalBottom.x,
+						state.rightGoalBottom.y - 25);
 		}
 	}
 
@@ -212,12 +227,16 @@ public class Strategy {
 	 * <td>Fast Ball ? Intercept Ball : Prepare for Pass</td>
 	 * </tr>
 	 * </table>
+	 * 
+	 * @throws Exception
 	 */
 	@SuppressWarnings("unused")
-	private static void updateStates() {
+	private static void updateStates() throws Exception {
 
 		// Calculate Ball Position
 		int quad = state.getBallQuadrant();
+		boolean aQ = attacker.nearBoundary();
+		boolean dQ = defender.nearBoundary();
 		String position = parseQuadrant(quad);
 
 		// Calculate relative velocities
@@ -246,15 +265,18 @@ public class Strategy {
 				attacker.setState(Robot.State.DEFEND_ENEMY_DEFENDER);
 			}
 		} else if (position.equals("Our Attacker")) {
-			if (speed > FAST_BALL_SPEED) {
+			if (speed > FAST_BALL_SPEED && attacker.getSubState() == 0) {
 				defender.setState(Robot.State.DEFEND_BALL);
 				attacker.setState(Robot.State.DEFEND_BALL);
 			} else {
 				defender.setState(Robot.State.DEFEND_BALL);
+				if (attacker.getState() != Robot.State.GET_BALL) {
+					target = getTheirGoalRandom();
+				}
 				attacker.setState(Robot.State.GET_BALL);
 			}
 		} else if (position.equals("Our Defender")) {
-			if (speed > FAST_BALL_SPEED) {
+			if (speed > FAST_BALL_SPEED && defender.getSubState() == 0) {
 				defender.setState(Robot.State.DEFEND_BALL);
 				attacker.setState(Robot.State.DEFEND_BALL);
 			} else {
@@ -274,6 +296,14 @@ public class Strategy {
 				.equals(Point2.EMPTY))
 			attacker.setState(Robot.State.DO_NOTHING);
 
+		if (attacker.nearBoundary()) {
+			attacker.setState(Robot.State.RESET);
+			System.err.println("Resetting attacker");
+		}
+		if (defender.nearBoundary()) {
+			defender.setState(Robot.State.RESET);
+			System.err.println("Resetting defender");
+		}
 	}
 
 	/**
@@ -303,6 +333,8 @@ public class Strategy {
 		return (ballVel.dot(ballToBot) / dist);
 	}
 
+	private static Point2 target = Point2.EMPTY;
+
 	/**
 	 * Main logic branching mechanism for attacker. Use attacker.getState() as
 	 * well.
@@ -328,7 +360,11 @@ public class Strategy {
 		} else if (botState == Robot.State.DEFEND_ENEMY_DEFENDER) {
 			attacker.defendRobot(attacker.getOtherTeam(), attacker.getId());
 		} else if (botState == Robot.State.GET_BALL) {
-			attacker.kickBallToPoint(getTheirGoalCentre());
+			attacker.kickBallToPoint(target);
+		} else if (botState == Robot.State.RESET) {
+			attacker.goTo(
+					state.getPitch()
+							.getQuadrantCenter(attacker.getMyQuadrant()), 10.0);
 		} else {
 			attacker.assertPerpendicular(10.0);
 		}
@@ -359,8 +395,11 @@ public class Strategy {
 		} else if (botState == Robot.State.DEFEND_GOAL_LINE) {
 			defender.defendWeightedGoalLine(0.5);
 		} else if (botState == Robot.State.PASS_TO_ATTACKER) {
-			defender.kickBallToPoint(state.getRobotPosition(defender.getTeam(),
-					defender.getOtherId()));
+			defender.defenderPass();
+		} else if (botState == Robot.State.RESET) {
+			defender.goTo(
+					state.getPitch()
+							.getQuadrantCenter(defender.getMyQuadrant()), 10.0);
 		} else {
 			if (defender.assertNearGoalLine(10.0)) {
 				if (defender.assertPerpendicular(10.0)) {
@@ -375,6 +414,7 @@ public class Strategy {
 	 * 
 	 * @return
 	 */
+	@SuppressWarnings("unused")
 	private static Point2 getTheirGoalCentre() {
 		if (state.getDirection() == 0) {
 			return state.getLeftGoalCentre();
@@ -382,32 +422,56 @@ public class Strategy {
 		return state.getRightGoalCentre();
 	}
 
-	// temporary frame counter (trafendersh)
-	private static int q = 0;
+	/**
+	 * Returns the random of the goal of their defender
+	 * 
+	 * @return
+	 */
+	private static Point2 getTheirGoalRandom() {
+		if (state.getDirection() == 0) {
+			return state.getPitch().getLeftGoalRandom();
+		}
+		return state.getPitch().getRightGoalRandom();
+	}
+
+	private static void printStatesPeriodically() {
+
+		// Print out the states every 10 frames (don't flood the console)
+		frameCounter++;
+		if (frameCounter == 10) {
+			System.out.println();
+			System.out.println("Attacker, Defender states:");
+			Robot.State.print(attacker.getState());
+			Robot.State.print(defender.getState());
+			frameCounter = 0;
+		}
+	}
 
 	/**
 	 * Loops indefinitely, ordering the robots to do things
 	 * 
-	 * @throws InterruptedException
+	 * @throws Exception
 	 */
-	private static void executeStrategy() throws InterruptedException {
+	private void executeStrategy() throws Exception {
+
 		Thread.sleep(1000);
+		attacker.getDriver().kick(900);
+		defender.getDriver().kick(900);
+		Thread.sleep(500);
 		while (true) {
 			try {
-				updateStates();
-
-				// Print out the states every 10 frames (don't flood the
-				// console)
-				q++;
-				if (q == 10) {
-					System.out.println();
-					System.out.println("Attacker, Defender states:");
-					Robot.State.print(attacker.getState());
-					Robot.State.print(defender.getState());
-					q = 0;
+				if (interrupted) {
+					attacker.stop();
+					defender.stop();
+					return;
 				}
 
+				updateStates();
+
+				printStatesPeriodically();
+
 				parseAttacker();
+
 				parseDefender();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -428,13 +492,14 @@ public class Strategy {
 			// Add a start button so we can have time to calibrate etc
 			JFrame frame = new JFrame("Ready and waiting!");
 			frame.setBounds(600, 200, 300, 150);
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			final JButton button = new JButton();
 			button.setText("Connect");
 			button.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					try {
-						if (button.getText().equals("Connect")) {
+						if (guiState == 0) {
 							// Set our team and direction
 							myTeam = state.getOurColor();
 							attackerId = state.getDirection();
@@ -449,9 +514,20 @@ public class Strategy {
 
 							// Change the button
 							button.setText("Start");
-						} else {
+
+							guiState = 1;
+						} else if (guiState == 1) {
 							// Begin looping through the strategy functionality
-							executeStrategy();
+							// executeStrategy();
+							instance = new Strategy();
+							instance.interrupted = false;
+							(new Thread(instance)).start();
+							button.setText("Pause");
+							guiState = 2;
+						} else if (guiState == 2) {
+							instance.interrupted = true;
+							button.setText("Restart");
+							guiState = 1;
 						}
 					} catch (Exception e1) {
 						e1.printStackTrace();
@@ -460,6 +536,15 @@ public class Strategy {
 			});
 			frame.add(button);
 			frame.setVisible(true);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void run() {
+		try {
+			executeStrategy();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
