@@ -2,6 +2,7 @@ package sdp.pc.vision;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 /**
  * Contains information about the Pitch dimensions and the zones a robot is
@@ -432,5 +433,9 @@ public class Pitch {
 					+ (pts.get(6).getX() - pts.get(4).getX()) / 2, yC);
 		}
 		return Point2.EMPTY;
+	}
+
+	public boolean contains(Point2 q) {
+		return Alg.isInHull(new LinkedList<Point2>(getArrayListOfPoints()), q);
 	}
 }

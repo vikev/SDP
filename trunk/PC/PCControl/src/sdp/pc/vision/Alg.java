@@ -32,6 +32,27 @@ public class Alg {
 		}
 	}
 
+	private static Point2 getCentroid(LinkedList<Point2> vertices) {
+		double x = 0, y = 0, k = vertices.size();
+		for (Point2 q : vertices) {
+			x += q.getX();
+			y += q.getY();
+		}
+		x /= k;
+		y /= k;
+		return new Point2((int) x, (int) y);
+	}
+
+	public static boolean inMinorHull(LinkedList<Point2> vertices,
+			double minorRadius, Point2 check) {
+		Point2 centre = getCentroid(vertices);
+		LinkedList<Point2> n = new LinkedList<Point2>();
+		for (Point2 q : vertices) {
+			n.add(q.offset(minorRadius, q.angleTo(centre)));
+		}
+		return isInHull(n, check);
+	}
+
 	/**
 	 * Returns an angle ang in degrees on [0,360).
 	 * 

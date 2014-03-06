@@ -91,11 +91,6 @@ public class Robot {
 	private int myState = State.UNKNOWN;
 
 	/**
-	 * The quadrant on the field <b>this</b> should retain.
-	 */
-	private final int myQuadrant;
-
-	/**
 	 * An incremental "sub-state" value which can be used to handle sub-tasks
 	 * within a state. For example, if a robot's state is "pass to attacker",
 	 * sub-states could be:
@@ -138,8 +133,6 @@ public class Robot {
 		this.state = state;
 		this.myTeam = myTeam;
 		this.myIdentifier = myId;
-		this.myQuadrant = state.quadrantFromPoint(state.getRobotPosition(
-				myTeam, myId));
 	}
 
 	/**
@@ -163,8 +156,6 @@ public class Robot {
 		this.state = state;
 		this.myTeam = myTeam;
 		this.myIdentifier = myId;
-		this.myQuadrant = state.quadrantFromPoint(state.getRobotPosition(
-				myTeam, myId));
 	}
 
 	public void stop() throws Exception {
@@ -187,8 +178,24 @@ public class Robot {
 
 			// If that position exists, go to its Y coordinate, otherwise stop.
 			if (!predBallPos.equals(Point2.EMPTY)) {
-				if (defendToY(predBallPos.getY(), DEFEND_EPSILON_DISTANCE)) {
+				int destination = predBallPos.getY();
+				if (!Alg.inMinorHull(getQuadrantVertices(getMyQuadrant()),
+						10.0, predBallPos)) {
+					destination = predBallPos.offset(
+							10.0,
+							predBallPos.angleTo(state.getPitch()
+									.getQuadrantCenter(getMyQuadrant())))
+							.getY();
+				}
+				if (defendToY(destination, DEFEND_EPSILON_DISTANCE)) {
 					driver.stop();
+					subState++;
+					if (subState > 20) {
+						goTo(state.getPitch()
+								.getQuadrantCenter(getMyQuadrant()), 10.0);
+					} else if (subState > 50) {
+						subState = 0;
+					}
 				}
 			} else {
 				driver.stop();
@@ -333,9 +340,6 @@ public class Robot {
 	 * true if complete)1
 	 */
 	public boolean goTo(Point2 to, double eps) throws Exception {
-		if (myState == Robot.State.RESET) {
-			System.out.println(to);
-		}
 		if (turnTo(to, SAFE_ANGLE_EPSILON)) {
 			if (moveForwardTo(to, eps)) {
 				return true;
@@ -454,24 +458,22 @@ public class Robot {
 				angOffset = 1 - 2 * Math.abs(robo.angleTo(ball)) / 180;
 
 			xOffset = Math.pow(xOffset, 2);
-			// angOffset = Math.pow(angOffset, 3);
 			if (subState == 0) {
-				// ball.setX((int) Math.round(ball.getX() - distortion / 4));
-				// if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
-				// if (goTo(ball.offset(15 * distortion, ball.angleTo(robo)),
-				// 10.0)) {
-				if (goTo(ball, 32 + 12 * xOffset * angOffset)) {
+				int pitchId = state.getPitchId();
+				Point2 target = ball.offset(22 + 10 * pitchId + 12 * xOffset
+						* angOffset, ball.angleTo(robo));
+				if (goTo(target, 10.0)) {
 					driver.stop();
 					driver.grab();
 					subState = 1;
 				}
-			} else {
+			} else if (subState < 4) {
 				subState++;
 			}
 			if (subState >= 4) {
-				if (turnTo(where, 6.0)) {
+				if (turnTo(where, 8.0)) {
+					subState++;
 					if (subState >= 8) {
-						System.out.println("Kicking at " + where);
 						driver.kick(900);
 					}
 					if (subState >= 15) {
@@ -500,7 +502,7 @@ public class Robot {
 					subState = 1;
 				}
 			}
-			if (subState == 1) {
+			if (subState > 0) {
 				if (turnTo(where, 10.0)) {
 					driver.kick(900);
 					subState = 0;
@@ -821,8 +823,8 @@ public class Robot {
 	 */
 	private static int getRotateSpeed(double rotateBy, double epsilon) {
 		// TODO: Should be refactored (constants)
-		double maxSpeed = 200.0;
-		double minSpeed = 20.0;
+		double maxSpeed = 300.0;
+		double minSpeed = 25.0;
 		double maxRotate = 180.0;
 		double minRotate = epsilon;
 		rotateBy = Math.abs(rotateBy);
@@ -1019,68 +1021,55 @@ public class Robot {
 	}
 
 	/**
-	 * Returns the quadrant <b>this</b> was in when it was instanciated.
+	 * Returns the quadrant <b>this</b> is in.
 	 * 
 	 * @return
 	 */
 	public int getMyQuadrant() {
-		return this.myQuadrant;
+		return state.quadrantFromPoint(state.getRobotPosition(myTeam,
+				myIdentifier));
+	}
+
+	public LinkedList<Point2> getQuadrantVertices(int q) {
+		ArrayList<Point2> pts = state.getPitch().getArrayListOfPoints();
+		LinkedList<Point2> vertices = new LinkedList<Point2>();
+		if (q == 1) {
+			vertices.add(pts.get(1));
+			vertices.add(pts.get(2));
+			vertices.add(pts.get(11));
+			vertices.add(pts.get(12));
+			vertices.add(pts.get(13));
+			vertices.add(pts.get(14));
+		} else if (q == 2) {
+			vertices.add(pts.get(2));
+			vertices.add(pts.get(3));
+			vertices.add(pts.get(10));
+			vertices.add(pts.get(11));
+		} else if (q == 3) {
+			vertices.add(pts.get(3));
+			vertices.add(pts.get(4));
+			vertices.add(pts.get(9));
+			vertices.add(pts.get(10));
+		} else if (q == 4) {
+			vertices.add(pts.get(4));
+			vertices.add(pts.get(5));
+			vertices.add(pts.get(6));
+			vertices.add(pts.get(7));
+			vertices.add(pts.get(8));
+			vertices.add(pts.get(9));
+		}
+		return vertices;
 	}
 
 	public boolean nearBoundary() {
 		int q = getMyQuadrant();
-		ArrayList<Point2> pts = state.getPitch().getArrayListOfPoints();
 		Point2 pos = state.getRobotPosition(myTeam, myIdentifier);
-		double distOffs = 5.0;
-		Point2 center = state.getPitch().getQuadrantCenter(q);
-		ArrayList<Point2> vertices = new ArrayList<Point2>();
-		if (q == 1) {
-			vertices.add(pts.get(1)
-					.offset(distOffs, pts.get(1).angleTo(center)));
-			vertices.add(pts.get(2)
-					.offset(distOffs, pts.get(2).angleTo(center)));
-			vertices.add(pts.get(11).offset(distOffs,
-					pts.get(11).angleTo(center)));
-			vertices.add(pts.get(12).offset(distOffs,
-					pts.get(12).angleTo(center)));
-			vertices.add(pts.get(13).offset(distOffs,
-					pts.get(13).angleTo(center)));
-			vertices.add(pts.get(14).offset(distOffs,
-					pts.get(14).angleTo(center)));
-		} else if (q == 2) {
-			vertices.add(pts.get(2)
-					.offset(distOffs, pts.get(2).angleTo(center)));
-			vertices.add(pts.get(3)
-					.offset(distOffs, pts.get(3).angleTo(center)));
-			vertices.add(pts.get(10).offset(distOffs,
-					pts.get(10).angleTo(center)));
-			vertices.add(pts.get(11).offset(distOffs,
-					pts.get(11).angleTo(center)));
-		} else if (q == 3) {
-			vertices.add(pts.get(4)
-					.offset(distOffs, pts.get(4).angleTo(center)));
-			vertices.add(pts.get(3)
-					.offset(distOffs, pts.get(3).angleTo(center)));
-			vertices.add(pts.get(9)
-					.offset(distOffs, pts.get(9).angleTo(center)));
-			vertices.add(pts.get(10).offset(distOffs,
-					pts.get(10).angleTo(center)));
-		} else if (q == 4) {
-			vertices.add(pts.get(4)
-					.offset(distOffs, pts.get(4).angleTo(center)));
-			vertices.add(pts.get(5)
-					.offset(distOffs, pts.get(5).angleTo(center)));
-			vertices.add(pts.get(6)
-					.offset(distOffs, pts.get(6).angleTo(center)));
-			vertices.add(pts.get(7)
-					.offset(distOffs, pts.get(7).angleTo(center)));
-			vertices.add(pts.get(8)
-					.offset(distOffs, pts.get(8).angleTo(center)));
-			vertices.add(pts.get(9)
-					.offset(distOffs, pts.get(9).angleTo(center)));
-		}
+		double distOffs = 8.0;
+		LinkedList<Point2> vertices = getQuadrantVertices(q);
+
 		if (vertices.size() > 2) {
-			return Alg.isInHull(new LinkedList<Point2>(vertices), pos);
+			return !Alg.inMinorHull(new LinkedList<Point2>(vertices), distOffs,
+					pos);
 		} else {
 			System.err.println("Quadrant with vertices of size "
 					+ vertices.size());

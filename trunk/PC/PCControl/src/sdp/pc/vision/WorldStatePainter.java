@@ -211,7 +211,8 @@ public class WorldStatePainter {
 
 		// Draw the most recently requested data
 		Point2 q = Vision.getRequestedPoint();
-		if (!q.equals(Point2.EMPTY)) {
+		if (!q.equals(Point2.EMPTY)
+				&& Vision.getWorldState().getPitch().contains(q)) {
 			lastPoint = q;
 			String hsb = floatArrayToString(stateListener.getNormalisedHsb(
 					lastPoint.x, lastPoint.y));

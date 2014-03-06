@@ -47,7 +47,7 @@ public class FutureBall {
 	 * false otherwise.
 	 */
 	private static boolean goalLine = false;
-	
+
 	private static GaussianPointFilter gpf = new GaussianPointFilter(3);
 
 	/**
@@ -158,7 +158,7 @@ public class FutureBall {
 				distToStop -= 1;
 			}
 		}
-		
+
 		Point2 est = new Point2((int) iteratorX, (int) iteratorY);
 		inter.setEstimate(gpf.apply(est));
 
@@ -222,10 +222,12 @@ public class FutureBall {
 	 */
 	public static Point2 estimateMatchingYCoord(Point2 movingPos,
 			double movingFacing, Point2 staticPos) {
-		
+
 		// TODO: Implement working version
-		
+
 		// Assume the ball is moving very fast, give it a velocity of 1000.
+		// Note: After 3 trials using a GuassianDoubleFilter, I found 1000 to be
+		// a typical kick speed. -Blake
 		int x = 1000;
 		double angle = movingFacing;
 

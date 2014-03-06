@@ -7,13 +7,11 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
-
-import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 import sdp.pc.common.ChooseRobot;
 import sdp.pc.vision.Point2;
 import sdp.pc.vision.Vision;
 import sdp.pc.vision.WorldState;
+import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 
 /**
  * Strategy is the global static class for running a match in SDP. Here we
@@ -24,7 +22,7 @@ import sdp.pc.vision.WorldState;
  * @author s1133141
  * 
  */
-public class Strategy {
+public class Strategy implements Runnable {
 
 	/**
 	 * Team ID of our team (could be refactored?)
@@ -55,6 +53,12 @@ public class Strategy {
 	private static final double FAST_BALL_SPEED = 150.0;
 
 	/**
+	 * A counter used to print statements to the screen without flooding the
+	 * console.
+	 */
+	private static int frameCounter = 0;
+
+	/**
 	 * the defending robot
 	 */
 	private static Robot defender;
@@ -68,6 +72,12 @@ public class Strategy {
 	 * global world state (we instantiate it because this is a main class)
 	 */
 	private static WorldState state = new WorldState();
+
+	private static int guiState = 0;
+
+	private static Strategy instance;
+
+	private boolean interrupted = false;
 
 	@SuppressWarnings("unused")
 	private static Point2 basicGoalTarget() {
@@ -217,9 +227,11 @@ public class Strategy {
 	 * <td>Fast Ball ? Intercept Ball : Prepare for Pass</td>
 	 * </tr>
 	 * </table>
+	 * 
+	 * @throws Exception
 	 */
 	@SuppressWarnings("unused")
-	private static void updateStates() {
+	private static void updateStates() throws Exception {
 
 		// Calculate Ball Position
 		int quad = state.getBallQuadrant();
@@ -283,6 +295,15 @@ public class Strategy {
 		if (state.getRobotPosition(attacker.getTeam(), attacker.getId())
 				.equals(Point2.EMPTY))
 			attacker.setState(Robot.State.DO_NOTHING);
+
+		if (attacker.nearBoundary()) {
+			attacker.setState(Robot.State.RESET);
+			System.err.println("Resetting attacker");
+		}
+		if (defender.nearBoundary()) {
+			defender.setState(Robot.State.RESET);
+			System.err.println("Resetting defender");
+		}
 	}
 
 	/**
@@ -413,35 +434,44 @@ public class Strategy {
 		return state.getPitch().getRightGoalRandom();
 	}
 
-	// temporary frame counter (trafendersh)
-	private static int q = 0;
+	private static void printStatesPeriodically() {
+
+		// Print out the states every 10 frames (don't flood the console)
+		frameCounter++;
+		if (frameCounter == 10) {
+			System.out.println();
+			System.out.println("Attacker, Defender states:");
+			Robot.State.print(attacker.getState());
+			Robot.State.print(defender.getState());
+			frameCounter = 0;
+		}
+	}
 
 	/**
 	 * Loops indefinitely, ordering the robots to do things
 	 * 
 	 * @throws Exception
 	 */
-	private static void executeStrategy() throws Exception {
+	private void executeStrategy() throws Exception {
+
 		Thread.sleep(1000);
 		attacker.getDriver().kick(900);
 		defender.getDriver().kick(900);
 		Thread.sleep(500);
 		while (true) {
 			try {
-				updateStates();
-
-				// Print out the states every 10 frames (don't flood the
-				// console)
-				q++;
-				if (q == 10) {
-					System.out.println();
-					System.out.println("Attacker, Defender states:");
-					Robot.State.print(attacker.getState());
-					Robot.State.print(defender.getState());
-					q = 0;
+				if (interrupted) {
+					attacker.stop();
+					defender.stop();
+					return;
 				}
 
+				updateStates();
+
+				printStatesPeriodically();
+
 				parseAttacker();
+
 				parseDefender();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -462,13 +492,14 @@ public class Strategy {
 			// Add a start button so we can have time to calibrate etc
 			JFrame frame = new JFrame("Ready and waiting!");
 			frame.setBounds(600, 200, 300, 150);
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			final JButton button = new JButton();
 			button.setText("Connect");
 			button.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					try {
-						if (button.getText().equals("Connect")) {
+						if (guiState == 0) {
 							// Set our team and direction
 							myTeam = state.getOurColor();
 							attackerId = state.getDirection();
@@ -483,9 +514,20 @@ public class Strategy {
 
 							// Change the button
 							button.setText("Start");
-						} else {
+
+							guiState = 1;
+						} else if (guiState == 1) {
 							// Begin looping through the strategy functionality
-							executeStrategy();
+							// executeStrategy();
+							instance = new Strategy();
+							instance.interrupted = false;
+							(new Thread(instance)).start();
+							button.setText("Pause");
+							guiState = 2;
+						} else if (guiState == 2) {
+							instance.interrupted = true;
+							button.setText("Restart");
+							guiState = 1;
 						}
 					} catch (Exception e1) {
 						e1.printStackTrace();
@@ -494,6 +536,15 @@ public class Strategy {
 			});
 			frame.add(button);
 			frame.setVisible(true);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void run() {
+		try {
+			executeStrategy();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
