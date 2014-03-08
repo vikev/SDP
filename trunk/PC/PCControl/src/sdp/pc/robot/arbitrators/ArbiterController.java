@@ -14,6 +14,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.Dimension;
 
 public class ArbiterController extends JFrame {
 	
@@ -31,6 +32,7 @@ public class ArbiterController extends JFrame {
 	}
 	
 	public ArbiterController() {
+		setSize(new Dimension(200, 100));
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
@@ -106,8 +108,8 @@ public class ArbiterController extends JFrame {
 			
 	
 			// Connect to robots
-			defender = new Robot(ChooseRobot.defender(), state, myTeam, defenderId);
-			attacker = new Robot(ChooseRobot.attacker(), state, myTeam, attackerId);
+			// defender = new Robot(ChooseRobot.defender(), state, myTeam, defenderId);
+			attacker = new Robot(ChooseRobot.defender(), state, myTeam, attackerId);
 	
 			attackerArbiter = new AttackerArbiter(attacker);
 			defenderArbiter = new AttackerArbiter(defender);

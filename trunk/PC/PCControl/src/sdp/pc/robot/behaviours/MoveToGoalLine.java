@@ -26,7 +26,7 @@ public class MoveToGoalLine extends RobotBehavior {
 		goal_centre = robot.ourGoalCentre();
 		boolean nearTheGoal = robot.getPosition().distance(goal_centre) <= SAFE_DIST_FROM_GOAL;
 		int ballQuadrant = robot.getWorldState().getBallQuadrant();
-		int ourAttQuadrant = robot.getWorld().getAttackerQuadrant();
+		int ourAttQuadrant = robot.getWorldState().getAttackerQuadrant();
 		int oppDefQuadrant;
 		if (ourAttQuadrant == 3) {
 			oppDefQuadrant = 4;

@@ -130,7 +130,7 @@ public class Robot {
 	 */
 	public Robot(Driver driver, WorldState state, int myTeam, int myId) {
 		this.driver = driver;
-		this.getWorld(state);
+		this.state = state;
 		this.myTeam = myTeam;
 		this.myIdentifier = myId;
 	}
@@ -153,7 +153,7 @@ public class Robot {
 		TCPClient conn = new TCPClient(robotCode);
 		Driver drv = new Driver(conn);
 		this.driver = drv;
-		this.getWorld(state);
+		this.state = state;
 		this.myTeam = myTeam;
 		this.myIdentifier = myId;
 	}
@@ -292,7 +292,7 @@ public class Robot {
 	 * @throws Exception
 	 */
 	public boolean assertFacing(double deg, double epsilon) throws Exception {
-		double rotateBy = normalizeToBiDirection(getWorld().getRobotFacing(myTeam,
+		double rotateBy = normalizeToBiDirection(getWorldState().getRobotFacing(myTeam,
 				myIdentifier) - deg);
 		int speed = getRotateSpeed(rotateBy, epsilon);
 		if (rotateBy > epsilon) {
@@ -311,14 +311,14 @@ public class Robot {
 	 * testing in Milestone 1 and 3
 	 */
 	public boolean canTurn() {
-		return (Math.abs(getWorld().getRobotPosition(myTeam, myIdentifier).getY()
-				- getWorld().getPitch().getYBegin()) < 5
-				&& Math.abs(getWorld().getRobotPosition(myTeam, myIdentifier).getY()
-						- getWorld().getPitch().getYEnd()) < 5
-				&& Math.abs(getWorld().getRobotPosition(myTeam, myIdentifier).getX()
-						- getWorld().getPitch().getXBegin()) < 5 && Math.abs(getWorld()
+		return (Math.abs(getWorldState().getRobotPosition(myTeam, myIdentifier).getY()
+				- getWorldState().getPitch().getYBegin()) < 5
+				&& Math.abs(getWorldState().getRobotPosition(myTeam, myIdentifier).getY()
+						- getWorldState().getPitch().getYEnd()) < 5
+				&& Math.abs(getWorldState().getRobotPosition(myTeam, myIdentifier).getX()
+						- getWorldState().getPitch().getXBegin()) < 5 && Math.abs(getWorldState()
 				.getRobotPosition(myTeam, myIdentifier).getX()
-				- getWorld().getPitch().getXEnd()) < 5);
+				- getWorldState().getPitch().getXEnd()) < 5);
 	}
 
 	/**
@@ -328,7 +328,7 @@ public class Robot {
 	 * @throws Exception
 	 */
 	public boolean turnTo(Point2 to, double eps) throws Exception {
-		double ang = normalizeToUnitDegrees(getWorld().getRobotPosition(myTeam,
+		double ang = normalizeToUnitDegrees(getWorldState().getRobotPosition(myTeam,
 				myIdentifier).angleTo(to));
 		if (assertFacing(ang, eps)) {
 			return true;
@@ -353,11 +353,11 @@ public class Robot {
 	 * Calculates distance to opposite team's goal.
 	 */
 	public double getDistanceToOppositeGoal() {
-		if (getWorld().getDirection() == 0)
-			return getWorld().getRobotPosition(myTeam, myIdentifier).distance(
-					getWorld().getLeftGoalCentre());
-		return getWorld().getRobotPosition(myTeam, myIdentifier).distance(
-				getWorld().getRightGoalCentre());
+		if (getWorldState().getDirection() == 0)
+			return getWorldState().getRobotPosition(myTeam, myIdentifier).distance(
+					getWorldState().getLeftGoalCentre());
+		return getWorldState().getRobotPosition(myTeam, myIdentifier).distance(
+				getWorldState().getRightGoalCentre());
 	}
 
 	/**
@@ -371,12 +371,12 @@ public class Robot {
 	 */
 	public boolean assertNearGoalLine(double eps) {
 		try {
-			Point2 botPos = getWorld().getRobotPosition(myTeam, myIdentifier);
+			Point2 botPos = getWorldState().getRobotPosition(myTeam, myIdentifier);
 			Point2 goal_centre;
 			if (myIdentifier == 0) {
-				goal_centre = getWorld().getLeftGoalCentre();
+				goal_centre = getWorldState().getLeftGoalCentre();
 			} else {
-				goal_centre = getWorld().getRightGoalCentre();
+				goal_centre = getWorldState().getRightGoalCentre();
 			}
 			if (botPos.distance(goal_centre) > SAFE_DIST_FROM_GOAL) {
 				if (goTo(new Point2(goal_centre.getX() + getGoalOffset(),
@@ -407,7 +407,7 @@ public class Robot {
 
 		// Calculate which angle is the closest perpendicular one
 		double target;
-		double face = getWorld().getRobotFacing(myTeam, myIdentifier);
+		double face = getWorldState().getRobotFacing(myTeam, myIdentifier);
 
 		double a = normalizeToBiDirection(face - 90.0);
 
@@ -519,7 +519,7 @@ public class Robot {
 	 * @throws Exception
 	 */
 	public boolean kickStationaryBall() throws InterruptedException, Exception {
-		Point2 ballPosition = getWorld().getBallPosition();
+		Point2 ballPosition = getWorldState().getBallPosition();
 
 		// Turn towards ball
 		if (turnTo(ballPosition, SAFE_ANGLE_EPSILON)) {
@@ -784,7 +784,7 @@ public class Robot {
 	 * expect it to be finished.
 	 */
 
-	private boolean defendToY(int y, double eps) throws Exception {
+	public boolean defendToY(int y, double eps) throws Exception {
 
 		Point2 botPosition = state.getRobotPosition(myTeam, myIdentifier);
 		double botFacing = state.getRobotFacing(myTeam, myIdentifier);
@@ -847,7 +847,7 @@ public class Robot {
 	 * point Synchronous and must be called continuously.
 	 */
 	private boolean moveForwardTo(Point2 to, double epsilon) throws Exception {
-		Point2 robLoc = getWorld().getRobotPosition(myTeam, myIdentifier);
+		Point2 robLoc = getWorldState().getRobotPosition(myTeam, myIdentifier);
 		if (robLoc.distance(to) < epsilon) {
 			return true;
 		}
@@ -862,7 +862,7 @@ public class Robot {
 	 * Synchronous and must be called continuously.
 	 */
 	private boolean moveBackwardTo(Point2 to, double epsilon) throws Exception {
-		Point2 robLoc = getWorld().getRobotPosition(myTeam, myIdentifier);
+		Point2 robLoc = getWorldState().getRobotPosition(myTeam, myIdentifier);
 		if (robLoc.distance(to) < epsilon) {
 			return true;
 		}
@@ -911,7 +911,7 @@ public class Robot {
 	 * @return
 	 */
 	public int getGoalOffset() {
-		return (int) (Math.pow(-1, getWorld().getDirection() + 1) * GOAL_OFFSET);
+		return (int) (Math.pow(-1, getWorldState().getDirection() + 1) * GOAL_OFFSET);
 	}
 
 	/**
@@ -1035,14 +1035,6 @@ public class Robot {
 	}
 	
 	/**
-	 * Gets the id of the robot. 
-	 * @return
-	 */
-	public int getId() {
-		return myIdentifier;
-	}
-	
-	/**
 	 * Gets the position of this robot on the pitch.
 	 * @return		
 	 */
@@ -1057,13 +1049,16 @@ public class Robot {
 	 */
 	public boolean hasBall() {
 		//TODO: Figure out a better method
-		final double DIST_EPSILON = 10;
-		final double ANGLE_EPSILON = 5;
+		final double DIST_EPSILON = 50;
+		final double ANGLE_EPSILON = 10;
 		
 		Point2 myPos = state.getRobotPosition(myTeam, myIdentifier);
 		Point2 ballPos = state.getBallPosition();
 		
-		double ballRobotAngle = myPos.angleTo(ballPos);
+		double myFacing = getFacing();
+		double angleToBall = myPos.angleTo(ballPos);
+
+		double ballRobotAngle = Alg.normalizeToBiDirection(angleToBall - myFacing);
 		double ballRobotDist = myPos.distance(ballPos);
 		
 		return Math.abs(ballRobotAngle) < ANGLE_EPSILON 
@@ -1103,10 +1098,6 @@ public class Robot {
 			goal_centre = state.getRightGoalCentre();
 		}
 		return goal_centre;
-	}
-	
-	public Driver getDriver() {
-		return this.driver;
 	}
 
 	/**

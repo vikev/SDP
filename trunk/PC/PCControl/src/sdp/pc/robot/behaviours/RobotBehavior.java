@@ -65,14 +65,15 @@ public abstract class RobotBehavior implements Behavior {
 	
 	@Override
 	public void action() {
-		while(!suppressed && takeControl())
-		try {
-			if(actionFrame())
-				break;
-			sleep();
-		}
-		catch(Exception e) {
-			System.out.println("Exception while running " + this.toString());
+		while(!suppressed && takeControl()) {
+			try {
+				if(actionFrame())
+					break;
+				sleep();
+			}
+			catch(Exception e) {
+				System.out.println("Exception while running " + this.toString());
+			}
 		}
 	}
 

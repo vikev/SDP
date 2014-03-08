@@ -20,7 +20,7 @@ public class AttackerArbiter extends Arbiter {
 		super(new Behavior[] {
 				//TODO: add behaviours
 				new GrabBall(robot),
-				new KickToGoal(robot)
+				new KickToGoal(robot),
 		}, false);
 	}
 }

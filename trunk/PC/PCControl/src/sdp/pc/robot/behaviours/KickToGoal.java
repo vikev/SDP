@@ -25,9 +25,9 @@ public class KickToGoal extends RobotBehavior {
 		
 		if(Math.abs(ang) > ANGLE_EPSILON) {
 			if(ang < 0)
-				driver.turnLeft();
+				driver.turnLeft(25);
 			else
-				driver.turnRight();
+				driver.turnRight(25);
 		}
 		else
 		{

@@ -39,7 +39,7 @@ public class DefendBall extends RobotBehavior {
 
 	@Override
 	public boolean actionFrame() throws Exception {
-		Point2 predBallPos = robot.getWorldState().getFutureData().getResult();
+		Point2 predBallPos = robot.getWorldState().getFutureData().getEstimate();
 
 		// If that position exists, go to its Y coordinate, otherwise stop.
 		if (!predBallPos.equals(Point2.EMPTY)) {
