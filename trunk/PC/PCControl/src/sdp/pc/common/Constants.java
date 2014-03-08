@@ -167,11 +167,17 @@ public class Constants {
 	public static final Color BLUE_BLEND = new Color(0.0f, 0.0f, 1.0f, 0.5f);
 
 	/**
-	 * A Red colour with 50% transparency, useful for drawing red lines without
-	 * obscuring teh details of what is below it
+	 * A Red colour with 50% opacity, useful for drawing red lines without
+	 * obscuring the details of what is below it
 	 */
 	public static final Color RED_BLEND = new Color(1.0f, 0.0f, 0.0f, 0.5f);
 
+	/**
+	 * A Red colour with 25% opacity, useful for drawing red lines without
+	 * obscuring the details of what is below it
+	 */
+	public static final Color RED_BLEND_MORE = new Color(1.0f, 0.0f, 0.0f,
+			0.25f);
 	/**
 	 * A Yellow colour with 50% transparency, useful for drawing yellow circles
 	 * without obscuring the details of what is below it

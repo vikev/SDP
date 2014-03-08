@@ -6,19 +6,30 @@ import java.awt.event.MouseEvent;
 
 import sdp.pc.vision.Point2;
 import sdp.pc.vision.Vision;
-import sdp.pc.vision.WorldState;
 
+/**
+ * The mouse click adapter which is used for setting raw boundaries.
+ */
 public class VisionMouseAdapter extends MouseAdapter {
 	public static Point lastClickPos;
 
 	@Override
 	public void mousePressed(MouseEvent e) {
+		
+		// Get the click
 		lastClickPos = Vision.frame.getContentPane().getMousePosition();
-
 		
+		// if the click is unknown ignore it
+		if (lastClickPos == null) {
+			return;
+		}
 		
-		if (lastClickPos != null && !SettingsManager.defaultSettings.hasBoundary()) {
-			SettingsManager.defaultSettings.addBoundary(new Point2(lastClickPos));
+		Point2 p2 = new Point2(lastClickPos);
+		
+		// If the system is waiting for a boundary set it
+		if (!SettingsManager.defaultSettings.hasBoundary()) {
+			SettingsManager.defaultSettings
+					.addBoundary(new Point2(lastClickPos));
 			System.out.println("Boundary added [" + lastClickPos.x + ", "
 					+ lastClickPos.y + "]");
 			if (SettingsManager.defaultSettings.hasBoundary())
@@ -26,31 +37,7 @@ public class VisionMouseAdapter extends MouseAdapter {
 			return;
 		}
 		
-		if (lastClickPos != null && WorldState.leftGoalTop == null) {
-			WorldState.leftGoalTop = new Point2(lastClickPos);
-			System.out.println("Top left goal added [" + lastClickPos.x + ", "
-					+ lastClickPos.y + "]");
-			return;
-		}
-		if (lastClickPos != null && WorldState.leftGoalBottom == null) {
-			WorldState.leftGoalBottom = new Point2(lastClickPos);
-			System.out.println("Bottom left goal added [" + lastClickPos.x
-					+ ", " + lastClickPos.y + "]");
-			return;
-		}
-		if (lastClickPos != null && WorldState.rightGoalTop == null) {
-			WorldState.rightGoalTop = new Point2(lastClickPos);
-			System.out.println("Top right goal added [" + lastClickPos.x + ", "
-					+ lastClickPos.y + "]");
-			return;
-		}
-		if (lastClickPos != null && WorldState.rightGoalBottom == null) {
-			WorldState.rightGoalBottom = new Point2(lastClickPos);
-			System.out.println("Bottom right goal added [" + lastClickPos.x
-					+ ", " + lastClickPos.y + "]");
-			return;
-		}
-		// If the client wasn't setting a boundary, they were requesting
-		// static image data (normalised rgb/hsb values)
+		// Otherwise request data from Vision.
+		Vision.setRequestedPoint(p2);
 	}
 }

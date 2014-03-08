@@ -43,6 +43,11 @@ public class WorldStatePainter {
 	private static final int TEXT_HEIGHT = 15;
 
 	/**
+	 * The most recent requested data point which we draw a circle around.
+	 */
+	private Point2 lastPoint = Point2.EMPTY;
+
+	/**
 	 * the timestamp of the last run; used for FPS calculation
 	 */
 	private long lastRun;
@@ -146,6 +151,16 @@ public class WorldStatePainter {
 	}
 
 	/**
+	 * Primitive method for printing out a float array
+	 * 
+	 * @param s
+	 * @return
+	 */
+	private static String floatArrayToString(float[] s) {
+		return "(" + s[0] + ", " + s[1] + ", " + s[2] + ")";
+	}
+
+	/**
 	 * Draws the world state overlay on the specified image using this.state and
 	 * this.stateListener.
 	 * <p />
@@ -194,19 +209,36 @@ public class WorldStatePainter {
 			}
 		}
 
+		// Draw the most recently requested data
+		Point2 q = Vision.getRequestedPoint();
+		if (!q.equals(Point2.EMPTY)
+				&& Vision.getWorldState().getPitch().contains(q)) {
+			lastPoint = q;
+			String hsb = floatArrayToString(stateListener.getNormalisedHsb(
+					lastPoint.x, lastPoint.y));
+			String rgb = stateListener.getNormalisedRgb(lastPoint.x,
+					lastPoint.y).toString();
+			System.out.println("\nRequested Data: \nNormalised HSB: " + hsb
+					+ "\nNormalised RGB: " + rgb);
+		}
+		if (!lastPoint.equals(Point2.EMPTY)) {
+			drawCircle(g, GRAY_BLEND, lastPoint, 3);
+		}
+
 		// ball location and velocity
 		Point2 ballPos = state.getBallPosition();
 		Point2 ballVelocity = state.getBallVelocity();
-		ballVelocity = ballVelocity.mult(-5);
+		ballVelocity = ballVelocity.mult(-1);
 		double ballSpeed = state.getBallSpeed();
 		// draw ball if and only if the ball is on the table
 		if (!ballPos.equals(Point2.EMPTY)) {
-			g.setColor(RED_BLEND);
+			g.setColor(RED_BLEND_MORE);
 			g.drawLine(0, ballPos.getY(), 640, ballPos.getY());
 			g.drawLine(ballPos.getX(), 0, ballPos.getX(), 480);
 
 			// draw ball velocity (if above the threshold)
 			if (ballSpeed > BALL_SPEED_THRESHOLD) {
+				g.setColor(RED_BLEND);
 				Point2 velocityPos = ballPos.add(ballVelocity);
 				g.drawLine(ballPos.getX(), ballPos.getY(), velocityPos.getX(),
 						velocityPos.getY());
@@ -214,18 +246,17 @@ public class WorldStatePainter {
 
 			Intersect data = state.getFutureData();
 
-			// futureballs
-			if (!data.getResult().equals(Point2.EMPTY)) {
-				drawCircle(g, GRAY_BLEND, data.getResult(), ROBOT_HEAD_RADIUS);
+			Point2 last = state.getBallPosition();
+
+			// FutureBall data
+			for (int i = 0; i < data.getIntersections().size(); i++) {
+				drawLine(g, Color.WHITE, last, data.getIntersections().get(i));
+				last = data.getIntersections().get(i);
+				drawCircle(g, Color.BLUE, last, 3);
 			}
 
-			// collision
-			if (!data.getIntersection().equals(Point2.EMPTY)) {
-				g.setColor(GRAY_BLEND);
-				g.drawLine(state.getBallPosition().getX(), state
-						.getBallPosition().getY(), data.getIntersection()
-						.getX(), data.getIntersection().getY());
-			}
+			drawLine(g, Color.WHITE, last, data.getEstimate());
+			drawCircle(g, Color.BLUE, data.getEstimate(), 3);
 		}
 
 		// Loop through all robots
@@ -247,59 +278,12 @@ public class WorldStatePainter {
 				}
 			}
 
-
-/*		
-		//For Testing rebound code.
-		Pitch pitch2 = state.getPitch();
-		ArrayList<Point2> points2 = pitch2.getArrayListOfPoints();
-		if (!points2.get(0).equals(new Point2(0,0))) {
-		//if (1 ==2){
-			Graphics h = image.getGraphics();
-			h.setColor(BLUE_BLEND);
-			
-			System.out.println("A");
-			Point2 inA = new Point2(369,322); // Ball
-			Point2 hitA = new Point2(344,358); // collision
-			double[] angleListA = FutureBall.getTrueAngle(inA, hitA);
-			double angleA = angleListA[2];
-			Point2 ac = new Point2((int) angleListA[0],(int)angleListA[1]);
-			Point2 reboundA = FutureBall.getReboundPoint(hitA,ac,50,angleA);
-			drawCircle(h, Color.RED, inA, 2);
-			drawCircle(h, Color.RED, hitA, 2);		
-			drawCircle(h, Color.WHITE, reboundA, 2);
-		 
-			System.out.println("B");
-			Point2 inB = new Point2(273,117);
-			Point2 hitB = new Point2(241,84);
-			double[] angleListB = FutureBall.getTrueAngle(inB, hitB);
-			double angleB = angleListB[2];
-			Point2 bc = new Point2((int) angleListB[0],(int)angleListB[1]);
-			Point2 reboundB = FutureBall.getReboundPoint(hitB,bc,50,angleB);
-
-			drawCircle(h, Color.RED, inB, 2);
-			drawCircle(h, Color.RED, hitB, 2);
-			drawCircle(h, Color.RED, reboundB, 2);
-			
-			System.out.println("C");
-			Point2 inC = new Point2(136,118);
-			Point2 hitC = new Point2(80,110);
-			double[] angleListC = FutureBall.getTrueAngle(inC, hitC);
-			double angleC = angleListC[2];
-			Point2 cc = new Point2((int) angleListC[0],(int)angleListC[1]);
-			Point2 reboundC = FutureBall.getReboundPoint(hitC,cc,50,angleC);
-			drawCircle(h, Color.RED, inC, 2);
-			drawCircle(h, Color.RED, hitC, 2);
-			drawCircle(h, Color.RED, reboundC, 2);
-		
-		}
-		 */
-	
-/*		//drawCircle(g, Color.WHITE, state.getPitch().pitchCornerX, 1);
+		// drawCircle(g, Color.WHITE, state.getPitch().pitchCornerX, 1);
 		// draw centre line
 		g.setColor(new Color(1.0f, 1.0f, 1.0f, 0.3f));
 		g.drawLine(TABLE_CENTRE_X, TABLE_MIN_Y + 1, TABLE_CENTRE_X,
 				TABLE_MAX_Y - 1);
-*/
+
 		// calculate/get the different FPS
 		long nowRun = System.currentTimeMillis();
 		int drawFps = (int) (1000 / (nowRun - lastRun));
@@ -364,35 +348,28 @@ public class WorldStatePainter {
 		// pitch borders
 		Pitch pitch = state.getPitch();
 		if (pitch != null) {
-			Graphics l = image.getGraphics();
-			ArrayList<Point2> points = new ArrayList<Point2>();
-			g.drawLine(pitch.goalLineX[0], pitch.goalLineY[0],
-					pitch.goalLineX[0], pitch.goalLineY[1]);
-			g.drawLine(pitch.goalLineX[1], pitch.goalLineY[0],
-					pitch.goalLineX[1], pitch.goalLineY[1]);
-			g.drawLine(pitch.pitchCornerX[0], pitch.pitchY[0],		
-					pitch.pitchCornerX[1], pitch.pitchY[0]);
-			g.drawLine(pitch.pitchCornerX[0], pitch.pitchY[1],
-					pitch.pitchCornerX[1], pitch.pitchY[1]);
-			g.drawLine(pitch.zoneX[0], pitch.pitchY[0], pitch.zoneX[0],
-					pitch.pitchY[1]);
-			g.drawLine(pitch.zoneX[1], pitch.pitchY[0], pitch.zoneX[1],
-					pitch.pitchY[1]);
-			g.drawLine(pitch.zoneX[2], pitch.pitchY[0], pitch.zoneX[2],
-					pitch.pitchY[1]);
-			g.drawLine(pitch.goalLineX[0], pitch.goalLineY[0],
-					pitch.pitchCornerX[0], pitch.pitchY[0]);
-			g.drawLine(pitch.goalLineX[0], pitch.goalLineY[1],
-					pitch.pitchCornerX[0], pitch.pitchY[1]);
-			g.drawLine(pitch.goalLineX[1], pitch.goalLineY[0],
-					pitch.pitchCornerX[1], pitch.pitchY[0]);
-			g.drawLine(pitch.goalLineX[1], pitch.goalLineY[1],
-					pitch.pitchCornerX[1], pitch.pitchY[1]);
-			points = pitch.getArrayListOfPoints();
-			for (Point2 point : points){
-				drawCircle(l,Color.BLUE,point,2);
-			}	
-			
+			ArrayList<Point2> points = pitch.getArrayListOfPoints();
+
+			// Draw lines between all border panels
+			drawLine(g, Color.WHITE, points.get(1), points.get(2));
+			drawLine(g, Color.WHITE, points.get(2), points.get(3));
+			drawLine(g, Color.WHITE, points.get(3), points.get(4));
+			drawLine(g, Color.WHITE, points.get(4), points.get(5));
+			drawLine(g, Color.WHITE, points.get(5), points.get(6));
+			drawLine(g, Color.WHITE, points.get(6), points.get(7));
+			drawLine(g, Color.WHITE, points.get(7), points.get(8));
+			drawLine(g, Color.WHITE, points.get(8), points.get(9));
+			drawLine(g, Color.WHITE, points.get(9), points.get(10));
+			drawLine(g, Color.WHITE, points.get(10), points.get(11));
+			drawLine(g, Color.WHITE, points.get(11), points.get(12));
+			drawLine(g, Color.WHITE, points.get(12), points.get(13));
+			drawLine(g, Color.WHITE, points.get(13), points.get(14));
+			drawLine(g, Color.WHITE, points.get(14), points.get(1));
+
+			// Draw circles around every pitch vertex
+			for (Point2 point : points) {
+				drawCircle(g, Color.BLUE, point, 2);
+			}
 		}
 
 		if (isRawBoundaryShown())
@@ -405,9 +382,6 @@ public class WorldStatePainter {
 			customPaintCode.actionPerformed(new ActionEvent(image, 0, ""));
 
 	}
-	
-	//Pitch pitch3 = state.getPitch();
-	//ArrayList<Point2> points3 = pitch3.getArrayListOfPoints();
 
 	private void drawPreprocessOverlay(BufferedImage image, Graphics g,
 			Point2 mousePos) {
@@ -491,6 +465,23 @@ public class WorldStatePainter {
 		g.setColor(c);
 		g.drawOval(centrePt.getX() - radius, centrePt.getY() - radius,
 				radius * 2, radius * 2);
+	}
+
+	/**
+	 * Draws a line between points
+	 * 
+	 * @param g
+	 *            - Graphics object
+	 * @param c
+	 *            - Color of the line
+	 * @param a
+	 *            - From point...
+	 * @param b
+	 *            - ...to point
+	 */
+	private void drawLine(Graphics g, Color c, Point2 a, Point2 b) {
+		g.setColor(c);
+		g.drawLine(a.getX(), a.getY(), b.getX(), b.getY());
 	}
 
 	/**

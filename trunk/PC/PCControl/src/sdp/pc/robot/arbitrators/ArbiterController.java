@@ -82,8 +82,8 @@ public class ArbiterController extends JFrame {
 		System.out.print("Disconnecting... ");
 		try {
 			attacker.stop();
-			defender.stop();
 			attacker.closeConnection();
+			defender.stop();
 			defender.closeConnection();
 			
 			System.out.println("done!");

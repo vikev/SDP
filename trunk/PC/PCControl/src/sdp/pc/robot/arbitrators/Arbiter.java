@@ -24,6 +24,7 @@ import sdp.pc.robot.behaviours.Behavior;
 public class Arbiter
 {
 
+	
   private final int NONE = -1;
   private Behavior[] _behavior;
   // highest priority behavior that wants control ; set by start() usec by monitor
@@ -95,6 +96,8 @@ public class Arbiter
       if (_active != NONE)  //_highestPrioirty could be NONE
       {
     	  System.out.println("Starting behavior " + _active);
+    	  
+    	  
         _behavior[_active].action();
         _active = NONE;  // no active behavior at the moment
       }

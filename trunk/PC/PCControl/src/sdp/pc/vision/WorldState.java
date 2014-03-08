@@ -86,9 +86,7 @@ public class WorldState {
 	private double ballFacing;
 
 	/**
-	 * The movement speed of the ball
-	 * 
-	 * TODO: Units? Should likely use pixels per second.
+	 * The movement speed of the ball in pixels per second
 	 */
 	private double ballSpeed;
 
@@ -104,30 +102,28 @@ public class WorldState {
 
 	/**
 	 * Goal points established using calibration values in the settings GUI.
-	 * 
-	 * TODO: Why are these static?
 	 */
-	public static Point2 leftGoalTop = new Point2();
+	public Point2 leftGoalTop = new Point2();
 
 	/**
 	 * Goal points established using calibration values in the settings GUI.
 	 */
-	public static Point2 leftGoalBottom = new Point2();
+	public Point2 leftGoalBottom = new Point2();
 
 	/**
 	 * Goal points established using calibration values in the settings GUI.
 	 */
-	public static Point2 rightGoalTop = new Point2();
+	public Point2 rightGoalTop = new Point2();
 
 	/**
 	 * Goal points established using calibration values in the settings GUI.
 	 */
-	public static Point2 rightGoalBottom = new Point2();
+	public Point2 rightGoalBottom = new Point2();
 
 	/**
 	 * Goal points calculated using calibration values from the settings GUI.
 	 */
-	public static Point2 leftGoalCentre = new Point2();
+	public Point2 leftGoalCentre = new Point2();
 
 	/**
 	 * Goal points calculated using calibration values from the settings GUI.
@@ -146,13 +142,32 @@ public class WorldState {
 	/**
 	 * Reset method for goal points.
 	 */
-	public static void resetGoal() {
+	public void resetGoal() {
 		leftGoalTop = null;
 		leftGoalBottom = null;
 		rightGoalTop = null;
 		rightGoalBottom = null;
 		leftGoalCentre = null;
 		rightGoalCentre = null;
+	}
+
+	/**
+	 * Returns true if a given Y coordinate is between the specified goalmouth
+	 * end points, with some epsilon value.
+	 * 
+	 * @param p
+	 * @param side
+	 * @param eps
+	 * @return
+	 */
+	public boolean pointBetweenGoals(Point2 p, int side, int eps) {
+		int y = p.getY();
+		if (side == 0) {
+			return (y + eps < leftGoalBottom.getY() && y - eps > leftGoalTop
+					.getY());
+		}
+		return (y + eps < rightGoalBottom.getY() && y - eps > rightGoalTop
+				.getY());
 	}
 
 	/**
@@ -188,7 +203,6 @@ public class WorldState {
 	 */
 	public Point2 getLeftGoalCentre() {
 		return pitch.getLeftGoalCentre();
-
 	}
 
 	/**
@@ -254,9 +268,7 @@ public class WorldState {
 	 *            the team of the robot, 0 for yellow and 1 for blue
 	 * @param robot
 	 *            the id of the robot, 0 for left one and 1 for the right one
-	 * @return the orientation of the robot, in
-	 * 
-	 *         TODO: units?
+	 * @return the orientation of the robot, in degrees on [0,360)
 	 */
 	public double getRobotFacing(int team, int robot) {
 		return robotFacing[team][robot];
@@ -270,9 +282,8 @@ public class WorldState {
 	 * @param robot
 	 *            - the robot to update.
 	 * @param newFacing
-	 *            - the updated angle of facing for the robot.
-	 * 
-	 *            TODO: Units
+	 *            - the updated angle of facing for the robot in degrees on
+	 *            [0,360)
 	 */
 	public void setRobotFacing(int team, int robot, double newFacing) {
 		this.robotFacing[team][robot] = newFacing;

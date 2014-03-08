@@ -11,32 +11,54 @@ import java.util.LinkedList;
 public class Alg {
 
 	/**
-	 * Returns true if a given Y coordinate is between the specified goalmouth
-	 * endpoints, with some epsilon value.
+	 * A double comparator using an epsilon threshold. If a is less than b,
+	 * returns -1, if a is greater than b, returns 1, otherwise returns 0.
 	 * 
-	 * @param p
-	 * @param side
+	 * @param a
+	 * @param b
 	 * @param eps
+	 *            - epsilon threshold with which to compare
 	 * @return
 	 */
-	public static boolean pointBetweenGoals(Point2 p, int side, int eps) {
-		int y = p.getY();
-		if (side == 0) {
-			return (y + eps < WorldState.leftGoalBottom.getY() && y - eps > WorldState.leftGoalTop
-					.getY());
+	public static int doubleComparator(double a, double b, double eps) {
+		double diff = b - a;
+		double modu = Math.abs(diff);
+		if (modu < eps) {
+			return 0;
+		} else if (diff < 0) {
+			return -1;
+		} else {
+			return 1;
 		}
-		return (y + eps < WorldState.rightGoalBottom.getY() && y - eps > WorldState.rightGoalTop
-				.getY());
+	}
+
+	private static Point2 getCentroid(LinkedList<Point2> vertices) {
+		double x = 0, y = 0, k = vertices.size();
+		for (Point2 q : vertices) {
+			x += q.getX();
+			y += q.getY();
+		}
+		x /= k;
+		y /= k;
+		return new Point2((int) x, (int) y);
+	}
+
+	public static boolean inMinorHull(LinkedList<Point2> vertices,
+			double minorRadius, Point2 check) {
+		Point2 centre = getCentroid(vertices);
+		LinkedList<Point2> n = new LinkedList<Point2>();
+		for (Point2 q : vertices) {
+			n.add(q.offset(minorRadius, q.angleTo(centre)));
+		}
+		return isInHull(n, check);
 	}
 
 	/**
 	 * Returns an angle ang in degrees on [0,360).
 	 * 
-	 * TODO: Should be abstracted to an Angle class, I guess.
-	 * 
 	 * @param ang
 	 *            angle in degrees
-	 * @return ang on [0,360)
+	 * @return ang equivalent on [0,360)
 	 */
 	public static double normalizeToUnitDegrees(double ang) {
 		while (ang < 0.0) {
@@ -52,11 +74,9 @@ public class Alg {
 	 * Returns an angle ang in degrees on [-180,180), useful for comparing
 	 * angles.
 	 * 
-	 * TODO: Should be abstracted to an Angle class, I guess.
-	 * 
 	 * @param ang
 	 *            angle in degrees
-	 * @return ang on [-180, 180)
+	 * @return ang equivalent on [-180, 180)
 	 */
 	public static double normalizeToBiDirection(double ang) {
 		ang%=360;
@@ -123,9 +143,6 @@ public class Alg {
 
 		// If the desired points are not all included in the minimum circle, the
 		// function recurses and increases its boundary size.
-
-		// TODO: I can find a trivial example of this algorithm proceeding
-		// infinitely!
 		for (int i = 0; i < desiredPoints; i++)
 			if (points.get(i).distance(minC.getPosition()) > minC.getRadius()) {
 				// ... Compute B <--- B union P[i].
@@ -137,26 +154,6 @@ public class Alg {
 			}
 		return minC;
 	}
-
-	// We deprecated this method. I commented it out and nothing seems to be
-	// using it. Code can be deleted.
-
-	// /**
-	// * Calculates the length of a line between two points, i.e. the distance
-	// * between the points
-	// *
-	// * @param a
-	// * - the first point
-	// * @param b
-	// * - the second point
-	// * @return distance between a and b
-	// * @deprecated Use a.distance(b) instead
-	// */
-	// public static double lineSize(Point2 a, Point2 b) {
-	// double s = (double) (b.getX() - a.getX());
-	// double t = (double) (b.getY() - b.getY());
-	// return Math.sqrt(s * s + t * t);
-	// }
 
 	/**
 	 * Checks if the given value is within a certain range (epsilon) of the
@@ -202,8 +199,9 @@ public class Alg {
 				p.add(pHull);
 				endPoint = pts.get(0);
 				for (int j = 1; j < pts.size(); j++) {
-					if (endPoint == pHull
-							|| (pts.get(j).isToLeft(p.getLast(), endPoint)))
+					boolean h2l = hullIsToLeft(pts.get(j), p.getLast(),
+							endPoint);
+					if (endPoint == pHull || h2l)
 						endPoint = pts.get(j);
 				}
 				pHull = endPoint;
@@ -213,6 +211,22 @@ public class Alg {
 		}
 		System.out.println("Empty hull!");
 		return new LinkedList<Point2>();
+	}
+
+	/**
+	 * Auxiliary method for the isInHull algorithm. Used for calculating if
+	 * point q is to the polar "left" of a line between a and b.
+	 * 
+	 * @param q
+	 *            - test subject
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	private static boolean hullIsToLeft(Point2 q, Point2 a, Point2 b) {
+		// Calculate using algorithm
+		int dot = ((b.x - a.x) * (q.y - a.y) - (b.y - a.y) * (q.x - a.x));
+		return dot > 0 || (dot == 0 && a.distanceSq(b) < a.distanceSq(q));
 	}
 
 	/**

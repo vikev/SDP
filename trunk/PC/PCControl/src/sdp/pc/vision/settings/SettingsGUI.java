@@ -53,79 +53,83 @@ public class SettingsGUI extends JFrame {
 	private JButton btnForcePreprocess;
 	private JCheckBox chkShowRawBorders;
 	private JButton btnSetRawBorders;
-	
-	
+
 	/* Other fields */
-	
+
 	/**
-	 * The underlying settings manager to write values to. 
+	 * The underlying settings manager to write values to.
 	 */
 	private SettingsManager settingsManager;
-	
+
 	/**
-	 * The associated world painter. 
+	 * The associated world painter.
 	 * <p>
-	 * When available allows changing pixel overlay style. 
+	 * When available allows changing pixel overlay style.
 	 */
 	private WorldStatePainter worldPainter;
-	
+
 	/**
-	 * The associated world listener. 
+	 * The associated world listener.
 	 * <p>
 	 * If available allows for forcing preprocessing
 	 */
 	private WorldStateListener worldListener;
 
-	
 	private boolean reloading = false;
 
 	/* Test-only main function */
 	public static void main(String[] args) {
-		
+
 		SettingsGUI n = new SettingsGUI();
 		n.setSettingsManager(SettingsManager.defaultSettings);
 		n.setVisible(true);
 	}
 
 	/* Event handlers */
-	
+
 	RadioActionListener ColourCodeListener = new RadioActionListener() {
-		
-		
+
 		@Override
-		public void selectedChanged(JRadioButton newButton, String command, boolean forced) {
-			
-			//avoid doing anything if we don't have a settings manager attached
-			if(settingsManager == null)
+		public void selectedChanged(JRadioButton newButton, String command,
+				boolean forced) {
+
+			// avoid doing anything if we don't have a settings manager attached
+			if (settingsManager == null)
 				return;
-			
-			//get relevant button id
+
+			// get relevant button id
 			lastButtonTag = SettingsManager.getColorCode(command);
-			if(lastButtonTag < 0)
-			{
-				JOptionPane.showMessageDialog(contentPane, "Unable to find the requested color code " +
-						"'" + command + "' in SettingsManager. \n" +
-						"Please make sure the radio button's action command is appropriately set!");
+			if (lastButtonTag < 0) {
+				JOptionPane
+						.showMessageDialog(
+								contentPane,
+								"Unable to find the requested color code "
+										+ "'"
+										+ command
+										+ "' in SettingsManager. \n"
+										+ "Please make sure the radio button's action command is appropriately set!");
 				return;
 			}
 
-			//update the slider panel
+			// update the slider panel
 			int[] minColors = settingsManager.getMinValues(lastButtonTag);
 			int[] maxColors = settingsManager.getMaxValues(lastButtonTag);
 			sliderPanel.setColorSource(minColors, maxColors);
-			
-			//update the world painter highlighting
-			if(!forced && worldPainter != null)
-				worldPainter.setHighlightMode(SettingsManager.getHighlightMode(lastButtonTag));
+
+			// update the world painter highlighting
+			if (!forced && worldPainter != null)
+				worldPainter.setHighlightMode(SettingsManager
+						.getHighlightMode(lastButtonTag));
 		}
 	};
 
 	RadioActionListener PitchIdListener = new RadioActionListener() {
 		@Override
-		public void selectedChanged(JRadioButton newButton,
-				String command, boolean forced) {
-			if(!forced) {
-				settingsManager.setCurrentPitchId(newButton == rdbtnMain ? 0 : 1);
+		public void selectedChanged(JRadioButton newButton, String command,
+				boolean forced) {
+			if (!forced) {
+				settingsManager.setCurrentPitchId(newButton == rdbtnMain ? 0
+						: 1);
 				reloadSettings();
 			}
 		}
@@ -133,56 +137,58 @@ public class SettingsGUI extends JFrame {
 
 	RadioActionListener DirectionListener = new RadioActionListener() {
 		@Override
-		public void selectedChanged(JRadioButton newButton,
-				String command, boolean forced) {
-			if(!forced) {
-				worldListener.getWorldState().setDirection(newButton == rdbtnLeft ? 0 : 1);
-				settingsManager.setShootingDirection(newButton == rdbtnLeft ? 0 : 1);
+		public void selectedChanged(JRadioButton newButton, String command,
+				boolean forced) {
+			if (!forced) {
+				worldListener.getWorldState().setDirection(
+						newButton == rdbtnLeft ? 0 : 1);
+				settingsManager.setShootingDirection(newButton == rdbtnLeft ? 0
+						: 1);
 			}
 		}
 
 	};
-	
+
 	RadioActionListener TeamListener = new RadioActionListener() {
 		@Override
 		public void selectedChanged(JRadioButton newButton,
 				String actionCommand, boolean forced) {
-			if(!forced) {
-				worldListener.getWorldState().setOurColor(newButton == rdbtnYellow ? 0 : 1);
+			if (!forced) {
+				worldListener.getWorldState().setOurColor(
+						newButton == rdbtnYellow ? 0 : 1);
 				settingsManager.setOurTeam(newButton == rdbtnYellow ? 0 : 1);
 			}
 		}
 	};
-	
+
 	ActionListener SettingsManagerChangedListener = new ActionListener() {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			SettingsGUI.this.setTitle("Control GUI" + (settingsManager.isChanged() ? " *" : ""));
+			SettingsGUI.this.setTitle("Control GUI"
+					+ (settingsManager.isChanged() ? " *" : ""));
 			btnSave.setEnabled(settingsManager.isChanged());
 		}
 	};
-
 
 	/**
 	 * Executed when the "Show white pixels" checkbox is clicked
 	 */
 	protected void onWhiteRgbDisplayChanged() {
-		if(worldPainter == null)
+		if (worldPainter == null)
 			return;
-		
-		if(chkWhiteOverlay.isSelected())
+
+		if (chkWhiteOverlay.isSelected())
 			worldPainter.setHighlightMode(HighlightMode.White);
 		else
 			worldPainter.setHighlightMode(HighlightMode.None);
 	}
-	
 
 	/**
 	 * Executed when the white RGB delta slider's value changes
 	 */
 	protected void onRgbDeltaChanged(ChangeEvent e) {
-		if(settingsManager != null && !reloading)
+		if (settingsManager != null && !reloading)
 			settingsManager.setWhiteRgbDelta(slRgbDelta.getValue());
 	}
 
@@ -190,7 +196,7 @@ public class SettingsGUI extends JFrame {
 	 * Executed when the white RGB threshold slider's value changes
 	 */
 	protected void onRgbMinChanged(ChangeEvent e) {
-		if(settingsManager != null && !reloading)
+		if (settingsManager != null && !reloading)
 			settingsManager.setWhiteRgbThreshold(slRgbMin.getValue());
 	}
 
@@ -198,7 +204,7 @@ public class SettingsGUI extends JFrame {
 	 * Executed when the Save button is clicked
 	 */
 	protected void onSaveClick() {
-		if(settingsManager != null)
+		if (settingsManager != null)
 			settingsManager.save();
 	}
 
@@ -206,57 +212,65 @@ public class SettingsGUI extends JFrame {
 	 * Executed when the "Show Raw Borders" checkbox is clicked
 	 */
 	protected void onChkShowRawBordersClick() {
-		if(worldPainter != null)
+		if (worldPainter != null)
 			worldPainter.setRawBoundaryShown(chkShowRawBorders.isSelected());
 	}
 
-
 	/**
 	 * Executed when a tab page in the main JTabbedPane is turned
-	 * @param tabId The new tab page
+	 * 
+	 * @param tabId
+	 *            The new tab page
 	 */
 	protected void onTabChanged(int tabId) {
-		
-		if(settingsManager != null && tabId == 1) {
-			String pitchName = (settingsManager.getCurrentPitchId() == 0 ? "Main" : "Side");
-			lblPitchStuff.setText(pitchName + " pitch" );
+
+		if (settingsManager != null && tabId == 1) {
+			String pitchName = (settingsManager.getCurrentPitchId() == 0 ? "Main"
+					: "Side");
+			lblPitchStuff.setText(pitchName + " pitch");
 		}
-		
-		if(worldPainter == null)
+
+		if (worldPainter == null)
 			return;
-		
-		if(tabId == 1) {
+
+		if (tabId == 1) {
 			int ccode = this.ColourCodeListener.lastButtonTag;
-			if(ccode >= 0)
-				worldPainter.setHighlightMode(SettingsManager.getHighlightMode(ccode));
+			if (ccode >= 0)
+				worldPainter.setHighlightMode(SettingsManager
+						.getHighlightMode(ccode));
 			return;
 		}
-		
-		if(tabId == 0 && chkWhiteOverlay.isSelected())
+
+		if (tabId == 0 && chkWhiteOverlay.isSelected())
 			worldPainter.setHighlightMode(HighlightMode.White);
 		else
 			worldPainter.setHighlightMode(HighlightMode.None);
 	}
 
 	/**
-	 * Executed when the window starts closing. 
+	 * Executed when the window starts closing.
 	 */
 	protected void onWindowClosing() {
-		
-		if(settingsManager == null || !settingsManager.isChanged()) {
+
+		if (settingsManager == null || !settingsManager.isChanged()) {
 			this.dispose();
 			return;
 		}
-		
-		int saveChoice = JOptionPane.showConfirmDialog(this, "There are unsaved changes. Would you like to save them before closing?", "hrr", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
-		
-		if(saveChoice == JOptionPane.CANCEL_OPTION)
+
+		int saveChoice = JOptionPane
+				.showConfirmDialog(
+						this,
+						"There are unsaved changes. Would you like to save them before closing?",
+						"hrr", JOptionPane.YES_NO_CANCEL_OPTION,
+						JOptionPane.QUESTION_MESSAGE);
+
+		if (saveChoice == JOptionPane.CANCEL_OPTION)
 			return;
-		
-		if(saveChoice == JOptionPane.YES_OPTION && settingsManager != null) {
+
+		if (saveChoice == JOptionPane.YES_OPTION && settingsManager != null) {
 			settingsManager.save();
 		}
-		
+
 		this.dispose();
 	}
 
@@ -264,22 +278,20 @@ public class SettingsGUI extends JFrame {
 	 * Executed when the "Force Preprocessing" button is clicked
 	 */
 	protected void onBtnForcePreprocessingClick() {
-		if(worldListener != null)
+		if (worldListener != null)
 			worldListener.forcePreprocess();
 	}
 
-	/** 
+	/**
 	 * Executed when the "Set Raw Borders" button is clicked
 	 */
 	protected void onBtnSetRawBordersClick() {
-		if(settingsManager != null)
+		if (settingsManager != null)
 			settingsManager.resetBoundary();
 	}
 
-
 	/**
-	 * Creates the frame. 
-	 * Do not edit manually!
+	 * Creates the frame. Do not edit manually!
 	 */
 	public SettingsGUI() {
 		setMinimumSize(new Dimension(0, 420));
@@ -296,7 +308,7 @@ public class SettingsGUI extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
-		
+
 		final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.setMaximumSize(new Dimension(32767, 200));
 		tabbedPane.addChangeListener(new ChangeListener() {
@@ -305,22 +317,22 @@ public class SettingsGUI extends JFrame {
 			}
 		});
 		contentPane.add(tabbedPane);
-				
+
 		JPanel pGeneral = new JPanel();
 		tabbedPane.addTab("General", null, pGeneral, null);
 		pGeneral.setLayout(new BoxLayout(pGeneral, BoxLayout.Y_AXIS));
-		
+
 		JLabel lblGeneral = new JLabel("General");
 		lblGeneral.setVerticalAlignment(SwingConstants.BOTTOM);
 		lblGeneral.setPreferredSize(new Dimension(80, 25));
 		lblGeneral.setHorizontalAlignment(SwingConstants.LEFT);
 		lblGeneral.setAlignmentX(0.5f);
 		pGeneral.add(lblGeneral);
-		
+
 		JPanel pControlBox = new JPanel();
 		pGeneral.add(pControlBox);
 		pControlBox.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		
+
 		btnForcePreprocess = new JButton("Force preprocessing");
 		btnForcePreprocess.setEnabled(false);
 		btnForcePreprocess.addActionListener(new ActionListener() {
@@ -329,7 +341,7 @@ public class SettingsGUI extends JFrame {
 			}
 		});
 		pControlBox.add(btnForcePreprocess);
-		
+
 		btnSetRawBorders = new JButton("Set raw borders");
 		btnSetRawBorders.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -338,7 +350,7 @@ public class SettingsGUI extends JFrame {
 		});
 		btnSetRawBorders.setEnabled(false);
 		pControlBox.add(btnSetRawBorders);
-		
+
 		chkShowRawBorders = new JCheckBox("Show raw borders");
 		chkShowRawBorders.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -346,86 +358,75 @@ public class SettingsGUI extends JFrame {
 			}
 		});
 		pGeneral.add(chkShowRawBorders);
-		
+
 		JPanel panel = new JPanel();
 		panel.setMaximumSize(new Dimension(32767, 130));
 		pGeneral.add(panel);
 		panel.setLayout(new FormLayout(new ColumnSpec[] {
-				FormFactory.UNRELATED_GAP_COLSPEC,
-				ColumnSpec.decode("175px"),
-				ColumnSpec.decode("pref:grow"),
-				ColumnSpec.decode("pref:grow"),
-				FormFactory.UNRELATED_GAP_COLSPEC,},
-			new RowSpec[] {
-				FormFactory.RELATED_GAP_ROWSPEC,
-				FormFactory.PREF_ROWSPEC,
-				FormFactory.RELATED_GAP_ROWSPEC,
-				FormFactory.PREF_ROWSPEC,
-				FormFactory.RELATED_GAP_ROWSPEC,
-				FormFactory.PREF_ROWSPEC,
-				FormFactory.UNRELATED_GAP_ROWSPEC,}));
-		
+				FormFactory.UNRELATED_GAP_COLSPEC, ColumnSpec.decode("175px"),
+				ColumnSpec.decode("pref:grow"), ColumnSpec.decode("pref:grow"),
+				FormFactory.UNRELATED_GAP_COLSPEC, }, new RowSpec[] {
+				FormFactory.RELATED_GAP_ROWSPEC, FormFactory.PREF_ROWSPEC,
+				FormFactory.RELATED_GAP_ROWSPEC, FormFactory.PREF_ROWSPEC,
+				FormFactory.RELATED_GAP_ROWSPEC, FormFactory.PREF_ROWSPEC,
+				FormFactory.UNRELATED_GAP_ROWSPEC, }));
+
 		JLabel lblPitchId = new JLabel("Pitch ID:");
 		panel.add(lblPitchId, "2, 2");
-		
+
 		rdbtnMain = new JRadioButton("Main");
 		rdbtnMain.setHorizontalAlignment(SwingConstants.LEFT);
 		panel.add(rdbtnMain, "3, 2");
-		
+
 		rdbtnSide = new JRadioButton("Side");
 		rdbtnSide.setHorizontalAlignment(SwingConstants.LEFT);
 		panel.add(rdbtnSide, "4, 2");
-		
+
 		JLabel lblOurColour = new JLabel("Our colour:");
 		panel.add(lblOurColour, "2, 4");
-		
+
 		rdbtnYellow = new JRadioButton("Yellow");
 		rdbtnYellow.setHorizontalAlignment(SwingConstants.LEFT);
 		panel.add(rdbtnYellow, "3, 4");
-		
+
 		rdbtnBlue = new JRadioButton("Blue");
 		rdbtnBlue.setHorizontalAlignment(SwingConstants.LEFT);
 		panel.add(rdbtnBlue, "4, 4");
-		
+
 		JLabel lblShootingDirection = new JLabel("Shooting direction:");
 		panel.add(lblShootingDirection, "2, 6");
-		
+
 		rdbtnLeft = new JRadioButton("Left");
 		rdbtnLeft.setHorizontalAlignment(SwingConstants.LEFT);
 		panel.add(rdbtnLeft, "3, 6");
-		
+
 		rdbtnRight = new JRadioButton("Right");
 		rdbtnRight.setHorizontalAlignment(SwingConstants.LEFT);
 		panel.add(rdbtnRight, "4, 6");
-	
+
 		JLabel lblNewLabel = new JLabel("White Detection");
 		lblNewLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		lblNewLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		lblNewLabel.setVerticalAlignment(SwingConstants.BOTTOM);
 		lblNewLabel.setPreferredSize(new Dimension(80, 25));
 		pGeneral.add(lblNewLabel);
-		
+
 		JPanel pWhiteDetection = new JPanel();
 		pWhiteDetection.setMaximumSize(new Dimension(32767, 130));
 		pGeneral.add(pWhiteDetection);
 		pWhiteDetection.setLayout(new FormLayout(new ColumnSpec[] {
-				FormFactory.UNRELATED_GAP_COLSPEC,
-				ColumnSpec.decode("48dlu"),
+				FormFactory.UNRELATED_GAP_COLSPEC, ColumnSpec.decode("48dlu"),
 				FormFactory.RELATED_GAP_COLSPEC,
 				ColumnSpec.decode("pref:grow"),
-				FormFactory.UNRELATED_GAP_COLSPEC,},
-			new RowSpec[] {
-				FormFactory.RELATED_GAP_ROWSPEC,
-				FormFactory.PREF_ROWSPEC,
-				FormFactory.RELATED_GAP_ROWSPEC,
-				FormFactory.PREF_ROWSPEC,
-				FormFactory.RELATED_GAP_ROWSPEC,
-				FormFactory.PREF_ROWSPEC,
-				FormFactory.RELATED_GAP_ROWSPEC,}));
-		
+				FormFactory.UNRELATED_GAP_COLSPEC, }, new RowSpec[] {
+				FormFactory.RELATED_GAP_ROWSPEC, FormFactory.PREF_ROWSPEC,
+				FormFactory.RELATED_GAP_ROWSPEC, FormFactory.PREF_ROWSPEC,
+				FormFactory.RELATED_GAP_ROWSPEC, FormFactory.PREF_ROWSPEC,
+				FormFactory.RELATED_GAP_ROWSPEC, }));
+
 		JLabel lblMinRgb = new JLabel("Min RGB:");
 		pWhiteDetection.add(lblMinRgb, "2, 2");
-		
+
 		slRgbMin = new JSlider();
 		slRgbMin.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
@@ -438,10 +439,10 @@ public class SettingsGUI extends JFrame {
 		slRgbMin.setPaintTicks(true);
 		slRgbMin.setMaximum(255);
 		pWhiteDetection.add(slRgbMin, "4, 2");
-		
+
 		JLabel lblDeltaRgb = new JLabel("Delta RGB:");
 		pWhiteDetection.add(lblDeltaRgb, "2, 4");
-		
+
 		slRgbDelta = new JSlider();
 		slRgbDelta.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
@@ -454,7 +455,7 @@ public class SettingsGUI extends JFrame {
 		slRgbDelta.setMaximum(255);
 		slRgbDelta.setMajorTickSpacing(50);
 		pWhiteDetection.add(slRgbDelta, "4, 4");
-		
+
 		chkWhiteOverlay = new JCheckBox("Display white pixels");
 		chkWhiteOverlay.setEnabled(false);
 		chkWhiteOverlay.addChangeListener(new ChangeListener() {
@@ -464,54 +465,54 @@ public class SettingsGUI extends JFrame {
 		});
 		chkWhiteOverlay.setHorizontalAlignment(SwingConstants.RIGHT);
 		pWhiteDetection.add(chkWhiteOverlay, "4, 6");
-		
+
 		JPanel pColors = new JPanel();
 		tabbedPane.addTab("Colors", null, pColors, null);
 		pColors.setLayout(new BoxLayout(pColors, BoxLayout.Y_AXIS));
-		
+
 		lblPitchStuff = new JLabel("New label");
 		lblPitchStuff.setAlignmentX(Component.CENTER_ALIGNMENT);
 		lblPitchStuff.setHorizontalAlignment(SwingConstants.CENTER);
 		pColors.add(lblPitchStuff);
-		
+
 		JPanel pColorCodes = new JPanel();
 		pColorCodes.setMaximumSize(new Dimension(32767, 80));
 		pColorCodes.setPreferredSize(new Dimension(200, 80));
 		pColors.add(pColorCodes);
 		pColorCodes.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-				
+
 		btnBall = new JRadioButton("Ball");
 		pColorCodes.add(btnBall);
-		
+
 		JRadioButton btnBlue = new JRadioButton("Blue");
 		pColorCodes.add(btnBlue);
-		
+
 		JRadioButton btnPlate = new JRadioButton("Plate");
-	
+
 		JRadioButton btnYellow = new JRadioButton("Yellow");
 		pColorCodes.add(btnYellow);
 		pColorCodes.add(btnPlate);
-		
+
 		JRadioButton btnGray = new JRadioButton("Gray");
 		pColorCodes.add(btnGray);
-		
+
 		sliderPanel = new SliderPanel();
 		pColors.add(sliderPanel);
-	
+
 		btnBall.addActionListener(ColourCodeListener);
 		btnBlue.addActionListener(ColourCodeListener);
 		btnPlate.addActionListener(ColourCodeListener);
 		btnYellow.addActionListener(ColourCodeListener);
 		btnGray.addActionListener(ColourCodeListener);
-		
+
 		rdbtnMain.addActionListener(PitchIdListener);
 		rdbtnSide.addActionListener(PitchIdListener);
-		
+
 		rdbtnLeft.addActionListener(DirectionListener);
 		rdbtnRight.addActionListener(DirectionListener);
-		
+
 		rdbtnYellow.addActionListener(TeamListener);
-			rdbtnBlue.addActionListener(TeamListener);
+		rdbtnBlue.addActionListener(TeamListener);
 
 		btnSave = new JButton("Save changes");
 		btnSave.addActionListener(new ActionListener() {
@@ -523,17 +524,15 @@ public class SettingsGUI extends JFrame {
 		contentPane.add(btnSave);
 	}
 
-
 	/**
-	 * Gets the currently attached settings manager object. 
+	 * Gets the currently attached settings manager object.
 	 */
 	public SettingsManager getSettingsManager() {
 		return settingsManager;
 	}
-	
 
 	/**
-	 * Sets the currently attached settings manager object. 
+	 * Sets the currently attached settings manager object.
 	 */
 	public void setSettingsManager(SettingsManager settingsManager) {
 		this.settingsManager = settingsManager;
@@ -543,50 +542,49 @@ public class SettingsGUI extends JFrame {
 	}
 
 	/**
-	 * Gets the currently attached world painter object. 
+	 * Gets the currently attached world painter object.
 	 */
 	public WorldStatePainter getWorldPainter() {
 		return worldPainter;
 	}
 
-
 	/**
-	 * Sets the currently attached world painter object. 
+	 * Sets the currently attached world painter object.
 	 */
 	public void setWorldPainter(WorldStatePainter worldPainter) {
 		this.worldPainter = worldPainter;
 		chkWhiteOverlay.setEnabled(worldPainter != null);
-		if(worldPainter != null)
+		if (worldPainter != null)
 			chkWhiteOverlay.setSelected(worldPainter.isRawBoundaryShown());
 	}
 
-
 	/**
-	 * Gets the currently attached world listener object. 
+	 * Gets the currently attached world listener object.
 	 */
 	public WorldStateListener getWorldListener() {
 		return worldListener;
 	}
 
-
 	/**
-	 * Sets the currently attached world listener object. 
+	 * Sets the currently attached world listener object.
 	 */
 	public void setWorldListener(WorldStateListener worldListener) {
 		this.worldListener = worldListener;
 		this.btnForcePreprocess.setEnabled(worldListener != null);
 	}
 
-
 	/**
 	 * Updates all the UI values as if we've just reloaded the settings
 	 */
 	private void reloadSettings() {
-		if(settingsManager != null) {
-			reloading  = true;
-			JRadioButton pitch = (settingsManager.getCurrentPitchId() == 0) ? rdbtnMain : rdbtnSide;
-			JRadioButton team = (settingsManager.getOurTeam() == 0) ? rdbtnYellow : rdbtnBlue;
-			JRadioButton direction = (settingsManager.getShootingDirection() == 0) ? rdbtnLeft : rdbtnRight;
+		if (settingsManager != null) {
+			reloading = true;
+			JRadioButton pitch = (settingsManager.getCurrentPitchId() == 0) ? rdbtnMain
+					: rdbtnSide;
+			JRadioButton team = (settingsManager.getOurTeam() == 0) ? rdbtnYellow
+					: rdbtnBlue;
+			JRadioButton direction = (settingsManager.getShootingDirection() == 0) ? rdbtnLeft
+					: rdbtnRight;
 
 			PitchIdListener.setSelectedButton(pitch);
 			TeamListener.setSelectedButton(team);
@@ -595,11 +593,10 @@ public class SettingsGUI extends JFrame {
 
 			slRgbMin.setValue(settingsManager.getWhiteRgbThreshold());
 			slRgbDelta.setValue(settingsManager.getWhiteRgbDelta());
-			
+
 			SettingsManagerChangedListener.actionPerformed(null);
-			
+
 			reloading = false;
-			
 		}
 	}
 }

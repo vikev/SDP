@@ -1,7 +1,9 @@
 package sdp.pc.vision;
 
+import java.util.ArrayList;
+
 /**
- * Class for abstracting the data for a collision
+ * Class for abstracting the data for a collision.
  */
 public class Intersect {
 
@@ -16,60 +18,32 @@ public class Intersect {
 	private Point2 ball;
 
 	/**
-	 * The location of the (first) estimated intersection (empty otherwise)
+	 * The location of the any estimated intersections (empty otherwise)
 	 */
-	private Point2 intersection;
+	private ArrayList<Point2> intersections = new ArrayList<Point2>();
 
 	/**
-	 * The location of the reflected ball if it exists
+	 * The location of the estimated stopping point
 	 */
-	private Point2 deflection;
-
-	/**
-	 * The location of the initial estimated stopping point
-	 */
-	private Point2 initialEstimate;
-
-	/**
-	 * The rebound angle of the wall that caused the reflection
-	 * 
-	 * TODO: Which angle? How to distinguish if the acute angle comes from the
-	 * wall or from the wall's normal?
-	 */
-	private double angle;
+	private Point2 estimate;
 
 	/**
 	 * Empty constructor
 	 */
 	public Intersect() {
 		this.ball = Point2.EMPTY;
-		this.intersection = Point2.EMPTY;
-		this.deflection = Point2.EMPTY;
-		this.initialEstimate = Point2.EMPTY;
-		this.angle = Double.NaN;
+		this.estimate = Point2.EMPTY;
 	}
 
 	/**
-	 * Full constructor
+	 * Full-fledged constructor
 	 * 
 	 * @param ball
-	 *            - real location of the ball
-	 * @param intersection
-	 *            - the point the ball would hit a boundary, if it exists
-	 * @param deflection
-	 *            - the point after the ball hits a boundary, if it exists
-	 * @param initialEstimate
-	 *            - the initial estimated stopping point of the ball
-	 * @param angle
-	 *            - the rebound angle after a collision
+	 * @param est
 	 */
-	public Intersect(Point2 ball, Point2 intersection, Point2 deflection,
-			Point2 initialEstimate, double angle) {
+	public Intersect(Point2 ball, Point2 est) {
 		this.ball = ball;
-		this.intersection = intersection;
-		this.deflection = deflection;
-		this.initialEstimate = initialEstimate;
-		this.angle = angle;
+		this.estimate = est;
 	}
 
 	/**
@@ -80,9 +54,7 @@ public class Intersect {
 		if (!(o instanceof Intersect))
 			return false;
 		Intersect i = (Intersect) o;
-		return i.getAngle() == angle && i.getBall() == ball
-				&& i.getDeflection() == deflection
-				&& i.getIntersection() == intersection;
+		return i.getBall() == ball && i.getIntersections() == intersections;
 	}
 
 	/**
@@ -104,21 +76,30 @@ public class Intersect {
 	}
 
 	/**
-	 * Getter method for the intersection
+	 * Getter method for the intersections
 	 * 
 	 * @return
 	 */
-	public Point2 getIntersection() {
-		return this.intersection;
+	public ArrayList<Point2> getIntersections() {
+		return this.intersections;
 	}
 
 	/**
-	 * Setter method for the intersection
+	 * Setter method for the intersections
 	 * 
-	 * @param intersection
+	 * @param intersections
 	 */
-	public void setIntersection(Point2 intersection) {
-		this.intersection = intersection;
+	public void setIntersections(ArrayList<Point2> intersections) {
+		this.intersections = intersections;
+	}
+
+	/**
+	 * Adds an intersection point to the intersections list
+	 * 
+	 * @param intersect
+	 */
+	public void addIntersection(Point2 intersect) {
+		this.intersections.add(intersect);
 	}
 
 	/**
@@ -126,70 +107,14 @@ public class Intersect {
 	 * 
 	 * @return
 	 */
-	public Point2 getInitialEstimate() {
-		return this.initialEstimate;
+	public Point2 getEstimate() {
+		return this.estimate;
 	}
 
 	/**
 	 * Setter method for the initial estimate point
 	 */
-	public void setInitialEstimate(Point2 pt) {
-		this.initialEstimate = pt;
-	}
-
-	/**
-	 * Getter method for the TODO: Deflection? angle
-	 * 
-	 * @return angle in TODO: degrees?
-	 */
-	public double getAngle() {
-		return angle;
-	}
-
-	/**
-	 * Setter method for the TODO: Deflection? angle in TODO: degrees?
-	 * 
-	 * @param angle
-	 */
-	public void setAngle(double angle) {
-		this.angle = angle;
-	}
-
-	/**
-	 * Setter method for the deflection point
-	 * 
-	 * @param pt
-	 */
-	public void setDeflection(Point2 pt) {
-		this.deflection = pt;
-	}
-
-	/**
-	 * Getter method for the deflection point
-	 * 
-	 * @return
-	 */
-	public Point2 getDeflection() {
-		return this.deflection;
-	}
-
-	/**
-	 * Method for getting the best result of an intersection - looks for the
-	 * final estimated ball position
-	 * 
-	 * TODO: Deflection disabled while it doesn't work
-	 * 
-	 * @return
-	 */
-	public Point2 getResult() {
-		// if (!this.deflection.equals(Point2.EMPTY)) {
-		// return this.deflection;
-		// } else if (!this.intersection.equals(Point2.EMPTY)) {
-		if (!this.intersection.equals(Point2.EMPTY)) {
-			return this.intersection;
-		} else if (!this.initialEstimate.equals(Point2.EMPTY)) {
-			return this.initialEstimate;
-		}
-		return Point2.EMPTY;
+	public void setEstimate(Point2 pt) {
+		this.estimate = pt;
 	}
 }

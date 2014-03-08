@@ -2,14 +2,16 @@ package sdp.pc.vision;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 /**
  * Contains information about the Pitch dimensions and the zones a robot is
  * supposed to be in. Currently only checks X values; works well given that
  * Colors.isWhite() returns proper values
  * 
- * TODO: add Y values checks TODO: detect goal positions automatically (would it
- * be reliable enough?)
+ * TODO: add Y values checks
+ * 
+ * TODO: detect goal positions automatically (would it be reliable enough?)
  * 
  * @author s1141301
  * 
@@ -28,9 +30,11 @@ public class Pitch {
 	private static final int X_END = 570, X_BEGIN = 310;
 
 	/**
-	 * The radius of a robot TODO: figure out a value for this
+	 * The radius of a robot
+	 * 
+	 * TODO: Get a real value for this
 	 */
-	private int robotRadius = 0;
+	private int robotRadius = 20;
 
 	/**
 	 * The x coordinates of the goal lines
@@ -199,29 +203,29 @@ public class Pitch {
 	public ArrayList<Point2> getArrayListOfPoints() {
 		ArrayList<Point2> points = new ArrayList<Point2>();
 		points.add(new Point2()); // 0
-		points.add(new Point2( pitchCornerX[0], pitchY[0])); // 1
+		points.add(new Point2(pitchCornerX[0], pitchY[0])); // 1
 		points.add(new Point2(zoneX[0], pitchY[0]));// 2
 		points.add(new Point2(zoneX[1], pitchY[0])); // 3
 		points.add(new Point2(zoneX[2], pitchY[0])); // 4
-		points.add(new Point2( pitchCornerX[1],  pitchY[0])); // 5
+		points.add(new Point2(pitchCornerX[1], pitchY[0])); // 5
 		points.add(new Point2(goalLineX[1], goalLineY[0])); // 6
 		points.add(new Point2(goalLineX[1], goalLineY[1]));// 7
-		points.add(new Point2( pitchCornerX[1],  pitchY[1])); // 8
-		points.add(new Point2(zoneX[2],pitchY[1])); // 9
-		points.add(new Point2(zoneX[1],pitchY[1])); // 10
-		points.add(new Point2(zoneX[0],pitchY[1]));// 11
-		points.add(new Point2( pitchCornerX[0],  pitchY[1])); // 12
-		points.add(new Point2(goalLineX[0], goalLineY[1]));//13
-		points.add(new Point2(goalLineX[0], goalLineY[0])); //14	
-		//printPoints();
+		points.add(new Point2(pitchCornerX[1], pitchY[1])); // 8
+		points.add(new Point2(zoneX[2], pitchY[1])); // 9
+		points.add(new Point2(zoneX[1], pitchY[1])); // 10
+		points.add(new Point2(zoneX[0], pitchY[1]));// 11
+		points.add(new Point2(pitchCornerX[0], pitchY[1])); // 12
+		points.add(new Point2(goalLineX[0], goalLineY[1]));// 13
+		points.add(new Point2(goalLineX[0], goalLineY[0])); // 14
+		// printPoints();
 		return points;
 	}
 	public void printPoints() {
-		
+
 		ArrayList<Point2> points = getArrayListOfPoints();
 		int index = 1;
-		for (Point2 point : points){
-			System.out.println(index+ " = "+point.toString());
+		for (Point2 point : points) {
+			System.out.println(index + " = " + point.toString());
 			index++;
 		}
 	}
@@ -232,7 +236,14 @@ public class Pitch {
 	 * @return
 	 */
 	public Point2 getLeftGoalCentre() {
-		return new Point2(goalLineX[0], (goalLineY[0] + goalLineY[1]) / 2);
+		// return new Point2(goalLineX[0], (goalLineY[0] + goalLineY[1]) / 2);
+		return new Point2(goalLineX[0], goalLineY[0]
+				+ (goalLineY[1] - goalLineY[0]) / 2);
+	}
+
+	public Point2 getLeftGoalRandom() {
+		return new Point2(goalLineX[0], goalLineY[0]
+				+ (int) (Math.random() * (goalLineY[1] - goalLineY[0])));
 	}
 
 	/**
@@ -241,7 +252,14 @@ public class Pitch {
 	 * @return
 	 */
 	public Point2 getRightGoalCentre() {
-		return new Point2(goalLineX[1], (goalLineY[0] + goalLineY[1]) / 2);
+		// return new Point2(goalLineX[1], (goalLineY[0] + goalLineY[1]) / 2);
+		return new Point2(goalLineX[1], goalLineY[0]
+				+ (goalLineY[1] - goalLineY[0]) / 2);
+	}
+
+	public Point2 getRightGoalRandom() {
+		return new Point2(goalLineX[1], goalLineY[0]
+				+ (int) (Math.random() * (goalLineY[1] - goalLineY[0])));
 	}
 
 	/**
@@ -252,5 +270,171 @@ public class Pitch {
 	public Point2 getTableCentre() {
 		return new Point2((pitchCornerX[0] + pitchCornerX[1]) / 2,
 				(pitchY[0] + pitchY[1]) / 2);
+	}
+
+	/**
+	 * Method which returns the size of all the borders around the pitch.
+	 * Auxiliary method for printPanelDistances.
+	 * <p />
+	 * On March 1st 2014 I've printed the distances (in pixels) on pitch 0:
+	 * <ul>
+	 * <li>1->2: 71</li>
+	 * <li>2->3: 149</li>
+	 * <li>3->4: 150</li>
+	 * <li>4->5: 71</li>
+	 * <li>5->6: 71.6</li>
+	 * <li>6->7: 156</li>
+	 * <li>7->8: 69.8</li>
+	 * <li>8->9: 71</li>
+	 * <li>9->10: 150</li>
+	 * <li>10->11: 149</li>
+	 * <li>11->12: 71</li>
+	 * <li>12->13: 69.4</li>
+	 * <li>13->14: 156</li>
+	 * <li>14->1: 71.1</li>
+	 * </ul>
+	 * 
+	 * @return
+	 */
+	private ArrayList<Double> getBorderSizes() {
+		ArrayList<Point2> points = getArrayListOfPoints();
+
+		// Calculate border sizes
+		ArrayList<Double> dists = new ArrayList<Double>();
+		dists.add(points.get(1).distance(points.get(2)));
+		dists.add(points.get(2).distance(points.get(3)));
+		dists.add(points.get(3).distance(points.get(4)));
+		dists.add(points.get(4).distance(points.get(5)));
+		dists.add(points.get(5).distance(points.get(6)));
+		dists.add(points.get(6).distance(points.get(7)));
+		dists.add(points.get(7).distance(points.get(8)));
+		dists.add(points.get(8).distance(points.get(9)));
+		dists.add(points.get(9).distance(points.get(10)));
+		dists.add(points.get(10).distance(points.get(11)));
+		dists.add(points.get(11).distance(points.get(12)));
+		dists.add(points.get(12).distance(points.get(13)));
+		dists.add(points.get(13).distance(points.get(14)));
+		dists.add(points.get(14).distance(points.get(1)));
+		return dists;
+	}
+
+	/**
+	 * Method for printing the sizes of the border panels (eg distance from left
+	 * goalmouth top to top left corner) - mostly useful for
+	 * debugging/calibrating.
+	 */
+	public void printPanelDistances() {
+		ArrayList<Double> dists = getBorderSizes();
+		System.out.println("{");
+		for (Double d : dists) {
+			System.out.println(d);
+		}
+		System.out.println("}");
+	}
+
+	/**
+	 * Returns which boundary vertex is closest to a given point.
+	 * 
+	 * @param collide
+	 * @return
+	 */
+	public Point2 getVertexNearest(Point2 collide) {
+
+		// Initialise required components
+		ArrayList<Point2> pts = getArrayListOfPoints();
+		double bestDist = Double.POSITIVE_INFINITY;
+		Point2 bestPt = Point2.EMPTY;
+
+		// Iterate through all points finding the smallest distance
+		for (Point2 pt : pts) {
+			double dist = pt.distance(collide);
+			if (dist < bestDist) {
+				bestDist = dist;
+				bestPt = pt;
+			}
+		}
+
+		// Return the best value
+		return bestPt;
+	}
+
+	/**
+	 * Returns the two panel vertices that are immediately before and after a
+	 * given one.
+	 * 
+	 * @param nearest
+	 * @return
+	 */
+	public Point2[] getBoundariesNeighbouring(Point2 nearest) {
+
+		// Initialise required components
+		ArrayList<Point2> pts = getArrayListOfPoints();
+		int nearestInd = getListIndFromPt(nearest);
+		Point2[] rets = new Point2[2];
+
+		// Check corner cases
+		if (nearestInd == 0) {
+			rets[0] = Point2.EMPTY;
+			rets[1] = Point2.EMPTY;
+		} else if (nearestInd == 1) {
+			rets[0] = pts.get(14);
+			rets[1] = pts.get(2);
+		} else if (nearestInd == 14) {
+			rets[0] = pts.get(13);
+			rets[1] = pts.get(1);
+		} else {
+
+			// No corner case, send the immediate decrement and increment
+			rets[0] = pts.get(nearestInd - 1);
+			rets[1] = pts.get(nearestInd + 1);
+		}
+		return rets;
+	}
+
+	/**
+	 * Returns the index of a point which corresponds to the list in
+	 * getArrayListOfPoints() (linear search)
+	 * 
+	 * @param nearest
+	 * @return
+	 */
+	public int getListIndFromPt(Point2 nearest) {
+
+		// Initialise required components
+		ArrayList<Point2> pts = getArrayListOfPoints();
+
+		// Get the index (linear search)
+		for (int i = 1; i <= 14; i++) {
+			if (nearest.equals(pts.get(i))) {
+				return i;
+			}
+		}
+
+		// Not found? Return 0
+		return 0;
+	}
+
+	public Point2 getQuadrantCenter(int quadrant) {
+		ArrayList<Point2> pts = getArrayListOfPoints();
+		int yC = pts.get(2).getY() + (pts.get(11).getY() - pts.get(2).getY())
+				/ 2;
+		if (quadrant == 1) {
+			return new Point2(pts.get(14).getX()
+					+ (pts.get(2).getX() - pts.get(14).getX()) / 2, yC);
+		} else if (quadrant == 2) {
+			return new Point2(pts.get(2).getX()
+					+ (pts.get(3).getX() - pts.get(2).getX()) / 2, yC);
+		} else if (quadrant == 3) {
+			return new Point2(pts.get(3).getX()
+					+ (pts.get(4).getX() - pts.get(3).getX()) / 2, yC);
+		} else if (quadrant == 4) {
+			return new Point2(pts.get(4).getX()
+					+ (pts.get(6).getX() - pts.get(4).getX()) / 2, yC);
+		}
+		return Point2.EMPTY;
+	}
+
+	public boolean contains(Point2 q) {
+		return Alg.isInHull(new LinkedList<Point2>(getArrayListOfPoints()), q);
 	}
 }

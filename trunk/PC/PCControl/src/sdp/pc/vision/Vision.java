@@ -74,6 +74,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	private static final String DEVICE = "/dev/video0";
 
 	/**
+	 * A Point2 which is updated on click, for requesting data from the vision
+	 * feed.
+	 */
+	private static Point2 requestedData = Point2.EMPTY;
+
+	/**
 	 * The world state used by the Vision system. There should be one set of
 	 * world state objects for a Vision instance.
 	 */
@@ -358,5 +364,35 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 */
 	public static Point2 getCameraCentre() {
 		return cameraCenter;
+	}
+
+	/**
+	 * Getter method for the instance of WorldState used by the global Vision
+	 * system.
+	 * 
+	 * @return
+	 */
+	public static WorldState getWorldState() {
+		return state;
+	}
+
+	/**
+	 * Setter method for new requested data.
+	 * 
+	 * @param p
+	 */
+	public static void setRequestedPoint(Point2 p) {
+		requestedData = p;
+	}
+
+	/**
+	 * Getter method for the requested data.
+	 * 
+	 * @return
+	 */
+	public static Point2 getRequestedPoint() {
+		Point2 q = requestedData.copy();
+		requestedData = Point2.EMPTY;
+		return q;
 	}
 }

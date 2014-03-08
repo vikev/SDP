@@ -3,6 +3,7 @@ package sdp.pc.robot.behaviours;
 
 
 import sdp.pc.robot.pilot.Robot;
+import sdp.pc.vision.Alg;
 import sdp.pc.vision.Point2;
 import sdp.pc.vision.relay.Driver;
 
@@ -38,11 +39,13 @@ public class GrabBall extends RobotBehavior {
 		
 		Point2 ballPos = getWorldState().getBallPosition();
 		Point2 myPos = robot.getPosition();
+		double myFacing = robot.getFacing();
+		double angleToBall = myPos.angleTo(ballPos);
 		
-		double ballRobotAngle = myPos.angleTo(ballPos);
+		double ballRobotAngle = Alg.normalizeToBiDirection(angleToBall - myFacing);
 		double ballRobotDist = myPos.distance(ballPos);
 		
-		if(ballRobotAngle > ANGLE_EPSILON) {
+		if(Math.abs(ballRobotAngle) > ANGLE_EPSILON) {
 			//turn
 			if(ballRobotAngle > 0)
 				driver.turnLeft();

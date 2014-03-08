@@ -198,7 +198,7 @@ public class Milestone3def {
 			throws Exception {
 
 		// Get predicted ball stop point
-		Point2 predBallPos = state.getFutureData().getResult();
+		Point2 predBallPos = state.getFutureData().getEstimate();
 
 		// If that position exists, go to its Y coordinate, otherwise stop.
 		if (!predBallPos.equals(Point2.EMPTY)) {
@@ -231,7 +231,7 @@ public class Milestone3def {
 		}
 
 		Point2 predBallPos = FutureBall.estimateStopPoint(new Point2(x, y),
-				position).getResult();
+				position).getEstimate();
 		// Move robot to this position
 		if (!predBallPos.equals(Point2.EMPTY)) {
 			defendTo(state, driver, predBallPos.getY(), NEAR_EPSILON_DIST);
@@ -246,10 +246,10 @@ public class Milestone3def {
 	 */
 	private static boolean betweenGoals(int y, int side, int eps) {
 		if (side == 0) {
-			return (y + eps < WorldState.leftGoalBottom.getY() && y - eps > WorldState.leftGoalTop
+			return (y + eps < state.leftGoalBottom.getY() && y - eps > state.leftGoalTop
 					.getY());
 		} else {
-			return (y + eps < WorldState.rightGoalBottom.getY() && y - eps > WorldState.rightGoalTop
+			return (y + eps < state.rightGoalBottom.getY() && y - eps > state.rightGoalTop
 					.getY());
 		}
 	}
@@ -268,7 +268,7 @@ public class Milestone3def {
 		int botX = botPosition.getX();
 		double angleToBall = botPosition.angleTo(new Point2(botX, y));
 		boolean between = betweenGoals(y, DEF_ROBOT, BETWEEN_GOALS_EPSILON);
-		int estStopY = state.getFutureData().getResult().getY();
+		int estStopY = state.getFutureData().getEstimate().getY();
 
 		// Compare robot facing with angle to ball
 		double diff = normalizeToBiDirection(botFacing - angleToBall);
