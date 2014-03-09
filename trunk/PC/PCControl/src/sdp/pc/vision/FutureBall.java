@@ -290,7 +290,7 @@ public class FutureBall {
 	 * @param xEnd
 	 * @return boolean value
 	 */
-	private static boolean betweenTwoPoints(int x, int xStart, int xEnd) {
+	public static boolean betweenTwoPoints(int x, int xStart, int xEnd) {
 		if (xStart < xEnd) {
 			if (xStart <= x && x <= xEnd) {
 				return true;

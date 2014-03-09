@@ -70,9 +70,11 @@ public class ArbiterController extends JFrame {
 			@Override
 			public void run() {
 				attackerArbiter.start();
+				//defenderArbiter.start();
 			}
 			
 		});
+		t.setDaemon(true);
 		t.start();
 	}
 
@@ -108,11 +110,11 @@ public class ArbiterController extends JFrame {
 			
 	
 			// Connect to robots
-			// defender = new Robot(ChooseRobot.defender(), state, myTeam, defenderId);
+			//defender = new Robot(ChooseRobot.defender(), state, myTeam, defenderId);
 			attacker = new Robot(ChooseRobot.defender(), state, myTeam, attackerId);
 	
 			attackerArbiter = new AttackerArbiter(attacker);
-			defenderArbiter = new AttackerArbiter(defender);
+			defenderArbiter = new DefenderArbiter(defender);
 			
 			connected = true;
 			System.out.println("done!");

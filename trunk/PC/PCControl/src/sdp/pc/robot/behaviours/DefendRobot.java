@@ -5,7 +5,6 @@ import sdp.pc.vision.FutureBall;
 import sdp.pc.vision.Point2;
 
 /**
- * TO BE USED ONLY FOR THE DEFENDING ROBOT
  * Behaviour which performs the goal of defending the robot. It
  * should only be called when the ball is not moving (or ball is not on the
  * pitch) and the opponent's attacker is on the pitch. It checks the
@@ -13,47 +12,39 @@ import sdp.pc.vision.Point2;
  * would kick now and moves to predicted position's Y coordinate by going
  * forwards or backwards.
  */
-public class DefendAttacker extends RobotBehavior {
+public class DefendRobot extends RobotBehavior {
 
-	private static final double BALL_SPEED_THRESHOLD = 30.0;
 	private static final double DEFEND_EPSILON_DISTANCE = 8.0;
 
-	public DefendAttacker(Robot robot) { super(robot); }
+	public DefendRobot(Robot robot) { super(robot); }
 	
 	private Point2 predictedPos;
 
 	/**
 	 * Take control when:
-	 *  - Ball is moving with insufficient velocity
-	 *  - Ball is in opponents attacker quadrant 
+	 *  - Opponent's attacker(defender) has a ball
 	 *  - There exists predicted ball position
 	 */
 	@Override
 	public boolean takeControl() {
 		int ourTeam = robot.getTeam();
 		int myId = robot.getId();
+		int oppTeam = 1 - ourTeam;
+		int oppId = myId;	//should be other team's opposite robot
 		// Get my location
 		Point2 robotPos = robot.getWorldState().getRobotPosition(ourTeam, myId);
 
 		// Get position and facing of the attacker
-		Point2 otherPos = robot.getWorldState().getRobotPosition(1 - ourTeam, 1 - myId);
-		double otherFacing = robot.getWorldState().getRobotFacing(1 - ourTeam, 1 - myId);
+		Point2 otherPos = robot.getWorldState().getRobotPosition(oppTeam, oppId);
+		double otherFacing = robot.getWorldState().getRobotFacing(oppTeam, oppId);
 
 		// Get predicted ball position if that other robot shot just now
 		predictedPos = FutureBall.matchingYCoord(otherPos,
 					otherFacing, robotPos);
 		
-		return robot.getWorldState().getBallSpeed() < BALL_SPEED_THRESHOLD 
-				&& robot.getWorldState().getBallQuadrant() == ((myQuadrant()  == 1) ? 2 : 3)
+		return robot.hasBall(oppTeam, oppId)
 				&& !predictedPos.equals(Point2.EMPTY);
 		}
-	
-	/**
-	 * Gets the quadrant we are supposed to be in
-	 */
-	private int myQuadrant() {
-		return robot.getWorldState().getDefenderQuadrant();
-	}
 	
 	@Override
 	public boolean actionFrame() throws Exception {

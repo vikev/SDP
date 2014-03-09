@@ -58,12 +58,15 @@ public class GaussianDoubleFilter implements Filter<Double> {
 		int std = size / 3;
 
 		this.size = size;
+		
 		double sum = 0;
 		kernel = new double[size];
+		
 		for (int i = 0; i < size; i++) {
 			kernel[i] = gaussian(i, std);
 			sum += kernel[i];
 		}
+		
 		for (int i = 0; i < size; i++)
 			kernel[i] /= sum;
 	}
@@ -91,11 +94,12 @@ public class GaussianDoubleFilter implements Filter<Double> {
 
 		double sum = 0;
 		int i = 0;
+		
 		Iterator<Double> it = hist.iterator();
 		while (it.hasNext()) {
 			sum += kernel[i++] * it.next();
 		}
 
-		return (sum + 0.5);
+		return sum;
 	}
 }

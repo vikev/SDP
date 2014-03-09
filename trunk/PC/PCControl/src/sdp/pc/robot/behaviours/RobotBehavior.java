@@ -65,7 +65,8 @@ public abstract class RobotBehavior implements Behavior {
 	
 	@Override
 	public void action() {
-		while(!suppressed && takeControl()) {
+		suppressed = false;
+		while(!suppressed) {
 			try {
 				if(actionFrame())
 					break;
@@ -75,6 +76,20 @@ public abstract class RobotBehavior implements Behavior {
 				System.out.println("Exception while running " + this.toString());
 			}
 		}
+	}
+	
+	protected long timeout;
+	protected void startTimeout() {
+		timeout = System.currentTimeMillis();
+	}
+	
+	/**
+	 * Returns whether we should wait a bit more
+	 * @param ms
+	 * @return
+	 */
+	protected boolean waitTimeout(long ms) {
+		return System.currentTimeMillis() < timeout + ms;
 	}
 
 	/**

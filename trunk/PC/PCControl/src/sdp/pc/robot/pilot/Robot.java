@@ -823,7 +823,7 @@ public class Robot {
 	 * 
 	 * @return TODO: speed in motor-degrees (?) per second
 	 */
-	private static int getRotateSpeed(double rotateBy, double epsilon) {
+	public static int getRotateSpeed(double rotateBy, double epsilon) {
 		// TODO: Should be refactored (constants)
 		double maxSpeed = 300.0;
 		double minSpeed = 25.0;
@@ -877,7 +877,7 @@ public class Robot {
 	 * 
 	 * TODO: Units? motor velocity in radians per second or..?
 	 */
-	private int getMoveSpeed(double dist) {
+	public int getMoveSpeed(double dist) {
 		/*
 		 * // TODO: Need to test with final gear ratios and robots! Also
 		 * refactor // out these constants double maxSpeed = 300.0; double
@@ -1041,25 +1041,31 @@ public class Robot {
 	public Point2 getPosition() {
 		return state.getRobotPosition(myTeam, myIdentifier);
 	}
+	
+	public boolean iHaveBall() {
+		return hasBall(myTeam, myIdentifier);
+	}
 
+	public static final double DIST_EPSILON = 35;
+	public static final double ANGLE_EPSILON = 17;
+	
+	
 	/**
 	 * Gets whether the robot holds the ball in its kicker
 	 * TODO: has arbitrary (untested) constants
 	 * @return
 	 */
-	public boolean hasBall() {
+	public boolean hasBall(int team, int id) {
 		//TODO: Figure out a better method
-		final double DIST_EPSILON = 50;
-		final double ANGLE_EPSILON = 10;
 		
-		Point2 myPos = state.getRobotPosition(myTeam, myIdentifier);
+		Point2 pos = state.getRobotPosition(team, id);
 		Point2 ballPos = state.getBallPosition();
 		
-		double myFacing = getFacing();
-		double angleToBall = myPos.angleTo(ballPos);
+		double facing = state.getRobotFacing(team, id);
+		double angleToBall = pos.angleTo(ballPos);
 
-		double ballRobotAngle = Alg.normalizeToBiDirection(angleToBall - myFacing);
-		double ballRobotDist = myPos.distance(ballPos);
+		double ballRobotAngle = Alg.normalizeToBiDirection(angleToBall - facing);
+		double ballRobotDist = pos.distance(ballPos);
 		
 		return Math.abs(ballRobotAngle) < ANGLE_EPSILON 
 				&& 0 < ballRobotDist && ballRobotDist < DIST_EPSILON;
@@ -1155,5 +1161,25 @@ public class Robot {
 					+ vertices.size());
 			return false;
 		}
+	}
+
+	public double getAngleToBall() {
+		Point2 goalPos = state.getBallPosition();
+		Point2 myPos = getPosition();
+		return myPos.angleTo(goalPos);
+	}
+
+	public double getDistanceToBall() {
+		return getPosition().distance(state.getBallPosition());
+	}
+
+	public double getAngleToOppositeGoal() {
+		return getPosition().angleTo(state.getOpponentGoalCenter());
+	}
+
+	public boolean ownQuadrant() {
+		return isOurAttacker() ? 
+			getWorldState().getPitch().isPointInAttackerZone(getPosition()) : 
+			getWorldState().getPitch().isPointInDefenderZone(getPosition());
 	}
 }

@@ -1,13 +1,13 @@
 package sdp.pc.robot.behaviours;
 
 import sdp.pc.robot.pilot.Robot;
+import sdp.pc.vision.FutureBall;
 import sdp.pc.vision.Point2;
 
 /**
  * Behaviour which performs (briefly) the goal of defending the
  * ball. It checks the predicted stop location of the ball and moves to its
  * Y coordinate by going forwards or backwards.
- * TODO: Currently works only for defender
  */
 public class DefendBall extends RobotBehavior {
 
@@ -19,23 +19,16 @@ public class DefendBall extends RobotBehavior {
 	/**
 	 * Take control when all of the following are true:
 	 *  - ball is moving with sufficient velocity
-	 *  - ball is moving into the robot's direction
+	 *  - ball is not between the robot and our goals
 	 */
 	@Override
 	public boolean takeControl() {
-		// it should rather check whether end position is sufficiently close to the goal line
-		// no matter speed/quadrant
-		return robot.getWorldState().getBallSpeed() > BALL_SPEED_THRESHOLD 
-				&& robot.getWorldState().getBallQuadrant() != myQuadrant();
+		Point2 myPos = robot.getPosition();
+		Point2 ourGoalCentre = robot.ourGoalCentre();
+		Point2 ballPos = robot.getWorldState().getBallPosition();
+		return robot.getWorldState().getBallSpeed() > BALL_SPEED_THRESHOLD;
+				//&& FutureBall.betweenTwoPoints(ballPos.getX(), myPos.getX(), ourGoalCentre.getX());
 	}
-
-	/**
-	 * Gets the quadrant we are supposed to be in
-	 */
-	private int myQuadrant() {
-		return robot.getWorldState().getDefenderQuadrant();
-	}
-	
 
 	@Override
 	public boolean actionFrame() throws Exception {
@@ -44,11 +37,9 @@ public class DefendBall extends RobotBehavior {
 		// If that position exists, go to its Y coordinate, otherwise stop.
 		if (!predBallPos.equals(Point2.EMPTY)) {
 			if (robot.defendToY(predBallPos.getY(), DEFEND_EPSILON_DISTANCE)) {
-				robot.getDriver().stop();
 				return true;
 			}
 		} else {
-			robot.getDriver().stop();
 			return true;
 		}
 		return false;

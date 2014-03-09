@@ -2,6 +2,8 @@ package sdp.pc.vision;
 
 import java.util.ArrayList;
 
+import sdp.pc.common.GaussianAngleFilter;
+
 /**
  * Class for recording and maintaining the positions and facing angles of
  * objects in "world". Must be instantiated.
@@ -274,6 +276,14 @@ public class WorldState {
 		return robotFacing[team][robot];
 	}
 
+	private static final int ROBOT_ANGLE_FILTER_SIZE = 3;
+	private GaussianAngleFilter[] robotAngleFilters = new GaussianAngleFilter[] {
+			new GaussianAngleFilter(ROBOT_ANGLE_FILTER_SIZE, false),
+			new GaussianAngleFilter(ROBOT_ANGLE_FILTER_SIZE, true),
+			new GaussianAngleFilter(ROBOT_ANGLE_FILTER_SIZE, false),
+			new GaussianAngleFilter(ROBOT_ANGLE_FILTER_SIZE, false),
+	};
+	
 	/**
 	 * Updates the facing of a given robot, part of a given team.
 	 * 
@@ -286,7 +296,9 @@ public class WorldState {
 	 *            [0,360)
 	 */
 	public void setRobotFacing(int team, int robot, double newFacing) {
-		this.robotFacing[team][robot] = newFacing;
+		if(!Double.isNaN(newFacing) && !Double.isInfinite(newFacing)) {
+			this.robotFacing[team][robot] = robotAngleFilters[team * 2 + robot].apply(newFacing);
+		}
 	}
 
 	/**

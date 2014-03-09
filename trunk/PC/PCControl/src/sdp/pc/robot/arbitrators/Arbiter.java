@@ -124,15 +124,16 @@ public class Arbiter
         synchronized (this)
         {
            _highestPriority = NONE;
+          int active = _active;// local copy: avoid out of bounds error in 134
           for (int i = maxPriority; i >= 0; i--)
           {
-            if (_behavior[i].takeControl())
+            if (i != active &&_behavior[i].takeControl())
             {
               _highestPriority = i;
               break;
             }
           }
-          int active = _active;// local copy: avoid out of bounds error in 134
+          active = _active;// local copy: avoid out of bounds error in 134
           if (active != NONE && _highestPriority > active)
           {
             _behavior[active].suppress();
