@@ -122,7 +122,7 @@ public class Robot {
 	 /**
 	 * The point the defender was at when bouncePoint was calculated
 	 */
-	public Point2 defenderPosWhenBouncePointcalc = new Point2 (250,250);
+	public Point2 defenderPosWhenBouncePointcalc = new Point2 (0,0);
 
 	/**
 	 * Class for controlling a robot from a more abstract point of view
@@ -598,7 +598,7 @@ public class Robot {
 
 	public static boolean isEnemyDefenderBlocking(Point2 enemyDefender,
 			Point2 ourDefender, Point2 ourAttacker) {
-		int xrange = 60, yrange = 60;
+		int xrange = 70, yrange = 70;
 		int xrangeDiv2 = (int) Math.floor(xrange / 2);
 		int yrangeDiv2 = (int) Math.floor(yrange / 2);
 		
@@ -642,21 +642,22 @@ public class Robot {
 	* if our defender were to turn and kick the ball to that point.
 	* TODO:Find a way to get a y coordinate on either boundary
 	* that corresponds to testx's value
-	* TODO: Improve the search procedure for finding a suitable x coordinate for
-	* the bounce point.
-	* 
+	* TODO:Decide whether or not to add early termination
+	* to the x coordinate binary search by using an angle threshold
 	* @param enemyAttacker
 	* @param ourDefender
 	* @param ourAttacker
 	*/
 	public void setBouncePoint(Point2 enemyAttacker, Point2 ourDefender,
 		Point2 ourAttacker){
-		int testy = 0, testx = ourDefender.getX();
-		double bounceAngleThresh = 0.5, requiredAngle, deflectAngle, angleDiff;
+		int testy = 0, testx = ourDefender.getX(), rangeEnd = ourAttacker.getX(),
+		rangeStart = ourDefender.getX(), midOfRange,
+		length = Math.abs(rangeStart - rangeEnd);
+		double bestAngleDiff = 360, requiredAngle, deflectAngle, angleDiff;
 		
-		//Sets newBouncePoint to a default value that will make our
+		//Sets bestPoint to a default value that will make our
 		//defender perform a direct pass to our attacker if no bounce point is found
-		Point2 newBouncePoint = ourAttacker;
+		Point2 bestPoint = new Point2(ourAttacker.getX(), ourAttacker.getY());
 		
 		Point2 testPoint = new Point2(testx, testy);
 		Pitch pitch = state.getPitch();
@@ -665,30 +666,40 @@ public class Robot {
 		boolean bouncetop = false;
 		
 		//Pick which boundary of the pitch to bounce the ball off
-		if (enemyAttacker.getY() > pitch.getTableCentre().getY())
+		//and set bounce point's y coordinates
+		if (enemyAttacker.getY() > pitch.getTableCentre().getY()){
 			bouncetop = true;
+			if(state.getPitchId() == 0){ 
+				testy = 78;
+			}else{
+				testy = 96;
+			}
+		}else{
+			if(state.getPitchId() == 0){
+				testy = 355;
+			}else{
+				testy = 392;
+			}
+		}
+		testPoint.setY(testy);
 		
 		//Search for a point along one of the pitch boundaries that our defender will
 		//be able to use to successfully bounce pass to our attacker
 		//Note: the testY values are not exactly on either boundary
-		//so angleDiff's value will be off from the true value 
-		for (int i = 0; i < 100; i++){
-			if(bouncetop && directionisleft){
-				testx = testx - 2;
-				testy = 108;
-			}else if (bouncetop && !directionisleft){
-				testx = testx + 2;
-				testy = 108;
+		//so angleDiff's value will be off from the true value
+		//Assumes a linear relationship between the predicted deflection angle and
+		//the x coordinate of the test point
+		int attempt = 1;
+		while(!(length == 1)){
+			if(directionisleft){
+				midOfRange = rangeStart - ((int) Math.floor(length/2));
+				testx = midOfRange;
+				testPoint.setX(testx);
+			}else{
+				midOfRange = rangeStart + ((int) Math.floor(length/2));
+				testx = midOfRange;
+				testPoint.setX(testx);
 			}
-			if(!bouncetop && directionisleft){
-				testx = testx - 2;
-				testy = 386;
-			}else if (!bouncetop && !directionisleft){
-				testx = testx + 2;
-				testy = 386;
-			}
-			testPoint.setX(testx);
-			testPoint.setY(testy);
 			
 			//Predict the angle the ball would bounce off the boundary
 			//at if kicked towards the point on the boundary
@@ -697,9 +708,7 @@ public class Robot {
 			
 			//Calculate the angle from the test point to the attacker
 			//(need to convert the angle by 180 degrees due to the 
-			//angle measured by getDeflectionAngle having a different zero point
-			//TODO: Modify testPoint.angleTo(ourAttacker) to account for boundary
-			//slope
+			//angle measured by getDeflectionAngle having a different zero point)
 			if(bouncetop){
 				requiredAngle = testPoint.angleTo(ourAttacker) - 180;
 			}else{
@@ -707,19 +716,51 @@ public class Robot {
 			}
 			angleDiff = Math.abs(requiredAngle - deflectAngle);
 			
-			System.out.println("Attempt Number:" + i);
+			System.out.println("Attempt Number:" + attempt);
 			System.out.println("test Point: " + testPoint);
 			System.out.println("Predicted Deflection Angle: " + deflectAngle);
 			System.out.println("Required Deflection Angle:" + requiredAngle);
 			System.out.println ("Difference: " + angleDiff + "\n");
-			
-			if(angleDiff < bounceAngleThresh){
-				newBouncePoint.setX(testx);
-				newBouncePoint.setY(testy);
-				break;
+			attempt++;
+			if(bouncetop){
+				if(deflectAngle > requiredAngle){
+					if(!directionisleft){
+						rangeStart = midOfRange;
+					}else{
+						rangeEnd = midOfRange;
+					}				
+				}else{
+					if(!directionisleft){
+						rangeEnd = midOfRange;
+					}else{
+						rangeStart = midOfRange;
+					}
+				}
+			}else{
+				if(deflectAngle < requiredAngle){
+					if(!directionisleft){
+						rangeStart = midOfRange;
+					}else{
+						rangeEnd = midOfRange;
+					}				
+				}else{
+					if(!directionisleft){
+						rangeEnd = midOfRange;
+					}else{
+						rangeStart = midOfRange;
+					}
+				}
 			}
+			
+			if(angleDiff < bestAngleDiff){
+				bestPoint.setX(testx);
+				bestPoint.setY(testy);
+				bestAngleDiff = angleDiff;
+			}
+			length = Math.abs(rangeStart - rangeEnd);
 		}
-		bouncePoint = newBouncePoint;
+		bouncePoint = bestPoint;
+
 	}
 
 	/**
