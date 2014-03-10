@@ -1,4 +1,4 @@
-This is pdfTeXk, Version 3.141592-1.40.3 (Web2C 7.5.6) (format=pdflatex 2012.9.13)  7 MAR 2014 19:21
+This is pdfTeXk, Version 3.141592-1.40.3 (Web2C 7.5.6) (format=pdflatex 2012.9.13)  10 MAR 2014 11:30
 entering extended mode
  %&-line parsing enabled.
 **sdp8-report-a-blakehawkins.tex
@@ -126,11 +126,6 @@ Underfull \hbox (badness 10000) in paragraph at lines 84--88
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 84--88
-
- []
-
-
 Underfull \hbox (badness 10000) in paragraph at lines 89--91
 
  []
@@ -151,12 +146,12 @@ Here is how much of TeX's memory you used:
  4373 multiletter control sequences out of 10000+200000
  16150 words of font info for 42 fonts, out of 1200000 for 2000
  645 hyphenation exceptions out of 8191
- 25i,6n,19p,329b,187s stack positions out of 5000i,500n,6000p,200000b,15000s
+ 25i,6n,19p,382b,187s stack positions out of 5000i,500n,6000p,200000b,15000s
 {/usr/share/texmf/fonts/enc/dvips/base/8r.e
 nc}</usr/share/texmf/fonts/type1/bluesky/cm/cmsy10.pfb></usr/share/texmf/fonts/
 type1/bluesky/ams/eurm10.pfb></usr/share/texmf/fonts/type1/urw/times/utmb8a.pfb
 ></usr/share/texmf/fonts/type1/urw/times/utmr8a.pfb>
-Output written on sdp8-report-a-blakehawkins.pdf (2 pages, 37055 bytes).
+Output written on sdp8-report-a-blakehawkins.pdf (2 pages, 37415 bytes).
 PDF statistics:
  26 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 131072)
