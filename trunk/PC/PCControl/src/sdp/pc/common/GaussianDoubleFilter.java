@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
- * A gaussian filter working on integers.
+ * A gaussian filter working on doubles.
  * 
  * @author s1141301
  * 

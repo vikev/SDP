@@ -2,7 +2,7 @@ package sdp.pc.robot.pilot;
 
 import static sdp.pc.vision.Alg.normalizeToBiDirection;
 import static sdp.pc.vision.Alg.normalizeToUnitDegrees;
-//import static sdp.pc.vision.FutureBall.getDeflectionAngle;
+import static sdp.pc.vision.FutureBall.getDeflectionAngle;
 import static sdp.pc.vision.Point2.getLinesIntersection;
 
 import java.awt.geom.Point2D;
@@ -102,16 +102,27 @@ public class Robot {
 	 * </ol>
 	 */
 	private int subState = 0;
+	
+	/**
+	 * An incremental "sub-state" value denoting which sub-task
+	 * has been performed or is being performed within the
+	 * kickBalltoPoint method. Current states are:
+	 * <ol>
+	 * <li>Going to the ball</li>
+	 * <li>Think we have grabbed the ball</li>
+	 * </ol>
+	 */
+	private int kickSubState = 0;
 
 	/**
 	 * The most recently calculated bounce Point
 	 */
-	public Point2 bouncePoint;
+	public Point2 bouncePoint = new Point2 (0,0);
 
-	// /**
-	// * The point the defender was at when the last bounce point was calculated
-	// */
-	// private Point2 defenderPosWhenBouncePointcalc;
+	 /**
+	 * The point the defender was at when bouncePoint was calculated
+	 */
+	public Point2 defenderPosWhenBouncePointcalc = new Point2 (250,250);
 
 	/**
 	 * Class for controlling a robot from a more abstract point of view
@@ -130,6 +141,12 @@ public class Robot {
 	 */
 	public Robot(Driver driver, WorldState state, int myTeam, int myId) {
 		this.driver = driver;
+		this.state = state;
+		this.myTeam = myTeam;
+		this.myIdentifier = myId;
+	}
+	//used for code testing
+	public Robot(WorldState state, int myTeam, int myId) {
 		this.state = state;
 		this.myTeam = myTeam;
 		this.myIdentifier = myId;
@@ -458,26 +475,26 @@ public class Robot {
 				angOffset = 1 - 2 * Math.abs(robo.angleTo(ball)) / 180;
 
 			xOffset = Math.pow(xOffset, 2);
-			if (subState == 0) {
+			if (kickSubState == 0) {
 				int pitchId = state.getPitchId();
 				Point2 target = ball.offset(22 + 10 * pitchId + 12 * xOffset
 						* angOffset, ball.angleTo(robo));
 				if (goTo(target, 10.0)) {
 					driver.stop();
 					driver.grab();
-					subState = 1;
+					kickSubState = 1;
 				}
-			} else if (subState < 4) {
-				subState++;
+			} else if (kickSubState < 4) {
+				kickSubState++;
 			}
-			if (subState >= 4) {
+			if (kickSubState >= 4) {
 				if (turnTo(where, 8.0)) {
-					subState++;
-					if (subState >= 8) {
+					kickSubState++;
+					if (kickSubState >= 8) {
 						driver.kick(900);
 					}
-					if (subState >= 15) {
-						subState = 0;
+					if (kickSubState >= 15) {
+						kickSubState = 0;
 					}
 				}
 			}
@@ -494,18 +511,18 @@ public class Robot {
 
 			xOffset = Math.pow(xOffset, 3);
 			angOffset = Math.pow(angOffset, 3);
-			if (subState == 0) {
+			if (kickSubState == 0) {
 				ball.setX((int) Math.round(ball.getX() - distortion / 4));
 				// if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
 				if (goTo(ball, 30 + 10 * xOffset * angOffset)) {
 					driver.grab();
-					subState = 1;
+					kickSubState = 1;
 				}
 			}
-			if (subState > 0) {
+			if (kickSubState > 0) {
 				if (turnTo(where, 10.0)) {
 					driver.kick(900);
-					subState = 0;
+					kickSubState = 0;
 				}
 			}
 		}
@@ -535,56 +552,70 @@ public class Robot {
 	}
 
 	/**
-	 * Passes the ball from our Defender to our Attacker. Either with a direct
+	 * Passes the ball from our defender to our attacker. Either with a direct
 	 * pass between them or with a bounce pass.
 	 * 
 	 * @throws Exception
 	 */
 	public void defenderPass() throws Exception {
-		// Point2 ball = state.getBallPosition();
-		// Point2 ourDefender = state.getRobotPosition(myTeam, 0);
+		Point2 ourDefender = state.getRobotPosition(myTeam, 0);
 		Point2 ourAttacker = state.getRobotPosition(myTeam, 1 - myIdentifier);
-		// Point2 enemyAttacker = state.getRobotPosition(1 - myTeam, 1);
-		// if(!isOpposingStrikerBlocking(enemyAttacker, ourDefender,
-		// ourAttacker));
-		kickBallToPoint(ourAttacker);
-		// if(!(ourDefender.getX() == defenderPosWhenBouncePointcalc.getX() &&
-		// (ourDefender.getY() == defenderPosWhenBouncePointcalc.getY()))){
-		// setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
-		// }
-		// kickBallToPoint(bouncePoint);
+		Point2 enemyAttacker = state.getRobotPosition(1 - myTeam, 1);
+		
+		//If our defender is thought to be holding the ball check if a bounce pass 
+		//is needed to pass the ball to our attacker.
+		if (kickSubState == 1){
+			if(isEnemyDefenderBlocking(enemyAttacker, ourDefender,
+			ourAttacker)){
+				
+				//Potentially avoid recalculating the bounce point if 
+				//the defender is in the process of turning to face an 
+				//already calculated bounce point
+				if(!(ourDefender.withinRangeOfPoint(defenderPosWhenBouncePointcalc, 3))){
+							setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
+				}
+			kickBallToPoint(bouncePoint);
+			}else{
+				kickBallToPoint(ourAttacker);
+			}
+		}else{
+			kickBallToPoint(ourAttacker);
+		}		
 	}
 
 	/**
-	 * Attempts to discern whether the opposing team's striker would block a
+	 * Attempts to discern whether the enemy team's defender would block a
 	 * direct pass between our robots. Currently only uses safe(large) estimates
-	 * for the opposing striker's dimensions. Calculates if a line drawn between
+	 * for the enemy attacker's dimensions. Calculates if a line drawn between
 	 * our defender and attacker intersects with any of the edges of a box drawn
-	 * around the enemy striker.
+	 * around the enemy attacker.
 	 * 
-	 * @param enemyStriker
-	 * @param thisRobot
+	 * @param enemyDefender
+	 * @param ourDefender
+	 * @param ourAttacker
 	 * @return
 	 */
 
-	public static boolean isOpposingStrikerBlocking(Point2 enemyStriker,
+	public static boolean isEnemyDefenderBlocking(Point2 enemyDefender,
 			Point2 ourDefender, Point2 ourAttacker) {
 		int xrange = 60, yrange = 60;
-		int xrangediv2 = (int) Math.floor(xrange / 2);
-		int yrangediv2 = (int) Math.floor(yrange / 2);
+		int xrangeDiv2 = (int) Math.floor(xrange / 2);
+		int yrangeDiv2 = (int) Math.floor(yrange / 2);
+		
 		// Set Points defining the dimensions of a box drawn around the enemy
-		// striker
-		Point2 topLeft = new Point2(enemyStriker.getX() - xrangediv2,
-				enemyStriker.getY() - yrangediv2);
-		Point2 topRight = new Point2(enemyStriker.getX() + xrangediv2,
-				enemyStriker.getY() - yrangediv2);
-		Point2 bottomLeft = new Point2(enemyStriker.getX() - xrangediv2,
-				enemyStriker.getY() + yrangediv2);
-		Point2 bottomRight = new Point2(enemyStriker.getX() + xrangediv2,
-				enemyStriker.getY() + yrangediv2);
+		// defender
+		Point2 topLeft = new Point2(enemyDefender.getX() - xrangeDiv2,
+				enemyDefender.getY() - yrangeDiv2);
+		Point2 topRight = new Point2(enemyDefender.getX() + xrangeDiv2,
+				enemyDefender.getY() - yrangeDiv2);
+		Point2 bottomLeft = new Point2(enemyDefender.getX() - xrangeDiv2,
+				enemyDefender.getY() + yrangeDiv2);
+		Point2 bottomRight = new Point2(enemyDefender.getX() + xrangeDiv2,
+				enemyDefender.getY() + yrangeDiv2);
+		
 		// Calculate the intersection point between a line drawn between our
 		// Attacker and Defender
-		// and each edge of a box drawn around the enemy striker
+		// and each edge of a box drawn around the enemy defender
 		Point2D.Double IntersectionTop = getLinesIntersection(ourDefender,
 				ourAttacker, topLeft, topRight);
 		Point2D.Double IntersectionBottom = getLinesIntersection(ourDefender,
@@ -605,60 +636,91 @@ public class Robot {
 		// return ((sumPoint.getX() == 0) && (sumPoint.getY() == 0));
 	}
 
-	// /**
-	// * Searches for a bounce point on one of the long sides of the pitch
-	// * that would allow the ball to be deflected towards our attacker robot
-	// * if our defender were to kick the ball to that point from the point the
-	// * defender is currently occupying.
-	// *
-	// * @param enemyAttacker
-	// * @param ourDefender
-	// * @param ourAttacker
-	// */
-	// private void setBouncePoint(Point2 enemyAttacker, Point2 ourDefender,
-	// Point2 ourAttacker){
-	// int xBounce = 0, yBounce = 0, testy = ourDefender.getY(), testx =
-	// ourDefender.getX();
-	// int bounceAngleThresh = 1;
-	// Pitch pitch = state.getPitch();
-	// int direction = state.getDirection(); //0 for left
-	// boolean directionisleft = (direction == 0);
-	// boolean bouncetop = false;
-	// //Pick boundary of pitch to bounce off (could change y comparison but the
-	// decision
-	// //boundary doesn't need to be exact)
-	// if (enemyAttacker.getY() > pitch.getLeftGoalCentre().getY())
-	// bouncetop = true;
-	// //TODO: change testy to a value on one of the boundaries that matches the
-	// testx coordinate
-	// for (int i = 0; i < 200; i++){
-	// if(bouncetop && directionisleft){
-	// testx = testx + 1;
-	// testy = 1;
-	// }else if (bouncetop && !directionisleft){
-	// testx = testx - 1;
-	// testy = 1;
-	// }
-	// if(!bouncetop && directionisleft){
-	// testx = testx + 1;
-	// testy = 1;
-	// }else if (!bouncetop && !directionisleft){
-	// testx = testx - 1;
-	// testy = 1;
-	// }
-	// Point2 testPoint = new Point2(testx, testy);
-	// double deflectAngle = getDeflectionAngle(ourDefender, testPoint);
-	// //TODO: Modify testPoint.angleTo(ourAttacker) to account for boundary
-	// slope
-	// if(Math.abs(testPoint.angleTo(ourAttacker) - deflectAngle) <
-	// bounceAngleThresh)
-	// xBounce = testx;
-	// yBounce = testy;
-	// break;
-	// }
-	// bouncePoint.setX(xBounce);
-	// bouncePoint.setY(yBounce);
-	// }
+	/**
+	* Searches for a bounce point on one of the long sides of the pitch
+	* that would allow the ball to be deflected towards our attacker robot
+	* if our defender were to turn and kick the ball to that point.
+	* TODO:Find a way to get a y coordinate on either boundary
+	* that corresponds to testx's value
+	* TODO: Improve the search procedure for finding a suitable x coordinate for
+	* the bounce point.
+	* 
+	* @param enemyAttacker
+	* @param ourDefender
+	* @param ourAttacker
+	*/
+	public void setBouncePoint(Point2 enemyAttacker, Point2 ourDefender,
+		Point2 ourAttacker){
+		int testy = 0, testx = ourDefender.getX();
+		double bounceAngleThresh = 0.5, requiredAngle, deflectAngle, angleDiff;
+		
+		//Sets newBouncePoint to a default value that will make our
+		//defender perform a direct pass to our attacker if no bounce point is found
+		Point2 newBouncePoint = ourAttacker;
+		
+		Point2 testPoint = new Point2(testx, testy);
+		Pitch pitch = state.getPitch();
+		int scoreDirection = state.getDirection(); //0 for left
+		boolean directionisleft = (scoreDirection == 0);
+		boolean bouncetop = false;
+		
+		//Pick which boundary of the pitch to bounce the ball off
+		if (enemyAttacker.getY() > pitch.getTableCentre().getY())
+			bouncetop = true;
+		
+		//Search for a point along one of the pitch boundaries that our defender will
+		//be able to use to successfully bounce pass to our attacker
+		//Note: the testY values are not exactly on either boundary
+		//so angleDiff's value will be off from the true value 
+		for (int i = 0; i < 100; i++){
+			if(bouncetop && directionisleft){
+				testx = testx - 2;
+				testy = 108;
+			}else if (bouncetop && !directionisleft){
+				testx = testx + 2;
+				testy = 108;
+			}
+			if(!bouncetop && directionisleft){
+				testx = testx - 2;
+				testy = 386;
+			}else if (!bouncetop && !directionisleft){
+				testx = testx + 2;
+				testy = 386;
+			}
+			testPoint.setX(testx);
+			testPoint.setY(testy);
+			
+			//Predict the angle the ball would bounce off the boundary
+			//at if kicked towards the point on the boundary
+			//nearest the current test point
+			deflectAngle = getDeflectionAngle(ourDefender, testPoint);
+			
+			//Calculate the angle from the test point to the attacker
+			//(need to convert the angle by 180 degrees due to the 
+			//angle measured by getDeflectionAngle having a different zero point
+			//TODO: Modify testPoint.angleTo(ourAttacker) to account for boundary
+			//slope
+			if(bouncetop){
+				requiredAngle = testPoint.angleTo(ourAttacker) - 180;
+			}else{
+				requiredAngle = testPoint.angleTo(ourAttacker) + 180;
+			}
+			angleDiff = Math.abs(requiredAngle - deflectAngle);
+			
+			System.out.println("Attempt Number:" + i);
+			System.out.println("test Point: " + testPoint);
+			System.out.println("Predicted Deflection Angle: " + deflectAngle);
+			System.out.println("Required Deflection Angle:" + requiredAngle);
+			System.out.println ("Difference: " + angleDiff + "\n");
+			
+			if(angleDiff < bounceAngleThresh){
+				newBouncePoint.setX(testx);
+				newBouncePoint.setY(testy);
+				break;
+			}
+		}
+		bouncePoint = newBouncePoint;
+	}
 
 	/**
 	 * Not using it atm - don't touch unless you're Iain
