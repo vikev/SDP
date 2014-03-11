@@ -111,7 +111,7 @@ public class ArbiterController extends JFrame {
 	
 			// Connect to robots
 			//defender = new Robot(ChooseRobot.defender(), state, myTeam, defenderId);
-			attacker = new Robot(ChooseRobot.defender(), state, myTeam, attackerId);
+			attacker = new Robot(ChooseRobot.attacker(), state, myTeam, attackerId);
 	
 			attackerArbiter = new AttackerArbiter(attacker);
 			defenderArbiter = new DefenderArbiter(defender);

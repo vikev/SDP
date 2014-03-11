@@ -8,19 +8,20 @@ public class DoNothing extends RobotBehavior {
 		super(robot);
 	}
 
+	private boolean takenControl;
+	
 	@Override
 	public boolean takeControl() {
-		try {
-			robot.getDriver().stop();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		takenControl = false;
 		return true;
 	}
 
 	@Override
 	public boolean actionFrame() throws Exception {
+		if(!takenControl) {
+			takenControl = true;
+			robot.getDriver().stop();
+		}
 		return false;
 	}
 

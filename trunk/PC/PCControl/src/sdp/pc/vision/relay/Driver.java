@@ -63,12 +63,12 @@ public class Driver {
 	/**
 	 * Turn left with that speed. 0 = travel at max speed.
 	 * 
-	 * @param deg
+	 * @param speed
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean turnLeft(int deg) throws Exception {
-		return conn.sendCommand('l', deg);
+	public boolean turnLeft(int speed) throws Exception {
+		return conn.sendCommand('l', speed);
 	}
 
 	/**
@@ -85,12 +85,12 @@ public class Driver {
 	/**
 	 * Turn right with that speed.
 	 * 
-	 * @param deg
+	 * @param speed
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean turnRight(int deg) throws Exception {
-		return conn.sendCommand('r', deg);
+	public boolean turnRight(int speed) throws Exception {
+		return conn.sendCommand('r', speed);
 	}
 
 	/**

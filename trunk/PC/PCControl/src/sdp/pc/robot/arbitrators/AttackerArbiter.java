@@ -19,9 +19,9 @@ public class AttackerArbiter extends Arbiter {
 	public AttackerArbiter(Robot robot) {
 		super(new Behavior[] {
 				new DoNothing(robot),
-				//new DefendRobot(robot),
-				//new DefendBall(robot),
-				//new TurnPerpendicular(robot),
+				new DefendRobot(robot),
+				new DefendBall(robot),
+				new TurnPerpendicular(robot),
 				new MoveToBall(robot),
 				new KickToGoal(robot),
 				new StayInside(robot),

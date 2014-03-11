@@ -47,9 +47,13 @@ public class TurnPerpendicular extends RobotBehavior {
 		return d > ROTATION_THRESHOLD;
 	}
 
+	
 	@Override
 	public boolean actionFrame() throws Exception {
-		
+		if(!takeControl()) {
+			robot.getDriver().stop();
+			return true;
+		}
 		if (direction == LEFT)
 			robot.getDriver().turnLeft(25);
 		else

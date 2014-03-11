@@ -69,9 +69,19 @@ public class TCPClient {
 		}
 		return false;
 	}
-
+	
+	private String lastCmdString;
+	
+	private boolean filterCommand(char command, int arg) {
+		String cmdString = Character.toString(command) + Integer.toString(arg);
+		String filteredCommands = "fblrs";
+		boolean filter = filteredCommands.indexOf(command) > 0 && cmdString == lastCmdString;
+		lastCmdString = cmdString;
+		return filter;
+	}
+	
 	public boolean sendCommand(char command, int arg) throws Exception {
-		if (connected) {
+		if (connected && !filterCommand(command, arg)) {
 			toServer.println(command);
 			toServer.println(arg);
 			return true;

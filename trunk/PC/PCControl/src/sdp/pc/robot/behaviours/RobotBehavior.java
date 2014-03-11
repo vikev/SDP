@@ -8,7 +8,7 @@ public abstract class RobotBehavior implements Behavior {
 	/**
 	 * The default timeout duration for blocking operations
 	 */
-	protected static final int DEFAULT_SLEEP_DURATION = 50;
+	protected static final int DEFAULT_SLEEP_DURATION = 200;
 	
 	/**
 	 * Whether the behavior's action should be suppressed as soon as possible. 
