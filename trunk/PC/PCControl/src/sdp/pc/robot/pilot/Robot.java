@@ -957,7 +957,7 @@ public class Robot {
 	 */
 	private static int getRotateSpeed(double rotateBy, double epsilon) {
 		// TODO: Should be refactored (constants)
-		double maxSpeed = 300.0;
+		double maxSpeed = 200.0;
 		double minSpeed = 25.0;
 		double maxRotate = 180.0;
 		double minRotate = epsilon;

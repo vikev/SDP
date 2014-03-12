@@ -32,7 +32,7 @@ public class Constants {
 	 * Port for bluetooth host (can be changed to an IP address but incurs
 	 * additional delay)
 	 */
-	public static final String HOST = "129.215.58.63";
+	public static final String HOST = "localhost";
 
 	/**
 	 * Approximate measurements of robots in pixels (could change to

@@ -8,7 +8,7 @@ public class DiffPilotBMultiplexer implements Pilot {
 	private DifferentialPilot pilot;
 
 	public DiffPilotBMultiplexer() {
-		pilot = new DifferentialPilot(56, 135, Motor.A, Motor.C, false);
+		pilot = new DifferentialPilot(56, 135, Motor.A, Motor.C, true);
 		// maximum power
 		setPower(0);
 	}
