@@ -7,19 +7,15 @@ import lejos.nxt.SensorPort;
 import sdp.nxt.interfaces.Kicker;
 
 public class KickerMultiplexer implements Kicker {
-
-	private boolean closed;
-	private int power;
-
 	private I2CSensor I2Csensor;
 
 	private byte off = (byte) 0;
 	private byte forward = (byte) 1;
 	private byte backward = (byte) 2;
-	private byte applyBreak = (byte) 3;
 
 	private byte speed = (byte) 100;
 
+	@SuppressWarnings("deprecation")
 	public KickerMultiplexer(boolean isGrabberClosed) {
 		Motor.B.rotate(-1);
 		I2CPort I2Cport;
@@ -27,15 +23,21 @@ public class KickerMultiplexer implements Kicker {
 		I2Cport = SensorPort.S4;
 		// Assign port
 		I2Cport.i2cEnable(I2CPort.STANDARD_MODE);
-		// Initialize port in standard mode
+
+		// Initialise port in standard mode
 		I2Csensor = new I2CSensor(I2Cport);
+
+		// TODO: From
+		// (http://www.lejos.org/nxt/nxj/api/lejos/nxt/I2CSensor.html) :
+		// Deprecated. If the device has a changeable address, then constructor
+		// of the class should have an address parameter. If not, please report
+		// a bug.
 		I2Csensor.setAddress(0xB4);
 		I2Csensor.sendData(0x02, speed);
 		I2Csensor.sendData(0x01, backward);
 		try {
 			Thread.sleep(300);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		I2Csensor.sendData(0x01, off);
