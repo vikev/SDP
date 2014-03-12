@@ -81,6 +81,13 @@ public class Robot {
 	private int myTeam;
 
 	/**
+	 * This is just an identifier for a robot's previous quadrant position. If
+	 * this value is different from getMyQuadrant (and not 0), we print a
+	 * warning that the robot has changed quadrants.
+	 */
+	private int lastQuadrant = 0;
+
+	/**
 	 * An integer which represents <b>this</> with respect to myTeam.
 	 */
 	private int myIdentifier;
@@ -1188,8 +1195,26 @@ public class Robot {
 		return vertices;
 	}
 
+	/**
+	 * Method for checking if <b>this</b> is near the boundary. It does this by
+	 * fetching the vertices of its quadrant, contracting them, and then
+	 * checking if outwith the hull of this contracted set.
+	 * 
+	 * @return
+	 */
 	public boolean nearBoundary() {
+
+		// Get instantaneous quadrant
 		int q = getMyQuadrant();
+
+		// Perform sanity check
+		if (lastQuadrant != 0 && lastQuadrant != q) {
+			System.err.println("Robot Quadrant changed!");
+		}
+
+		// Update lastQuadrant flag
+		lastQuadrant = q;
+
 		Point2 pos = state.getRobotPosition(myTeam, myIdentifier);
 		double distOffs = 8.0;
 		LinkedList<Point2> vertices = getQuadrantVertices(q);
