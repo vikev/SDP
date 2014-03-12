@@ -415,6 +415,44 @@ public class Pitch {
 		return 0;
 	}
 
+	public ArrayList<Point2> getQuadrantVertices(int quadrant) {
+		ArrayList<Point2> pts = getArrayListOfPoints();
+		ArrayList<Point2> res = new ArrayList<Point2>();
+		switch (quadrant) {
+		case 1:
+			res.add(pts.get(1));
+			res.add(pts.get(2));
+			res.add(pts.get(11));
+			res.add(pts.get(12));
+			res.add(pts.get(13));
+			res.add(pts.get(14));
+			break;
+		case 2:
+			res.add(pts.get(2));
+			res.add(pts.get(3));
+			res.add(pts.get(10));
+			res.add(pts.get(11));
+			break;
+		case 3:
+			res.add(pts.get(3));
+			res.add(pts.get(4));
+			res.add(pts.get(9));
+			res.add(pts.get(10));
+			break;
+		case 4:
+			res.add(pts.get(4));
+			res.add(pts.get(5));
+			res.add(pts.get(6));
+			res.add(pts.get(7));
+			res.add(pts.get(8));
+			res.add(pts.get(8));
+			break;
+		default:
+			break;
+		}
+		return res;
+	}
+
 	public Point2 getQuadrantCenter(int quadrant) {
 		ArrayList<Point2> pts = getArrayListOfPoints();
 		int yC = pts.get(2).getY() + (pts.get(11).getY() - pts.get(2).getY())
