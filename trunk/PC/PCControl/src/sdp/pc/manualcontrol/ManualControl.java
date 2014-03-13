@@ -10,6 +10,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 
 import sdp.pc.common.ChooseRobot;
 import sdp.pc.common.Constants;
@@ -61,7 +62,6 @@ public class ManualControl implements KeyListener {
 		InetAddress host = InetAddress.getByName(Constants.HOST);
 		System.out.println("Connecting to server on port " + serverPort);
 		Socket socket = new Socket(host, serverPort);
-		// Socket socket = new Socket("127.0.0.1", serverPort);
 		System.out.println("Just connected to "
 				+ socket.getRemoteSocketAddress());
 		toServer = new PrintWriter(socket.getOutputStream(), true);
@@ -70,7 +70,11 @@ public class ManualControl implements KeyListener {
 		String input = "";
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		JFrame frame = new JFrame("control");
-		frame.setBounds(50, 50, 300, 300);
+		frame.setBounds(500, 500, 200, 50);
+		frame.setAlwaysOnTop(true);
+		JLabel label = new JLabel();
+		label.setText("Select and Pess a Key");
+		frame.add(label);
 		frame.addKeyListener(this);
 		frame.setVisible(true);
 		while (!"quit".equalsIgnoreCase(input)) {

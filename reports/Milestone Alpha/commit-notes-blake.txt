@@ -1,0 +1,91 @@
+
+
+12 february 2014
+
+* major javadoc improvements to m3defender to ease refactoring
+
+* refactored many state data to return units in an easier format (pixels per second instead of pixels per frame)
+
+
+feb 19th
+
+* helped organise trac and found many "TODO" areas in code, a large fraction of which were addressed
+
+* fixed many regressions in ball prediction from the vision refactoring, and abstracted estimated ball friction from the code
+
+* implemented a collision detector which naively checked for collision lines (later removed)
+
+
+feb 20th
+
+* abstracted the milestone 3 data to a Robot class, with the intention of making an object which can perform all actions we've implemented so far
+
+* implemented the template for a state system handled by the robots and a template for the global strategy of a match
+
+
+feb 21st
+
+* researched and implemented many maths functions for performing arbitrary calculations on vectors
+
+* did some work on Iain's Intersect class to improve its usage
+
+
+feb 24th
+
+* implemented template for substate system to simplify complex states
+
+* mapped and implemented all states necessary for basic strategy, hence implemented basic strategy
+
+* made methods for finding which of the 4 pitch "quadrants" the ball is in
+
+
+feb 25th
+
+* implemented a system for getting collision walls from yordan's pitch vertices
+
+* significant improvements to strategy code which allowed us for the first time to have two robots on the pitch doing something logical in all states
+
+
+feb 26th
+
+* quickly added a state printer for debugging
+
+
+feb 27th
+
+* abstracted ball quadrant data so we can get quadrant from any arbitrary point
+
+
+mar 1st
+
+* did some testing on camera feed data to consider a bug in finding collision walls. Fixed the issue.
+
+* Made enormous changes to the ball prediction and Intersect API, allowing the ball to bounce multiple times with reduced predicted velocity (recursively)
+
+* Made the ball prediction system ignore collisions at goal lines and simply return the collisions
+
+* made the ball estimation work with yordan's gaussian filters to smooth results substantially
+
+* built a method for defending the goal line with weights
+
+
+mar 3rd
+
+* made major documentation changes and finalised the improved ball prediction
+
+* fixed a regression in click listening which allows us to display color data in the console (which won't jitter)
+
+
+mar 5th
+
+* rapidly hacked in boundary recognition for the milestone. we made a judgment call not to use it in the friendly (rightfully so).
+
+* rapidly hacked in attacker methods for shooting to random goal line points. we also didn't use this in the friendly (remains untested so far)
+
+
+mar 6th
+
+* made major improvements to boundary recognition and tested significantly, recognising weak points
+
+* abstracted many useful concepts used in boundary recognition which may prove useful for other systems (object detection etc)
+

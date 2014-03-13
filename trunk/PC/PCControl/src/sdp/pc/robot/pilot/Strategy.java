@@ -296,6 +296,8 @@ public class Strategy implements Runnable {
 				.equals(Point2.EMPTY))
 			attacker.setState(Robot.State.DO_NOTHING);
 
+		// Override all states to "reset" if the robot gets close to its
+		// boundary
 		if (attacker.nearBoundary()) {
 			attacker.setState(Robot.State.RESET);
 			System.err.println("Resetting attacker");
@@ -362,7 +364,7 @@ public class Strategy implements Runnable {
 		} else if (botState == Robot.State.GET_BALL) {
 			attacker.kickBallToPoint(target);
 		} else if (botState == Robot.State.RESET) {
-			attacker.goTo(
+			attacker.goToReverse(
 					state.getPitch()
 							.getQuadrantCenter(attacker.getMyQuadrant()), 10.0);
 		} else {
@@ -397,7 +399,7 @@ public class Strategy implements Runnable {
 		} else if (botState == Robot.State.PASS_TO_ATTACKER) {
 			defender.defenderPass();
 		} else if (botState == Robot.State.RESET) {
-			defender.goTo(
+			defender.goToReverse(
 					state.getPitch()
 							.getQuadrantCenter(defender.getMyQuadrant()), 10.0);
 		} else {
