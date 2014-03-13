@@ -14,6 +14,7 @@ public class KickerBMultiplexer implements Kicker {
 	private byte backward = (byte) 2;
 
 	private byte speed = (byte) 100;
+	private byte supportSpeed = (byte) 50;
 
 	@SuppressWarnings("deprecation")
 	public KickerBMultiplexer(boolean isGrabberClosed) {
@@ -23,10 +24,10 @@ public class KickerBMultiplexer implements Kicker {
 		I2Cport = SensorPort.S4;
 		// Assign port
 		I2Cport.i2cEnable(I2CPort.STANDARD_MODE);
-		
+
 		// Initialise port in standard mode
 		I2Csensor = new I2CSensor(I2Cport);
-		
+
 		// TODO:
 		I2Csensor.setAddress(0xB4);
 		I2Csensor.sendData(0x02, speed);
@@ -71,10 +72,12 @@ public class KickerBMultiplexer implements Kicker {
 	private int speedKick = 9999999;
 	Thread kickingThread = new Thread(new Runnable() {
 		public void run() {
+			int i = 0;
 			while (true) {
 				try {
 					// kick
 					if (action && status) {
+						I2Csensor.sendData(0x02, speed);
 						I2Csensor.sendData(0x01, backward);
 						Thread.sleep(300);
 						Motor.B.setSpeed(speedKick);
@@ -84,13 +87,24 @@ public class KickerBMultiplexer implements Kicker {
 						status = !status;
 						// grab
 					} else if (!action && !status) {
+						I2Csensor.sendData(0x02, speed);
 						I2Csensor.sendData(0x01, forward);
 						Thread.sleep(800);
 						I2Csensor.sendData(0x01, off);
 						status = !status;
+					} else if (i > 7) {
+						i = 0;
+						I2Csensor.sendData(0x02, supportSpeed);
+						if (status) // keep open
+						{
+							I2Csensor.sendData(0x01, forward);
+						} else { // keep closed
+							I2Csensor.sendData(0x01, backward);
+						}
 					}
 					Thread.sleep(200);
-
+					I2Csensor.sendData(0x01, off);
+					i++;
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
