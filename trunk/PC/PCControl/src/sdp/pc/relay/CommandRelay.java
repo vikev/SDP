@@ -3,6 +3,7 @@ package sdp.pc.relay;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -136,6 +137,8 @@ public class CommandRelay {
 	private void run() {
 		frame = new JFrame("Connection manager");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		ImageIcon img = new ImageIcon("resource/connection.png");
+		frame.setIconImage(img.getImage());
 		JPanel settings = new JPanel();
 
 		btnAttackerA = new JRadioButton();

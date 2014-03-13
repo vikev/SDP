@@ -3,6 +3,7 @@ package sdp.pc.robot.pilot;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -493,6 +494,8 @@ public class Strategy implements Runnable {
 
 			// Add a start button so we can have time to calibrate etc
 			JFrame frame = new JFrame("Ready and waiting!");
+			ImageIcon q = new ImageIcon("resource/strategy.png");
+			frame.setIconImage(q.getImage());
 			frame.setBounds(600, 200, 300, 150);
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			final JButton button = new JButton();

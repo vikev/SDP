@@ -514,7 +514,8 @@ public class Robot {
 				kickSubState++;
 			}
 			if (kickSubState >= 4) {
-				if (turnTo(where, 8.0)) {
+				if (turnTo(where, 9.0)) {
+					driver.stop();
 					kickSubState++;
 					if (kickSubState >= 8) {
 						driver.kick(900);
@@ -1216,7 +1217,7 @@ public class Robot {
 		lastQuadrant = q;
 
 		Point2 pos = state.getRobotPosition(myTeam, myIdentifier);
-		double distOffs = 8.0;
+		double distOffs = 12.0;
 		LinkedList<Point2> vertices = getQuadrantVertices(q);
 
 		if (vertices.size() > 2) {
