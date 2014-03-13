@@ -3,6 +3,7 @@
 *.tex~
 *.orig
 *~
+*.nxd
 .gitignore~
 bin
 reports/*.aux
