@@ -77,9 +77,8 @@ public class test {
 		setupFrameGrabber();
 		
 		tracker = new GLObjectTracker();
-		
-
 		tracker.run();
+		
 		frameGrabber.stopCapture();
 	}
 
