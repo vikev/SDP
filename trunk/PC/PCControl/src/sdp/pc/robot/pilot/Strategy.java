@@ -474,7 +474,7 @@ public class Strategy implements Runnable {
 				printStatesPeriodically();
 
 				parseAttacker();
-
+				
 				parseDefender();
 			} catch (Exception e) {
 				e.printStackTrace();

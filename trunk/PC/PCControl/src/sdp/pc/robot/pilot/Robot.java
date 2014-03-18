@@ -480,6 +480,7 @@ public class Robot {
 		// Distortion due to height - returns negative values if left of centre
 		// and positive if right
 		double distortion = getDistortion(robo);
+		int pitchId = state.getPitchId();
 
 		// The offset stuff doesn't really work too well - there are problems
 		// with the defender catching the ball (attacker's fine-ish though)
@@ -502,8 +503,7 @@ public class Robot {
 
 			xOffset = Math.pow(xOffset, 2);
 			if (kickSubState == 0) {
-				int pitchId = state.getPitchId();
-				Point2 target = ball.offset(22 + 10 * pitchId + 12 * xOffset
+				Point2 target = ball.offset(20 + 10 * pitchId + 12 * xOffset
 						* angOffset, ball.angleTo(robo));
 				if (goTo(target, 10.0)) {
 					driver.stop();
@@ -540,16 +540,23 @@ public class Robot {
 			angOffset = Math.pow(angOffset, 3);
 			if (kickSubState == 0) {
 				ball.setX((int) Math.round(ball.getX() - distortion / 4));
-				// if (goTo(ball.offset(20.0, ball.angleTo(robo)), 10.0)) {
-				if (goTo(ball, 30 + 10 * xOffset * angOffset)) {
+				if (goTo(ball, 22 + 10 * pitchId + 10 * xOffset * angOffset)) {
 					driver.grab();
 					kickSubState = 1;
 				}
+			} else if (kickSubState < 4) {
+				kickSubState++;
 			}
-			if (kickSubState > 0) {
+			if (kickSubState >= 4) {
 				if (turnTo(where, 10.0)) {
-					driver.kick(900);
-					kickSubState = 0;
+					driver.stop();
+					kickSubState++;
+					if (kickSubState >= 8) {
+						driver.kick(900);
+					}
+					if (kickSubState >= 15) {
+						kickSubState = 0;
+					}
 				}
 			}
 		}
@@ -1217,7 +1224,7 @@ public class Robot {
 		lastQuadrant = q;
 
 		Point2 pos = state.getRobotPosition(myTeam, myIdentifier);
-		double distOffs = 12.0;
+		double distOffs = 60.0;
 		LinkedList<Point2> vertices = getQuadrantVertices(q);
 
 		if (vertices.size() > 2) {
