@@ -504,7 +504,7 @@ public class Robot {
 
 			xOffset = Math.pow(xOffset, 2);
 			if (kickSubState == 0) {
-				Point2 target = ball.offset(20 + 10 * pitchId + 12 * xOffset
+				Point2 target = ball.offset(20 + 6 * pitchId + 10 * xOffset
 						* angOffset, ball.angleTo(robo));
 				if (goTo(target, 10.0)) {
 					driver.stop();
@@ -541,7 +541,7 @@ public class Robot {
 			angOffset = Math.pow(angOffset, 3);
 			if (kickSubState == 0) {
 				ball.setX((int) Math.round(ball.getX() - distortion / 4));
-				if (goTo(ball, 27 + 10 * pitchId + 10 * xOffset * angOffset)) {
+				if (goTo(ball, 19 + 6 * pitchId + 6 * xOffset * angOffset)) {
 					driver.grab();
 					kickSubState = 1;
 				}
@@ -556,7 +556,7 @@ public class Robot {
 						if (state.getRobotPosition(myTeam, 1-myIdentifier).equals(Point2.EMPTY)) {
 							driver.kick(1000);
 						} else {
-							driver.kick(400);
+							driver.kick(350);
 						}
 					}
 					if (kickSubState >= 15) {
@@ -1232,7 +1232,7 @@ public class Robot {
 		lastQuadrant = q;
 
 		Point2 pos = state.getRobotPosition(myTeam, myIdentifier);
-		double distOffs = 50.0;
+		double distOffs = 10.0;
 		LinkedList<Point2> vertices = getQuadrantVertices(q);
 
 		if (vertices.size() > 2) {

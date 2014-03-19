@@ -51,7 +51,7 @@ public class Alg {
 		LinkedList<Point2> n = new LinkedList<Point2>();
 		for (Point2 q : vertices) {
 			n.add(q.offset(minorRadius, q.angleTo(new Point2(centre.x,
-					(int) 0.7*(q.y-centre.y) + centre.y))));
+					(int) 0.5*(q.y-centre.y) + centre.y))));
 		}
 		double distortion = Robot.getDistortion(check);
 		check = ((check.offset(distortion*7, check.angleTo(Vision.getCameraCentre()))));
