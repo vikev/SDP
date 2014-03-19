@@ -295,7 +295,7 @@ public class Robot {
 			if (!predictedBallPos.equals(Point2.EMPTY)
 					& FutureBall.pitchContains(predictedBallPos)) {
 				if (defendToY(
-						predictedBallPos.offset(50.0,
+						predictedBallPos.offset(0.0,
 								predictedBallPos.angleTo(robotPos)).getY(),
 						DEFEND_EPSILON_DISTANCE)) {
 					driver.stop();
@@ -473,6 +473,7 @@ public class Robot {
 	 * @throws Exception
 	 */
 	public void kickBallToPoint(Point2 where) throws Exception {
+		System.out.println("This point: "+where.toString());
 		// Turn to ball, move to ball, grab the ball, turn to the point, kick
 		Point2 ball = state.getBallPosition();
 		Point2 robo = state.getRobotPosition(myTeam, myIdentifier);
@@ -540,7 +541,7 @@ public class Robot {
 			angOffset = Math.pow(angOffset, 3);
 			if (kickSubState == 0) {
 				ball.setX((int) Math.round(ball.getX() - distortion / 4));
-				if (goTo(ball, 22 + 10 * pitchId + 10 * xOffset * angOffset)) {
+				if (goTo(ball, 27 + 10 * pitchId + 10 * xOffset * angOffset)) {
 					driver.grab();
 					kickSubState = 1;
 				}
@@ -552,7 +553,11 @@ public class Robot {
 					driver.stop();
 					kickSubState++;
 					if (kickSubState >= 8) {
-						driver.kick(900);
+						if (state.getRobotPosition(myTeam, 1-myIdentifier).equals(Point2.EMPTY)) {
+							driver.kick(1000);
+						} else {
+							driver.kick(400);
+						}
 					}
 					if (kickSubState >= 15) {
 						kickSubState = 0;
@@ -599,7 +604,10 @@ public class Robot {
 		// If our defender is thought to be holding the ball check if a bounce
 		// pass
 		// is needed to pass the ball to our attacker.
-		if (kickSubState == 1) {
+		if (ourAttacker.equals(Point2.EMPTY)) {
+			kickBallToPoint(Strategy.basicGoalTarget());
+			System.out.println(Strategy.basicGoalTarget().toString());
+		} else if (kickSubState == 1) {
 			if (isEnemyDefenderBlocking(enemyAttacker, ourDefender, ourAttacker)) {
 
 				// Potentially avoid recalculating the bounce point if
@@ -1224,15 +1232,15 @@ public class Robot {
 		lastQuadrant = q;
 
 		Point2 pos = state.getRobotPosition(myTeam, myIdentifier);
-		double distOffs = 60.0;
+		double distOffs = 50.0;
 		LinkedList<Point2> vertices = getQuadrantVertices(q);
 
 		if (vertices.size() > 2) {
 			return !Alg.inMinorHull(new LinkedList<Point2>(vertices), distOffs,
 					pos);
 		} else {
-			System.err.println("Quadrant with vertices of size "
-					+ vertices.size());
+			//System.err.println("Quadrant with vertices of size "
+			//		+ vertices.size());
 			return false;
 		}
 	}

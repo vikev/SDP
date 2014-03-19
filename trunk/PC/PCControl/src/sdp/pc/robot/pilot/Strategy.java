@@ -2,6 +2,7 @@ package sdp.pc.robot.pilot;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -80,23 +81,23 @@ public class Strategy implements Runnable {
 
 	private boolean interrupted = false;
 
-	@SuppressWarnings("unused")
-	private static Point2 basicGoalTarget() {
+	static Point2 basicGoalTarget() {
+		ArrayList<Point2> pts = state.getPitch().getArrayListOfPoints();
 		if (state.getDirection() == 0) {
 			if (state.getRobotPosition(1 - myTeam, 1 - defenderId).getY() > state
 					.getLeftGoalCentre().getY())
-				return new Point2(state.leftGoalTop.x, state.leftGoalTop.y + 25);
+				return new Point2(pts.get(14).x, pts.get(14).y + 25);
 			else
-				return new Point2(state.leftGoalBottom.x,
-						state.leftGoalBottom.y - 25);
+				return new Point2(pts.get(13).x,
+						pts.get(13).y - 25);
 		} else {
 			if (state.getRobotPosition(1 - myTeam, 1 - defenderId).getY() > state
 					.getRightGoalCentre().getY())
-				return new Point2(state.rightGoalTop.x,
-						state.rightGoalTop.y + 25);
+				return new Point2(pts.get(6).x,
+						pts.get(6).y + 25);
 			else
-				return new Point2(state.rightGoalBottom.x,
-						state.rightGoalBottom.y - 25);
+				return new Point2(pts.get(7).x,
+						pts.get(7).y - 25);
 		}
 	}
 
@@ -336,6 +337,7 @@ public class Strategy implements Runnable {
 		return (ballVel.dot(ballToBot) / dist);
 	}
 
+	@SuppressWarnings("unused")
 	private static Point2 target = Point2.EMPTY;
 
 	/**
@@ -363,7 +365,7 @@ public class Strategy implements Runnable {
 		} else if (botState == Robot.State.DEFEND_ENEMY_DEFENDER) {
 			attacker.defendRobot(attacker.getOtherTeam(), attacker.getId());
 		} else if (botState == Robot.State.GET_BALL) {
-			attacker.kickBallToPoint(target);
+			attacker.kickBallToPoint(Strategy.basicGoalTarget());
 		} else if (botState == Robot.State.RESET) {
 			attacker.goToReverse(
 					state.getPitch()
