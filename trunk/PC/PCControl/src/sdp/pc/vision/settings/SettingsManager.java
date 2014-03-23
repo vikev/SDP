@@ -21,8 +21,9 @@ import sdp.pc.vision.WorldStatePainter.HighlightMode;
  * @author s1141301
  *
  */
-@SuppressWarnings("serial")
 public class SettingsManager implements java.io.Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	private static final String DEFAULT_SETTINGS_FILE = "./settings";
 	

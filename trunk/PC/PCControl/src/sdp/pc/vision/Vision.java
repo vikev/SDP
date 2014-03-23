@@ -8,14 +8,15 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
-import sdp.pc.vision.settings.VisionMouseAdapter;
-import sdp.pc.vision.settings.SettingsManager;
 import sdp.pc.vision.settings.SettingsGUI;
+import sdp.pc.vision.settings.SettingsManager;
+import sdp.pc.vision.settings.VisionMouseAdapter;
 import au.edu.jcu.v4l4j.CaptureCallback;
 import au.edu.jcu.v4l4j.FrameGrabber;
 import au.edu.jcu.v4l4j.V4L4JConstants;
@@ -242,7 +243,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				// Draw the world overlay to the buffer
 				Point2 mousePos = new Point2(Vision.frame.getContentPane()
 						.getMousePosition());
-				statePainter.drawWorld(buffer, mousePos);
+				if (mousePos instanceof Point2 && mousePos.getX() > 0
+						&& mousePos.getY() > 0) {
+					statePainter.drawWorld(buffer, mousePos);
+				} else {
+					statePainter.drawWorld(buffer, Point2.EMPTY);
+				}
 
 				// Draw the result to the frameLabel
 				Graphics labelG = frameLabel.getGraphics();
@@ -289,6 +295,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 */
 	private void initGUI() {
 		frame = new JFrame();
+		ImageIcon q = new ImageIcon("resource/vision.png");
+		frame.setIconImage(q.getImage());
 		frameLabel = new JLabel();
 
 		// Add button below the frame for opening the settings menu

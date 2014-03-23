@@ -24,6 +24,8 @@ public class WorldStateUpdater extends WorldStateListener {
 	 */
 	private static final int SQUARE_SIZE = 50;
 
+	private static final int EXPAND_RADIUS = 10;
+
 	/**
 	 * The minimum points needed to trigger a robot position update
 	 */
@@ -65,8 +67,12 @@ public class WorldStateUpdater extends WorldStateListener {
 	 * The list of points for ball position
 	 */
 	private int ballPtsCount;
-	Point2 ballPos;
-	LinkedList<Point2> ballPastPos = new LinkedList<Point2>();
+
+	// TODO: Docu
+	private Point2 ballPos;
+
+	// TODO: Docu
+	private LinkedList<Point2> ballPastPos = new LinkedList<Point2>();
 
 	/**
 	 * List of points belonging to the green plates
@@ -82,19 +88,21 @@ public class WorldStateUpdater extends WorldStateListener {
 			new Cluster(new Point2(390, 220)),
 			new Cluster(new Point2(520, 220)) };
 
-//	/**
-//	 * Here we have a gaussian point filter which smoothes the position of the
-//	 * ball over 5 frames. The sigma parameter in the gaussian implementation
-//	 * may be worth changing if the ball position seems to lag too much.
-//	 */
-//	private GaussianPointFilter ballVelocityFilter = new GaussianPointFilter(5);
-//
-//	/**
-//	 * Here we have a gaussian point filter which smoothes the velocity of the
-//	 * ball over 5 frames. The sigma parameter in the gaussian implementation
-//	 * may be worth changing if the ball position seems to lag too much.
-//	 */
-//	private GaussianPointFilter ballPositionFilter = new GaussianPointFilter(5);
+	// /**
+	// * Here we have a gaussian point filter which smoothes the position of the
+	// * ball over 5 frames. The sigma parameter in the gaussian implementation
+	// * may be worth changing if the ball position seems to lag too much.
+	// */
+	// private GaussianPointFilter ballVelocityFilter = new
+	// GaussianPointFilter(5);
+	//
+	// /**
+	// * Here we have a gaussian point filter which smoothes the velocity of the
+	// * ball over 5 frames. The sigma parameter in the gaussian implementation
+	// * may be worth changing if the ball position seems to lag too much.
+	// */
+	// private GaussianPointFilter ballPositionFilter = new
+	// GaussianPointFilter(5);
 
 	/**
 	 * Constructs a new WorldStateUpdater to look for new frames, as refreshed
@@ -109,6 +117,21 @@ public class WorldStateUpdater extends WorldStateListener {
 	 */
 	public WorldStateUpdater(int targetFps, WorldState state) {
 		super(targetFps, state);
+	}
+
+	/**
+	 * Checks if a point is in a quadrant expanded by EXPANDED_RADIUS pixels
+	 * 
+	 * @param pos
+	 *            - Point2 to check
+	 * @param quad
+	 *            - quadrant to check (1, 2, 3, or 4)
+	 * @return
+	 */
+	public boolean isInExpandedQuadrant(Point2 pos, int quad) {
+		LinkedList<Point2> linked = new LinkedList<Point2>(state.getPitch()
+				.getQuadrantVertices(quad));
+		return Alg.inMinorHull(linked, -1 * EXPAND_RADIUS, pos);
 	}
 
 	/**
@@ -210,8 +233,10 @@ public class WorldStateUpdater extends WorldStateListener {
 				ballPastPos.removeLast();
 
 			// Update estimated data
-//			Point2 position = ballPositionFilter.apply(state.getBallPosition());
-//			Point2 velocity = ballVelocityFilter.apply(state.getBallVelocity());
+			// Point2 position =
+			// ballPositionFilter.apply(state.getBallPosition());
+			// Point2 velocity =
+			// ballVelocityFilter.apply(state.getBallVelocity());
 			Point2 position = state.getBallPosition();
 			Point2 velocity = state.getBallVelocity();
 			state.setFutureData(FutureBall

@@ -9,6 +9,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
@@ -302,6 +303,7 @@ public class SettingsGUI extends JFrame {
 			}
 		});
 		setTitle("Control GUI");
+		setIconImage(new ImageIcon("resource/settings.png").getImage());
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setBounds(100, 100, 477, 420);
 		contentPane = new JPanel();

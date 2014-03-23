@@ -220,6 +220,7 @@ public class WorldStatePainter {
 					lastPoint.y).toString();
 			System.out.println("\nRequested Data: \nNormalised HSB: " + hsb
 					+ "\nNormalised RGB: " + rgb);
+			System.out.println("Quadrant: "+state.quadrantFromPoint(q));
 		}
 		if (!lastPoint.equals(Point2.EMPTY)) {
 			drawCircle(g, GRAY_BLEND, lastPoint, 3);

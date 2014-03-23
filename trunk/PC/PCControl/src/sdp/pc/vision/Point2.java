@@ -493,4 +493,18 @@ public class Point2 implements java.io.Serializable {
 				* Math.cos(angleTo * Math.PI / 180.0)), (int) (this.getY() + d
 				* Math.sin(angleTo * Math.PI / 180.0)));
 	}
+	
+	/**
+	 * Returns whether or not this point is within the specified range
+	 * (in both the x and y coordinates) of the point comPoint.
+	 * 
+	 * @param comPoint
+	 * @param range
+	 * @return
+	 */
+	
+	public boolean withinRangeOfPoint(Point2 comPoint, int range){
+		return(Math.abs(comPoint.getX() - this.getX()) <= range && 
+				Math.abs(comPoint.getY() - this.getY()) <= range);
+	}
 }
