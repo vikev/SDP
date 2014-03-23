@@ -3,8 +3,10 @@ package sdp.pc.robot.arbitrators;
 import sdp.pc.robot.behaviours.Behavior;
 import sdp.pc.robot.behaviours.DefendRobot;
 import sdp.pc.robot.behaviours.DefendBall;
+import sdp.pc.robot.behaviours.DoNothing;
 import sdp.pc.robot.behaviours.MoveToBall;
 import sdp.pc.robot.behaviours.MoveToGoalLine;
+import sdp.pc.robot.behaviours.StayInside;
 import sdp.pc.robot.behaviours.TurnPerpendicular;
 import sdp.pc.robot.pilot.Robot;
 
@@ -23,11 +25,14 @@ public class DefenderArbiter extends Arbiter {
 	 */
 	public DefenderArbiter(Robot robot) {
 		super(new Behavior[] {
+				new DoNothing(robot),
 				new TurnPerpendicular(robot),
 				new MoveToGoalLine(robot),
 				new DefendRobot(robot),
 				new DefendBall(robot),
 				new MoveToBall(robot),
+				//TODO pass ball
+				new StayInside(robot),
 		}, false);
 	}
 }

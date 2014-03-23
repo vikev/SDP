@@ -26,8 +26,8 @@ public class DefendBall extends RobotBehavior {
 		Point2 myPos = robot.getPosition();
 		Point2 ourGoalCentre = robot.ourGoalCentre();
 		Point2 ballPos = robot.getWorldState().getBallPosition();
-		return robot.getWorldState().getBallSpeed() > BALL_SPEED_THRESHOLD;
-				//&& FutureBall.betweenTwoPoints(ballPos.getX(), myPos.getX(), ourGoalCentre.getX());
+		return robot.getWorldState().getBallSpeed() > BALL_SPEED_THRESHOLD
+				&& FutureBall.betweenTwoPoints(ballPos.getX(), myPos.getX(), ourGoalCentre.getX());
 	}
 
 	@Override
@@ -35,11 +35,11 @@ public class DefendBall extends RobotBehavior {
 		Point2 predBallPos = robot.getWorldState().getFutureData().getEstimate();
 
 		// If that position exists, go to its Y coordinate, otherwise stop.
-		if (!predBallPos.equals(Point2.EMPTY)) {
-			if (robot.defendToY(predBallPos.getY(), DEFEND_EPSILON_DISTANCE)) {
-				return true;
-			}
-		} else {
+		if (predBallPos.equals(Point2.EMPTY)) {
+			return true;
+		}
+		if (robot.defendToY(predBallPos.getY(), DEFEND_EPSILON_DISTANCE)) {
+			robot.stop();
 			return true;
 		}
 		return false;
