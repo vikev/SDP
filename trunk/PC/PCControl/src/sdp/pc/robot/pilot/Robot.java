@@ -9,7 +9,6 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import sdp.pc.common.Constants;
 import sdp.pc.vision.Alg;
 import sdp.pc.vision.FutureBall;
 import sdp.pc.vision.Pitch;
@@ -473,40 +472,18 @@ public class Robot {
 	 * @throws Exception
 	 */
 	public void kickBallToPoint(Point2 where) throws Exception {
-		System.out.println("This point: "+where.toString());
+		
 		// Turn to ball, move to ball, grab the ball, turn to the point, kick
 		Point2 ball = state.getBallPosition();
-		Point2 robo = state.getRobotPosition(myTeam, myIdentifier);
 
 		// Distortion due to height - returns negative values if left of centre
 		// and positive if right
-		double distortion = getDistortion(robo);
 		int pitchId = state.getPitchId();
 
-		// The offset stuff doesn't really work too well - there are problems
-		// with the defender catching the ball (attacker's fine-ish though)
-		// double xOffset = ((double) (Math.abs(ball.x -
-		// Constants.TABLE_CENTRE_X))) / 240;
-		// double angOffset = 0;
-		/*
-		 * if (robo.x > Constants.TABLE_CENTRE_X) { angOffset = 1 -
-		 * Math.abs(robo.angleTo(ball)) / 180; } else { angOffset =
-		 * Math.abs(robo.angleTo(ball)) / 180; }
-		 */
 		// This is attacker
 		if (myIdentifier == state.getDirection()) {
-			double xOffset = Math.abs(robo.x - Constants.TABLE_CENTRE_X) / 240.0, angOffset;
-
-			if (robo.x > Constants.TABLE_CENTRE_X)
-				angOffset = 2 * Math.abs(robo.angleTo(ball)) / 180 - 1;
-			else
-				angOffset = 1 - 2 * Math.abs(robo.angleTo(ball)) / 180;
-
-			xOffset = Math.pow(xOffset, 2);
 			if (kickSubState == 0) {
-				Point2 target = ball.offset(20 + 6 * pitchId + 10 * xOffset
-						* angOffset, ball.angleTo(robo));
-				if (goTo(target, 10.0)) {
+				if (goTo(ball, 24 + 1 * pitchId)) {
 					driver.stop();
 					driver.grab();
 					kickSubState = 1;
@@ -528,20 +505,8 @@ public class Robot {
 			}
 			// This is defender
 		} else {
-			double xOffset = ((double) (Math.abs(ball.x
-					- Constants.TABLE_CENTRE_X))) / 240;
-			double angOffset = 0;
-
-			if (robo.x > Constants.TABLE_CENTRE_X)
-				angOffset = 2 * Math.abs(robo.angleTo(ball)) / 180 - 1;
-			else
-				angOffset = 1 - 2 * Math.abs(robo.angleTo(ball)) / 180;
-
-			xOffset = Math.pow(xOffset, 3);
-			angOffset = Math.pow(angOffset, 3);
 			if (kickSubState == 0) {
-				ball.setX((int) Math.round(ball.getX() - distortion / 4));
-				if (goTo(ball, 19 + 6 * pitchId + 6 * xOffset * angOffset)) {
+				if (goTo(ball, 24 + 1 * pitchId)) {
 					driver.grab();
 					kickSubState = 1;
 				}

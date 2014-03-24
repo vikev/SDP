@@ -36,36 +36,51 @@ public class Constants {
 
 	/**
 	 * Approximate measurements of robots in pixels (could change to
-	 * centimetres); these values haven't yet been measured. At some point we
-	 * can consider writing a centimetre->pixel conversion ratio, which may be
-	 * unique to each camera
+	 * centimetres); these values haven't yet been measured. 
 	 */
 	public static final int ATTACKER_LENGTH = 40;
 
 	/**
 	 * Approximate measurements of robots in pixels (could change to
-	 * centimetres); these values haven't yet been measured. At some point we
-	 * can consider writing a centimetre->pixel conversion ratio, which may be
-	 * unique to each camera
+	 * centimetres); these values haven't yet been measured. 
 	 */
 	public static final int ATTACKER_WIDTH = 40;
 
 	/**
 	 * Approximate measurements of robots in pixels (could change to
-	 * centimetres); these values haven't yet been measured. At some point we
-	 * can consider writing a centimetre->pixel conversion ratio, which may be
-	 * unique to each camera
+	 * centimetres); these values haven't yet been measured. 
 	 */
 	public static final int DEFENDER_LENGTH = 20;
 
 	/**
 	 * Approximate measurements of robots in pixels (could change to
-	 * centimetres); these values haven't yet been measured. At some point we
-	 * can consider writing a centimetre->pixel conversion ratio, which may be
-	 * unique to each camera
+	 * centimetres); these values haven't yet been measured. 
 	 */
 	public static final int DEFENDER_WIDTH = 20;
-
+	
+	/**
+	 * Approximate heights of robots in CENTIMETRES. Currently using the max height
+	 * established by the rules (18 centimetres). Also, currently same for all
+	 * four robots.
+	 */
+	public static final int ROBOT_HEIGHT = 18;
+	
+	/**
+	 * Approximate height of the camera above the pitch in CENTIMETRES; assumed 
+	 * to be the same for both pitches at the moment.
+	 * 
+	 * TODO: Get more accurate number
+	 */
+	public static final int CAMERA_HEIGHT = 250;
+	
+	/**
+	 * Approximate number of pixels per centimetre, as measured on pitch level.
+	 * 
+	 * TODO: Potentially get more accurate number, or make it change
+	 * according to distance from camera centre
+	 */
+	public static final double PIX_CONV_RATIO = 2.3;
+	
 	/**
 	 * Directions and flags which specify our team's target data in a match
 	 */

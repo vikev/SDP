@@ -298,6 +298,14 @@ public class WorldStateUpdater extends WorldStateListener {
 
 					// Now find its facing
 					double newFacing = findOrientation(newPos, cRgbs, cHsbs);
+					
+					// Fix the distortion made by the height of the robot
+					Point2 centre = new Point2(320,240); // TODO: Check if this
+														 // is the right point to use
+					double distortionFix = Constants.ROBOT_HEIGHT * Math.tan(Math.PI/2 - 
+							Math.atan(Constants.CAMERA_HEIGHT/newPos.distance(centre)));
+					newPos = newPos.offset(distortionFix/Constants.PIX_CONV_RATIO,
+							newPos.angleTo(centre));
 
 					// And update the world state
 					state.setRobotPosition(team, robot, newPos);
