@@ -1,15 +1,6 @@
 package sdp.pc.gl;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.DisplayMode;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opencl.*;
-import org.lwjgl.util.glu.GLU;
-
-import sdp.pc.vision.Vision;
 
 import au.edu.jcu.v4l4j.CaptureCallback;
 import au.edu.jcu.v4l4j.FrameGrabber;
@@ -26,11 +17,6 @@ public class test {
 	 * has problems we should keep it at 100
 	 */
 	private static final int JPEG_QUALITY = 100;
-
-	/**
-	 * The desired (maximum?) FPS at which the world state will refresh
-	 */
-	private static final int WORLD_STATE_TARGET_FPS = 60;
 
 	/**
 	 * Width of the video feed
@@ -61,34 +47,33 @@ public class test {
 	 * The object which V4L4J uses to grab individual frames. Mostly abstracted.
 	 */
 	private static FrameGrabber frameGrabber;
-	
+
 	/**
 	 * A V4L4J instance for grabbing video. Fairly abstract.
 	 */
 	private static VideoDevice videoDevice;
-	
-	
+
 	private static GLObjectTracker tracker;
-	
+
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		setupFrameGrabber();
-		
+
 		tracker = new GLObjectTracker();
 		tracker.run();
-		
+
 		frameGrabber.stopCapture();
 	}
 
 	private static void setupFrameGrabber() {
 		try {
 			videoDevice = new VideoDevice(DEVICE);
-			
-			frameGrabber = videoDevice.getJPEGFrameGrabber(WIDTH, HEIGHT, CHANNEL,
-					VIDEO_STANDARD, JPEG_QUALITY);
-			
+
+			frameGrabber = videoDevice.getJPEGFrameGrabber(WIDTH, HEIGHT,
+					CHANNEL, VIDEO_STANDARD, JPEG_QUALITY);
+
 			frameGrabber.setCaptureCallback(new CaptureCallback() {
 				/**
 				 * Exception handling
@@ -97,7 +82,7 @@ public class test {
 					System.err.println("Unable to capture frame:");
 					e.printStackTrace();
 				}
-	
+
 				/**
 				 * The nextFrame handler
 				 */
@@ -108,7 +93,7 @@ public class test {
 					tracker.setLastFrame(frameImage);
 				}
 			});
-			
+
 			frameGrabber.startCapture();
 		} catch (Exception e1) {
 			System.err.println("Error setting up capture");
@@ -120,9 +105,7 @@ public class test {
 			videoDevice.releaseFrameGrabber();
 			videoDevice.release();
 			return;
-		}		
+		}
 	}
-
-
 
 }

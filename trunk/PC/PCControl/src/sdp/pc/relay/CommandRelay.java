@@ -86,11 +86,10 @@ public class CommandRelay {
 	}
 
 	private ActionListener actionListenerConnectA = new ActionListener() {
-		@SuppressWarnings("deprecation")
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (connBrickA.connect()) {
-				actionA.setLabel("Disconnect A");
+				actionA.setText("Disconnect A");
 				actionA.removeActionListener(actionListenerConnectA);
 				actionA.addActionListener(actionListenerDisconnectA);
 				updateRoles();
@@ -100,11 +99,10 @@ public class CommandRelay {
 	};
 
 	private ActionListener actionListenerConnectB = new ActionListener() {
-		@SuppressWarnings("deprecation")
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (connBrickB.connect()) {
-				actionB.setLabel("Disconnect B");
+				actionB.setText("Disconnect B");
 				actionB.removeActionListener(actionListenerConnectB);
 				actionB.addActionListener(actionListenerDisconnectB);
 				updateRoles();
@@ -117,18 +115,17 @@ public class CommandRelay {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			connBrickA.disconnect();
-			actionA.setLabel("Connect to A");
+			actionA.setText("Connect to A");
 			actionA.addActionListener(actionListenerConnectA);
 			actionA.removeActionListener(actionListenerDisconnectA);
 		}
 	};
 
 	private ActionListener actionListenerDisconnectB = new ActionListener() {
-		@SuppressWarnings("deprecation")
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			connBrickB.disconnect();
-			actionB.setLabel("Connect to B");
+			actionB.setText("Connect to B");
 			actionB.addActionListener(actionListenerConnectB);
 			actionB.removeActionListener(actionListenerDisconnectB);
 		}
