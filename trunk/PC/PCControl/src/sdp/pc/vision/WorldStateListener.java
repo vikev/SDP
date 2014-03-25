@@ -30,7 +30,7 @@ public abstract class WorldStateListener implements Runnable {
 	 * We shall not sleep (pause) the thread if the amount is less than that
 	 */
 	private static final long SLEEP_ACCURACY = 5;
-	
+
 	/**
 	 * The amount of frames to drop before preprocessing should occur
 	 */
@@ -96,8 +96,6 @@ public abstract class WorldStateListener implements Runnable {
 	 */
 	protected float[] minMaxBrightness = new float[] { 1, 0 };
 
-
-
 	/**
 	 * Returns whether preprocessing has occurred, i.e. whether the pitch hull
 	 * and points are calculated
@@ -107,8 +105,8 @@ public abstract class WorldStateListener implements Runnable {
 	}
 
 	/**
-	 * Used to reset the {@link preprocess} flag, and force 
-	 * hull and normalisation re-calculation
+	 * Used to reset the {@link preprocess} flag, and force hull and
+	 * normalisation re-calculation
 	 */
 	public void forcePreprocess() {
 		preprocessed = false;
@@ -185,7 +183,8 @@ public abstract class WorldStateListener implements Runnable {
 	 * Gets the current progress of skipping frames as a value [0;100)
 	 */
 	public int getKeyFrames() {
-		return 100 * Math.min(keyframe, FRAME_IGNORE_COUNT) / FRAME_IGNORE_COUNT;
+		return 100 * Math.min(keyframe, FRAME_IGNORE_COUNT)
+				/ FRAME_IGNORE_COUNT;
 	}
 
 	/**
@@ -254,12 +253,12 @@ public abstract class WorldStateListener implements Runnable {
 
 			// if we have a valid, changed image
 			if (currentFrame != lastFrame) {
-				
+
 				// have we done preprocessing?
 				// well, if there's no boundary, we've not!
-				if(!SettingsManager.defaultSettings.hasBoundary())
+				if (!SettingsManager.defaultSettings.hasBoundary())
 					preprocessed = false;
-				
+
 				if (!preprocessed) {
 					preprocessImage(currentFrame);
 				} else {
@@ -307,7 +306,6 @@ public abstract class WorldStateListener implements Runnable {
 		}
 	}
 
-	
 	/**
 	 * Does initial preprocessing on the image, executed only once. Calculates
 	 * game field hull and normalised colours
@@ -316,9 +314,9 @@ public abstract class WorldStateListener implements Runnable {
 		// Ensure the pre-process is only ran once during
 		// initialisation; but ignore first few frames (which are always
 		// highly distorted)
-		if (SettingsManager.defaultSettings.hasBoundary() && ++keyframe >= FRAME_IGNORE_COUNT) {
+		if (SettingsManager.defaultSettings.hasBoundary()
+				&& ++keyframe >= FRAME_IGNORE_COUNT) {
 
-			
 			// Get boundary
 			Point2 pa = SettingsManager.defaultSettings.getBoundary(0);
 			Point2 pb = SettingsManager.defaultSettings.getBoundary(1);
@@ -352,10 +350,13 @@ public abstract class WorldStateListener implements Runnable {
 			pitchPoints.clear();
 			for (int x = minX; x < maxX; x++) {
 				for (int y = minY; y < maxY; y++) {
-					if (Alg.isInHull(borders, x, y)) {
+					// if (Alg.isInHull(borders, x, y)) {
+
+					// TODO: Fix and document
+					Point2 it = new Point2(x, y);
+					if (Alg.inMinorHull(borders, 0.0, it)) {
 						// finally get all points on the inside
-						Point2 p = new Point2(x, y);
-						pitchPoints.add(p);
+						pitchPoints.add(it);
 
 						// but after finding min/max brightness!
 						float b = currentHsb[x][y][2];
@@ -367,11 +368,10 @@ public abstract class WorldStateListener implements Runnable {
 						currentRgb[x][y] = null;
 				}
 			}
-			
-			
+
 			// Get pitch
 			state.getPitch().Initialize(currentRgb, currentHsb);
-			
+
 			preprocessed = true;
 			System.out
 					.println("WorldStateListener: preprocessed image, beginning object recognition.");

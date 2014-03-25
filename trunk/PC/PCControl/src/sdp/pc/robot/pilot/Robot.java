@@ -472,62 +472,33 @@ public class Robot {
 	 * @throws Exception
 	 */
 	public void kickBallToPoint(Point2 where) throws Exception {
-		
+
 		// Turn to ball, move to ball, grab the ball, turn to the point, kick
 		Point2 ball = state.getBallPosition();
+		Point2 pos = state.getRobotPosition(getTeam(), getId());
 
-		// Distortion due to height - returns negative values if left of centre
-		// and positive if right
-		int pitchId = state.getPitchId();
+		if (kickSubState == 0) {
 
-		// This is attacker
-		if (myIdentifier == state.getDirection()) {
-			if (kickSubState == 0) {
-				if (goTo(ball, 24 + 1 * pitchId)) {
-					driver.stop();
-					driver.grab();
-					kickSubState = 1;
-				}
-			} else if (kickSubState < 4) {
-				kickSubState++;
+			// TODO: Fix
+			if (goTo(ball.offset(15.0, ball.angleTo(pos)), 10.0)) {
+				driver.stop();
+				driver.grab();
+				kickSubState = 1;
 			}
-			if (kickSubState >= 4) {
-				if (turnTo(where, 9.0)) {
-					driver.stop();
-					kickSubState++;
-					if (kickSubState >= 8) {
-						driver.kick(900);
-					}
-					if (kickSubState >= 15) {
-						kickSubState = 0;
-					}
-				}
+		} else if (kickSubState < 4) {
+			kickSubState++;
+		}
+		if (kickSubState >= 4 && kickSubState < 8) {
+			kickSubState++;
+			if (turnTo(where, 9.0)) {
+				driver.stop();
 			}
-			// This is defender
-		} else {
-			if (kickSubState == 0) {
-				if (goTo(ball, 24 + 1 * pitchId)) {
-					driver.grab();
-					kickSubState = 1;
-				}
-			} else if (kickSubState < 4) {
-				kickSubState++;
-			}
-			if (kickSubState >= 4) {
-				if (turnTo(where, 10.0)) {
-					driver.stop();
-					kickSubState++;
-					if (kickSubState >= 8) {
-						if (state.getRobotPosition(myTeam, 1-myIdentifier).equals(Point2.EMPTY)) {
-							driver.kick(1000);
-						} else {
-							driver.kick(350);
-						}
-					}
-					if (kickSubState >= 15) {
-						kickSubState = 0;
-					}
-				}
+		} else if (kickSubState >= 8) {
+			driver.stop();
+			driver.kick(900);
+			kickSubState++;
+			if (kickSubState >= 15) {
+				kickSubState = 0;
 			}
 		}
 	}
@@ -562,9 +533,10 @@ public class Robot {
 	 * @throws Exception
 	 */
 	public void defenderPass() throws Exception {
-		Point2 ourDefender = state.getRobotPosition(myTeam, 0);
+		Point2 ourDefender = state.getRobotPosition(myTeam, myIdentifier);
 		Point2 ourAttacker = state.getRobotPosition(myTeam, 1 - myIdentifier);
-		Point2 enemyAttacker = state.getRobotPosition(1 - myTeam, 1);
+		Point2 enemyAttacker = state.getRobotPosition(1 - myTeam,
+				1 - myIdentifier);
 
 		// If our defender is thought to be holding the ball check if a bounce
 		// pass
@@ -572,7 +544,7 @@ public class Robot {
 		if (ourAttacker.equals(Point2.EMPTY)) {
 			kickBallToPoint(Strategy.basicGoalTarget());
 			System.out.println(Strategy.basicGoalTarget().toString());
-		} else if (kickSubState == 1) {
+		} else if (kickSubState > 0) {
 			if (isEnemyDefenderBlocking(enemyAttacker, ourDefender, ourAttacker)) {
 
 				// Potentially avoid recalculating the bounce point if
@@ -1197,15 +1169,13 @@ public class Robot {
 		lastQuadrant = q;
 
 		Point2 pos = state.getRobotPosition(myTeam, myIdentifier);
-		double distOffs = 10.0;
+		double distOffs = 40.0;
 		LinkedList<Point2> vertices = getQuadrantVertices(q);
 
 		if (vertices.size() > 2) {
-			return !Alg.inMinorHull(new LinkedList<Point2>(vertices), distOffs,
-					pos);
+			return !Alg.inMinorHullWeighted(new LinkedList<Point2>(vertices),
+					distOffs, pos, 1.0, 0.1);
 		} else {
-			//System.err.println("Quadrant with vertices of size "
-			//		+ vertices.size());
 			return false;
 		}
 	}

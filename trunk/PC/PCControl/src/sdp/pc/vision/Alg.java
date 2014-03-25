@@ -47,14 +47,23 @@ public class Alg {
 
 	public static boolean inMinorHull(LinkedList<Point2> vertices,
 			double minorRadius, Point2 check) {
+		return inMinorHullWeighted(vertices, minorRadius, check, 1.0, 1.0);
+	}
+
+	public static boolean inMinorHullWeighted(LinkedList<Point2> vertices,
+			double minorRadius, Point2 check, double xWeight, double yWeight) {
 		Point2 centre = getCentroid(vertices);
 		LinkedList<Point2> n = new LinkedList<Point2>();
 		for (Point2 q : vertices) {
-			n.add(q.offset(minorRadius, q.angleTo(new Point2(centre.x,
-					(int) 0.5*(q.y-centre.y) + centre.y))));
+			double rad = (q.angleTo(centre) + 180.0) * Math.PI / 180.0;
+
+			double xOffs = xWeight * minorRadius * Math.cos(rad);
+			double yOffs = yWeight * minorRadius * Math.sin(rad);
+			n.add(q.add(new Point2((int) xOffs, (int) yOffs)));
 		}
 		double distortion = Robot.getDistortion(check);
-		check = ((check.offset(distortion*7, check.angleTo(Vision.getCameraCentre()))));
+		check = ((check.offset(distortion * 7,
+				check.angleTo(Vision.getCameraCentre()))));
 		return isInHull(n, check);
 	}
 
