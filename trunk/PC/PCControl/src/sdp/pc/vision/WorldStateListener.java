@@ -354,7 +354,7 @@ public abstract class WorldStateListener implements Runnable {
 
 					// TODO: Fix and document
 					Point2 it = new Point2(x, y);
-					if (Alg.inMinorHull(borders, 0.0, it)) {
+					if (Alg.inMinorHull(borders, -10.0, it)) {
 						// finally get all points on the inside
 						pitchPoints.add(it);
 

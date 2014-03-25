@@ -59,11 +59,11 @@ public class Alg {
 
 			double xOffs = xWeight * minorRadius * Math.cos(rad);
 			double yOffs = yWeight * minorRadius * Math.sin(rad);
-			n.add(q.add(new Point2((int) xOffs, (int) yOffs)));
+			n.add(q.sub(new Point2((int) xOffs, (int) yOffs)));
 		}
-		double distortion = Robot.getDistortion(check);
-		check = ((check.offset(distortion * 7,
-				check.angleTo(Vision.getCameraCentre()))));
+		//double distortion = Robot.getDistortion(check);
+		//check = ((check.offset(distortion * 7,
+		//		check.angleTo(Vision.getCameraCentre()))));
 		return isInHull(n, check);
 	}
 

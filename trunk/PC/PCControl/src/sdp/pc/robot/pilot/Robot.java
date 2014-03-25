@@ -1169,7 +1169,7 @@ public class Robot {
 		lastQuadrant = q;
 
 		Point2 pos = state.getRobotPosition(myTeam, myIdentifier);
-		double distOffs = 40.0;
+		double distOffs = 70.0;
 		LinkedList<Point2> vertices = getQuadrantVertices(q);
 
 		if (vertices.size() > 2) {
