@@ -4,8 +4,6 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import sdp.pc.robot.pilot.Robot;
-
 /**
  * Class containing various (and arbitrary) algorithms for static analysis of
  * state, video feed, data, etc.
@@ -55,15 +53,15 @@ public class Alg {
 		Point2 centre = getCentroid(vertices);
 		LinkedList<Point2> n = new LinkedList<Point2>();
 		for (Point2 q : vertices) {
-			double rad = (q.angleTo(centre) + 180.0) * Math.PI / 180.0;
+			double rad = (q.angleTo(centre) + 360.0) * Math.PI / 180.0;
 
 			double xOffs = xWeight * minorRadius * Math.cos(rad);
 			double yOffs = yWeight * minorRadius * Math.sin(rad);
-			n.add(q.sub(new Point2((int) xOffs, (int) yOffs)));
+			n.add(q.add(new Point2((int) xOffs, (int) yOffs)));
 		}
-		//double distortion = Robot.getDistortion(check);
-		//check = ((check.offset(distortion * 7,
-		//		check.angleTo(Vision.getCameraCentre()))));
+		// double distortion = Robot.getDistortion(check);
+		// check = ((check.offset(distortion * 7,
+		// check.angleTo(Vision.getCameraCentre()))));
 		return isInHull(n, check);
 	}
 

@@ -71,7 +71,7 @@ public class Constants {
 	 * 
 	 * TODO: Get more accurate number
 	 */
-	public static final int CAMERA_HEIGHT = 250;
+	public static final int CAMERA_HEIGHT = 244;
 	
 	/**
 	 * Approximate number of pixels per centimetre, as measured on pitch level.

@@ -73,6 +73,7 @@ public class ManualControl implements KeyListener {
 		frame.setBounds(500, 500, 200, 50);
 		frame.setAlwaysOnTop(true);
 		JLabel label = new JLabel();
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		label.setText("Select and Pess a Key");
 		frame.add(label);
 		frame.addKeyListener(this);

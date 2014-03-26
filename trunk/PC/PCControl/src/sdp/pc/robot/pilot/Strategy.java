@@ -377,7 +377,7 @@ public class Strategy implements Runnable {
 
 	/**
 	 * Main logic branching mechanism for defender. Use defender.getState() as
-	 * well.
+	 * well. 
 	 * <p />
 	 * States a defender can be in:
 	 * <ul>
@@ -385,7 +385,7 @@ public class Strategy implements Runnable {
 	 * <li>Robot.State.DEFEND_ENEMY_ATTACKER</li>
 	 * <li>Robot.State.DEFEND_GOAL_LINE</li>
 	 * <li>Robot.State.PASS_TO_ATTACKER</li>
-	 * </ul>
+	 * </ul>  
 	 * 
 	 * @throws Exception
 	 */

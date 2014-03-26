@@ -119,7 +119,10 @@ public class Robot {
 	 * </ol>
 	 */
 	private int kickSubState = 0;
-
+	
+	// TODO:
+	private int turnSubState = 0;
+	
 	/**
 	 * The most recently calculated bounce Point
 	 */
@@ -206,7 +209,7 @@ public class Robot {
 				if (!Alg.inMinorHull(getQuadrantVertices(getMyQuadrant()),
 						10.0, predBallPos)) {
 					destination = predBallPos.offset(
-							10.0,
+							20.0,
 							predBallPos.angleTo(state.getPitch()
 									.getQuadrantCenter(getMyQuadrant())))
 							.getY();
@@ -293,10 +296,7 @@ public class Robot {
 			// ball
 			if (!predictedBallPos.equals(Point2.EMPTY)
 					& FutureBall.pitchContains(predictedBallPos)) {
-				if (defendToY(
-						predictedBallPos.offset(0.0,
-								predictedBallPos.angleTo(robotPos)).getY(),
-						DEFEND_EPSILON_DISTANCE)) {
+				if (defendToY(predictedBallPos.getY(), DEFEND_EPSILON_DISTANCE)) {
 					driver.stop();
 				}
 			} else {
@@ -373,10 +373,18 @@ public class Robot {
 	 * true if complete)1
 	 */
 	public boolean goTo(Point2 to, double eps) throws Exception {
+		int was = turnSubState;
+		
 		if (turnTo(to, SAFE_ANGLE_EPSILON)) {
+			turnSubState = 1;
+			if(was!=turnSubState){
+				driver.stop();
+			}
 			if (moveForwardTo(to, eps)) {
 				return true;
 			}
+		}else{
+			turnSubState = 0;
 		}
 		return false;
 	}
@@ -478,8 +486,6 @@ public class Robot {
 		Point2 pos = state.getRobotPosition(getTeam(), getId());
 
 		if (kickSubState == 0) {
-
-			// TODO: Fix
 			if (goTo(ball.offset(15.0, ball.angleTo(pos)), 10.0)) {
 				driver.stop();
 				driver.grab();
@@ -488,16 +494,16 @@ public class Robot {
 		} else if (kickSubState < 4) {
 			kickSubState++;
 		}
-		if (kickSubState >= 4 && kickSubState < 8) {
-			kickSubState++;
+		if (kickSubState >= 4 && kickSubState < 12) {
 			if (turnTo(where, 9.0)) {
 				driver.stop();
+				kickSubState++;
 			}
-		} else if (kickSubState >= 8) {
+		} else if (kickSubState >= 12) {
 			driver.stop();
 			driver.kick(900);
 			kickSubState++;
-			if (kickSubState >= 15) {
+			if (kickSubState >= 20) {
 				kickSubState = 0;
 			}
 		}
@@ -544,20 +550,17 @@ public class Robot {
 		if (ourAttacker.equals(Point2.EMPTY)) {
 			kickBallToPoint(Strategy.basicGoalTarget());
 			System.out.println(Strategy.basicGoalTarget().toString());
-		} else if (kickSubState > 0) {
-			if (isEnemyDefenderBlocking(enemyAttacker, ourDefender, ourAttacker)) {
+		} else if (isEnemyDefenderBlocking(enemyAttacker, ourDefender,
+				ourAttacker)) {
 
-				// Potentially avoid recalculating the bounce point if
-				// the defender is in the process of turning to face an
-				// already calculated bounce point
-				if (!(ourDefender.withinRangeOfPoint(
-						defenderPosWhenBouncePointcalc, 3))) {
-					setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
-				}
-				kickBallToPoint(bouncePoint);
-			} else {
-				kickBallToPoint(ourAttacker);
+			// Potentially avoid recalculating the bounce point if
+			// the defender is in the process of turning to face an
+			// already calculated bounce point
+			if (!(ourDefender.withinRangeOfPoint(
+					defenderPosWhenBouncePointcalc, 3))) {
+				setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
 			}
+			kickBallToPoint(bouncePoint);
 		} else {
 			kickBallToPoint(ourAttacker);
 		}
@@ -910,8 +913,8 @@ public class Robot {
 	 */
 	private static int getRotateSpeed(double rotateBy, double epsilon) {
 		// TODO: Should be refactored (constants)
-		double maxSpeed = 200.0;
-		double minSpeed = 25.0;
+		double maxSpeed = 180.0;
+		double minSpeed = 35.0;
 		double maxRotate = 180.0;
 		double minRotate = epsilon;
 		rotateBy = Math.abs(rotateBy);
@@ -963,30 +966,16 @@ public class Robot {
 	 * TODO: Units? motor velocity in radians per second or..?
 	 */
 	private int getMoveSpeed(double dist) {
-		/*
-		 * // TODO: Need to test with final gear ratios and robots! Also
-		 * refactor // out these constants double maxSpeed = 300.0; double
-		 * minSpeed = 40.0; double maxDist = 200.0; dist = Math.abs(dist);
-		 * 
-		 * // Don't change this! Change the constants return (int) (((maxSpeed -
-		 * minSpeed) / (maxDist) * dist) + minSpeed);
-		 */
 
-		// return (int) ((dist + 30) * 2.5);
+		// TODO: Need to test with final gear ratios and robots! Also refactor
+		// out these constants
+		double maxSpeed = 300.0;
+		double minSpeed = 50.0;
+		double maxDist = 200.0;
+		dist = Math.abs(dist);
 
-		if (myState == State.DEFEND_BALL
-				|| myState == State.DEFEND_ENEMY_ATTACKER) {
-			return (int) ((dist + 30) * 2.5);
-		}
-		if (dist > 160.0) {
-			return 400;
-		} else if (dist > 100.0) {
-			return 250;
-		} else if (dist > 40.0) {
-			return 125;
-		} else {
-			return 50;
-		}
+		// Don't change this! Change the constants
+		return (int) (((maxSpeed - minSpeed) / (maxDist) * dist) + minSpeed);
 	}
 
 	/**
@@ -1169,12 +1158,12 @@ public class Robot {
 		lastQuadrant = q;
 
 		Point2 pos = state.getRobotPosition(myTeam, myIdentifier);
-		double distOffs = 70.0;
+		double distOffs = 50.0;
 		LinkedList<Point2> vertices = getQuadrantVertices(q);
 
 		if (vertices.size() > 2) {
 			return !Alg.inMinorHullWeighted(new LinkedList<Point2>(vertices),
-					distOffs, pos, 1.0, 0.1);
+					distOffs, pos, 1.0, 0.05);
 		} else {
 			return false;
 		}
