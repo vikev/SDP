@@ -367,6 +367,8 @@ public class Strategy implements Runnable {
 		} else if (botState == Robot.State.GET_BALL) {
 			attacker.kickBallToPoint(Strategy.basicGoalTarget());
 		} else if (botState == Robot.State.RESET) {
+			
+			// TODO: Just go there the best way
 			attacker.goToReverse(
 					state.getPitch()
 							.getQuadrantCenter(attacker.getMyQuadrant()), 10.0);
