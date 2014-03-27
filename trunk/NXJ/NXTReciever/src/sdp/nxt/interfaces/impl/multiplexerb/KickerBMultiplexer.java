@@ -14,7 +14,7 @@ public class KickerBMultiplexer implements Kicker {
 	private byte backward = (byte) 2;
 
 	private byte speed = (byte) 100;
-	private byte supportSpeed = (byte) 50;
+	private byte supportSpeed = (byte) 30;
 
 	@SuppressWarnings("deprecation")
 	public KickerBMultiplexer(boolean isGrabberClosed) {
@@ -102,7 +102,7 @@ public class KickerBMultiplexer implements Kicker {
 							I2Csensor.sendData(0x01, backward);
 						}
 					}
-					Thread.sleep(200);
+					Thread.sleep(100);
 					I2Csensor.sendData(0x01, off);
 					i++;
 				} catch (Exception e) {
