@@ -119,10 +119,10 @@ public class Robot {
 	 * </ol>
 	 */
 	private int kickSubState = 0;
-	
+
 	// TODO:
 	private int turnSubState = 0;
-	
+
 	/**
 	 * The most recently calculated bounce Point
 	 */
@@ -374,16 +374,16 @@ public class Robot {
 	 */
 	public boolean goTo(Point2 to, double eps) throws Exception {
 		int was = turnSubState;
-		
+
 		if (turnTo(to, SAFE_ANGLE_EPSILON)) {
 			turnSubState = 1;
-			if(was!=turnSubState){
+			if (was != turnSubState) {
 				driver.stop();
 			}
 			if (moveForwardTo(to, eps)) {
 				return true;
 			}
-		}else{
+		} else {
 			turnSubState = 0;
 		}
 		return false;
@@ -1138,6 +1138,37 @@ public class Robot {
 	}
 
 	/**
+	 * Returns the vertices of a given quadrant. If the quadrant is a defender
+	 * quadrant (edge), it will expand the outer ones.
+	 * 
+	 * @param q
+	 * @return
+	 */
+	public LinkedList<Point2> getQuadrantVerticesWide(int q) {
+		ArrayList<Point2> pts = state.getPitch().getArrayListOfPoints();
+		LinkedList<Point2> vertices = new LinkedList<Point2>();
+		Point2 expander = new Point2(50, 0);
+		if (q == 1) {
+			vertices.add(pts.get(1).sub(expander));
+			vertices.add(pts.get(2));
+			vertices.add(pts.get(11));
+			vertices.add(pts.get(12).sub(expander));
+			vertices.add(pts.get(13).sub(expander));
+			vertices.add(pts.get(14).sub(expander));
+		} else if (q == 4) {
+			vertices.add(pts.get(4));
+			vertices.add(pts.get(5).add(expander));
+			vertices.add(pts.get(6).add(expander));
+			vertices.add(pts.get(7).add(expander));
+			vertices.add(pts.get(8).add(expander));
+			vertices.add(pts.get(9));
+		} else {
+			return getQuadrantVertices(q);
+		}
+		return vertices;
+	}
+
+	/**
 	 * Method for checking if <b>this</b> is near the boundary. It does this by
 	 * fetching the vertices of its quadrant, contracting them, and then
 	 * checking if outwith the hull of this contracted set.
@@ -1158,8 +1189,8 @@ public class Robot {
 		lastQuadrant = q;
 
 		Point2 pos = state.getRobotPosition(myTeam, myIdentifier);
-		double distOffs = 50.0;
-		LinkedList<Point2> vertices = getQuadrantVertices(q);
+		double distOffs = 60.0;
+		LinkedList<Point2> vertices = getQuadrantVerticesWide(q);
 
 		if (vertices.size() > 2) {
 			return !Alg.inMinorHullWeighted(new LinkedList<Point2>(vertices),
