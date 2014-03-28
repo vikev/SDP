@@ -1,5 +1,6 @@
 package sdp.nxt;
 
+import sdp.nxt.bt.BT;
 import sdp.nxt.interfaces.impl.multiplexerb.DiffPilotBMultiplexer;
 import sdp.nxt.interfaces.impl.multiplexerb.KickerBMultiplexer;
 
@@ -10,7 +11,7 @@ import sdp.nxt.interfaces.impl.multiplexerb.KickerBMultiplexer;
 public class BBMultiplexer {
 
 	public static void main(String args[]) {
-		new BluetoothReciever(new DiffPilotBMultiplexer(),
-				new KickerBMultiplexer(true)).connect();
+		new BT(new DiffPilotBMultiplexer(), new KickerBMultiplexer(true))
+				.connect();
 	}
 }

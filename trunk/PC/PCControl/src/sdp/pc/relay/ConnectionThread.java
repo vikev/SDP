@@ -1,7 +1,6 @@
 package sdp.pc.relay;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -33,6 +32,8 @@ public class ConnectionThread implements Runnable {
 		this.conn1 = connection;
 	}
 
+	private InputStream is;
+
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
@@ -50,22 +51,19 @@ public class ConnectionThread implements Runnable {
 				System.out.println("Just connected to "
 						+ server.getRemoteSocketAddress());
 
-				BufferedReader fromClient = new BufferedReader(
-						new InputStreamReader(server.getInputStream()));
+				is = server.getInputStream();
 				try {
 					while (true) {
-						input = fromClient.readLine();
-						char c = input.charAt(0);
-						int dist = Integer.parseInt(fromClient.readLine());
+
 						try {
-							conn1.sendCommand(c, dist);
+							byte[] data = new byte[3];
+							is.read(data);
+							conn1.sendCommand(data);
 						} catch (Exception e) {
 							// TODO
 							System.out.println("Couldn't send command");
 							e.printStackTrace();
 						}
-						System.out.println("Command sent to the robot: " + c
-								+ " " + dist);
 					}
 				} catch (Exception e) {
 					// whatever goes wrong wait for a new connection
@@ -74,7 +72,7 @@ public class ConnectionThread implements Runnable {
 				}
 				// stop the robot if the connection is dropped or stopped
 				try {
-					conn1.sendCommand('s', 0);
+					conn1.sendCommand(new byte[] { 5, 0, 0 });
 				} catch (Exception e) {
 					// TODO handle this
 					System.out.println("couldn't send the command.");

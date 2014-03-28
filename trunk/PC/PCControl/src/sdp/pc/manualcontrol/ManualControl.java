@@ -2,18 +2,13 @@ package sdp.pc.manualcontrol;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.Socket;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
 import sdp.pc.common.ChooseRobot;
-import sdp.pc.common.Constants;
+import sdp.pc.vision.relay.TCPClient;
 
 /**
  * ManualControl is a class for connecting to a robot and sending arbitrary
@@ -34,23 +29,20 @@ import sdp.pc.common.Constants;
  */
 public class ManualControl implements KeyListener {
 
-	/**
-	 * The object for sending commands to the connection
-	 */
-	private PrintWriter toServer;
+	private TCPClient tcpClient;
 
 	/**
-	 * The port under which the robot is connected
+	 * The robotID
 	 */
-	private final int serverPort;
+	private final int robotID;
 
 	/**
 	 * Simple constructor for a manual control instance
 	 * 
 	 * @param serverPort
 	 */
-	private ManualControl(int serverPort) {
-		this.serverPort = serverPort;
+	private ManualControl(int robotID) {
+		this.robotID = robotID;
 	}
 
 	/**
@@ -59,16 +51,16 @@ public class ManualControl implements KeyListener {
 	 * @throws IOException
 	 */
 	public void run() throws IOException {
-		InetAddress host = InetAddress.getByName(Constants.HOST);
-		System.out.println("Connecting to server on port " + serverPort);
-		Socket socket = new Socket(host, serverPort);
-		System.out.println("Just connected to "
-				+ socket.getRemoteSocketAddress());
-		toServer = new PrintWriter(socket.getOutputStream(), true);
-		BufferedReader fromServer = new BufferedReader(new InputStreamReader(
-				socket.getInputStream()));
-		String input = "";
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+		try {
+			tcpClient = new TCPClient(robotID);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Couldn't connect to the relay.");
+			return;
+		}
+
 		JFrame frame = new JFrame("control");
 		frame.setBounds(500, 500, 200, 50);
 		frame.setAlwaysOnTop(true);
@@ -78,13 +70,6 @@ public class ManualControl implements KeyListener {
 		frame.add(label);
 		frame.addKeyListener(this);
 		frame.setVisible(true);
-		while (!"quit".equalsIgnoreCase(input)) {
-			input = br.readLine();
-			toServer.println(input);
-		}
-		toServer.close();
-		fromServer.close();
-		socket.close();
 	}
 
 	/**
@@ -95,23 +80,8 @@ public class ManualControl implements KeyListener {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-
-		// Connect to a robot
-		int port;
-		switch (ChooseRobot.dialog()) {
-		case Constants.ATTACKER:
-			port = Constants.ATTACKER_PORT;
-			break;
-		case Constants.DEFENDER:
-			port = Constants.DEFENDER_PORT;
-			break;
-		default:
-			Exception e = new Exception("Couldn't select a robot...");
-			throw e;
-		}
-
-		// Run a manual control instance with the connected robot
-		new ManualControl(port).run();
+		// Run a manual control instance with the selected robot
+		new ManualControl(ChooseRobot.dialog()).run();
 	}
 
 	/**
@@ -127,44 +97,72 @@ public class ManualControl implements KeyListener {
 
 		// Left Arrow: Turn Left
 		case KeyCode.LEFT_ARROW:
-			toServer.println("l");
-			toServer.println(50);
+			try {
+				tcpClient.sendCommand((byte) 3, 50);
+			} catch (Exception e7) {
+				// TODO Auto-generated catch block
+				e7.printStackTrace();
+			}
 			break;
 
 		// Up Arrow: Move Forward
 		case KeyCode.UP_ARROW:
-			toServer.println("f");
-			toServer.println(50);
+			try {
+				tcpClient.sendCommand((byte) 1, 50);
+			} catch (Exception e6) {
+				// TODO Auto-generated catch block
+				e6.printStackTrace();
+			}
 			break;
 
 		// Right Arrow: Turn Right
 		case KeyCode.RIGHT_ARROW:
-			toServer.println("r");
-			toServer.println(50);
+			try {
+				tcpClient.sendCommand((byte) 4, 50);
+			} catch (Exception e5) {
+				// TODO Auto-generated catch block
+				e5.printStackTrace();
+			}
 			break;
 
 		// Down Arrow: Move Backward
 		case KeyCode.DOWN_ARROW:
-			toServer.println("b");
-			toServer.println(50);
+			try {
+				tcpClient.sendCommand((byte) 2, 50);
+			} catch (Exception e4) {
+				// TODO Auto-generated catch block
+				e4.printStackTrace();
+			}
 			break;
 
 		// s: Stop
 		case KeyCode.S:
-			toServer.println("s");
-			toServer.println(50);
+			try {
+				tcpClient.sendCommand((byte) 5, 50);
+			} catch (Exception e3) {
+				// TODO Auto-generated catch block
+				e3.printStackTrace();
+			}
 			break;
 
 		// Space bar: Kick
 		case KeyCode.SPACE_BAR:
-			toServer.println("k");
-			toServer.println(2222);
+			try {
+				tcpClient.sendCommand((byte) 6, 5000);
+			} catch (Exception e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
 			break;
 
 		// g: Grab
 		case KeyCode.G:
-			toServer.println("g");
-			toServer.println(2222);
+			try {
+				tcpClient.sendCommand((byte) 7, 0);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			break;
 		}
 	}

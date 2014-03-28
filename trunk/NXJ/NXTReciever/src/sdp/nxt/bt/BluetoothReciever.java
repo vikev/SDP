@@ -1,4 +1,4 @@
-package sdp.nxt;
+package sdp.nxt.bt;
 
 import java.io.DataInputStream;
 

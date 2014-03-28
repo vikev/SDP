@@ -2,7 +2,11 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="lib" path="lib/bluecove-gpl.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/bluecove.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/bluecove.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="PCControl/lib"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="lib/pccomm.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/v4l4j.jar">
 		<attributes>

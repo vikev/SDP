@@ -3,7 +3,7 @@ package sdp.pc.vision.relay;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -15,7 +15,7 @@ import sdp.pc.common.Constants;
  * commands.
  */
 public class TCPClient {
-	private PrintWriter toServer;
+	private OutputStream toServer;
 	private BufferedReader fromServer;
 	private Socket socket;
 	private boolean connected = false;
@@ -55,7 +55,7 @@ public class TCPClient {
 			socket = new Socket(host, serverPort);
 			System.out.println("Just connected to "
 					+ socket.getRemoteSocketAddress());
-			toServer = new PrintWriter(socket.getOutputStream(), true);
+			toServer = socket.getOutputStream();
 			fromServer = new BufferedReader(new InputStreamReader(
 					socket.getInputStream()));
 			connected = true;
@@ -70,10 +70,14 @@ public class TCPClient {
 		return false;
 	}
 
-	public boolean sendCommand(char command, int arg) throws Exception {
+	public boolean sendCommand(byte command, int arg) throws Exception {
+		byte[] data = new byte[3];
+		byte[] power = shortToByteArray((short) arg);
+		data[0] = command;
+		data[1] = power[0];
+		data[2] = power[1];
 		if (connected) {
-			toServer.println(command);
-			toServer.println(arg);
+			toServer.write(data, 0, 3);
 			return true;
 		} else {
 			if (connect()) {
@@ -105,5 +109,9 @@ public class TCPClient {
 	 */
 	public int getRobotId() {
 		return robotId;
+	}
+
+	private byte[] shortToByteArray(short s) {
+		return new byte[] { (byte) ((s & 0xFF00) >> 8), (byte) (s & 0x00FF) };
 	}
 }
