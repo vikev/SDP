@@ -132,6 +132,10 @@ public class Robot {
 	 * The point the defender was at when bouncePoint was calculated
 	 */
 	public Point2 defenderPosWhenBouncePointcalc = new Point2(0, 0);
+	
+	public boolean turnedTowardsTopOfGoal = false;
+	
+	public boolean holdingball = false;
 
 	/**
 	 * Class for controlling a robot from a more abstract point of view
@@ -472,7 +476,15 @@ public class Robot {
 		}
 		return false;
 	}
-
+	public void grabBall() throws Exception{
+		Point2 ball = state.getBallPosition();
+		Point2 currentPos = state.getRobotPosition(getTeam(), getId());
+		if (goTo(ball.offset(15.0, ball.angleTo(currentPos)), 10.0)) {
+			driver.stop();
+			driver.grab();
+			holdingball = true;
+		}
+	}
 	/**
 	 * Method for telling the robot to kick the ball to a point
 	 * 
@@ -502,6 +514,7 @@ public class Robot {
 		} else if (kickSubState >= 12) {
 			driver.stop();
 			driver.kick(900);
+			holdingball = false;
 			kickSubState++;
 			if (kickSubState >= 20) {
 				kickSubState = 0;
@@ -510,26 +523,61 @@ public class Robot {
 	}
 
 	/**
-	 * Kicks stationary ball. Assumes robot is already at the approach point.
+	 * Kicks an already grabbed ball. Assumes robot is already at the shoot point.
 	 * 
+	 * @param target - point to kick the ball to
 	 * @throws InterruptedException
 	 * @throws Exception
 	 */
-	public boolean kickStationaryBall() throws InterruptedException, Exception {
-		Point2 ballPosition = state.getBallPosition();
-
-		// Turn towards ball
-		if (turnTo(ballPosition, SAFE_ANGLE_EPSILON)) {
+	public boolean kickGrabbedBallTo(Point2 target) throws InterruptedException, Exception {
+		if (turnTo(target, SAFE_ANGLE_EPSILON)) {
 			driver.stop();
 			Thread.sleep(100);
-			driver.stop();
-			// Move slightly forward and kick
-			driver.forward(80);
-			Thread.sleep(1000);
-			driver.kick(5000);
+			driver.kick(900);
+			holdingball = false;
 			return true;
 		}
 		return false;
+	}
+	/**
+	 * Attempts to score by first navigating to a point next to the opposing defenders
+	 * zone in the centre of the our attackers quadrant. It then turns the robot to face
+	 * the top corner of the opposing goal in an attempt to move the opposing defender into
+	 * a position away from the centre of the goal. The robot then kicks the ball towards the
+	 * opposite corner. Since the robot only performs this strategy if it has already grabbed
+	 * the ball it is safe to assume that the attackers state won't change during this strategies execution.
+	 * 
+	 * @throws Exception 
+	 * @throws InterruptedException 
+	 */
+	public void shootStrategy1() throws InterruptedException, Exception{
+		Point2 topCorner = new Point2(0,0);
+		Point2 bottomCorner = new Point2(0,0);
+		Point2 shootPoint = Pitch.getQuadrantCentres()[getMyQuadrant()-1];
+		if(state.getDirection() == 1){
+			topCorner = state.getLeftGoalCentre();
+			topCorner.setY(topCorner.getY() - 65);
+			bottomCorner = state.getLeftGoalCentre();
+			bottomCorner.setY(topCorner.getY() + 65);
+			shootPoint.setY(shootPoint.getY() + 40);
+		}else{
+			topCorner = state.getRightGoalCentre();
+			topCorner.setY(topCorner.getY() - 65);
+			bottomCorner = state.getRightGoalCentre();
+			bottomCorner.setY(topCorner.getY() + 65);
+			shootPoint.setY(shootPoint.getY() - 40);
+		}
+		
+		//Move to centre of quadrant near enemy defenders quadrant
+		if (goTo(shootPoint, 4)){
+			//Attempt to make opposing defender go into a corner
+			if(turnedTowardsTopOfGoal){			
+				if(kickGrabbedBallTo(bottomCorner))
+					turnedTowardsTopOfGoal = false;
+			}else if(turnTo(topCorner, 6)){
+				turnedTowardsTopOfGoal = true;
+			}
+		}
 	}
 
 	/**
@@ -654,7 +702,7 @@ public class Robot {
 		if (enemyAttacker.getY() > pitch.getTableCentre().getY()) {
 			bouncetop = true;
 			if (state.getPitchId() == 0) {
-				testy = 78;
+				testy = 70;
 			} else {
 				testy = 96;
 			}

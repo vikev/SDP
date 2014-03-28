@@ -80,6 +80,15 @@ public class Strategy implements Runnable {
 	private static Strategy instance;
 
 	private boolean interrupted = false;
+	
+	/**
+	 * Executes a shoot strategy. Could have conditions on which strategy to use in the future.
+	 * @throws InterruptedException
+	 * @throws Exception
+	 */
+	private static void executeShootStrategy() throws InterruptedException, Exception{
+		attacker.shootStrategy1();
+	}
 
 	static Point2 basicGoalTarget() {
 		ArrayList<Point2> pts = state.getPitch().getArrayListOfPoints();
@@ -272,10 +281,11 @@ public class Strategy implements Runnable {
 				attacker.setState(Robot.State.DEFEND_BALL);
 			} else {
 				defender.setState(Robot.State.DEFEND_BALL);
-				if (attacker.getState() != Robot.State.GET_BALL) {
-					target = getTheirGoalRandom();
+				if (attacker.holdingball) {
+					attacker.setState(Robot.State.ATTEMPT_GOAL);
+				}else{
+					attacker.setState(Robot.State.GET_BALL);
 				}
-				attacker.setState(Robot.State.GET_BALL);
 			}
 		} else if (position.equals("Our Defender")) {
 			if (speed > FAST_BALL_SPEED && defender.getSubState() == 0) {
@@ -365,7 +375,9 @@ public class Strategy implements Runnable {
 		} else if (botState == Robot.State.DEFEND_ENEMY_DEFENDER) {
 			attacker.defendRobot(attacker.getOtherTeam(), attacker.getId());
 		} else if (botState == Robot.State.GET_BALL) {
-			attacker.kickBallToPoint(Strategy.basicGoalTarget());
+			attacker.grabBall();
+		}else if (botState == Robot.State.ATTEMPT_GOAL){
+			executeShootStrategy();
 		} else if (botState == Robot.State.RESET) {
 			
 			// TODO: Just go there the best way
