@@ -561,7 +561,7 @@ public class Robot {
 		if (opposingDefender == 1){
 			opposingDefender = 0;
 		}else{
-			opposingDefender = 0;
+			opposingDefender = 1;
 		}
 		if(state.getDirection() == 1){
 			topCorner = state.getLeftGoalCentre();

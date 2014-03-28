@@ -182,10 +182,10 @@ public class Pitch {
 		goalLineY[0] = cy.x;
 		goalLineY[1] = cy.y;
 		
-		getQuadrantCentres()[0] = getQuadrantCenter(1);
-		getQuadrantCentres()[1] = getQuadrantCenter(2);
-		getQuadrantCentres()[2] = getQuadrantCenter(3);
-		getQuadrantCentres()[3] = getQuadrantCenter(4);
+		quadrantCentres[0] = getQuadrantCenter(1);
+		quadrantCentres[1] = getQuadrantCenter(2);
+		quadrantCentres[2] = getQuadrantCenter(3);
+		quadrantCentres[3] = getQuadrantCenter(4);
 
 		initialized = true;
 		return true;
