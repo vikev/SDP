@@ -559,13 +559,13 @@ public class Robot {
 			topCorner.setY(topCorner.getY() - 65);
 			bottomCorner = state.getLeftGoalCentre();
 			bottomCorner.setY(topCorner.getY() + 65);
-			shootPoint.setY(shootPoint.getY() + 40);
+			shootPoint.setX(shootPoint.getX() + 40);
 		}else{
 			topCorner = state.getRightGoalCentre();
 			topCorner.setY(topCorner.getY() - 65);
 			bottomCorner = state.getRightGoalCentre();
 			bottomCorner.setY(topCorner.getY() + 65);
-			shootPoint.setY(shootPoint.getY() - 40);
+			shootPoint.setX(shootPoint.getX() - 40);
 		}
 		
 		//Move to centre of quadrant near enemy defenders quadrant
