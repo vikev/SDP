@@ -554,6 +554,15 @@ public class Robot {
 		Point2 topCorner = new Point2(0,0);
 		Point2 bottomCorner = new Point2(0,0);
 		Point2 shootPoint = Pitch.getQuadrantCentres()[getMyQuadrant()-1];
+		
+		//get opposing attackers ID
+		int opposingDefender = getOtherId(); 
+		//change ID to opposing defender's
+		if (opposingDefender == 1){
+			opposingDefender = 0;
+		}else{
+			opposingDefender = 0;
+		}
 		if(state.getDirection() == 1){
 			topCorner = state.getLeftGoalCentre();
 			topCorner.setY(topCorner.getY() - 65);
@@ -568,12 +577,18 @@ public class Robot {
 			shootPoint.setX(shootPoint.getX() - 40);
 		}
 		
-		//Move to centre of quadrant near enemy defenders quadrant
-		if (goTo(shootPoint, 4)){
-			//Attempt to make opposing defender go into a corner
-			if(turnedTowardsTopOfGoal){			
-				if(kickGrabbedBallTo(bottomCorner))
-					turnedTowardsTopOfGoal = false;
+		//Move to a point close to the opposing defender's zone that also 
+		//has the y coordinate of the centre of our attackers quadrant.
+		if (goTo(shootPoint, 10)){
+			//Attempt to make opposing defender go into the top corner of the goal
+			if(turnedTowardsTopOfGoal){
+				Thread.sleep(1000);
+				if(isEnemyDefenderBlocking(state.getRobotPosition(getOtherTeam(), opposingDefender), state.getRobotPosition(myTeam, myIdentifier), topCorner)){
+					if(kickGrabbedBallTo(bottomCorner))
+						turnedTowardsTopOfGoal = false;
+				}else{
+					kickGrabbedBallTo(topCorner);
+				}
 			}else if(turnTo(topCorner, 6)){
 				turnedTowardsTopOfGoal = true;
 			}
@@ -615,20 +630,20 @@ public class Robot {
 	}
 
 	/**
-	 * Attempts to discern whether the enemy team's defender would block a
-	 * direct pass between our robots. Currently only uses safe(large) estimates
-	 * for the enemy attacker's dimensions. Calculates if a line drawn between
-	 * our defender and attacker intersects with any of the edges of a box drawn
-	 * around the enemy attacker.
+	 * Attempts to discern whether the enemy team's defender would block the
+	 * ball if it was kicked to the target point. Currently only uses safe(large) estimates
+	 * for the opposing robots dimensions. Calculates if a line drawn between
+	 * our robot and the target point intersects with any of the edges of a box drawn
+	 * around the enemy defender.
 	 * 
 	 * @param enemyDefender
-	 * @param ourDefender
-	 * @param ourAttacker
+	 * @param ourRobot
+	 * @param target
 	 * @return
 	 */
 
 	public static boolean isEnemyDefenderBlocking(Point2 enemyDefender,
-			Point2 ourDefender, Point2 ourAttacker) {
+			Point2 ourRobot, Point2 target) {
 		int xrange = 70, yrange = 70;
 		int xrangeDiv2 = (int) Math.floor(xrange / 2);
 		int yrangeDiv2 = (int) Math.floor(yrange / 2);
@@ -647,14 +662,14 @@ public class Robot {
 		// Calculate the intersection point between a line drawn between our
 		// Attacker and Defender
 		// and each edge of a box drawn around the enemy defender
-		Point2D.Double IntersectionTop = getLinesIntersection(ourDefender,
-				ourAttacker, topLeft, topRight);
-		Point2D.Double IntersectionBottom = getLinesIntersection(ourDefender,
-				ourAttacker, bottomLeft, bottomRight);
-		Point2D.Double IntersectionRight = getLinesIntersection(ourDefender,
-				ourAttacker, bottomRight, topRight);
-		Point2D.Double IntersectionLeft = getLinesIntersection(ourDefender,
-				ourAttacker, topLeft, bottomLeft);
+		Point2D.Double IntersectionTop = getLinesIntersection(ourRobot,
+				target, topLeft, topRight);
+		Point2D.Double IntersectionBottom = getLinesIntersection(ourRobot,
+				target, bottomLeft, bottomRight);
+		Point2D.Double IntersectionRight = getLinesIntersection(ourRobot,
+				target, bottomRight, topRight);
+		Point2D.Double IntersectionLeft = getLinesIntersection(ourRobot,
+				target, topLeft, bottomLeft);
 
 		boolean noIntersection = (IntersectionTop.getX()
 				+ IntersectionTop.getY() + IntersectionBottom.getX()
