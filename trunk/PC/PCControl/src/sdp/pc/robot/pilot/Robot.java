@@ -128,6 +128,8 @@ public class Robot {
 
 	// TODO:
 	private int turnSubState = 0;
+	
+	private int shootStratSubState = 0;
 
 	/**
 	 * The most recently calculated bounce Point
@@ -621,13 +623,16 @@ public class Robot {
 		//has the y coordinate of the centre of our attackers quadrant.
 		if (goTo(shootPoint, 10)){
 			//Attempt to make opposing defender go into the top corner of the goal
-			if(turnedTowardsTopOfGoal){
-				Thread.sleep(1000);
-				if(isEnemyDefenderBlocking(state.getRobotPosition(getOtherTeam(), opposingDefender), state.getRobotPosition(myTeam, myIdentifier), topCorner)){
-					if(kickGrabbedBallTo(bottomCorner))
-						turnedTowardsTopOfGoal = false;
+			if(turnedTowardsTopOfGoal){;
+				if (shootStratSubState > 6){
+					if(isEnemyDefenderBlocking(state.getRobotPosition(getOtherTeam(), opposingDefender), state.getRobotPosition(myTeam, myIdentifier), topCorner)){
+						if(kickGrabbedBallTo(bottomCorner))
+							turnedTowardsTopOfGoal = false;
+					}else{
+						kickGrabbedBallTo(topCorner);
+					}
 				}else{
-					kickGrabbedBallTo(topCorner);
+					shootStratSubState++;
 				}
 			}else if(turnTo(topCorner, 6)){
 				turnedTowardsTopOfGoal = true;
