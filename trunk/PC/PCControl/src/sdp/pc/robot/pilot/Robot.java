@@ -1106,6 +1106,12 @@ public class Robot {
 				myIdentifier));
 	}
 
+	/**
+	 * TODO: Docu
+	 * 
+	 * @param q
+	 * @return
+	 */
 	public LinkedList<Point2> getQuadrantVertices(int q) {
 		ArrayList<Point2> pts = state.getPitch().getArrayListOfPoints();
 		LinkedList<Point2> vertices = new LinkedList<Point2>();
