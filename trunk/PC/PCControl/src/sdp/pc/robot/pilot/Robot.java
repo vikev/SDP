@@ -660,8 +660,8 @@ public class Robot {
 				enemyDefender.getY() + yrangeDiv2);
 
 		// Calculate the intersection point between a line drawn between our
-		// Attacker and Defender
-		// and each edge of a box drawn around the enemy defender
+		// robot and the target point and each edge of a box drawn around
+		// the enemy defender
 		Point2D.Double IntersectionTop = getLinesIntersection(ourRobot,
 				target, topLeft, topRight);
 		Point2D.Double IntersectionBottom = getLinesIntersection(ourRobot,
@@ -766,12 +766,12 @@ public class Robot {
 			}
 			angleDiff = Math.abs(requiredAngle - deflectAngle);
 
-			System.out.println("Attempt Number:" + attempt);
+/*			System.out.println("Attempt Number:" + attempt);
 			System.out.println("test Point: " + testPoint);
 			System.out.println("Predicted Deflection Angle: " + deflectAngle);
 			System.out.println("Required Deflection Angle:" + requiredAngle);
 			System.out.println("Difference: " + angleDiff + "\n");
-			attempt++;
+			attempt++;*/
 			if (bouncetop) {
 				if (deflectAngle > requiredAngle) {
 					if (!directionisleft) {
@@ -810,6 +810,7 @@ public class Robot {
 			length = Math.abs(rangeStart - rangeEnd);
 		}
 		bouncePoint = bestPoint;
+		defenderPosWhenBouncePointcalc = ourDefender;
 
 	}
 
