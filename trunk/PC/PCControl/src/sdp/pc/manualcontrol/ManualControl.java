@@ -54,6 +54,7 @@ public class ManualControl implements KeyListener {
 
 		try {
 			tcpClient = new TCPClient(robotID);
+			tcpClient.connect();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -97,73 +98,41 @@ public class ManualControl implements KeyListener {
 
 		// Left Arrow: Turn Left
 		case KeyCode.LEFT_ARROW:
-			try {
-				tcpClient.sendCommand((byte) 3, 50);
-			} catch (Exception e7) {
-				// TODO Auto-generated catch block
-				e7.printStackTrace();
-			}
+			tcpClient.sendCommand((byte) 3, 50);
 			break;
 
 		// Up Arrow: Move Forward
 		case KeyCode.UP_ARROW:
-			try {
-				tcpClient.sendCommand((byte) 1, 50);
-			} catch (Exception e6) {
-				// TODO Auto-generated catch block
-				e6.printStackTrace();
-			}
+			tcpClient.sendCommand((byte) 1, 50);
 			break;
 
 		// Right Arrow: Turn Right
 		case KeyCode.RIGHT_ARROW:
-			try {
-				tcpClient.sendCommand((byte) 4, 50);
-			} catch (Exception e5) {
-				// TODO Auto-generated catch block
-				e5.printStackTrace();
-			}
+			tcpClient.sendCommand((byte) 4, 50);
 			break;
 
 		// Down Arrow: Move Backward
 		case KeyCode.DOWN_ARROW:
-			try {
-				tcpClient.sendCommand((byte) 2, 50);
-			} catch (Exception e4) {
-				// TODO Auto-generated catch block
-				e4.printStackTrace();
-			}
+			tcpClient.sendCommand((byte) 2, 50);
 			break;
-
 		// s: Stop
 		case KeyCode.S:
-			try {
-				tcpClient.sendCommand((byte) 5, 50);
-			} catch (Exception e3) {
-				// TODO Auto-generated catch block
-				e3.printStackTrace();
-			}
+			tcpClient.sendCommand((byte) 5, 50);
 			break;
 
 		// Space bar: Kick
 		case KeyCode.SPACE_BAR:
-			try {
-				tcpClient.sendCommand((byte) 6, 5000);
-			} catch (Exception e2) {
-				// TODO Auto-generated catch block
-				e2.printStackTrace();
-			}
+			tcpClient.sendCommand((byte) 6, 5000);
 			break;
 
 		// g: Grab
 		case KeyCode.G:
-			try {
-				tcpClient.sendCommand((byte) 7, 0);
-			} catch (Exception e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+			tcpClient.sendCommand((byte) 7, 0);
 			break;
+		case KeyCode.O:
+			tcpClient.sendCommand((byte) 9, 0);
+			break;
+
 		}
 	}
 
@@ -219,5 +188,11 @@ public class ManualControl implements KeyListener {
 		 * The key code value for referencing a keyboard g button
 		 */
 		public static final int G = 71;
+
+		/**
+		 * The key code value for referencing a keyboard o button
+		 */
+		public static final int O = 79;
+
 	}
 }

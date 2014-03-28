@@ -48,47 +48,58 @@ public class TCPClient {
 	}
 
 	public boolean connect() {
-		try {
-			InetAddress host = InetAddress.getByName(serverAddress);
-			System.out.println("Connecting to server on port " + serverPort);
+		if (!connected) {
+			try {
+				InetAddress host = InetAddress.getByName(serverAddress);
+				System.out
+						.println("Connecting to server on port " + serverPort);
 
-			socket = new Socket(host, serverPort);
-			System.out.println("Just connected to "
-					+ socket.getRemoteSocketAddress());
-			toServer = socket.getOutputStream();
-			fromServer = new BufferedReader(new InputStreamReader(
-					socket.getInputStream()));
-			connected = true;
+				socket = new Socket(host, serverPort);
+				System.out.println("Just connected to "
+						+ socket.getRemoteSocketAddress());
+				toServer = socket.getOutputStream();
+				fromServer = new BufferedReader(new InputStreamReader(
+						socket.getInputStream()));
+				connected = true;
+				return true;
+			} catch (UnknownHostException ex) {
+				ex.printStackTrace();
+				connected = false;
+			} catch (IOException e) {
+				e.printStackTrace();
+				connected = false;
+			}
+			return false;
+		} else {
 			return true;
-		} catch (UnknownHostException ex) {
-			ex.printStackTrace();
-			connected = false;
-		} catch (IOException e) {
-			e.printStackTrace();
-			connected = false;
 		}
-		return false;
 	}
 
-	public boolean sendCommand(byte command, int arg) throws Exception {
+	public boolean sendCommand(byte command, int arg) {
 		byte[] data = new byte[3];
 		byte[] power = shortToByteArray((short) arg);
 		data[0] = command;
 		data[1] = power[0];
 		data[2] = power[1];
+		System.out.println("Sending");
+		if (!connected) {
+			connect();
+		}
 		if (connected) {
-			toServer.write(data, 0, 3);
-			return true;
-		} else {
-			if (connect()) {
-				return sendCommand(command, arg);
-			} else {
-				Exception e = new Exception(
-						"Couldn't establish a connection to " + serverAddress
-								+ ":" + serverPort + "!!!");
-				throw (e);
+			try {
+				toServer.write(data, 0, 3);
+				return true;
+			} catch (IOException e) {
+				try {
+					closeConnection();
+					connect();
+					toServer.write(data, 0, 3);
+				} catch (IOException f) {
+					return false;
+				}
 			}
 		}
+		return false;
 	}
 
 	public void closeConnection() {

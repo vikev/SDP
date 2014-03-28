@@ -56,6 +56,8 @@ public class Pitch {
 	int[] pitchY = new int[2];
 
 	int[] pitchCornerX = new int[2];
+	
+	private static Point2[] quadrantCentres = new Point2[4];
 
 	boolean initialized = false;
 
@@ -179,6 +181,11 @@ public class Pitch {
 
 		goalLineY[0] = cy.x;
 		goalLineY[1] = cy.y;
+		
+		getQuadrantCentres()[0] = getQuadrantCenter(1);
+		getQuadrantCentres()[1] = getQuadrantCenter(2);
+		getQuadrantCentres()[2] = getQuadrantCenter(3);
+		getQuadrantCentres()[3] = getQuadrantCenter(4);
 
 		initialized = true;
 		return true;
@@ -475,5 +482,13 @@ public class Pitch {
 
 	public boolean contains(Point2 q) {
 		return Alg.isInHull(new LinkedList<Point2>(getArrayListOfPoints()), q);
+	}
+
+	public static Point2[] getQuadrantCentres() {
+		return quadrantCentres;
+	}
+
+	public void setQuadrantCentres(Point2[] quadrantCentres) {
+		this.quadrantCentres = quadrantCentres;
 	}
 }

@@ -1,5 +1,6 @@
 package sdp.pc.relay;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -32,56 +33,52 @@ public class ConnectionThread implements Runnable {
 		this.conn1 = connection;
 	}
 
-	private InputStream is;
-
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-		try {
-			String input = "";
-			serverSocket = new ServerSocket(port);
-			while (true) {
-				if ("quit".equalsIgnoreCase(input)) {
-					break;
-				}
-				System.out.println("Waiting for client on port "
-						+ serverSocket.getLocalPort() + "...");
+		while (true) {
+			try {
+				serverSocket = new ServerSocket(port);
+				while (true) {
+					System.out.println("Waiting for client on port "
+							+ serverSocket.getLocalPort() + "...");
+					Socket server = serverSocket.accept();
+					System.out.println("Just connected to "
+							+ server.getRemoteSocketAddress());
 
-				Socket server = serverSocket.accept();
-				System.out.println("Just connected to "
-						+ server.getRemoteSocketAddress());
+					InputStream is = server.getInputStream();
 
-				is = server.getInputStream();
-				try {
 					while (true) {
-
 						try {
 							byte[] data = new byte[3];
-							is.read(data);
-							conn1.sendCommand(data);
+							if (is.read(data) == 3) {
+								if (conn1.isConnected()) {
+									conn1.sendCommand(data);
+								} else {
+									System.out.println("Not connected");
+								}
+							} else {
+								break;
+							}
 						} catch (Exception e) {
 							// TODO
 							System.out.println("Couldn't send command");
 							e.printStackTrace();
+							break;
 						}
 					}
-				} catch (Exception e) {
-					// whatever goes wrong wait for a new connection
-					System.err.println(e);
-					System.out.println("Socket would restart now");
-				}
-				// stop the robot if the connection is dropped or stopped
-				try {
+
+					// stop the robot if the connection is dropped or stopped
 					conn1.sendCommand(new byte[] { 5, 0, 0 });
-				} catch (Exception e) {
-					// TODO handle this
-					System.out.println("couldn't send the command.");
-					e.printStackTrace();
+
 				}
+			} catch (Exception e) {
+				try {
+					serverSocket.close();
+				} catch (IOException e1) {
+					// nothing
+				}
+				System.out.println("Restarting...");
 			}
-		} catch (Exception e) {
-			// TODO: restart somehow?
-			e.printStackTrace();
 		}
 	}
 }

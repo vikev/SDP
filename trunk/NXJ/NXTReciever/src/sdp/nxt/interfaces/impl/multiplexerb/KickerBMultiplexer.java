@@ -13,8 +13,8 @@ public class KickerBMultiplexer implements Kicker {
 	private byte forward = (byte) 1;
 	private byte backward = (byte) 2;
 
-	private byte speed = (byte) 100;
-	private byte supportSpeed = (byte) 30;
+	private byte speed = (byte) 200;
+	private byte supportSpeed = (byte) 100;
 
 	@SuppressWarnings("deprecation")
 	public KickerBMultiplexer(boolean isGrabberClosed) {
@@ -43,12 +43,12 @@ public class KickerBMultiplexer implements Kicker {
 	}
 
 	public void grab() {
-		action = false;
+		kick = false;
 	}
 
 	public void kick(int power) {
 		speedKick = power;
-		action = true;
+		kick = true;
 	}
 
 	public void kick() {
@@ -56,18 +56,23 @@ public class KickerBMultiplexer implements Kicker {
 	}
 
 	public boolean isClosed() {
-		return status;
+		return closed;
 	}
 
 	/**
 	 * what should i do grab/kick true = kick false = grab
 	 */
-	private boolean action = true;
+	private boolean kick = true;
 
 	/**
 	 * what I have done true = grabbed false = opened/kicked
 	 */
-	private boolean status = false;
+	private boolean closed = false;
+
+	/**
+	 * Flag for the open command
+	 */
+	private boolean open = false;
 
 	private int speedKick = 9999999;
 	Thread kickingThread = new Thread(new Runnable() {
@@ -75,27 +80,35 @@ public class KickerBMultiplexer implements Kicker {
 			int i = 0;
 			while (true) {
 				try {
-					// kick
-					if (action && status) {
+					// kick or open
+					if ((kick || open) && closed) {
+						System.out.println(open);
 						I2Csensor.sendData(0x02, speed);
 						I2Csensor.sendData(0x01, backward);
-						Thread.sleep(300);
-						Motor.B.setSpeed(speedKick);
-						Motor.B.rotate(-80);
-						Motor.B.rotate(80);
+						Thread.sleep(150);
+						// just open without kicking
+						if (!open) {
+							Motor.B.setSpeed(speedKick);
+							Motor.B.rotate(-80);
+							Motor.B.rotate(80);
+						} else {
+							kick = true;
+						}
 						I2Csensor.sendData(0x01, off);
-						status = !status;
-						// grab
-					} else if (!action && !status) {
+						closed = false;
+						open = false;
+					} else // grab
+					if (!kick && !closed) {
 						I2Csensor.sendData(0x02, speed);
 						I2Csensor.sendData(0x01, forward);
 						Thread.sleep(800);
 						I2Csensor.sendData(0x01, off);
-						status = !status;
+						closed = true;
+						open = false;
 					} else if (i > 7) {
 						i = 0;
 						I2Csensor.sendData(0x02, supportSpeed);
-						if (status) // keep open
+						if (closed) // keep open
 						{
 							I2Csensor.sendData(0x01, forward);
 						} else { // keep closed
@@ -111,4 +124,11 @@ public class KickerBMultiplexer implements Kicker {
 			}
 		}
 	});
+
+	/**
+	 * Just open without kicking
+	 */
+	public void open() {
+		open = true;
+	}
 }
