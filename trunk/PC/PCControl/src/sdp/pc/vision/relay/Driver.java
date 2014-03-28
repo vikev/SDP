@@ -29,7 +29,7 @@ public class Driver {
 	 * @throws Exception
 	 */
 	public boolean forward(int power) throws Exception {
-		return conn.sendCommand('f', power);
+		return conn.sendCommand((byte) 1, power);
 	}
 
 	/**
@@ -48,7 +48,7 @@ public class Driver {
 	 * @throws Exception
 	 */
 	public boolean backward(int power) throws Exception {
-		return conn.sendCommand('b', power);
+		return conn.sendCommand((byte) 2, power);
 	}
 
 	/**
@@ -68,7 +68,7 @@ public class Driver {
 	 * @throws Exception
 	 */
 	public boolean turnLeft(int deg) throws Exception {
-		return conn.sendCommand('l', deg);
+		return conn.sendCommand((byte) 3, deg);
 	}
 
 	/**
@@ -90,7 +90,7 @@ public class Driver {
 	 * @throws Exception
 	 */
 	public boolean turnRight(int deg) throws Exception {
-		return conn.sendCommand('r', deg);
+		return conn.sendCommand((byte) 4, deg);
 	}
 
 	/**
@@ -114,7 +114,7 @@ public class Driver {
 	 * @throws Exception
 	 */
 	public boolean kick(int power) throws Exception {
-		return conn.sendCommand('k', power);
+		return conn.sendCommand((byte) 6, power);
 	}
 
 	/**
@@ -125,7 +125,7 @@ public class Driver {
 	 * @throws Exception
 	 */
 	public boolean grab() throws Exception {
-		return conn.sendCommand('g', 0);
+		return conn.sendCommand((byte) 7, 0);
 	}
 
 	/**
@@ -135,11 +135,28 @@ public class Driver {
 	 * @throws Exception
 	 */
 	public boolean stop() throws Exception {
-		return conn.sendCommand('s', 0);
+		return conn.sendCommand((byte) 5, 0);
 	}
 
+	/**
+	 * Just change the moving speed
+	 * 
+	 * @param power
+	 * @return
+	 * @throws Exception
+	 */
 	public boolean setSpeed(int power) throws Exception {
-		return conn.sendCommand('p', power);
+		return conn.sendCommand((byte) 8, power);
+	}
+
+	/**
+	 * Open without kicking.
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public boolean open() throws Exception {
+		return conn.sendCommand((byte) 9, 0);
 	}
 
 	/**
@@ -148,4 +165,5 @@ public class Driver {
 	public int getRobotId() {
 		return robotId;
 	}
+
 }

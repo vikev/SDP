@@ -26,4 +26,6 @@ public interface Kicker {
 	 * @return
 	 */
 	public boolean isClosed();
+
+	public void open();
 }

@@ -136,20 +136,18 @@ public class BTConnection {
 	}
 
 	/**
-	 * Sends a (char,double) pair to the robot which corresponds to a command
+	 * Sends a byte array to the robot which corresponds to a command
 	 * 
-	 * @param code
-	 *            the command (e.g. 'k' = kick)
-	 * @param param
-	 *            the command parameter (e.g. 500.0 is a kick with speed 500)
+	 * @param data
+	 *            data[0] - command, data[1]+data[2] - short power value
 	 * @return
 	 */
-	public boolean sendCommand(char code, int param) {
+	public boolean sendCommand(byte[] data) {
 		boolean success = true;
 		try {
-			dos.writeChar(code);
-			dos.writeInt(param);
+			dos.write(data);
 			dos.flush();
+
 		} catch (IOException ioe) {
 			success = false;
 			System.out.println("IO Exception writing bytes:");
@@ -157,4 +155,5 @@ public class BTConnection {
 		}
 		return success;
 	}
+
 }
