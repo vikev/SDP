@@ -50,13 +50,13 @@ public class Constants {
 	 * Approximate measurements of robots in pixels (could change to
 	 * centimetres); these values haven't yet been measured. 
 	 */
-	public static final int DEFENDER_LENGTH = 20;
+	public static final int DEFENDER_LENGTH = 40;
 
 	/**
 	 * Approximate measurements of robots in pixels (could change to
 	 * centimetres); these values haven't yet been measured. 
 	 */
-	public static final int DEFENDER_WIDTH = 20;
+	public static final int DEFENDER_WIDTH = 40;
 	
 	/**
 	 * Approximate heights of robots in CENTIMETRES. Currently using the max height
@@ -68,8 +68,6 @@ public class Constants {
 	/**
 	 * Approximate height of the camera above the pitch in CENTIMETRES; assumed 
 	 * to be the same for both pitches at the moment.
-	 * 
-	 * TODO: Get more accurate number
 	 */
 	public static final int CAMERA_HEIGHT = 244;
 	

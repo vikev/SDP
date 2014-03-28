@@ -32,7 +32,7 @@ public class Alg {
 		}
 	}
 
-	private static Point2 getCentroid(LinkedList<Point2> vertices) {
+	public static Point2 getCentroid(LinkedList<Point2> vertices) {
 		double x = 0, y = 0, k = vertices.size();
 		for (Point2 q : vertices) {
 			x += q.getX();

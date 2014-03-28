@@ -81,7 +81,6 @@ public class TCPClient {
 		data[0] = command;
 		data[1] = power[0];
 		data[2] = power[1];
-		System.out.println("Sending");
 		if (!connected) {
 			connect();
 		}

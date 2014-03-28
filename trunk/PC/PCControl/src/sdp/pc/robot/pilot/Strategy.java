@@ -281,11 +281,11 @@ public class Strategy implements Runnable {
 				attacker.setState(Robot.State.DEFEND_BALL);
 			} else {
 				defender.setState(Robot.State.DEFEND_BALL);
-				if (attacker.holdingball) {
-					attacker.setState(Robot.State.ATTEMPT_GOAL);
-				}else{
+				//if (attacker.holdingball) {
+				//	attacker.setState(Robot.State.ATTEMPT_GOAL);
+				//}else{
 					attacker.setState(Robot.State.GET_BALL);
-				}
+				//}
 			}
 		} else if (position.equals("Our Defender")) {
 			if (speed > FAST_BALL_SPEED && defender.getSubState() == 0) {
@@ -310,11 +310,11 @@ public class Strategy implements Runnable {
 
 		// Override all states to "reset" if the robot gets close to its
 		// boundary
-		if (attacker.nearBoundary()) {
+		if (attacker.nearBoundary() && attacker.getKickSubState() >= 0) {
 			attacker.setState(Robot.State.RESET);
 			System.err.println("Resetting attacker");
 		}
-		if (defender.nearBoundary()) {
+		if (defender.nearBoundary() && defender.getKickSubState() >= 0) {
 			defender.setState(Robot.State.RESET);
 			System.err.println("Resetting defender");
 		}
@@ -375,7 +375,8 @@ public class Strategy implements Runnable {
 		} else if (botState == Robot.State.DEFEND_ENEMY_DEFENDER) {
 			attacker.defendRobot(attacker.getOtherTeam(), attacker.getId());
 		} else if (botState == Robot.State.GET_BALL) {
-			attacker.grabBall();
+			//attacker.grabBall();
+			attacker.kickBallToPoint(basicGoalTarget());
 		}else if (botState == Robot.State.ATTEMPT_GOAL){
 			executeShootStrategy();
 		} else if (botState == Robot.State.RESET) {
@@ -446,6 +447,7 @@ public class Strategy implements Runnable {
 	 * 
 	 * @return
 	 */
+	@SuppressWarnings("unused")
 	private static Point2 getTheirGoalRandom() {
 		if (state.getDirection() == 0) {
 			return state.getPitch().getLeftGoalRandom();
@@ -474,8 +476,8 @@ public class Strategy implements Runnable {
 	private void executeStrategy() throws Exception {
 
 		Thread.sleep(1000);
-		attacker.getDriver().kick(900);
-		defender.getDriver().kick(900);
+		attacker.getDriver().open();
+		defender.getDriver().open();
 		Thread.sleep(500);
 		while (true) {
 			try {

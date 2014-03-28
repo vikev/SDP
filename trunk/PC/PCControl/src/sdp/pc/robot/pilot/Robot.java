@@ -63,6 +63,12 @@ public class Robot {
 	 * safe angle value to use
 	 */
 	private static final double SAFE_ANGLE_EPSILON = 8.0;
+	
+	/**
+	 * Determines how much you want to squeeze the fields (for making sure the
+	 * bots stay in their fields)
+	 */
+	private static final double HULL_OFFSET = 60.0;
 
 	/**
 	 * The primitive driver used to control the NXT
@@ -476,6 +482,7 @@ public class Robot {
 		}
 		return false;
 	}
+	
 	public void grabBall() throws Exception{
 		Point2 ball = state.getBallPosition();
 		Point2 currentPos = state.getRobotPosition(getTeam(), getId());
@@ -496,28 +503,60 @@ public class Robot {
 		// Turn to ball, move to ball, grab the ball, turn to the point, kick
 		Point2 ball = state.getBallPosition();
 		Point2 pos = state.getRobotPosition(getTeam(), getId());
-
-		if (kickSubState == 0) {
-			if (goTo(ball.offset(15.0, ball.angleTo(pos)), 10.0)) {
-				driver.stop();
-				driver.grab();
-				kickSubState = 1;
+		
+		// If not grabbed ball yet
+		if (kickSubState <= 0) {
+			// If ball close to wall
+			if (!Alg.inMinorHullWeighted(getQuadrantVerticesWide(getMyQuadrant()),
+					15, ball, 0.05, 1)) {
+				// First go to x-coordinate of ball, then to ball itself
+				if (kickSubState == 0) kickSubState = -2;
+				if (kickSubState == -2 && goTo(new Point2(ball.x, pos.y), 20.0)) {
+					kickSubState = -1;
+				}
+				if (kickSubState == -1) {
+					// Offset ball slightly away from boundary
+					ball = new Point2(ball.offset(4, ball.angleTo(
+							Pitch.getQuadrantCentres()[getMyQuadrant()-1])).x, ball.y);
+					// If close to ball, grab
+					if (goTo(ball.offset(16.0, ball.angleTo(pos)), 10.0)) {
+						driver.stop();
+						driver.grab();
+						driver.backward(10);
+						kickSubState = 1;
+					}
+				}
+			// If ball is not close to wall, do it simply
+			} else {
+				if (kickSubState < 0) kickSubState = 0;
+				if (goTo(ball.offset(15.0, ball.angleTo(pos)), 10.0)) {
+					driver.stop();
+					driver.grab();
+					kickSubState = 1;
+				}
 			}
 		} else if (kickSubState < 4) {
 			kickSubState++;
 		}
-		if (kickSubState >= 4 && kickSubState < 12) {
-			if (turnTo(where, 9.0)) {
-				driver.stop();
-				kickSubState++;
+		// If this is attacker, do Shoot Strategy
+		if (myIdentifier == state.getDirection()) {
+			if (kickSubState>=4) {
+				shootStrategy1();
 			}
-		} else if (kickSubState >= 12) {
-			driver.stop();
-			driver.kick(900);
-			holdingball = false;
-			kickSubState++;
-			if (kickSubState >= 20) {
-				kickSubState = 0;
+		} else {  // If defender, shoot to attacker
+			if (kickSubState >= 4 && kickSubState < 12) {
+				if (turnTo(where, 9.0)) {
+					driver.stop();
+					kickSubState++;
+				}
+			} else if (kickSubState >= 12) {
+				driver.stop();
+				driver.kick(900);
+				holdingball = false;
+				kickSubState++;
+				if (kickSubState >= 20) {
+					kickSubState = 0;
+				}
 			}
 		}
 	}
@@ -534,6 +573,7 @@ public class Robot {
 			driver.stop();
 			Thread.sleep(100);
 			driver.kick(900);
+			kickSubState = 0;
 			holdingball = false;
 			return true;
 		}
@@ -553,7 +593,7 @@ public class Robot {
 	public void shootStrategy1() throws InterruptedException, Exception{
 		Point2 topCorner = new Point2(0,0);
 		Point2 bottomCorner = new Point2(0,0);
-		Point2 shootPoint = Pitch.getQuadrantCentres()[getMyQuadrant()-1];
+		Point2 shootPoint = Pitch.getQuadrantCentres()[getMyQuadrant()-1].copy();
 		
 		//get opposing attackers ID
 		int opposingDefender = getOtherId(); 
@@ -612,7 +652,6 @@ public class Robot {
 		// is needed to pass the ball to our attacker.
 		if (ourAttacker.equals(Point2.EMPTY)) {
 			kickBallToPoint(Strategy.basicGoalTarget());
-			System.out.println(Strategy.basicGoalTarget().toString());
 		} else if (isEnemyDefenderBlocking(enemyAttacker, ourDefender,
 				ourAttacker)) {
 
@@ -929,6 +968,15 @@ public class Robot {
 	public void setSubState(int s) {
 		this.subState = s;
 	}
+	
+	/**
+	 * Getter method for the kick sub-state of the robot.
+	 * 
+	 * @return
+	 */
+	public int getKickSubState() {
+		return this.kickSubState;
+	}
 
 	/**
 	 * Makes the robot, which should already be perpendicular, move forward or
@@ -978,7 +1026,7 @@ public class Robot {
 	private static int getRotateSpeed(double rotateBy, double epsilon) {
 		// TODO: Should be refactored (constants)
 		double maxSpeed = 180.0;
-		double minSpeed = 35.0;
+		double minSpeed = 15.0;
 		double maxRotate = 180.0;
 		double minRotate = epsilon;
 		rotateBy = Math.abs(rotateBy);
@@ -1039,7 +1087,12 @@ public class Robot {
 		dist = Math.abs(dist);
 
 		// Don't change this! Change the constants
-		return (int) (((maxSpeed - minSpeed) / (maxDist) * dist) + minSpeed);
+		if (kickSubState < 0) {
+			return (int) ((((maxSpeed - minSpeed) / (maxDist) * dist) + minSpeed)/1.5);
+		 } else {
+			return (int) (((maxSpeed - minSpeed) / (maxDist) * dist) + minSpeed);
+		 }
+		
 	}
 
 	/**
@@ -1259,12 +1312,11 @@ public class Robot {
 		lastQuadrant = q;
 
 		Point2 pos = state.getRobotPosition(myTeam, myIdentifier);
-		double distOffs = 60.0;
 		LinkedList<Point2> vertices = getQuadrantVerticesWide(q);
 
 		if (vertices.size() > 2) {
 			return !Alg.inMinorHullWeighted(new LinkedList<Point2>(vertices),
-					distOffs, pos, 1.0, 0.05);
+					HULL_OFFSET, pos, 1.0, 0.05);
 		} else {
 			return false;
 		}
