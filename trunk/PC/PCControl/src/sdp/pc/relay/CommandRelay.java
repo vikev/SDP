@@ -62,6 +62,9 @@ public class CommandRelay {
 	private ConnectionThread serverDefender = new ConnectionThread(
 			connToDefender, Constants.DEFENDER);
 
+	/**
+	 * Change attacker
+	 */
 	private RadioActionListener attackerBrickListener = new RadioActionListener() {
 		@Override
 		public void selectedChanged(JRadioButton selectedButton,
@@ -85,6 +88,9 @@ public class CommandRelay {
 		serverDefender.changeConnection(connToDefender);
 	}
 
+	/**
+	 * Connect to brick A
+	 */
 	private ActionListener actionListenerConnectA = new ActionListener() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -98,6 +104,9 @@ public class CommandRelay {
 
 	};
 
+	/**
+	 * Connect to brick B
+	 */
 	private ActionListener actionListenerConnectB = new ActionListener() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -111,6 +120,9 @@ public class CommandRelay {
 
 	};
 
+	/**
+	 * Disconnect from A
+	 */
 	private ActionListener actionListenerDisconnectA = new ActionListener() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -121,6 +133,9 @@ public class CommandRelay {
 		}
 	};
 
+	/**
+	 * Disconnect from B
+	 */
 	private ActionListener actionListenerDisconnectB = new ActionListener() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
