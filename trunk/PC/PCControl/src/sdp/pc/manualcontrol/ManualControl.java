@@ -164,6 +164,15 @@ public class ManualControl implements KeyListener {
 				e1.printStackTrace();
 			}
 			break;
+		case KeyCode.O:
+			try {
+				tcpClient.sendCommand((byte) 9, 0);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			break;
+
 		}
 	}
 
@@ -219,5 +228,11 @@ public class ManualControl implements KeyListener {
 		 * The key code value for referencing a keyboard g button
 		 */
 		public static final int G = 71;
+
+		/**
+		 * The key code value for referencing a keyboard o button
+		 */
+		public static final int O = 79;
+
 	}
 }

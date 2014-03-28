@@ -138,8 +138,25 @@ public class Driver {
 		return conn.sendCommand((byte) 5, 0);
 	}
 
+	/**
+	 * Just change the moving speed
+	 * 
+	 * @param power
+	 * @return
+	 * @throws Exception
+	 */
 	public boolean setSpeed(int power) throws Exception {
 		return conn.sendCommand((byte) 8, power);
+	}
+
+	/**
+	 * Open without kicking.
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public boolean open() throws Exception {
+		return conn.sendCommand((byte) 9, 0);
 	}
 
 	/**
