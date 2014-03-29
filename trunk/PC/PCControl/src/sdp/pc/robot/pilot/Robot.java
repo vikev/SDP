@@ -494,7 +494,7 @@ public class Robot {
 	public void grabBall() throws Exception{
 		Point2 ball = state.getBallPosition();
 		Point2 currentPos = state.getRobotPosition(getTeam(), getId());
-		if (goTo(ball.offset(15.0, ball.angleTo(currentPos)), 10.0)) {
+		if (goTo(ball.offset(25.0, ball.angleTo(currentPos)), 10.0)) {
 			driver.stop();
 			driver.grab();
 			holdingball = true;
@@ -528,8 +528,11 @@ public class Robot {
 					ball = new Point2(ball.offset(4, ball.angleTo(
 							Pitch.getQuadrantCentres()[getMyQuadrant()-1])).x, ball.y);
 					// If close to ball, grab
-					if (goTo(ball.offset(16.0 + 8*pitchId, ball.angleTo(pos)), 10.0)) {
+					System.out.println("Check if close to ball");
+					if (goTo(ball.offset(16.0 + 30*pitchId, ball.angleTo(pos)), 20.0)) {
+
 						driver.stop();
+						System.out.println("Grab!");
 						driver.grab();
 						driver.backward(10);
 						kickSubState = 1;
@@ -538,7 +541,8 @@ public class Robot {
 			// If ball is not close to wall, do it simply
 			} else {
 				if (kickSubState < 0) kickSubState = 0;
-				if (goTo(ball.offset(15.0 + 8*pitchId, ball.angleTo(pos)), 10.0)) {
+				if (goTo(ball.offset(15.0 + 30*pitchId, ball.angleTo(pos)), 20.0)) {
+
 					driver.stop();
 					driver.grab();
 					kickSubState = 1;
@@ -563,7 +567,7 @@ public class Robot {
 				shootStrategy1();
 			}
 		} else {  // If defender, shoot to attacker
-			if (kickSubState >= 5 && kickSubState < 12) {
+			if (kickSubState >= 4 && kickSubState < 12) {
 				if (turnTo(where, 9.0)) {
 					driver.stop();
 					kickSubState++;
@@ -689,26 +693,35 @@ public class Robot {
 	public void defenderPass() throws Exception {
 		Point2 ourDefender = state.getRobotPosition(myTeam, myIdentifier);
 		Point2 ourAttacker = state.getRobotPosition(myTeam, 1 - myIdentifier);
-		Point2 enemyAttacker = state.getRobotPosition(1 - myTeam,
-				1 - myIdentifier);
+		//TODO bug?? 1-myidentifier returns defenders coordinates!
+		Point2 enemyAttacker = state.getRobotPosition(1 - myTeam, myIdentifier);
+		
+		System.out.println(enemyAttacker);
 
-		// If our defender is thought to be holding the ball check if a bounce
-		// pass
-		// is needed to pass the ball to our attacker.
+		// If our attacker is not on the pitch (or just cannot recognise him)
+		// - kick to the goal line instead of passing
+		//TODO currently just straight to the goal but maybe try to avoid at least 
+		//opponents attacker to win some time
 		if (ourAttacker.equals(Point2.EMPTY)) {
 			kickBallToPoint(Strategy.basicGoalTarget());
-		} else if (isEnemyBotBlocking(enemyAttacker, ourDefender,
-				ourAttacker)) {
-
+		
+		// Check if there is opponents attacker between our both robots
+		// and if yes - do bounce shot.
+		} else if (isEnemyBotBlocking(enemyAttacker, ourDefender, ourAttacker)) {
+			System.out.println("blocking!");
 			// Potentially avoid recalculating the bounce point if
 			// the defender is in the process of turning to face an
 			// already calculated bounce point
-			if (!(ourDefender.withinRangeOfPoint(
-					defenderPosWhenBouncePointcalc, 3))) {
+			//TODO what if enemy defender moved during our turn? 
+			//if (!(ourDefender.withinRangeOfPoint(defenderPosWhenBouncePointcalc, 3))) {
 				setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
-			}
+			//}
+			System.out.println("kicking to " + bouncePoint);
 			kickBallToPoint(bouncePoint);
+			
+		//Otherwise - just simple pass
 		} else {
+			System.out.println(" not blocking!");
 			kickBallToPoint(ourAttacker);
 		}
 	}
@@ -732,8 +745,11 @@ public class Robot {
 		double c = ourRobot.distance(target);
 		// Trigonometry FTW!
 		double x = a * Math.sin(Math.acos((a*a+c*c-b*b)/(2*a*c)));
-		
-		if (x < 50) {
+		System.out.println(enemyRobot);
+		System.out.println(ourRobot);
+		System.out.println(target);
+		System.out.println(x);
+		if (x < 100) {
 			return true;
 		}
 		return false;
@@ -762,6 +778,7 @@ public class Robot {
 		// defender perform a direct pass to our attacker if no bounce point is
 		// found
 		Point2 bestPoint = new Point2(ourAttacker.getX(), ourAttacker.getY());
+		System.out.println("initial" + bestPoint);
 
 		Point2 testPoint = new Point2(testx, testy);
 		Pitch pitch = state.getPitch();
@@ -865,7 +882,8 @@ public class Robot {
 			}
 			length = Math.abs(rangeStart - rangeEnd);
 		}
-		bouncePoint = bestPoint;
+		bouncePoint = new Point2((int)(bestPoint.getX() - ourDefender.distance(bestPoint)/2), bestPoint.getY());;
+		System.out.println("best" + bestPoint);
 		defenderPosWhenBouncePointcalc = ourDefender;
 
 	}
