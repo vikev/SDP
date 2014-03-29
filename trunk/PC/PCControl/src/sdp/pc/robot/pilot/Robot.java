@@ -144,6 +144,12 @@ public class Robot {
 	public boolean turnedTowardsTopOfGoal = false;
 	
 	public boolean holdingball = false;
+	
+	Point2 topCornerOfGoal = new Point2(0,0);
+	Point2 bottomCornerOfGoal = new Point2(0,0);
+	Point2 shootPoint = new Point2(0,0);
+	boolean shootStratInitalised = false;
+	boolean shootBot = false;
 
 	/**
 	 * Class for controlling a robot from a more abstract point of view
@@ -567,19 +573,46 @@ public class Robot {
 	 * Kicks an already grabbed ball. Assumes robot is already at the shoot point.
 	 * 
 	 * @param target - point to kick the ball to
+	 * @param shootStratInitalised 
 	 * @throws InterruptedException
 	 * @throws Exception
 	 */
 	public boolean kickGrabbedBallTo(Point2 target) throws InterruptedException, Exception {
 		if (turnTo(target, SAFE_ANGLE_EPSILON)) {
 			driver.stop();
-			Thread.sleep(100);
-			driver.kick(900);
-			kickSubState = 0;
-			holdingball = false;
-			return true;
+			if(kickSubState == 1){
+				driver.kick(900);
+				
+				//Reset variables
+				kickSubState = 0;
+				shootStratSubState = 0;
+				holdingball = false;
+				shootStratInitalised = false;
+				
+				return true;
+			}else{
+				kickSubState++;
+			}
 		}
 		return false;
+	}
+	
+	private void initShootPoints(){
+		shootPoint = Pitch.getQuadrantCentres()[getMyQuadrant()-1].copy();
+		
+		if(state.getDirection() == 1){
+			topCornerOfGoal = state.getLeftGoalCentre();
+			topCornerOfGoal.setY(topCornerOfGoal.getY() - 65);
+			bottomCornerOfGoal = state.getLeftGoalCentre();
+			bottomCornerOfGoal.setY(topCornerOfGoal.getY() + 65);
+			shootPoint.setX(shootPoint.getX() + 40);
+		}else{
+			topCornerOfGoal = state.getRightGoalCentre();
+			topCornerOfGoal.setY(topCornerOfGoal.getY() - 65);
+			bottomCornerOfGoal = state.getRightGoalCentre();
+			bottomCornerOfGoal.setY(topCornerOfGoal.getY() + 65);
+			shootPoint.setX(shootPoint.getX() - 40);
+		}
 	}
 	/**
 	 * Attempts to score by first navigating to a point next to the opposing defenders
@@ -593,48 +626,25 @@ public class Robot {
 	 * @throws InterruptedException 
 	 */
 	public void shootStrategy1() throws InterruptedException, Exception{
-		Point2 topCorner = new Point2(0,0);
-		Point2 bottomCorner = new Point2(0,0);
-		Point2 shootPoint = Pitch.getQuadrantCentres()[getMyQuadrant()-1].copy();
-		
-		//get opposing attackers ID
-		int opposingDefender = getOtherId(); 
-		//change ID to opposing defender's
-		if (opposingDefender == 1){
-			opposingDefender = 0;
-		}else{
-			opposingDefender = 1;
-		}
-		if(state.getDirection() == 1){
-			topCorner = state.getLeftGoalCentre();
-			topCorner.setY(topCorner.getY() - 65);
-			bottomCorner = state.getLeftGoalCentre();
-			bottomCorner.setY(topCorner.getY() + 65);
-			shootPoint.setX(shootPoint.getX() + 40);
-		}else{
-			topCorner = state.getRightGoalCentre();
-			topCorner.setY(topCorner.getY() - 65);
-			bottomCorner = state.getRightGoalCentre();
-			bottomCorner.setY(topCorner.getY() + 65);
-			shootPoint.setX(shootPoint.getX() - 40);
-		}
-		
+		if(!shootStratInitalised)
+			initShootPoints();
 		//Move to a point close to the opposing defender's zone that also 
-		//has the y coordinate of the centre of our attackers quadrant.
+		//has the y coordinate of the centre of our attacker's quadrant.
 		if (goTo(shootPoint, 10)){
 			//Attempt to make opposing defender go into the top corner of the goal
 			if(turnedTowardsTopOfGoal){;
-				if (shootStratSubState > 6){
-					if(isEnemyDefenderBlocking(state.getRobotPosition(getOtherTeam(), opposingDefender), state.getRobotPosition(myTeam, myIdentifier), topCorner)){
-						if(kickGrabbedBallTo(bottomCorner))
+				//Wait for 0.5 seconds before deciding which corner to shot the ball into.
+				if (shootStratSubState > 3){
+					if(shootBot || isEnemyDefenderBlocking(state.getRobotPosition(getOtherTeam(), (1 - getOtherId())), state.getRobotPosition(myTeam, myIdentifier), topCornerOfGoal)){
+						if(kickGrabbedBallTo(bottomCornerOfGoal))
 							turnedTowardsTopOfGoal = false;
 					}else{
-						kickGrabbedBallTo(topCorner);
+						kickGrabbedBallTo(topCornerOfGoal);
 					}
 				}else{
 					shootStratSubState++;
 				}
-			}else if(turnTo(topCorner, 6)){
+			}else if(turnTo(topCornerOfGoal, SAFE_ANGLE_EPSILON)){
 				turnedTowardsTopOfGoal = true;
 			}
 		}

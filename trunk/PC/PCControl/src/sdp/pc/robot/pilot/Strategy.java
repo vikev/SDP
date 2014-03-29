@@ -81,6 +81,8 @@ public class Strategy implements Runnable {
 
 	private boolean interrupted = false;
 	
+	private static Point2 dummyPoint = new Point2(0,0);
+	
 	/**
 	 * Executes a shoot strategy. Could have conditions on which strategy to use in the future.
 	 * @throws InterruptedException
@@ -281,11 +283,11 @@ public class Strategy implements Runnable {
 				attacker.setState(Robot.State.DEFEND_BALL);
 			} else {
 				defender.setState(Robot.State.DEFEND_BALL);
-				//if (attacker.holdingball) {
-				//	attacker.setState(Robot.State.ATTEMPT_GOAL);
-				//}else{
+				if (attacker.getKickSubState() >= 1) {
+					attacker.setState(Robot.State.ATTEMPT_GOAL);
+				}else{
 					attacker.setState(Robot.State.GET_BALL);
-				//}
+				}
 			}
 		} else if (position.equals("Our Defender")) {
 			if (speed > FAST_BALL_SPEED && defender.getSubState() == 0) {
@@ -376,7 +378,7 @@ public class Strategy implements Runnable {
 			attacker.defendRobot(attacker.getOtherTeam(), attacker.getId());
 		} else if (botState == Robot.State.GET_BALL) {
 			//attacker.grabBall();
-			attacker.kickBallToPoint(basicGoalTarget());
+			attacker.kickBallToPoint(dummyPoint);
 		}else if (botState == Robot.State.ATTEMPT_GOAL){
 			executeShootStrategy();
 		} else if (botState == Robot.State.RESET) {
@@ -461,6 +463,9 @@ public class Strategy implements Runnable {
 		frameCounter++;
 		if (frameCounter == 10) {
 			System.out.println();
+			System.out.println("Attacker, Defender states:");
+			System.out.println("Attacker is turning to the top corner:" + !attacker.turnedTowardsTopOfGoal);
+			System.out.println("Attacker is holding the ball:" + attacker.holdingball);
 			System.out.println("Attacker, Defender states:");
 			Robot.State.print(attacker.getState());
 			Robot.State.print(defender.getState());
