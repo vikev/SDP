@@ -283,11 +283,7 @@ public class Strategy implements Runnable {
 				attacker.setState(Robot.State.DEFEND_BALL);
 			} else {
 				defender.setState(Robot.State.DEFEND_BALL);
-				if (attacker.getKickSubState() >= 1) {
-					attacker.setState(Robot.State.ATTEMPT_GOAL);
-				}else{
 					attacker.setState(Robot.State.GET_BALL);
-				}
 			}
 		} else if (position.equals("Our Defender")) {
 			if (speed > FAST_BALL_SPEED && defender.getSubState() == 0) {
