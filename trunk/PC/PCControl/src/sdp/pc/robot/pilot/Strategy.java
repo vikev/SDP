@@ -111,6 +111,38 @@ public class Strategy implements Runnable {
 						pts.get(7).y - 25);
 		}
 	}
+	
+	/**
+	 * Calculating angle between vector. Its cosine is the vectors' dot product divided by the 
+	 * product of vector length.
+	 * @param Point2 a
+	 * @param Point2 b
+	 * @return
+	 */
+	static double angleBetweenVectors(Point2 a, Point2 b) {
+		return Math.acos( (a.x*b.x+a.y*b.y) / ( Math.sqrt(a.x*a.x+a.y*a.y)*Math.sqrt(b.x*b.x+b.y*b.y) ) );
+	}
+	
+	/**
+	 * source - state.getRobotPosition(myTeam, attackerId);
+	 * dest - state.getRobotPosition(1 - myTeam,1 - defenderId);
+	 * @param Point2 source
+	 * @param Point2 dest
+	 * @return
+	 */
+	static Point2 wallKick(Point2 source, Point2 dest) {
+		ArrayList<Point2> pts = state.getPitch().getArrayListOfPoints();
+		Point2 leftShootPos = new Point2((int)(source.x+dest.x)/2 , pts.get(2).y);
+		Point2 rightShootPos = new Point2((int)(source.x+dest.x)/2 , pts.get(9).y);
+		double angLeftOfDefender = angleBetweenVectors(dest.subtract(source),leftShootPos.subtract(source));
+		double angRightOfDefender = angleBetweenVectors(dest.subtract(source),rightShootPos.subtract(source));
+		
+		if (angLeftOfDefender + 0.000001 < angRightOfDefender)
+			return rightShootPos;
+		
+		return leftShootPos;
+		
+	}
 
 	/**
 	 * Builds the vision system
