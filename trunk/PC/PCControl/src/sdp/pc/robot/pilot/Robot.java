@@ -151,6 +151,8 @@ public class Robot {
 	boolean shootStratInitalised = false;
 	boolean shootBot = false;
 
+	public int adjustKickPoint = 10;
+
 	/**
 	 * Class for controlling a robot from a more abstract point of view
 	 * 
@@ -714,7 +716,8 @@ public class Robot {
 			// already calculated bounce point
 			//TODO what if enemy defender moved during our turn? 
 			//if (!(ourDefender.withinRangeOfPoint(defenderPosWhenBouncePointcalc, 3))) {
-				setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
+				//setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
+				bouncePoint = wallKick(ourDefender, ourAttacker, enemyAttacker);
 			//}
 			kickBallToPoint(bouncePoint);
 			
@@ -722,6 +725,46 @@ public class Robot {
 		} else {
 			kickBallToPoint(ourAttacker);
 		}
+	}
+	
+	/**
+	 * Calculating angle between vector. Its cosine is the vectors' dot product divided by the 
+	 * product of vector length.
+	 * @param Point2 a
+	 * @param Point2 b
+	 * @return
+	 */
+	static double angleBetweenVectors(Point2 a, Point2 b) {
+		return Math.acos( (a.x*b.x+a.y*b.y) / ( Math.sqrt(a.x*a.x+a.y*a.y)*Math.sqrt(b.x*b.x+b.y*b.y) ) );
+	}
+	
+	/**
+	 * source - state.getRobotPosition(myTeam, attackerId);
+	 * dest - state.getRobotPosition(1 - myTeam,1 - defenderId);
+	 * @param Point2 source
+	 * @param Point2 dest
+	 * @return
+	 */
+	public Point2 wallKick(Point2 source, Point2 dest, Point2 obstacle) {
+		ArrayList<Point2> pts = state.getPitch().getArrayListOfPoints();
+		Point2 leftShootPos = new Point2((int)(source.x+dest.x)/2 , pts.get(2).y);
+		Point2 rightShootPos = new Point2((int)(source.x+dest.x)/2 , pts.get(9).y);
+		if (state.getDirection() == 1) {
+			leftShootPos.x-=adjustKickPoint;
+			rightShootPos.x-=adjustKickPoint;
+		}
+		else {
+			leftShootPos.x+=adjustKickPoint;
+			rightShootPos.x+=adjustKickPoint;
+		}
+		double angLeftOfDefender = angleBetweenVectors(obstacle.subtract(source),leftShootPos.subtract(source));
+		double angRightOfDefender = angleBetweenVectors(obstacle.subtract(source),rightShootPos.subtract(source));
+		
+		if (angLeftOfDefender + 0.000001 < angRightOfDefender)
+			return rightShootPos;
+		
+		return leftShootPos;
+		
 	}
 
 	/**
@@ -743,7 +786,7 @@ public class Robot {
 		double c = ourRobot.distance(target);
 		// Trigonometry FTW!
 		double x = a * Math.sin(Math.acos((a*a+c*c-b*b)/(2*a*c)));
-		if (x < 50) {
+		if (x < 100) {
 			return true;
 		}
 		return false;
