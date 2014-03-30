@@ -529,7 +529,7 @@ public class Robot {
 							Pitch.getQuadrantCentres()[getMyQuadrant()-1])).x, ball.y);
 					// If close to ball, grab
 					System.out.println("Check if close to ball");
-					if (goTo(ball.offset(16.0 + 30*pitchId, ball.angleTo(pos)), 20.0)) {
+					if (goTo(ball.offset(16.0 + 30*pitchId, ball.angleTo(pos)), 10.0)) {
 
 						driver.stop();
 						System.out.println("Grab!");
@@ -541,7 +541,7 @@ public class Robot {
 			// If ball is not close to wall, do it simply
 			} else {
 				if (kickSubState < 0) kickSubState = 0;
-				if (goTo(ball.offset(15.0 + 30*pitchId, ball.angleTo(pos)), 20.0)) {
+				if (goTo(ball.offset(15.0 + 30*pitchId, ball.angleTo(pos)), 10.0)) {
 
 					driver.stop();
 					driver.grab();
@@ -693,10 +693,7 @@ public class Robot {
 	public void defenderPass() throws Exception {
 		Point2 ourDefender = state.getRobotPosition(myTeam, myIdentifier);
 		Point2 ourAttacker = state.getRobotPosition(myTeam, 1 - myIdentifier);
-		//TODO bug?? 1-myidentifier returns defenders coordinates!
 		Point2 enemyAttacker = state.getRobotPosition(1 - myTeam, myIdentifier);
-		
-		System.out.println(enemyAttacker);
 
 		// If our attacker is not on the pitch (or just cannot recognise him)
 		// - kick to the goal line instead of passing
@@ -708,7 +705,6 @@ public class Robot {
 		// Check if there is opponents attacker between our both robots
 		// and if yes - do bounce shot.
 		} else if (isEnemyBotBlocking(enemyAttacker, ourDefender, ourAttacker)) {
-			System.out.println("blocking!");
 			// Potentially avoid recalculating the bounce point if
 			// the defender is in the process of turning to face an
 			// already calculated bounce point
@@ -716,12 +712,10 @@ public class Robot {
 			//if (!(ourDefender.withinRangeOfPoint(defenderPosWhenBouncePointcalc, 3))) {
 				setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
 			//}
-			System.out.println("kicking to " + bouncePoint);
 			kickBallToPoint(bouncePoint);
 			
 		//Otherwise - just simple pass
 		} else {
-			System.out.println(" not blocking!");
 			kickBallToPoint(ourAttacker);
 		}
 	}
@@ -745,11 +739,8 @@ public class Robot {
 		double c = ourRobot.distance(target);
 		// Trigonometry FTW!
 		double x = a * Math.sin(Math.acos((a*a+c*c-b*b)/(2*a*c)));
-		System.out.println(enemyRobot);
-		System.out.println(ourRobot);
-		System.out.println(target);
 		System.out.println(x);
-		if (x < 100) {
+		if (x < 50) {
 			return true;
 		}
 		return false;
