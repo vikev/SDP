@@ -566,21 +566,8 @@ public class Robot {
 			if (kickSubState >= 5) {
 				shootStrategy1();
 			}
-		} else {  // If defender, shoot to attacker
-			if (kickSubState >= 4 && kickSubState < 12) {
-				if (turnTo(where, 9.0)) {
-					driver.stop();
-					kickSubState++;
-				}
-			} else if (kickSubState >= 12) {
-				driver.stop();
-				driver.kick(900);
-				holdingball = false;
-				kickSubState++;
-				if (kickSubState >= 20) {
-					kickSubState = 0;
-				}
-			}
+		} else {  // If defender, execute pass strategy
+			passStrategy(where);
 		}
 	}
 
@@ -683,6 +670,23 @@ public class Robot {
 			}
 		}
 	}
+	
+	public void passStrategy(Point2 where) throws Exception {
+		if (kickSubState >= 4 && kickSubState < 12) {
+			if (turnTo(where, 9.0)) {
+				driver.stop();
+				kickSubState++;
+			}
+		} else if (kickSubState >= 12) {
+			driver.stop();
+			driver.kick(900);
+			holdingball = false;
+			kickSubState++;
+			if (kickSubState >= 20) {
+				kickSubState = 0;
+			}
+		}
+	}
 
 	/**
 	 * Passes the ball from our defender to our attacker. Either with a direct
@@ -739,7 +743,6 @@ public class Robot {
 		double c = ourRobot.distance(target);
 		// Trigonometry FTW!
 		double x = a * Math.sin(Math.acos((a*a+c*c-b*b)/(2*a*c)));
-		System.out.println(x);
 		if (x < 50) {
 			return true;
 		}
