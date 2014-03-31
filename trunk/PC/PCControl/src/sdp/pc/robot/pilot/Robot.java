@@ -569,7 +569,9 @@ public class Robot {
 		if (myIdentifier == state.getDirection()) {
 			if (kickSubState >= 5) {
 				//shootStrategy1();
+				
 				Point2 aim = Strategy.basicGoalTarget();
+				//kickGrabbedBallTo(aim);
 				if (!closeTo(ourAttacker,aim,enemyDefender))  kickGrabbedBallTo(aim);
 				else kickGrabbedBallTo(wallKick(ourAttacker,aim,enemyDefender));
 			}
@@ -582,7 +584,7 @@ public class Robot {
 		Point2 p = source.subtract(dest);
 		Point2 p1 = source.subtract(obstacle);
 		
-		return ( (p.x*p1.y - p.y*p1.x) / (Math.sqrt(p.x*p.x+p.y*p.y)) + 0.0000001 <= 15 );
+		return ( (p.x*p1.y - p.y*p1.x) / (Math.sqrt(p.x*p.x+p.y*p.y)) + 0.0000001 <= 10 );
 	}
 
 	/**
@@ -739,17 +741,6 @@ public class Robot {
 	}
 	
 	/**
-	 * Calculating angle between vector. Its cosine is the vectors' dot product divided by the 
-	 * product of vector length.
-	 * @param Point2 a
-	 * @param Point2 b
-	 * @return
-	 */
-	static double angleBetweenVectors(Point2 a, Point2 b) {
-		return Math.acos( (a.x*b.x+a.y*b.y) / ( Math.sqrt(a.x*a.x+a.y*a.y)*Math.sqrt(b.x*b.x+b.y*b.y) ) );
-	}
-	
-	/**
 	 * source - state.getRobotPosition(myTeam, attackerId);
 	 * dest - state.getRobotPosition(1 - myTeam,1 - defenderId);
 	 * @param Point2 source
@@ -760,18 +751,19 @@ public class Robot {
 		ArrayList<Point2> pts = state.getPitch().getArrayListOfPoints();
 		Point2 leftShootPos = new Point2((int)(source.x+dest.x)/2 , pts.get(2).y);
 		Point2 rightShootPos = new Point2((int)(source.x+dest.x)/2 , pts.get(9).y);
-		if (state.getDirection() == 1) {
+		
+		/*if (state.getDirection() == 1) {
 			leftShootPos.x-=adjustKickPoint;
 			rightShootPos.x-=adjustKickPoint;
 		}
 		else {
 			leftShootPos.x+=adjustKickPoint;
 			rightShootPos.x+=adjustKickPoint;
-		}
+		}*/
 		
 		
-		double angLeftOfDefender = angleBetweenVectors(obstacle.subtract(source),leftShootPos.subtract(source));
-		double angRightOfDefender = angleBetweenVectors(obstacle.subtract(source),rightShootPos.subtract(source));
+		double angLeftOfDefender = (obstacle.subtract(source)).angleBetween(leftShootPos.subtract(source));
+		double angRightOfDefender = (obstacle.subtract(source)).angleBetween(rightShootPos.subtract(source));
 		
 		if (angLeftOfDefender + 0.000001 < angRightOfDefender)
 			return rightShootPos;
