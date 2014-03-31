@@ -531,19 +531,19 @@ public class Robot {
 							Pitch.getQuadrantCentres()[getMyQuadrant()-1])).x, ball.y);
 					// If close to ball, grab
 					System.out.println("Check if close to ball");
-					if (goTo(ball.offset(18.0 + 30*pitchId, ball.angleTo(pos)), 10.0)) {
+					if (goTo(ball.offset(20.0 + 30*pitchId, ball.angleTo(pos)), 10.0)) {
 
 						driver.stop();
 						System.out.println("Grab!");
 						driver.grab();
-						driver.backward(10);
+						//driver.backward(10);
 						kickSubState = 1;
 					}
 				}
 			// If ball is not close to wall, do it simply
 			} else {
 				if (kickSubState < 0) kickSubState = 0;
-				if (goTo(ball.offset(16.0 + 30*pitchId, ball.angleTo(pos)), 10.0)) {
+				if (goTo(ball.offset(18.0 + 30*pitchId, ball.angleTo(pos)), 10.0)) {
 
 					driver.stop();
 					driver.grab();
@@ -1160,7 +1160,7 @@ public class Robot {
 		int speed = (int) (((maxSpeed - minSpeed) / (maxDist) * dist) + minSpeed);
 
 		if (myState != State.GET_BALL && myState != State.PASS_TO_ATTACKER) {
-			return speed+150;
+			return speed+100;
 		} else if (kickSubState < 0) {
 			return (int) (speed/1.5);
 		 } else {

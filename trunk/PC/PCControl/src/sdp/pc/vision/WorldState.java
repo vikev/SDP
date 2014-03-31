@@ -414,19 +414,17 @@ public class WorldState {
 	 */
 	public int quadrantFromPoint(Point2 q) {
 		int x = q.getX();
+		if (q.equals(Point2.EMPTY)) return 0;
 		ArrayList<Point2> points = pitch.getArrayListOfPoints();
-		if (x < points.get(14).x) {
-			return 0;
-		} else if (x < points.get(2).x) {
+		if (x < points.get(2).x) {
 			return 1;
 		} else if (x < points.get(3).x) {
 			return 2;
 		} else if (x < points.get(4).x) {
 			return 3;
-		} else if (x < points.get(6).x) {
+		} else {
 			return 4;
 		}
-		return 0;
 	}
 
 	/**
