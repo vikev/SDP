@@ -10,6 +10,8 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
+import sdp.pc.common.GaussianIntFilter;
+
 import static sdp.pc.common.Constants.*;
 
 /**
@@ -71,6 +73,15 @@ public class WorldStatePainter {
 	 * Whether to display the rectangle with the raw boundaries
 	 */
 	private boolean rawBoundaryShown = false;
+
+	/**
+	 * A filter for the observed world FPS. Size should roughly account for 1s of time. 
+	 */
+	private GaussianIntFilter worldFpsFilter = new GaussianIntFilter(24);
+	/**
+	 * A filter for the observed clock FPS. Size should roughly account for 1s of time. 
+	 */
+	private GaussianIntFilter clockFpsFilter = new GaussianIntFilter(24);
 
 	/**
 	 * Constructs a new WorldStatePainter given a WorldState and
@@ -292,6 +303,10 @@ public class WorldStatePainter {
 		lastRun = nowRun;
 		int worldFps = stateListener.getCurrentFps();
 		int clockFps = stateListener.getClockFps();
+
+		worldFps = worldFpsFilter.apply(worldFps);
+		clockFps = clockFpsFilter.apply(clockFps);
+		
 
 		String sPaintFps = String.format("Paint: %2d", drawFps);
 		String sWorldFps = String

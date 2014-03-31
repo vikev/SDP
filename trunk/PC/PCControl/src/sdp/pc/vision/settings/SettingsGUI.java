@@ -32,6 +32,8 @@ import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
+import javax.swing.border.LineBorder;
+import java.awt.Color;
 
 @SuppressWarnings("serial")
 public class SettingsGUI extends JFrame {
@@ -171,6 +173,9 @@ public class SettingsGUI extends JFrame {
 			btnSave.setEnabled(settingsManager.isChanged());
 		}
 	};
+	private JCheckBox chkMulticore;
+	private JCheckBox chkUseFisheye;
+	private JSlider slFisheyePower;
 
 	/**
 	 * Executed when the "Show white pixels" checkbox is clicked
@@ -191,6 +196,12 @@ public class SettingsGUI extends JFrame {
 	protected void onRgbDeltaChanged(ChangeEvent e) {
 		if (settingsManager != null && !reloading)
 			settingsManager.setWhiteRgbDelta(slRgbDelta.getValue());
+	}
+
+	protected void onFisheyePowerChange() {
+		// TODO Auto-generated method stub
+		if (settingsManager != null && !reloading)
+			settingsManager.setFisheyePower(slFisheyePower.getValue());
 	}
 
 	/**
@@ -242,12 +253,19 @@ public class SettingsGUI extends JFrame {
 			return;
 		}
 
-		if (tabId == 0 && chkWhiteOverlay.isSelected())
+		if ((tabId == 0 && chkWhiteOverlay.isSelected()) || tabId == 2 && chkUseFisheye.isSelected())
 			worldPainter.setHighlightMode(HighlightMode.White);
 		else
 			worldPainter.setHighlightMode(HighlightMode.None);
 	}
 
+
+	protected void onMulticoreCheckedChanged() {
+		// TODO Auto-generated method stub
+		if(settingsManager != null && !reloading)
+			settingsManager.setMulticoreProcessing(chkMulticore.isSelected());
+	}
+	
 	/**
 	 * Executed when the window starts closing.
 	 */
@@ -283,6 +301,13 @@ public class SettingsGUI extends JFrame {
 			worldListener.forcePreprocess();
 	}
 
+	protected void onFisheyeToggle() {
+		if(settingsManager != null)
+			settingsManager.setFisheyeEnabled(chkUseFisheye.isSelected());
+		if(worldPainter != null)
+			worldPainter.setHighlightMode(chkUseFisheye.isSelected() ? HighlightMode.White : HighlightMode.None);
+	}
+
 	/**
 	 * Executed when the "Set Raw Borders" button is clicked
 	 */
@@ -305,7 +330,7 @@ public class SettingsGUI extends JFrame {
 		setTitle("Control GUI");
 		setIconImage(new ImageIcon("resource/settings.png").getImage());
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		setBounds(100, 100, 477, 420);
+		setBounds(100, 100, 467, 402);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -500,6 +525,59 @@ public class SettingsGUI extends JFrame {
 
 		sliderPanel = new SliderPanel();
 		pColors.add(sliderPanel);
+		
+		JPanel pExtras = new JPanel();
+		tabbedPane.addTab("Extras", null, pExtras, null);
+		pExtras.setLayout(new BoxLayout(pExtras, BoxLayout.Y_AXIS));
+		
+		chkMulticore = new JCheckBox("Use multicore processing");
+		chkMulticore.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent arg0) {
+				onMulticoreCheckedChanged();
+			}
+		});
+		chkMulticore.setAlignmentX(Component.CENTER_ALIGNMENT);
+		pExtras.add(chkMulticore);
+		
+		JPanel pFisheye = new JPanel();
+		pFisheye.setBorder(new LineBorder(new Color(0, 0, 0)));
+		pExtras.add(pFisheye);
+		pFisheye.setLayout(new FormLayout(new ColumnSpec[] {
+				ColumnSpec.decode("left:7dlu"),
+				ColumnSpec.decode("left:50dlu"),
+				ColumnSpec.decode("max(32dlu;default):grow"),},
+			new RowSpec[] {
+				FormFactory.NARROW_LINE_GAP_ROWSPEC,
+				RowSpec.decode("23px"),
+				RowSpec.decode("fill:pref"),
+				FormFactory.RELATED_GAP_ROWSPEC,
+				FormFactory.DEFAULT_ROWSPEC,}));
+		
+		chkUseFisheye = new JCheckBox("Use Fisheye");
+		chkUseFisheye.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				onFisheyeToggle();
+			}
+		});
+		chkUseFisheye.setAlignmentX(Component.CENTER_ALIGNMENT);
+		pFisheye.add(chkUseFisheye, "2, 2, 2, 1, center, center");
+		
+		JLabel lblPower = new JLabel("Power");
+		pFisheye.add(lblPower, "2, 3");
+		
+		slFisheyePower = new JSlider();
+		slFisheyePower.setMaximumSize(new Dimension(32767, 32767));
+		slFisheyePower.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				onFisheyePowerChange();
+			}
+		});
+		slFisheyePower.setMajorTickSpacing(20);
+		slFisheyePower.setMinorTickSpacing(5);
+		slFisheyePower.setPaintLabels(true);
+		slFisheyePower.setPaintTicks(true);
+		slFisheyePower.setValue(10);
+		pFisheye.add(slFisheyePower, "3, 3, fill, fill");
 
 		btnBall.addActionListener(ColourCodeListener);
 		btnBlue.addActionListener(ColourCodeListener);
@@ -598,6 +676,10 @@ public class SettingsGUI extends JFrame {
 
 			SettingsManagerChangedListener.actionPerformed(null);
 
+			chkMulticore.setSelected(settingsManager.isMulticoreProcessing());
+			chkUseFisheye.setSelected(settingsManager.isFisheyeEnabled());
+			slFisheyePower.setValue(settingsManager.getFisheyePower());
+			
 			reloading = false;
 		}
 	}

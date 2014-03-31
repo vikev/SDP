@@ -3,9 +3,13 @@ package sdp.pc.vision;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.concurrent.Callable;
 
+import sdp.pc.common.OpCallable;
+import sdp.pc.common.Parallel;
 import sdp.pc.vision.settings.SettingsManager;
 
 /**
@@ -235,6 +239,18 @@ public abstract class WorldStateListener implements Runnable {
 	private long lastFrameUpdate;
 	private long lastClockUpdate;
 
+	@SuppressWarnings("unchecked")
+	protected LinkedList<Point2>[] pitchPointSplit = new LinkedList[] {
+				new LinkedList<Point2>(),
+				new LinkedList<Point2>(),
+				new LinkedList<Point2>(),
+				new LinkedList<Point2>(),
+				new LinkedList<Point2>(),
+				new LinkedList<Point2>(),
+				new LinkedList<Point2>(),
+				new LinkedList<Point2>(),
+			};
+
 	/**
 	 * The main function of the listener; Starts listening for image updates
 	 * (ignoring the first couple), and, provided there are boundaries (added
@@ -306,6 +322,32 @@ public abstract class WorldStateListener implements Runnable {
 		}
 	}
 
+	private static Point2 fisheyeCenter = new Point2(320, 240);
+	private static final int fisheyeRadiusSq = 102400;
+	
+	protected static Point2 doFisheye(int ix, int iy) {
+		if(SettingsManager.defaultSettings.isFisheyeEnabled()) {
+			int fisheyeScale = SettingsManager.defaultSettings.getFisheyePower();
+			
+			ix = ix - fisheyeCenter.x;
+			iy = iy - fisheyeCenter.y;
+			
+			int dSq = ix * ix + iy * iy;
+			
+	        if(dSq < fisheyeRadiusSq)
+	        {
+	            int percent = 1000 + ((fisheyeRadiusSq - dSq) * fisheyeScale / fisheyeRadiusSq);
+	            ix = ix * percent / 1000;
+	            iy = iy * percent / 1000;
+	        }
+	        
+			ix = ix + fisheyeCenter.x;
+			iy = iy + fisheyeCenter.y;
+		}
+		return new Point2(ix, iy);
+	}
+	
+
 	/**
 	 * Does initial preprocessing on the image, executed only once. Calculates
 	 * game field hull and normalised colours
@@ -329,9 +371,13 @@ public abstract class WorldStateListener implements Runnable {
 			float[] cHsb;
 			for (int x = minX; x < maxX; x++) {
 				for (int y = minY; y < maxY; y++) {
+					
 					// Get colours
-					cRgb = new Color(img.getRGB(x, y));
+					Point2 ip = doFisheye(x, y);
+					
+					cRgb = new Color(img.getRGB(ip.x, ip.y));
 					currentRgb[x][y] = cRgb;
+					
 					cHsb = currentHsb[x][y];
 					Color.RGBtoHSB(cRgb.getRed(), cRgb.getGreen(),
 							cRgb.getBlue(), cHsb);
@@ -348,6 +394,7 @@ public abstract class WorldStateListener implements Runnable {
 			LinkedList<Point2> borders = Alg.convexHull(whitePoints);
 
 			pitchPoints.clear();
+//			int split = 0;
 			for (int x = minX; x < maxX; x++) {
 				for (int y = minY; y < maxY; y++) {
 					// if (Alg.isInHull(borders, x, y)) {
@@ -355,8 +402,11 @@ public abstract class WorldStateListener implements Runnable {
 					// TODO: Fix and document
 					Point2 it = new Point2(x, y);
 					if (Alg.inMinorHull(borders, -10.0, it)) {
+						
 						// finally get all points on the inside
 						pitchPoints.add(it);
+						int split = x * Parallel.NUM_CORES / 640;
+						pitchPointSplit[split].addLast(it);
 
 						// but after finding min/max brightness!
 						float b = currentHsb[x][y][2];

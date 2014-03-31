@@ -119,6 +119,27 @@ public class SettingsManager implements java.io.Serializable {
 	 */
 	private int currentPitchId = 0;
 	
+	/**
+	 * Whether to use multicore processing
+	 */
+	private boolean multicoreProcessing = false;
+	
+	/**
+	 * Whether fisheye correction is enabled
+	 */
+	private boolean fisheyeEnabled = false;
+	
+	
+	/**
+	 * The power of the fisheye filter. In the range 1-100. 
+	 */
+	private int fisheyePower = 50;
+	
+	/**
+	 * The center of the fisheye filter.
+	 */
+	private Point2 fisheyeCenter = new Point2(320, 240);
+	
 	// boundary points
 	private Point2[] boundaryPoints = new Point2[] { new Point2(),
 			new Point2() };
@@ -289,6 +310,57 @@ public class SettingsManager implements java.io.Serializable {
 		}
 	}
 	
+	public boolean isFisheyeEnabled() {
+		return fisheyeEnabled;
+	}
+
+
+	public void setFisheyeEnabled(boolean fisheyeEnabled) {
+		if(this.fisheyeEnabled != fisheyeEnabled) {
+			this.fisheyeEnabled = fisheyeEnabled;
+			registerChange();
+		}
+	}
+
+
+	public int getFisheyePower() {
+		return fisheyePower;
+	}
+
+
+	public void setFisheyePower(int fisheyePower) {
+		if(this.fisheyePower != fisheyePower) {
+			this.fisheyePower = fisheyePower;
+			registerChange();
+		}
+	}
+
+	public boolean isMulticoreProcessing() {
+		return multicoreProcessing;
+	}
+
+
+	public void setMulticoreProcessing(boolean useMulticoreProcessing) {
+		if(this.multicoreProcessing != useMulticoreProcessing) {
+			this.multicoreProcessing = useMulticoreProcessing;
+			registerChange();
+		}
+	}
+
+
+	public Point2 getFisheyeCenter() {
+		return fisheyeCenter;
+	}
+
+
+	public void setFisheyeCenter(Point2 fisheyeCenter) {
+		if(this.fisheyeCenter != fisheyeCenter) {
+			this.fisheyeCenter = fisheyeCenter;
+			registerChange();
+		}
+	}
+
+
 	/**
 	 * Gets whether there are changes unsaved to the backing file
 	 */
@@ -398,6 +470,5 @@ public class SettingsManager implements java.io.Serializable {
 		val.fileName = fileName;
 		
 		return val;
-	}
-	
+	}	
 }

@@ -228,7 +228,7 @@ public class Point2 implements java.io.Serializable {
 	 *            the point we want to find the distance to
 	 * @return the squared distance to the point
 	 */
-	public double distanceSq(Point2 p) {
+	public int distanceSq(Point2 p) {
 		return distanceSq(p.x, p.y);
 	}
 
@@ -245,6 +245,21 @@ public class Point2 implements java.io.Serializable {
 	public double distanceSq(double x, double y) {
 		double dx = x - this.getX();
 		double dy = y - this.getY();
+		return dx * dx + dy * dy;
+	}
+	/**
+	 * Gets the squared distance to the given point represented by x/y
+	 * coordinates
+	 * 
+	 * @param x
+	 *            the x coordinate of the point
+	 * @param y
+	 *            the y coordinate of the point
+	 * @return the squared distance to the point
+	 */
+	public int distanceSq(int x, int y) {
+		int dx = x - this.getX();
+		int dy = y - this.getY();
 		return dx * dx + dy * dy;
 	}
 
