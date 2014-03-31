@@ -632,13 +632,11 @@ public class Robot {
 	 * @throws InterruptedException 
 	 */
 	public void shootStrategy1() throws InterruptedException, Exception{
-		initShootPoints();
+		if (!shootStratInitalised)
+			initShootPoints();
 		
 		//Move to a point close to the opposing defender's zone that also 
 		//has the y coordinate of the centre of our attackers quadrant.
-		if (goTo(shootPoint, 15)){
-			onShootPoint = true;
-		}
 		if (onShootPoint == true) {
 			//Attempt to make opposing defender go into the top corner of the goal
 			if(turnedTowardsTopOfGoal){
@@ -681,6 +679,8 @@ public class Robot {
 			} else if(turnTo(topCornerOfGoal, 8)){
 				turnedTowardsTopOfGoal = true;
 			}
+		}else if (goTo(shootPoint, 15)){
+			onShootPoint = true;
 		}
 	}
 	
@@ -799,7 +799,7 @@ public class Robot {
 		double c = ourRobot.distance(target);
 		// Trigonometry FTW!
 		double x = a * Math.sin(Math.acos((a*a+c*c-b*b)/(2*a*c)));
-		if (x < 100) {
+		if (x < 40) {
 			return true;
 		}
 		return false;
@@ -1018,49 +1018,6 @@ public class Robot {
 		}
 		return true;
 
-	}
-
-	/**
-	 * Get the most recent calculated state of <b>this</b>
-	 * 
-	 * @return
-	 */
-	public int getState() {
-		return this.myState;
-	}
-
-	/**
-	 * Set <b>this</b> to have a new state
-	 * 
-	 * @param newState
-	 */
-	public void setState(int newState) {
-		this.myState = newState;
-	}
-
-	/**
-	 * Getter method for the sub-state of the robot.
-	 * 
-	 * @return
-	 */
-	public int getSubState() {
-		return this.subState;
-	}
-
-	/**
-	 * Setter method for the sub-state of the robot.
-	 */
-	public void setSubState(int s) {
-		this.subState = s;
-	}
-	
-	/**
-	 * Getter method for the kick sub-state of the robot.
-	 * 
-	 * @return
-	 */
-	public int getKickSubState() {
-		return this.kickSubState;
 	}
 
 	/**
@@ -1310,6 +1267,50 @@ public class Robot {
 		return state.quadrantFromPoint(state.getRobotPosition(myTeam,
 				myIdentifier));
 	}
+
+	/**
+	 * Get the most recent calculated state of <b>this</b>
+	 * 
+	 * @return
+	 */
+	public int getState() {
+		return this.myState;
+	}
+
+	/**
+	 * Set <b>this</b> to have a new state
+	 * 
+	 * @param newState
+	 */
+	public void setState(int newState) {
+		this.myState = newState;
+	}
+
+	/**
+	 * Getter method for the sub-state of the robot.
+	 * 
+	 * @return
+	 */
+	public int getSubState() {
+		return this.subState;
+	}
+
+	/**
+	 * Setter method for the sub-state of the robot.
+	 */
+	public void setSubState(int s) {
+		this.subState = s;
+	}
+	
+	/**
+	 * Getter method for the kick sub-state of the robot.
+	 * 
+	 * @return
+	 */
+	public int getKickSubState() {
+		return this.kickSubState;
+	}
+
 
 	/**
 	 * TODO: Docu
