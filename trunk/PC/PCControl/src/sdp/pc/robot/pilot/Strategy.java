@@ -83,6 +83,8 @@ public class Strategy implements Runnable {
 	
 	private static Point2 dummyPoint = new Point2(0,0);
 	
+	private static Point2 lastBallPos = new Point2();
+	
 	/**
 	 * Executes a shoot strategy. Could have conditions on which strategy to use in the future.
 	 * @throws InterruptedException
@@ -297,6 +299,7 @@ public class Strategy implements Runnable {
 		} else {
 			// We have a state for unknown robot positions, which means unknown
 			// state can just persist the previous state
+			state.setBallPosition(lastBallPos);
 		}
 
 		// Reset states to "nothing" if the robot positions are unknown
@@ -317,6 +320,7 @@ public class Strategy implements Runnable {
 			defender.setState(Robot.State.RESET);
 			System.err.println("Resetting defender");
 		}
+		lastBallPos = state.getBallPosition();
 	}
 
 	/**
