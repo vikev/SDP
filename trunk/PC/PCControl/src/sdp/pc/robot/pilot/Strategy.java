@@ -81,39 +81,9 @@ public class Strategy implements Runnable {
 
 	private boolean interrupted = false;
 	
-	private static Point2 dummyPoint = new Point2(0,0);
+	private static Point2 dummyPoint = new Point2();
 	
 	private static Point2 lastBallPos = new Point2();
-	
-	/**
-	 * Executes a shoot strategy. Could have conditions on which strategy to use in the future.
-	 * @throws InterruptedException
-	 * @throws Exception
-	 */
-	private static void executeShootStrategy() throws InterruptedException, Exception{
-		attacker.shootStrategy1();
-	}
-
-	static Point2 basicGoalTarget() {
-		ArrayList<Point2> pts = state.getPitch().getArrayListOfPoints();
-		if (state.getDirection() == 0) {
-			if (state.getRobotPosition(1 - myTeam, 1 - defenderId).getY() > state
-					.getLeftGoalCentre().getY())
-				return new Point2(pts.get(14).x, pts.get(14).y + 25);
-			else
-				return new Point2(pts.get(13).x,
-						pts.get(13).y - 25);
-		} else {
-			if (state.getRobotPosition(1 - myTeam, 1 - defenderId).getY() > state
-					.getRightGoalCentre().getY())
-				return new Point2(pts.get(6).x,
-						pts.get(6).y + 25);
-			else
-				return new Point2(pts.get(7).x,
-						pts.get(7).y - 25);
-		}
-	}
-	
 
 	/**
 	 * Builds the vision system
@@ -286,7 +256,11 @@ public class Strategy implements Runnable {
 				attacker.setState(Robot.State.DEFEND_BALL);
 			} else {
 				defender.setState(Robot.State.DEFEND_BALL);
+				if(attacker.getKickSubState() >= 5){
+					attacker.setState(Robot.State.ATTEMPT_GOAL);
+				}else{
 					attacker.setState(Robot.State.GET_BALL);
+				}
 			}
 		} else if (position.equals("Our Defender")) {
 			if (speed > FAST_BALL_SPEED && defender.getSubState() == 0) {
@@ -350,9 +324,6 @@ public class Strategy implements Runnable {
 		return (ballVel.dot(ballToBot) / dist);
 	}
 
-	@SuppressWarnings("unused")
-	private static Point2 target = Point2.EMPTY;
-
 	/**
 	 * Main logic branching mechanism for attacker. Use attacker.getState() as
 	 * well.
@@ -378,7 +349,6 @@ public class Strategy implements Runnable {
 		} else if (botState == Robot.State.DEFEND_ENEMY_DEFENDER) {
 			attacker.defendRobot(attacker.getOtherTeam(), attacker.getId());
 		} else if (botState == Robot.State.GET_BALL) {
-			//attacker.grabBall();
 			attacker.kickBallToPoint(dummyPoint);
 		}else if (botState == Robot.State.ATTEMPT_GOAL){
 			executeShootStrategy();
@@ -458,21 +428,44 @@ public class Strategy implements Runnable {
 		return state.getPitch().getRightGoalRandom();
 	}
 
-	private static void printStatesPeriodically() {
-
-		// Print out the states every 10 frames (don't flood the console)
-		frameCounter++;
-		if (frameCounter == 10) {
-			System.out.println();
-			System.out.println("Attacker, Defender states:");
-			System.out.println("Attacker is turning to the top corner:" + !attacker.turnedTowardsTopOfGoal);
-			System.out.println("Attacker is holding the ball:" + attacker.holdingball);
-			System.out.println("Attacker, Defender states:");
-			Robot.State.print(attacker.getState());
-			Robot.State.print(defender.getState());
-			frameCounter = 0;
+	static Point2 basicGoalTarget() {
+		ArrayList<Point2> pts = state.getPitch().getArrayListOfPoints();
+		if (state.getDirection() == 0) {
+			if (state.getRobotPosition(1 - myTeam, 1 - defenderId).getY() > state
+					.getLeftGoalCentre().getY())
+				return new Point2(pts.get(14).x, pts.get(14).y + 25);
+			else
+				return new Point2(pts.get(13).x,
+						pts.get(13).y - 25);
+		} else {
+			if (state.getRobotPosition(1 - myTeam, 1 - defenderId).getY() > state
+					.getRightGoalCentre().getY())
+				return new Point2(pts.get(6).x,
+						pts.get(6).y + 25);
+			else
+				return new Point2(pts.get(7).x,
+						pts.get(7).y - 25);
 		}
 	}
+	
+	/**
+	 * Executes a shoot strategy. Could have conditions on which strategy to use in the future.
+	 * @throws InterruptedException
+	 * @throws Exception
+	 */
+	private static void executeShootStrategy() throws InterruptedException, Exception{
+		//If the enemy defender has been removed from the pitch and we are in a position to score
+		//then aim shoot at the centre of the correct goal. Otherwise perform our normal shoot strategy.
+		if (state.getRobotPosition(attacker.getId(), (1-attacker.getTeam())) == Point2.EMPTY && attacker.onShootPoint){
+			if(state.getDirection() == 1){
+				attacker.kickBallToPoint(state.getRightGoalCentre());
+			}else{
+				attacker.kickBallToPoint(state.getLeftGoalCentre());
+			}
+		}else {
+			attacker.shootStrategy1();
+		}
+	}	
 
 	/**
 	 * Loops indefinitely, ordering the robots to do things
@@ -576,6 +569,22 @@ public class Strategy implements Runnable {
 			executeStrategy();
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+
+	private static void printStatesPeriodically() {
+
+		// Print out the states every 10 frames (don't flood the console)
+		frameCounter++;
+		if (frameCounter == 10) {
+			System.out.println();
+			System.out.println("Attacker, Defender states:");
+			System.out.println("Attacker is turning to the top corner:" + !attacker.turnedTowardsTopOfGoal);
+			System.out.println("Attacker is holding the ball:" + (attacker.getKickSubState()>=6));
+			System.out.println("Attacker, Defender states:");
+			Robot.State.print(attacker.getState());
+			Robot.State.print(defender.getState());
+			frameCounter = 0;
 		}
 	}
 }
