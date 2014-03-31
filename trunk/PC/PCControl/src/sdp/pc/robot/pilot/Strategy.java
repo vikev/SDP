@@ -46,7 +46,7 @@ public class Strategy implements Runnable {
 	 * times per second. Never use integer values to describe double precision
 	 * numbers. 7 != 7.0
 	 */
-	private static final double PERIOD = 1.0 / 5.0 * 1000.0;
+	private static final double PERIOD = 1.0 / 7.0 * 1000.0;
 
 	/**
 	 * The minimum speed for the ball to be considered fast, in pixels per

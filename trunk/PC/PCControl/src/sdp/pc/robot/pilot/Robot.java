@@ -219,7 +219,7 @@ public class Robot {
 	 * Y coordinate by going forwards or backwards.
 	 */
 	public void defendBall() throws Exception {
-		if (assertPerpendicular(SAFE_ANGLE_EPSILON)) {
+		if (assertPerpendicular(2*SAFE_ANGLE_EPSILON)) {
 			// Get predicted ball stop point
 			Point2 predBallPos = state.getFutureData().getEstimate();
 
@@ -300,7 +300,7 @@ public class Robot {
 	 */
 	public void defendRobot(int team, int robot) throws Exception {
 
-		if (assertPerpendicular(10.0)) {
+		if (assertPerpendicular(2*SAFE_ANGLE_EPSILON)) {
 			// Get my location
 			Point2 robotPos = state.getRobotPosition(myTeam, myIdentifier);
 
@@ -531,7 +531,7 @@ public class Robot {
 							Pitch.getQuadrantCentres()[getMyQuadrant()-1])).x, ball.y);
 					// If close to ball, grab
 					System.out.println("Check if close to ball");
-					if (goTo(ball.offset(16.0 + 30*pitchId, ball.angleTo(pos)), 10.0)) {
+					if (goTo(ball.offset(18.0 + 30*pitchId, ball.angleTo(pos)), 10.0)) {
 
 						driver.stop();
 						System.out.println("Grab!");
@@ -543,7 +543,7 @@ public class Robot {
 			// If ball is not close to wall, do it simply
 			} else {
 				if (kickSubState < 0) kickSubState = 0;
-				if (goTo(ball.offset(15.0 + 30*pitchId, ball.angleTo(pos)), 10.0)) {
+				if (goTo(ball.offset(16.0 + 30*pitchId, ball.angleTo(pos)), 10.0)) {
 
 					driver.stop();
 					driver.grab();
@@ -596,15 +596,15 @@ public class Robot {
 		// Calculate shoot point and goal corners
 		if(state.getDirection() == 1){
 			topCornerOfGoal = state.getRightGoalCentre();
-			topCornerOfGoal.setY(topCornerOfGoal.getY() - 60);
+			topCornerOfGoal.setY(topCornerOfGoal.getY() - 50);
 			bottomCornerOfGoal = state.getRightGoalCentre();
-			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 60);
+			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 50);
 			shootPoint.setX(shootPoint.getX() + 40);
 		}else{
 			topCornerOfGoal = state.getLeftGoalCentre();
-			topCornerOfGoal.setY(topCornerOfGoal.getY() - 60);
+			topCornerOfGoal.setY(topCornerOfGoal.getY() - 50);
 			bottomCornerOfGoal = state.getLeftGoalCentre();
-			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 60);
+			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 50);
 			shootPoint.setX(shootPoint.getX() - 40);
 		}
 	}
@@ -635,7 +635,6 @@ public class Robot {
 							state.getRobotPosition(getOtherTeam(), myIdentifier),
 							state.getRobotPosition(myTeam, myIdentifier), topCornerOfGoal)){
 						shootBot = true;
-						System.out.println("asdSdasdasd");
 						if (kickGrabbedBallTo(bottomCornerOfGoal)) {
 							shootStratSubState++;
 							if (shootStratSubState>8) {
@@ -1154,15 +1153,18 @@ public class Robot {
 		// TODO: Need to test with final gear ratios and robots! Also refactor
 		// out these constants
 		double maxSpeed = 300.0;
-		double minSpeed = 50.0;
-		double maxDist = 200.0;
+		double minSpeed = 60.0;
+		double maxDist = 150.0;
 		dist = Math.abs(dist);
-
 		// Don't change this! Change the constants
-		if (kickSubState < 0) {
-			return (int) ((((maxSpeed - minSpeed) / (maxDist) * dist) + minSpeed)/1.5);
+		int speed = (int) (((maxSpeed - minSpeed) / (maxDist) * dist) + minSpeed);
+
+		if (myState != State.GET_BALL && myState != State.PASS_TO_ATTACKER) {
+			return speed+150;
+		} else if (kickSubState < 0) {
+			return (int) (speed/1.5);
 		 } else {
-			return (int) (((maxSpeed - minSpeed) / (maxDist) * dist) + minSpeed);
+			return speed;
 		 }
 		
 	}
