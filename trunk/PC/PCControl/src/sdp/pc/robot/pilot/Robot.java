@@ -67,6 +67,11 @@ public class Robot {
 	 * bots stay in their fields)
 	 */
 	private static final double HULL_OFFSET = 60.0;
+	
+	/**
+	 * Safe distance between enemy attacker and straight line between our robots
+	 */
+	private static final double SAFE_PASS_DISTANCE = 50.0;
 
 	/**
 	 * The primitive driver used to control the NXT
@@ -533,7 +538,7 @@ public class Robot {
 							Pitch.getQuadrantCentres()[getMyQuadrant()-1])).x, ball.y);
 					// If close to ball, grab
 					System.out.println("Check if close to ball");
-					if (goTo(ball.offset(20.0 + 30*pitchId, ball.angleTo(pos)), 10.0)) {
+					if (goTo(ball.offset(18.0 + 30*pitchId, ball.angleTo(pos)), 10.0)) {
 
 						driver.stop();
 						System.out.println("Grab!");
@@ -545,7 +550,7 @@ public class Robot {
 			// If ball is not close to wall, do it simply
 			} else {
 				if (kickSubState < 0) kickSubState = 0;
-				if (goTo(ball.offset(18.0 + 30*pitchId, ball.angleTo(pos)), 10.0)) {
+				if (goTo(ball.offset(20.0 + 30*pitchId, ball.angleTo(pos)), 10.0)) {
 
 					driver.stop();
 					driver.grab();
@@ -687,7 +692,7 @@ public class Robot {
 	}
 	
 	public void passStrategy(Point2 where) throws Exception {
-		if (kickSubState >= 4 && kickSubState < 12) {
+		if (kickSubState >= 5 && kickSubState < 12) {
 			if (turnTo(where, 9.0)) {
 				driver.stop();
 				kickSubState++;
@@ -711,32 +716,24 @@ public class Robot {
 	 */
 	public void defenderPass() throws Exception {
 		Point2 ourDefender = state.getRobotPosition(myTeam, myIdentifier);
-		Point2 ourAttacker = state.getRobotPosition(myTeam, 1 - myIdentifier);
+		Point2 target = state.getRobotPosition(myTeam, 1 - myIdentifier);
 		Point2 enemyAttacker = state.getRobotPosition(1 - myTeam, myIdentifier);
 
 		// If our attacker is not on the pitch (or just cannot recognise him)
-		// - kick to the goal line instead of passing
-		//TODO currently just straight to the goal but maybe try to avoid at least 
-		//opponents attacker to win some time
-		if (ourAttacker.equals(Point2.EMPTY)) {
-			kickBallToPoint(Strategy.basicGoalTarget());
+		// - change target to goal target
+		if (target.equals(Point2.EMPTY)) {
+			target = Strategy.basicGoalTarget();
+		}
 		
-		// Check if there is opponents attacker between our both robots
+		// Check if there is opponents attacker between our defender and target
 		// and if yes - do bounce shot.
-		} else if (isEnemyBotBlocking(enemyAttacker, ourDefender, ourAttacker)) {
-			// Potentially avoid recalculating the bounce point if
-			// the defender is in the process of turning to face an
-			// already calculated bounce point
-			//TODO what if enemy defender moved during our turn? 
-			//if (!(ourDefender.withinRangeOfPoint(defenderPosWhenBouncePointcalc, 3))) {
-				//setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
-				bouncePoint = wallKick(ourDefender, ourAttacker, enemyAttacker);
-			//}
+		if (isEnemyBotBlocking(enemyAttacker, ourDefender, target)) {
+			//setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
+			bouncePoint = wallKick(ourDefender, target, enemyAttacker);
 			kickBallToPoint(bouncePoint);
-			
-		//Otherwise - just simple pass
 		} else {
-			kickBallToPoint(ourAttacker);
+			//Otherwise - just kick straight to the target
+			kickBallToPoint(target);
 		}
 	}
 	
@@ -752,15 +749,14 @@ public class Robot {
 		Point2 leftShootPos = new Point2((int)(source.x+dest.x)/2 , pts.get(2).y);
 		Point2 rightShootPos = new Point2((int)(source.x+dest.x)/2 , pts.get(9).y);
 		
-		/*if (state.getDirection() == 1) {
-			leftShootPos.x-=adjustKickPoint;
+		if (state.getDirection() == 1) {
+			leftShootPos.x -= adjustKickPoint;
 			rightShootPos.x-=adjustKickPoint;
 		}
 		else {
 			leftShootPos.x+=adjustKickPoint;
 			rightShootPos.x+=adjustKickPoint;
-		}*/
-		
+		}
 		
 		double angLeftOfDefender = (obstacle.subtract(source)).angleBetween(leftShootPos.subtract(source));
 		double angRightOfDefender = (obstacle.subtract(source)).angleBetween(rightShootPos.subtract(source));
@@ -791,7 +787,7 @@ public class Robot {
 		double c = ourRobot.distance(target);
 		// Trigonometry FTW!
 		double x = a * Math.sin(Math.acos((a*a+c*c-b*b)/(2*a*c)));
-		if (x < 100) {
+		if (x < SAFE_PASS_DISTANCE) {
 			return true;
 		}
 		return false;
@@ -927,33 +923,6 @@ public class Robot {
 		bouncePoint = new Point2((int)(bestPoint.getX() - ourDefender.distance(bestPoint)/2), bestPoint.getY());;
 		System.out.println("best" + bestPoint);
 		defenderPosWhenBouncePointcalc = ourDefender;
-
-	}
-
-	/**
-	 * Not using it atm - don't touch unless you're Iain
-	 */
-	@SuppressWarnings("unused")
-	public boolean passBall() throws Exception {
-		// Turn to ball, move to ball, grab the ball, turn to the point, kick
-		Point2 ball = state.getBallPosition();
-		Point2 robo = state.getRobotPosition(myTeam, myIdentifier);
-
-		Point2 where = getPassPoint();
-		if (subState == 0) {
-			// if (goTo(ball.offset(20.0, ball.angleTo(robo)), 20.0)) {
-			if (goTo(ball, 30.0)) {
-				driver.grab();
-				subState = 1;
-			}
-		}
-		if (subState == 1) {
-			if (turnTo(where, 10.0)) {
-				driver.kick(900);
-				subState = 0;
-			}
-		}
-		return true;
 
 	}
 
