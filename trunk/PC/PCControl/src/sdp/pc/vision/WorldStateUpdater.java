@@ -6,6 +6,10 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 import sdp.pc.common.Constants;
+import sdp.pc.common.GaussianIntFilter;
+import sdp.pc.common.Parallel;
+import sdp.pc.common.Parallel.Operation;
+import sdp.pc.vision.settings.SettingsManager;
 
 /**
  * Contains the code used to process (get RGB/HSB values) the current frame;
@@ -124,7 +128,7 @@ public class WorldStateUpdater extends WorldStateListener {
 	 * facing.
 	 */
 	@Override
-	public void updateWorld(Color[][] cRgbs, float[][][] cHsbs) {
+	public void updateWorld(final Color[][] cRgbs, final float[][][] cHsbs) {
 
 		// reset ball/robot averages and collected points
 		ballPtsCount = 0;
@@ -139,55 +143,19 @@ public class WorldStateUpdater extends WorldStateListener {
 				robotPos[i][j] = new Point2();
 			}
 
-		// the colour data of the 'current' pixel
-		Color cRgb;
-		float[] cHsb;
-		int x, y;
-
-		// whether this point is on the right or left side of the pitch
-		int robotSide;
-
 		// Loop through all table values, recognising pixel regions as necessary
-		for (Point2 p : pitchPoints) {
-
-			// store some often used values
-			x = p.getX();
-			y = p.getY();
-			cRgb = cRgbs[x][y];
-			cHsb = cHsbs[x][y];
-
-			// check if it's a ball colour
-			if (Colors.isBall(cRgb, cHsb)) {
-				// update its counters
-				ballPos = ballPos.add(p);
-				ballPtsCount++;
-			}
-
-			// Check if it's a green plate
-			if (Colors.isGreen(cRgb, cHsb)) {
-				int quad = state.quadrantFromPoint(p) - 1;
-				if (quad >= 0 && quad <= 3)
-					greenPlatePoints.get(quad).add(p);
-			}
-
-			// check if it's a team colour
-			for (int team = 0; team < 2; team++) {
-				if (Colors.isTeamColor(team, cRgb, cHsb)) {
-
-					// get the appropriate robot
-					if (x < Constants.TABLE_CENTRE_X)
-						robotSide = Constants.ROBOT_LEFT;
-					else
-						robotSide = Constants.ROBOT_RIGHT;
-
-					// update its counters
-					robotPos[team][robotSide] = robotPos[team][robotSide]
-							.add(p);
-					robotPtsCount[team][robotSide]++;
-					robotPts[team][robotSide].add(p);
+		
+		if(SettingsManager.defaultSettings.isMulticoreProcessing()) {
+			Parallel.For(pitchPointSplit, new Operation<Point2>() {
+				@Override
+				public void perform(Point2 p) {
+					recognizePixels(p, cRgbs, cHsbs);
 				}
-
-			}
+			});
+		}
+		else {
+			for(Point2 p : pitchPoints)
+				recognizePixels(p, cRgbs, cHsbs);
 		}
 
 		// update ball position, if any
@@ -302,6 +270,54 @@ public class WorldStateUpdater extends WorldStateListener {
 			}
 	}
 
+	private void recognizePixels(Point2 p, Color[][] cRgbs, float[][][] cHsbs) {
+		int x = p.getX();
+		int y = p.getY();
+		Color cRgb = cRgbs[x][y];
+		float[] cHsb = cHsbs[x][y];
+		int robotSide;
+
+		// check if it's a ball colour
+		if (Colors.isBall(cRgb, cHsb)) {
+			// update its counters
+			ballPos = ballPos.add(p);
+			ballPtsCount++;
+		}
+
+		// Check if it's a green plate
+		if (Colors.isGreen(cRgb, cHsb)) {
+			int quad = state.quadrantFromPoint(p) - 1;
+			if (quad >= 0 && quad <= 3) {
+				ArrayList<Point2> gpts = greenPlatePoints.get(quad);
+				synchronized (gpts) {
+					gpts.add(p);	
+				}
+			}
+		}
+
+		// check if it's a team colour
+		for (int team = 0; team < 2; team++) {
+			if (Colors.isTeamColor(team, cRgb, cHsb)) {
+
+				// get the appropriate robot
+				if (x < Constants.TABLE_CENTRE_X)
+					robotSide = Constants.ROBOT_LEFT;
+				else
+					robotSide = Constants.ROBOT_RIGHT;
+
+				ArrayList<Point2> rPts = robotPts[team][robotSide];
+				// update its counters
+				robotPos[team][robotSide] = robotPos[team][robotSide]
+						.add(p);
+				robotPtsCount[team][robotSide]++;
+				synchronized (rPts) {
+					rPts.add(p);
+				}
+			}
+
+		}
+	}
+
 	/**
 	 * Finds the orientation a robot is facing given its centroid. Works by
 	 * first finding all green pixels and calculating their convex hull. Then
@@ -369,41 +385,62 @@ public class WorldStateUpdater extends WorldStateListener {
 		return correctAngle;
 	}
 
+	
+	
+	private void processPixel(Point2 p, BufferedImage img, Color[][] cRgbs,
+			float[][][] cHsbs) {
+		Color cRgb;
+		float[] cHsb;
+		
+		// get RGB handle
+		   
+		Point2 imgP = p;
+		
+		//fisheye
+		imgP = doFisheye(p.x, p.y);
+		
+		
+		cRgb = new Color(img.getRGB(imgP.x, imgP.y));
+
+		// get HSB handle
+		cHsb = cHsbs[p.x][p.y];
+		Color.RGBtoHSB(cRgb.getRed(), cRgb.getGreen(), cRgb.getBlue(), cHsb);
+
+		// scale HSB
+		float br = cHsb[2];
+
+		// minMaxBrightness is of the form {min, max}
+		br = (br - minMaxBrightness[0])
+				/ (minMaxBrightness[1] - minMaxBrightness[0]);
+		br = Math.min(1, Math.max(0, br));
+
+		cHsb[2] = br;
+
+		// save RGB
+		cRgbs[p.x][p.y] = new Color(Color.HSBtoRGB(cHsb[0], cHsb[1],
+				cHsb[2]));
+
+		// HSB is up to date
+	}
+	
 	/**
 	 * An implementation of processImage which updates the given arrays' values
 	 * with the corresponding normalised colour values from the given image
 	 */
 	@Override
-	protected void processImage(BufferedImage img, Color[][] cRgbs,
-			float[][][] cHsbs) {
-		Color cRgb;
-		float[] cHsb;
-		for (Point2 p : pitchPoints) {
-
-			// get RGB handle
-			cRgb = new Color(img.getRGB(p.x, p.y));
-
-			// get HSB handle
-			cHsb = cHsbs[p.x][p.y];
-			Color.RGBtoHSB(cRgb.getRed(), cRgb.getGreen(), cRgb.getBlue(), cHsb);
-
-			// scale HSB
-			float br = cHsb[2];
-
-			// minMaxBrightness is of the form {min, max}
-			br = (br - minMaxBrightness[0])
-					/ (minMaxBrightness[1] - minMaxBrightness[0]);
-			br = Math.min(1, Math.max(0, br));
-
-			cHsb[2] = br;
-
-			// save RGB
-
-			cRgbs[p.x][p.y] = new Color(Color.HSBtoRGB(cHsb[0], cHsb[1],
-					cHsb[2]));
-
-			// HSB is up to date
-
+	protected void processImage(final BufferedImage img, final Color[][] cRgbs,
+			final float[][][] cHsbs) {
+		
+		if(SettingsManager.defaultSettings.isMulticoreProcessing()) {
+			Parallel.For(pitchPointSplit, new Operation<Point2>() {
+				@Override
+				public void perform(Point2 p) {
+					processPixel(p, img, cRgbs, cHsbs);
+				}
+			});
 		}
+		else
+			for(Point2 p : pitchPoints)
+				processPixel(p, img, cRgbs, cHsbs);
 	}
 }

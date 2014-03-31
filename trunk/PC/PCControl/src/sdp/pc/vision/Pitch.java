@@ -166,15 +166,14 @@ public class Pitch {
 		for (int i = 0; i < 3; i++) {
 			Point2 zone = xpts[1].get(i);
 			zoneX[i] = (zone.x + zone.y) / 2;
-
 		}
 
 		pitchY[0] = ypts[0].get(0).x;
 		pitchY[1] = ypts[0].get(ypts[0].size() - 1).y;
 
-		Point2 cx = horizontalSwipe(rgb, hsb, pitchY[0] + SOME_SHANO_VALUE);
+		Point2 cx = horizontalSwipe(rgb, hsb, pitchY[0] + 2);
 
-		Point2 cy = verticalSwipe(rgb, hsb, goalLineX[0] + SOME_SHANO_VALUE);
+		Point2 cy = verticalSwipe(rgb, hsb, goalLineX[0] + 0);
 
 		pitchCornerX[0] = cx.x;
 		pitchCornerX[1] = cx.y;
