@@ -727,19 +727,18 @@ public class Robot {
 	 */
 	public void defenderPass() throws Exception {
 		Point2 ourDefender = state.getRobotPosition(myTeam, myIdentifier);
-		Point2 target = state.getRobotPosition(myTeam, 1 - myIdentifier);
+		//our Attackers Position
+		Point2 target = state.getRobotPosition(myTeam, 1 - myIdentifier).copy();
 		Point2 enemyAttacker = state.getRobotPosition(1 - myTeam, myIdentifier);
 
 		// If our attacker is not on the pitch (or just cannot recognise him)
 		// - change target to goal target
 		if (target.equals(Point2.EMPTY)) {
 			target = Strategy.basicGoalTarget();
-		}
-		
+			
 		// Check if there is opponents attacker between our defender and target
 		// and if yes - do bounce shot.
-<<<<<<< HEAD
-		} else if (isEnemyBotBlocking(enemyAttacker, ourDefender, ourAttacker)) {
+		} else if (isEnemyBotBlocking(enemyAttacker, ourDefender, target)) {
 			// Potentially avoid recalculating the bounce point if
 			// the defender is in the process of turning to face an
 			// already calculated bounce point
@@ -748,17 +747,12 @@ public class Robot {
 			//	If the enemy defender tries to block our bounce pass we will just do 
 			// 	simple pass instead.
 			if (!(ourDefender.withinRangeOfPoint(defenderPosWhenBouncePointcalc, 3))) {
-				setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
-				//bouncePoint = wallKick(ourDefender, ourAttacker, enemyAttacker);
+				setBouncePoint(enemyAttacker, ourDefender, target);
+				//bouncePoint = wallKick(ourDefender, target, enemyAttacker);
+				kickBallToPoint(bouncePoint);
 			}
-=======
-		if (isEnemyBotBlocking(enemyAttacker, ourDefender, target)) {
-			//setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
-			bouncePoint = wallKick(ourDefender, target, enemyAttacker);
->>>>>>> 9aa40fde5697be81a612a7b59badfbb2f3e4c80d
-			kickBallToPoint(bouncePoint);
 		} else {
-			//Otherwise - just kick straight to the target
+			//Otherwise - just kick straight to the target point
 			kickBallToPoint(target);
 		}
 	}
