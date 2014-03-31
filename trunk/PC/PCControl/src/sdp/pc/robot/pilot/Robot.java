@@ -141,9 +141,7 @@ public class Robot {
 	
 	public boolean turnedTowardsTopOfGoal = false;
 	
-	private boolean onShootPoint = false;
-	
-	public boolean holdingball = false;
+	public boolean onShootPoint = false;
 	
 	Point2 topCornerOfGoal = new Point2(0,0);
 	Point2 bottomCornerOfGoal = new Point2(0,0);
@@ -499,7 +497,6 @@ public class Robot {
 		if (goTo(ball.offset(25.0, ball.angleTo(currentPos)), 10.0)) {
 			driver.stop();
 			driver.grab();
-			holdingball = true;
 		}
 	}
 	/**
@@ -556,27 +553,35 @@ public class Robot {
 			kickSubState++;
 		} 
 		if (kickSubState >= 5) {
-			// This checks if robot actually has the ball
-			//if (!goTo(ball.offset(20.0 + 8*pitchId, ball.angleTo(pos)), 15.0)) {
-			if (pos.distance(ball) > 40 && !ball.equals(Point2.EMPTY)) {
-				driver.stop();
-				driver.open();
-				kickSubState = 0;
-				// TODO: If robot has the bal, always say that ball is in front of robot
+			checkHoldingBall(pos, ball);
+			
+			// If this is attacker, do Shoot Strategy
+			if (myIdentifier == state.getDirection()) {
+				if (kickSubState >= 6) {
+					kickGrabbedBallTo(where);
+/*					Point2 aim = Strategy.basicGoalTarget();
+					if (!closeTo(ourAttacker,aim,enemyDefender))  kickGrabbedBallTo(aim);
+					else kickGrabbedBallTo(wallKick(ourAttacker,aim,enemyDefender));*/
+				}
+			} else if (kickSubState >= 6){  // If defender, execute pass strategy
+				passStrategy(where);
 			}
 		}
-		// If this is attacker, do Shoot Strategy
-		if (myIdentifier == state.getDirection()) {
-			if (kickSubState >= 5) {
-				//shootStrategy1();
-				
-				Point2 aim = Strategy.basicGoalTarget();
-				//kickGrabbedBallTo(aim);
-				if (!closeTo(ourAttacker,aim,enemyDefender))  kickGrabbedBallTo(aim);
-				else kickGrabbedBallTo(wallKick(ourAttacker,aim,enemyDefender));
-			}
-		} else {  // If defender, execute pass strategy
-			passStrategy(where);
+	}
+	
+	/**
+	 * Checks if the specified robot has the ball, resets kickSubState if it doesn't.
+	 * 
+	 * @param robotPos
+	 * @param ballPos
+	 * @throws Exception
+	 */
+	public void checkHoldingBall(Point2 robotPos, Point2 ballPos) throws Exception{
+		if (robotPos.distance(ballPos) > 40 && !ballPos.equals(Point2.EMPTY)) {
+			driver.stop();
+			driver.open();
+			kickSubState = 0;
+			// TODO: If robot has the ball, always say that ball is in front of robot
 		}
 	}
 	
@@ -598,13 +603,18 @@ public class Robot {
 	public boolean kickGrabbedBallTo(Point2 target) throws InterruptedException, Exception {
 		if (turnTo(target, 5)) {
 			driver.stop();
-			driver.kick(900);			
+			driver.kick(900);
+			
+			//reset variables
+			onShootPoint = false;
+			
 			return true;
+			
 		}
 		return false;
 	}
 	
-	private void initShootPoints(){
+	private void initScorePoints(){
 		shootPoint = Pitch.getQuadrantCentres()[getMyQuadrant()-1].copy();
 		
 		// Calculate shoot point and goal corners
@@ -613,29 +623,32 @@ public class Robot {
 			topCornerOfGoal.setY(topCornerOfGoal.getY() - 50);
 			bottomCornerOfGoal = state.getRightGoalCentre();
 			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 50);
-			shootPoint.setX(shootPoint.getX() + 40);
+			shootPoint.setX(shootPoint.getX() + 44);
 		}else{
 			topCornerOfGoal = state.getLeftGoalCentre();
 			topCornerOfGoal.setY(topCornerOfGoal.getY() - 50);
 			bottomCornerOfGoal = state.getLeftGoalCentre();
 			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 50);
-			shootPoint.setX(shootPoint.getX() - 40);
+			shootPoint.setX(shootPoint.getX() - 44);
 		}
 	}
+	
 	/**
 	 * Attempts to score by first navigating to a point next to the opposing defenders
 	 * zone in the centre of the our attackers quadrant. It then turns the robot to face
 	 * the top corner of the opposing goal in an attempt to move the opposing defender into
-	 * a position away from the centre of the goal. The robot then kicks the ball towards the
-	 * opposite corner. Since the robot only performs this strategy if it has already grabbed
-	 * the ball it is safe to assume that the attackers state won't change during this strategies execution.
+	 * a position away from the centre of the goal. If the defender moves to block. The robot then kicks the ball towards the
+	 * opposite corner.
 	 * 
 	 * @throws Exception 
 	 * @throws InterruptedException 
 	 */
 	public void shootStrategy1() throws InterruptedException, Exception{
 		if (!shootStratInitalised)
-			initShootPoints();
+			initScorePoints();
+		
+		//Check we still have the ball
+		checkHoldingBall(state.getRobotPosition(getOtherTeam(), myIdentifier), state.getBallPosition());
 		
 		//Move to a point close to the opposing defender's zone that also 
 		//has the y coordinate of the centre of our attackers quadrant.
@@ -652,7 +665,6 @@ public class Robot {
 							if (shootStratSubState>8) {
 								//Reset variables
 								shootBot = false;
-								holdingball = false;
 								shootStratInitalised = false;
 								shootStratSubState = 0;
 								kickSubState = 0;
@@ -662,11 +674,11 @@ public class Robot {
 						}
 					} else {
 						if (kickGrabbedBallTo(topCornerOfGoal)) {
+							//avoid moving when kicking the ball
 							shootStratSubState++;
 							if (shootStratSubState>8) {
 								//Reset variables
 								shootBot = false;
-								holdingball = false;
 								shootStratInitalised = false;
 								shootStratSubState = 0;
 								kickSubState = 0;
@@ -695,7 +707,6 @@ public class Robot {
 		} else if (kickSubState >= 12) {
 			driver.stop();
 			driver.kick(900);
-			holdingball = false;
 			kickSubState++;
 			if (kickSubState >= 20) {
 				kickSubState = 0;
@@ -727,11 +738,14 @@ public class Robot {
 			// Potentially avoid recalculating the bounce point if
 			// the defender is in the process of turning to face an
 			// already calculated bounce point
-			//TODO what if enemy defender moved during our turn? 
-			//if (!(ourDefender.withinRangeOfPoint(defenderPosWhenBouncePointcalc, 3))) {
-				//setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
-				bouncePoint = wallKick(ourDefender, ourAttacker, enemyAttacker);
-			//}
+			//TODO what if enemy defender moved during our turn?
+			//	Code is only reached if isEnemyBotBlocking is still true
+			//	If the enemy defender tries to block our bounce pass we will just do 
+			// 	simple pass instead.
+			if (!(ourDefender.withinRangeOfPoint(defenderPosWhenBouncePointcalc, 3))) {
+				setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
+				//bouncePoint = wallKick(ourDefender, ourAttacker, enemyAttacker);
+			}
 			kickBallToPoint(bouncePoint);
 			
 		//Otherwise - just simple pass
@@ -820,7 +834,7 @@ public class Robot {
 		// defender perform a direct pass to our attacker if no bounce point is
 		// found
 		Point2 bestPoint = new Point2(ourAttacker.getX(), ourAttacker.getY());
-		System.out.println("initial" + bestPoint);
+		//System.out.println("initial" + bestPoint);
 
 		Point2 testPoint = new Point2(testx, testy);
 		Pitch pitch = state.getPitch();
@@ -924,8 +938,8 @@ public class Robot {
 			}
 			length = Math.abs(rangeStart - rangeEnd);
 		}
-		bouncePoint = new Point2((int)(bestPoint.getX() - ourDefender.distance(bestPoint)/2), bestPoint.getY());;
-		System.out.println("best" + bestPoint);
+		bouncePoint = new Point2(bestPoint.getX(), bestPoint.getY());
+		//System.out.println("best" + bestPoint);
 		defenderPosWhenBouncePointcalc = ourDefender;
 
 	}
@@ -1060,7 +1074,7 @@ public class Robot {
 	private static int getRotateSpeed(double rotateBy, double epsilon) {
 		// TODO: Should be refactored (constants)
 		double maxSpeed = 120.0;
-		double minSpeed = 20.0;
+		double minSpeed = 8.0;
 		double maxRotate = 180.0;
 		double minRotate = epsilon;
 		rotateBy = Math.abs(rotateBy);
@@ -1073,6 +1087,17 @@ public class Robot {
 		// Don't change this, just change the constants.
 		return (int) ((maxSpeed - minSpeed) / (maxRotate - minRotate)
 				* (rotateBy - minRotate) + minSpeed);
+		
+/*		//function that increases sharply when increasing at small angles
+		if(rotateBy >= 1 ){
+			if (rotateBy < 60){
+				return (int) (Math.log(rotateBy/5)*24 + minSpeed);
+			}else{
+				return (int) maxSpeed;
+			}
+		}else{
+			return (int) minSpeed;
+		}*/
 	}
 
 	/**
