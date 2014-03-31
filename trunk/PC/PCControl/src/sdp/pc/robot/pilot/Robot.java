@@ -514,6 +514,8 @@ public class Robot {
 		Point2 ball = state.getBallPosition();
 		Point2 pos = state.getRobotPosition(getTeam(), getId());
 		int pitchId = state.getPitchId();
+		Point2 ourAttacker = state.getRobotPosition(myTeam, 1 - myIdentifier);
+		Point2 enemyDefender = state.getRobotPosition(1 - myTeam, 1 - myIdentifier);
 		
 		// If not grabbed ball yet
 		if (kickSubState <= 0) {
@@ -566,11 +568,21 @@ public class Robot {
 		// If this is attacker, do Shoot Strategy
 		if (myIdentifier == state.getDirection()) {
 			if (kickSubState >= 5) {
-				shootStrategy1();
+				//shootStrategy1();
+				Point2 aim = Strategy.basicGoalTarget();
+				if (!closeTo(ourAttacker,aim,enemyDefender))  kickGrabbedBallTo(aim);
+				else kickGrabbedBallTo(wallKick(ourAttacker,aim,enemyDefender));
 			}
 		} else {  // If defender, execute pass strategy
 			passStrategy(where);
 		}
+	}
+	
+	public boolean closeTo(Point2 source, Point2 dest, Point2 obstacle) {
+		Point2 p = source.subtract(dest);
+		Point2 p1 = source.subtract(obstacle);
+		
+		return ( (p.x*p1.y - p.y*p1.x) / (Math.sqrt(p.x*p.x+p.y*p.y)) + 0.0000001 <= 15 );
 	}
 
 	/**
@@ -756,6 +768,8 @@ public class Robot {
 			leftShootPos.x+=adjustKickPoint;
 			rightShootPos.x+=adjustKickPoint;
 		}
+		
+		
 		double angLeftOfDefender = angleBetweenVectors(obstacle.subtract(source),leftShootPos.subtract(source));
 		double angRightOfDefender = angleBetweenVectors(obstacle.subtract(source),rightShootPos.subtract(source));
 		
