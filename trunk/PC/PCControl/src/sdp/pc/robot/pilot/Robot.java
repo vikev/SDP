@@ -531,8 +531,9 @@ public class Robot {
 				}
 				if (kickSubState == -1) {
 					// Offset ball slightly away from boundary
-					ball = new Point2(ball.offset(4, ball.angleTo(Pitch
-							.getQuadrantCentres()[getMyQuadrant() - 1])).x,
+					ball = new Point2(
+							ball.offset(4, ball.angleTo(state.getPitch()
+									.getQuadrantCentres()[getMyQuadrant() - 1])).x,
 							ball.y);
 					// If close to ball, grab
 					System.out.println("Check if close to ball");
@@ -637,7 +638,8 @@ public class Robot {
 	}
 
 	private void initScorePoints() {
-		shootPoint = Pitch.getQuadrantCentres()[getMyQuadrant() - 1].copy();
+		shootPoint = state.getPitch().getQuadrantCentres()[getMyQuadrant() - 1]
+				.copy();
 
 		// Calculate shoot point and goal corners
 		if (state.getDirection() == 1) {
