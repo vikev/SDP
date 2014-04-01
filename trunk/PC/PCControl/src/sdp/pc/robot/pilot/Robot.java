@@ -61,13 +61,13 @@ public class Robot {
 	 * safe angle value to use
 	 */
 	private static final double SAFE_ANGLE_EPSILON = 8.0;
-	
+
 	/**
 	 * Determines how much you want to squeeze the fields (for making sure the
 	 * bots stay in their fields)
 	 */
 	private static final double HULL_OFFSET = 60.0;
-	
+
 	/**
 	 * Safe distance between enemy attacker and straight line between our robots
 	 */
@@ -131,7 +131,7 @@ public class Robot {
 
 	// TODO:
 	private int turnSubState = 0;
-	
+
 	private int shootStratSubState = 0;
 
 	/**
@@ -143,14 +143,14 @@ public class Robot {
 	 * The point the defender was at when bouncePoint was calculated
 	 */
 	public Point2 defenderPosWhenBouncePointcalc = new Point2(0, 0);
-	
+
 	public boolean turnedTowardsTopOfGoal = false;
-	
+
 	public boolean onShootPoint = false;
-	
-	Point2 topCornerOfGoal = new Point2(0,0);
-	Point2 bottomCornerOfGoal = new Point2(0,0);
-	Point2 shootPoint = new Point2(0,0);
+
+	Point2 topCornerOfGoal = new Point2(0, 0);
+	Point2 bottomCornerOfGoal = new Point2(0, 0);
+	Point2 shootPoint = new Point2(0, 0);
 	boolean shootStratInitalised = false;
 	boolean shootBot = false;
 
@@ -222,7 +222,7 @@ public class Robot {
 	 * Y coordinate by going forwards or backwards.
 	 */
 	public void defendBall() throws Exception {
-		if (assertPerpendicular(2*SAFE_ANGLE_EPSILON)) {
+		if (assertPerpendicular(2 * SAFE_ANGLE_EPSILON)) {
 			// Get predicted ball stop point
 			Point2 predBallPos = state.getFutureData().getEstimate();
 
@@ -303,7 +303,7 @@ public class Robot {
 	 */
 	public void defendRobot(int team, int robot) throws Exception {
 
-		if (assertPerpendicular(2*SAFE_ANGLE_EPSILON)) {
+		if (assertPerpendicular(2 * SAFE_ANGLE_EPSILON)) {
 			// Get my location
 			Point2 robotPos = state.getRobotPosition(myTeam, myIdentifier);
 
@@ -495,8 +495,8 @@ public class Robot {
 		}
 		return false;
 	}
-	
-	public void grabBall() throws Exception{
+
+	public void grabBall() throws Exception {
 		Point2 ball = state.getBallPosition();
 		Point2 currentPos = state.getRobotPosition(getTeam(), getId());
 		if (goTo(ball.offset(25.0, ball.angleTo(currentPos)), 10.0)) {
@@ -504,6 +504,7 @@ public class Robot {
 			driver.grab();
 		}
 	}
+
 	/**
 	 * Method for telling the robot to kick the ball to a point
 	 * 
@@ -516,38 +517,42 @@ public class Robot {
 		Point2 ball = state.getBallPosition();
 		Point2 pos = state.getRobotPosition(getTeam(), getId());
 		int pitchId = state.getPitchId();
-		Point2 ourAttacker = state.getRobotPosition(myTeam, 1 - myIdentifier);
-		Point2 enemyDefender = state.getRobotPosition(1 - myTeam, 1 - myIdentifier);
-		
+
 		// If not grabbed ball yet
 		if (kickSubState <= 0) {
 			// If ball close to wall
-			if (!Alg.inMinorHullWeighted(getQuadrantVerticesWide(getMyQuadrant()),
-					15, ball, 0.05, 1)) {
+			if (!Alg.inMinorHullWeighted(
+					getQuadrantVerticesWide(getMyQuadrant()), 15, ball, 0.05, 1)) {
 				// First go to x-coordinate of ball, then to ball itself
-				if (kickSubState == 0) kickSubState = -2;
+				if (kickSubState == 0)
+					kickSubState = -2;
 				if (kickSubState == -2 && goTo(new Point2(ball.x, pos.y), 20.0)) {
 					kickSubState = -1;
 				}
 				if (kickSubState == -1) {
 					// Offset ball slightly away from boundary
-					ball = new Point2(ball.offset(4, ball.angleTo(
-							Pitch.getQuadrantCentres()[getMyQuadrant()-1])).x, ball.y);
+					ball = new Point2(ball.offset(4, ball.angleTo(Pitch
+							.getQuadrantCentres()[getMyQuadrant() - 1])).x,
+							ball.y);
 					// If close to ball, grab
 					System.out.println("Check if close to ball");
-					if (goTo(ball.offset(18.0 + 30*pitchId, ball.angleTo(pos)), 10.0)) {
+					if (goTo(
+							ball.offset(18.0 + 30 * pitchId, ball.angleTo(pos)),
+							10.0)) {
 
 						driver.stop();
 						System.out.println("Grab!");
 						driver.grab();
-						//driver.backward(10);
+						// driver.backward(10);
 						kickSubState = 1;
 					}
 				}
-			// If ball is not close to wall, do it simply
+				// If ball is not close to wall, do it simply
 			} else {
-				if (kickSubState < 0) kickSubState = 0;
-				if (goTo(ball.offset(20.0 + 30*pitchId, ball.angleTo(pos)), 10.0)) {
+				if (kickSubState < 0)
+					kickSubState = 0;
+				if (goTo(ball.offset(20.0 + 30 * pitchId, ball.angleTo(pos)),
+						10.0)) {
 
 					driver.stop();
 					driver.grab();
@@ -556,80 +561,92 @@ public class Robot {
 			}
 		} else if (kickSubState < 5) {
 			kickSubState++;
-		} 
+		}
 		if (kickSubState >= 5) {
 			checkHoldingBall(pos, ball);
-			
+
 			// If this is attacker, do Shoot Strategy
 			if (myIdentifier == state.getDirection()) {
 				if (kickSubState >= 6) {
 					kickGrabbedBallTo(where);
-/*					Point2 aim = Strategy.basicGoalTarget();
-					if (!closeTo(ourAttacker,aim,enemyDefender))  kickGrabbedBallTo(aim);
-					else kickGrabbedBallTo(wallKick(ourAttacker,aim,enemyDefender));*/
+					/*
+					 * Point2 aim = Strategy.basicGoalTarget(); if
+					 * (!closeTo(ourAttacker,aim,enemyDefender))
+					 * kickGrabbedBallTo(aim); else
+					 * kickGrabbedBallTo(wallKick(ourAttacker
+					 * ,aim,enemyDefender));
+					 */
 				}
-			} else if (kickSubState >= 6){  // If defender, execute pass strategy
+			} else if (kickSubState >= 6) { // If defender, execute pass
+											// strategy
 				passStrategy(where);
 			}
 		}
 	}
-	
+
 	/**
-	 * Checks if the specified robot has the ball, resets kickSubState if it doesn't.
+	 * Checks if the specified robot has the ball, resets kickSubState if it
+	 * doesn't.
 	 * 
 	 * @param robotPos
 	 * @param ballPos
 	 * @throws Exception
 	 */
-	public void checkHoldingBall(Point2 robotPos, Point2 ballPos) throws Exception{
+	public void checkHoldingBall(Point2 robotPos, Point2 ballPos)
+			throws Exception {
 		if (robotPos.distance(ballPos) > 40 && !ballPos.equals(Point2.EMPTY)) {
 			driver.stop();
 			driver.open();
 			kickSubState = 0;
-			// TODO: If robot has the ball, always say that ball is in front of robot
+			// TODO: If robot has the ball, always say that ball is in front of
+			// robot
 		}
 	}
-	
+
 	public boolean closeTo(Point2 source, Point2 dest, Point2 obstacle) {
 		Point2 p = source.subtract(dest);
 		Point2 p1 = source.subtract(obstacle);
-		
-		return ( (p.x*p1.y - p.y*p1.x) / (Math.sqrt(p.x*p.x+p.y*p.y)) + 0.0000001 <= 10 );
+
+		return ((p.x * p1.y - p.y * p1.x) / (Math.sqrt(p.x * p.x + p.y * p.y))
+				+ 0.0000001 <= 10);
 	}
 
 	/**
-	 * Kicks an already grabbed ball. Assumes robot is already at the shoot point.
+	 * Kicks an already grabbed ball. Assumes robot is already at the shoot
+	 * point.
 	 * 
-	 * @param target - point to kick the ball to
-	 * @param shootStratInitalised 
+	 * @param target
+	 *            - point to kick the ball to
+	 * @param shootStratInitalised
 	 * @throws InterruptedException
 	 * @throws Exception
 	 */
-	public boolean kickGrabbedBallTo(Point2 target) throws InterruptedException, Exception {
+	public boolean kickGrabbedBallTo(Point2 target)
+			throws InterruptedException, Exception {
 		if (turnTo(target, 5)) {
 			driver.stop();
 			driver.kick(900);
-			
-			//reset variables
+
+			// reset variables
 			onShootPoint = false;
-			
+
 			return true;
-			
+
 		}
 		return false;
 	}
-	
-	private void initScorePoints(){
-		shootPoint = Pitch.getQuadrantCentres()[getMyQuadrant()-1].copy();
-		
+
+	private void initScorePoints() {
+		shootPoint = Pitch.getQuadrantCentres()[getMyQuadrant() - 1].copy();
+
 		// Calculate shoot point and goal corners
-		if(state.getDirection() == 1){
+		if (state.getDirection() == 1) {
 			topCornerOfGoal = state.getRightGoalCentre();
 			topCornerOfGoal.setY(topCornerOfGoal.getY() - 50);
 			bottomCornerOfGoal = state.getRightGoalCentre();
 			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 50);
 			shootPoint.setX(shootPoint.getX() + 44);
-		}else{
+		} else {
 			topCornerOfGoal = state.getLeftGoalCentre();
 			topCornerOfGoal.setY(topCornerOfGoal.getY() - 50);
 			bottomCornerOfGoal = state.getLeftGoalCentre();
@@ -637,38 +654,44 @@ public class Robot {
 			shootPoint.setX(shootPoint.getX() - 44);
 		}
 	}
-	
+
 	/**
-	 * Attempts to score by first navigating to a point next to the opposing defenders
-	 * zone in the centre of the our attackers quadrant. It then turns the robot to face
-	 * the top corner of the opposing goal in an attempt to move the opposing defender into
-	 * a position away from the centre of the goal. If the defender moves to block. The robot then kicks the ball towards the
-	 * opposite corner.
+	 * Attempts to score by first navigating to a point next to the opposing
+	 * defenders zone in the centre of the our attackers quadrant. It then turns
+	 * the robot to face the top corner of the opposing goal in an attempt to
+	 * move the opposing defender into a position away from the centre of the
+	 * goal. If the defender moves to block. The robot then kicks the ball
+	 * towards the opposite corner.
 	 * 
-	 * @throws Exception 
-	 * @throws InterruptedException 
+	 * @throws Exception
+	 * @throws InterruptedException
 	 */
-	public void shootStrategy1() throws InterruptedException, Exception{
+	public void shootStrategy1() throws InterruptedException, Exception {
 		if (!shootStratInitalised)
 			initScorePoints();
-		
-		//Check we still have the ball
-		checkHoldingBall(state.getRobotPosition(getOtherTeam(), myIdentifier), state.getBallPosition());
-		
-		//Move to a point close to the opposing defender's zone that also 
-		//has the y coordinate of the centre of our attackers quadrant.
+
+		// Check we still have the ball
+		checkHoldingBall(state.getRobotPosition(getOtherTeam(), myIdentifier),
+				state.getBallPosition());
+
+		// Move to a point close to the opposing defender's zone that also
+		// has the y coordinate of the centre of our attackers quadrant.
 		if (onShootPoint == true) {
-			//Attempt to make opposing defender go into the top corner of the goal
-			if(turnedTowardsTopOfGoal){
-				if (shootStratSubState > 3){
-					if (shootBot || isEnemyBotBlocking(
-							state.getRobotPosition(getOtherTeam(), myIdentifier),
-							state.getRobotPosition(myTeam, myIdentifier), topCornerOfGoal)){
+			// Attempt to make opposing defender go into the top corner of the
+			// goal
+			if (turnedTowardsTopOfGoal) {
+				if (shootStratSubState > 3) {
+					if (shootBot
+							|| isEnemyBotBlocking(
+									state.getRobotPosition(getOtherTeam(),
+											myIdentifier),
+									state.getRobotPosition(myTeam, myIdentifier),
+									topCornerOfGoal)) {
 						shootBot = true;
 						if (kickGrabbedBallTo(bottomCornerOfGoal)) {
 							shootStratSubState++;
-							if (shootStratSubState>8) {
-								//Reset variables
+							if (shootStratSubState > 8) {
+								// Reset variables
 								shootBot = false;
 								shootStratInitalised = false;
 								shootStratSubState = 0;
@@ -679,10 +702,10 @@ public class Robot {
 						}
 					} else {
 						if (kickGrabbedBallTo(topCornerOfGoal)) {
-							//avoid moving when kicking the ball
+							// avoid moving when kicking the ball
 							shootStratSubState++;
-							if (shootStratSubState>8) {
-								//Reset variables
+							if (shootStratSubState > 8) {
+								// Reset variables
 								shootBot = false;
 								shootStratInitalised = false;
 								shootStratSubState = 0;
@@ -695,14 +718,14 @@ public class Robot {
 				} else {
 					shootStratSubState++;
 				}
-			} else if(turnTo(topCornerOfGoal, 8)){
+			} else if (turnTo(topCornerOfGoal, 8)) {
 				turnedTowardsTopOfGoal = true;
 			}
-		}else if (goTo(shootPoint, 15)){
+		} else if (goTo(shootPoint, 15)) {
 			onShootPoint = true;
 		}
 	}
-	
+
 	public void passStrategy(Point2 where) throws Exception {
 		if (kickSubState >= 5 && kickSubState < 12) {
 			if (turnTo(where, 9.0)) {
@@ -727,7 +750,7 @@ public class Robot {
 	 */
 	public void defenderPass() throws Exception {
 		Point2 ourDefender = state.getRobotPosition(myTeam, myIdentifier);
-		//our Attackers Position
+		// our Attackers Position
 		Point2 target = state.getRobotPosition(myTeam, 1 - myIdentifier).copy();
 		Point2 enemyAttacker = state.getRobotPosition(1 - myTeam, myIdentifier);
 
@@ -735,65 +758,74 @@ public class Robot {
 		// - change target to goal target
 		if (target.equals(Point2.EMPTY)) {
 			target = Strategy.basicGoalTarget();
-			
-		// Check if there is opponents attacker between our defender and target
-		// and if yes - do bounce shot.
+
+			// Check if there is opponents attacker between our defender and
+			// target
+			// and if yes - do bounce shot.
 		} else if (isEnemyBotBlocking(enemyAttacker, ourDefender, target)) {
 			// Potentially avoid recalculating the bounce point if
 			// the defender is in the process of turning to face an
 			// already calculated bounce point
-			//TODO what if enemy defender moved during our turn?
-			//	Code is only reached if isEnemyBotBlocking is still true
-			//	If the enemy defender tries to block our bounce pass we will just do 
-			// 	simple pass instead.
-			if (!(ourDefender.withinRangeOfPoint(defenderPosWhenBouncePointcalc, 3))) {
+			// TODO what if enemy defender moved during our turn?
+			// Code is only reached if isEnemyBotBlocking is still true
+			// If the enemy defender tries to block our bounce pass we will just
+			// do
+			// simple pass instead.
+			if (!(ourDefender.withinRangeOfPoint(
+					defenderPosWhenBouncePointcalc, 3))) {
 				setBouncePoint(enemyAttacker, ourDefender, target);
-				//bouncePoint = wallKick(ourDefender, target, enemyAttacker);
+				// bouncePoint = wallKick(ourDefender, target, enemyAttacker);
 				kickBallToPoint(bouncePoint);
 			}
 		} else {
-			//Otherwise - just kick straight to the target point
+			// Otherwise - just kick straight to the target point
 			kickBallToPoint(target);
 		}
 	}
-	
+
 	/**
-	 * source - state.getRobotPosition(myTeam, attackerId);
-	 * dest - state.getRobotPosition(1 - myTeam,1 - defenderId);
-	 * @param Point2 source
-	 * @param Point2 dest
+	 * source - state.getRobotPosition(myTeam, attackerId); dest -
+	 * state.getRobotPosition(1 - myTeam,1 - defenderId);
+	 * 
+	 * @param Point2
+	 *            source
+	 * @param Point2
+	 *            dest
 	 * @return
 	 */
 	public Point2 wallKick(Point2 source, Point2 dest, Point2 obstacle) {
 		ArrayList<Point2> pts = state.getPitch().getArrayListOfPoints();
-		Point2 leftShootPos = new Point2((int)(source.x+dest.x)/2 , pts.get(2).y);
-		Point2 rightShootPos = new Point2((int)(source.x+dest.x)/2 , pts.get(9).y);
-		
+		Point2 leftShootPos = new Point2((int) (source.x + dest.x) / 2,
+				pts.get(2).y);
+		Point2 rightShootPos = new Point2((int) (source.x + dest.x) / 2,
+				pts.get(9).y);
+
 		if (state.getDirection() == 1) {
 			leftShootPos.x -= adjustKickPoint;
-			rightShootPos.x-=adjustKickPoint;
+			rightShootPos.x -= adjustKickPoint;
+		} else {
+			leftShootPos.x += adjustKickPoint;
+			rightShootPos.x += adjustKickPoint;
 		}
-		else {
-			leftShootPos.x+=adjustKickPoint;
-			rightShootPos.x+=adjustKickPoint;
-		}
-		
-		double angLeftOfDefender = (obstacle.subtract(source)).angleBetween(leftShootPos.subtract(source));
-		double angRightOfDefender = (obstacle.subtract(source)).angleBetween(rightShootPos.subtract(source));
-		
+
+		double angLeftOfDefender = (obstacle.subtract(source))
+				.angleBetween(leftShootPos.subtract(source));
+		double angRightOfDefender = (obstacle.subtract(source))
+				.angleBetween(rightShootPos.subtract(source));
+
 		if (angLeftOfDefender + 0.000001 < angRightOfDefender)
 			return rightShootPos;
-		
+
 		return leftShootPos;
-		
+
 	}
 
 	/**
 	 * Attempts to discern whether the enemy team's defender would block the
-	 * ball if it was kicked to the target point. Currently only uses safe(large) estimates
-	 * for the opposing robots dimensions. Calculates if a line drawn between
-	 * our robot and the target point intersects with any of the edges of a box drawn
-	 * around the enemy defender.
+	 * ball if it was kicked to the target point. Currently only uses
+	 * safe(large) estimates for the opposing robots dimensions. Calculates if a
+	 * line drawn between our robot and the target point intersects with any of
+	 * the edges of a box drawn around the enemy defender.
 	 * 
 	 * @param enemyDefender
 	 * @param ourRobot
@@ -806,7 +838,8 @@ public class Robot {
 		double b = target.distance(enemyRobot);
 		double c = ourRobot.distance(target);
 		// Trigonometry FTW!
-		double x = a * Math.sin(Math.acos((a*a+c*c-b*b)/(2*a*c)));
+		double x = a
+				* Math.sin(Math.acos((a * a + c * c - b * b) / (2 * a * c)));
 		if (x < SAFE_PASS_DISTANCE) {
 			return true;
 		}
@@ -836,7 +869,7 @@ public class Robot {
 		// defender perform a direct pass to our attacker if no bounce point is
 		// found
 		Point2 bestPoint = new Point2(ourAttacker.getX(), ourAttacker.getY());
-		//System.out.println("initial" + bestPoint);
+		// System.out.println("initial" + bestPoint);
 
 		Point2 testPoint = new Point2(testx, testy);
 		Pitch pitch = state.getPitch();
@@ -897,12 +930,14 @@ public class Robot {
 			}
 			angleDiff = Math.abs(requiredAngle - deflectAngle);
 
-/*			System.out.println("Attempt Number:" + attempt);
-			System.out.println("test Point: " + testPoint);
-			System.out.println("Predicted Deflection Angle: " + deflectAngle);
-			System.out.println("Required Deflection Angle:" + requiredAngle);
-			System.out.println("Difference: " + angleDiff + "\n");
-			attempt++;*/
+			/*
+			 * System.out.println("Attempt Number:" + attempt);
+			 * System.out.println("test Point: " + testPoint);
+			 * System.out.println("Predicted Deflection Angle: " +
+			 * deflectAngle); System.out.println("Required Deflection Angle:" +
+			 * requiredAngle); System.out.println("Difference: " + angleDiff +
+			 * "\n"); attempt++;
+			 */
 			if (bouncetop) {
 				if (deflectAngle > requiredAngle) {
 					if (!directionisleft) {
@@ -941,7 +976,7 @@ public class Robot {
 			length = Math.abs(rangeStart - rangeEnd);
 		}
 		bouncePoint = new Point2(bestPoint.getX(), bestPoint.getY());
-		//System.out.println("best" + bestPoint);
+		// System.out.println("best" + bestPoint);
 		defenderPosWhenBouncePointcalc = ourDefender;
 
 	}
@@ -1053,9 +1088,9 @@ public class Robot {
 		double maxRotate = 180.0;
 		double minRotate = epsilon;
 		rotateBy = Math.abs(rotateBy);
-		
-		//int divFactor = 5;
-		//int multFactor = 24
+
+		// int divFactor = 5;
+		// int multFactor = 24
 
 		// If the value is under the epsilon distance don't turn at all
 		if (rotateBy < epsilon) {
@@ -1065,18 +1100,14 @@ public class Robot {
 		// Don't change this, just change the constants.
 		return (int) ((maxSpeed - minSpeed) / (maxRotate - minRotate)
 				* (rotateBy - minRotate) + minSpeed);
-		
-/*		//function that has a sharper increase in returned values compared to
-  		//the above function, at small angels.
-		if(rotateBy >= divfactor ){
-			if (rotateBy < 60){
-				return (int) (Math.log(rotateBy/divfactor)*multFactor + minSpeed);
-			}else{
-				return (int) maxSpeed;
-			}
-		}else{
-			return (int) minSpeed;
-		}*/
+
+		/*
+		 * //function that has a sharper increase in returned values compared to
+		 * //the above function, at small angels. if(rotateBy >= divfactor ){ if
+		 * (rotateBy < 60){ return (int)
+		 * (Math.log(rotateBy/divfactor)*multFactor + minSpeed); }else{ return
+		 * (int) maxSpeed; } }else{ return (int) minSpeed; }
+		 */
 	}
 
 	/**
@@ -1127,13 +1158,13 @@ public class Robot {
 		int speed = (int) (((maxSpeed - minSpeed) / (maxDist) * dist) + minSpeed);
 
 		if (myState != State.GET_BALL && myState != State.PASS_TO_ATTACKER) {
-			return speed+100;
+			return speed + 100;
 		} else if (kickSubState < 0) {
-			return (int) (speed/1.5);
-		 } else {
+			return (int) (speed / 1.5);
+		} else {
 			return speed;
-		 }
-		
+		}
+
 	}
 
 	/**
@@ -1297,7 +1328,7 @@ public class Robot {
 	public void setSubState(int s) {
 		this.subState = s;
 	}
-	
+
 	/**
 	 * Getter method for the kick sub-state of the robot.
 	 * 
@@ -1306,7 +1337,6 @@ public class Robot {
 	public int getKickSubState() {
 		return this.kickSubState;
 	}
-
 
 	/**
 	 * TODO: Docu
