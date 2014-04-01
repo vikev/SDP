@@ -3,12 +3,9 @@ package sdp.pc.vision;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.concurrent.Callable;
 
-import sdp.pc.common.OpCallable;
 import sdp.pc.common.Parallel;
 import sdp.pc.vision.settings.SettingsManager;
 
