@@ -3,6 +3,13 @@ package sdp.pc.robot.pilot;
 import sdp.pc.vision.Point2;
 import sdp.pc.vision.WorldState;
 
+/**
+ * StrategyThread is where we actually order the robots to do things. The GUI in
+ * Strategy launches (and interrupts) instances of StrategyThread.
+ * 
+ * @author s1143704
+ * 
+ */
 public class StrategyThread extends Thread {
 
 	/**
