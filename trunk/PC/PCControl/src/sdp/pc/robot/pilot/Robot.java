@@ -520,9 +520,11 @@ public class Robot {
 
 		// If not grabbed ball yet
 		if (kickSubState <= 0) {
+
 			// If ball close to wall
 			if (!Alg.inMinorHullWeighted(
 					getQuadrantVerticesWide(getMyQuadrant()), 15, ball, 0.05, 1)) {
+
 				// First go to x-coordinate of ball, then to ball itself
 				if (kickSubState == 0)
 					kickSubState = -2;
@@ -530,11 +532,13 @@ public class Robot {
 					kickSubState = -1;
 				}
 				if (kickSubState == -1) {
+
 					// Offset ball slightly away from boundary
 					ball = new Point2(
 							ball.offset(4, ball.angleTo(state.getPitch()
 									.getQuadrantCentres()[getMyQuadrant() - 1])).x,
 							ball.y);
+
 					// If close to ball, grab
 					System.out.println("Check if close to ball");
 					if (goTo(
@@ -544,6 +548,7 @@ public class Robot {
 						driver.stop();
 						System.out.println("Grab!");
 						driver.grab();
+
 						// driver.backward(10);
 						kickSubState = 1;
 					}
@@ -560,7 +565,7 @@ public class Robot {
 					kickSubState = 1;
 				}
 			}
-		} else if (kickSubState < 5) {
+		} else {
 			kickSubState++;
 		}
 		if (kickSubState >= 5) {
@@ -570,16 +575,10 @@ public class Robot {
 			if (myIdentifier == state.getDirection()) {
 				if (kickSubState >= 6) {
 					kickGrabbedBallTo(where);
-					/*
-					 * Point2 aim = Strategy.basicGoalTarget(); if
-					 * (!closeTo(ourAttacker,aim,enemyDefender))
-					 * kickGrabbedBallTo(aim); else
-					 * kickGrabbedBallTo(wallKick(ourAttacker
-					 * ,aim,enemyDefender));
-					 */
 				}
-			} else if (kickSubState >= 6) { // If defender, execute pass
-											// strategy
+			} else if (kickSubState >= 6) {
+
+				// If defender, execute pass strategy
 				passStrategy(where);
 			}
 		}
@@ -745,6 +744,18 @@ public class Robot {
 	}
 
 	/**
+	 * Returns the centre of the goal of their defender
+	 * 
+	 * @return
+	 */
+	private Point2 getTheirGoalCentre() {
+		if (state.getDirection() == 0) {
+			return state.getLeftGoalCentre();
+		}
+		return state.getRightGoalCentre();
+	}
+
+	/**
 	 * Passes the ball from our defender to our attacker. Either with a direct
 	 * pass between them or with a bounce pass.
 	 * 
@@ -759,7 +770,7 @@ public class Robot {
 		// If our attacker is not on the pitch (or just cannot recognise him)
 		// - change target to goal target
 		if (target.equals(Point2.EMPTY)) {
-			target = Strategy.basicGoalTarget();
+			target = getTheirGoalCentre();
 
 			// Check if there is opponents attacker between our defender and
 			// target

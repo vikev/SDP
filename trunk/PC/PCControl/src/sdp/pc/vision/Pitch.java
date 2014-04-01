@@ -246,9 +246,29 @@ public class Pitch {
 				+ (goalLineY[1] - goalLineY[0]) / 2);
 	}
 
-	public Point2 getLeftGoalRandom() {
-		return new Point2(goalLineX[0], goalLineY[0]
-				+ (int) (Math.random() * (goalLineY[1] - goalLineY[0])));
+	/**
+	 * Gets a random point in the left goal contracted by <b>minor</b> pixels.
+	 * 
+	 * @return
+	 */
+	public Point2 getLeftGoalRandom(int minor) {
+
+		// Calculate the height of the goal line
+		int size = goalLineY[1] - goalLineY[0];
+
+		// Find the centre of the goal line
+		Point2 centre = getLeftGoalCentre();
+
+		// Generate a random number on [-1.0,1.0]
+		double seed = -1.0 + 2.0 * Math.random();
+
+		// Generate an offset value which is a value between
+		// [-goalheight/2, goalheight/2]
+		int offset = (int) (seed * (size / 2.0));
+		offset -= (Math.signum(offset)) * minor;
+
+		// Add that value to the centre point and return
+		return centre.add(new Point2(0, offset));
 	}
 
 	/**
@@ -257,14 +277,33 @@ public class Pitch {
 	 * @return
 	 */
 	public Point2 getRightGoalCentre() {
-		// return new Point2(goalLineX[1], (goalLineY[0] + goalLineY[1]) / 2);
 		return new Point2(goalLineX[1], goalLineY[0]
 				+ (goalLineY[1] - goalLineY[0]) / 2);
 	}
 
-	public Point2 getRightGoalRandom() {
-		return new Point2(goalLineX[1], goalLineY[0]
-				+ (int) (Math.random() * (goalLineY[1] - goalLineY[0])));
+	/**
+	 * Gets a random point in the right goal contracted by <b>minor</b> pixels.
+	 * 
+	 * @return
+	 */
+	public Point2 getRightGoalRandom(int minor) {
+
+		// Calculate the height of the goal line
+		int size = goalLineY[1] - goalLineY[0];
+
+		// Find the centre of the goal line
+		Point2 centre = getRightGoalCentre();
+
+		// Generate a random number on [-1.0,1.0]
+		double seed = -1.0 + 2.0 * Math.random();
+
+		// Generate an offset value which is a value between
+		// [-goalheight/2, goalheight/2]
+		int offset = (int) (seed * (size / 2.0));
+		offset -= (Math.signum(offset)) * minor;
+
+		// Add that value to the centre point and return
+		return centre.add(new Point2(0, offset));
 	}
 
 	/**
