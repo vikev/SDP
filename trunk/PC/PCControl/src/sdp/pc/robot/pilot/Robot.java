@@ -623,9 +623,12 @@ public class Robot {
 							ball.y);*/
 
 					// If close to ball, grab
+					// Once getPitchId is fixed not to return only 0, we can put the following
+					// in the constants class
 					System.out.println("Check if close to ball");
 					if (goTo(
-							ball.offset(18.0 + 0 * pitchId, ball.angleTo(pos)),
+							//ball.offset(18.0 + 0 * pitchId, ball.angleTo(pos)), // side pitch
+							ball.offset(25.0 + 0 * pitchId, ball.angleTo(pos)), // main pitch
 							10.0)) {
 
 						driver.stop();
@@ -640,7 +643,9 @@ public class Robot {
 			} else {
 				if (kickSubState < 0)
 					kickSubState = 0;
-				if (goTo(ball.offset(20.0 + 0 * pitchId, ball.angleTo(pos)),
+				if (goTo(
+						//ball.offset(20.0 + 0 * pitchId, ball.angleTo(pos)), //side pitch
+						ball.offset(20.0 + 0 * pitchId, ball.angleTo(pos)), //main pitch
 						10.0)) {
 
 					driver.stop();
@@ -676,7 +681,10 @@ public class Robot {
 	 */
 	public boolean checkHoldingBall(Point2 robotPos, Point2 ballPos)
 			throws Exception {
-		if (robotPos.distance(ballPos) > 40 && !ballPos.equals(Point2.EMPTY)) {
+		if (robotPos.distance(ballPos) > 50 && !ballPos.equals(Point2.EMPTY)) {
+			System.out.println("Distance: " + robotPos.distance(ballPos));
+			System.out.println("Robotpos: " + robotPos);
+			System.out.println("ballpos: " + ballPos);
 			driver.stop();
 			driver.open();
 			kickSubState = 0;
@@ -725,15 +733,15 @@ public class Robot {
 		// Calculate shoot point and goal corners
 		if (state.getDirection() == 1) {
 			topCornerOfGoal = state.getRightGoalCentre();
-			topCornerOfGoal.setY(topCornerOfGoal.getY() - 25);
+			topCornerOfGoal.setY(topCornerOfGoal.getY() + 25);
 			bottomCornerOfGoal = state.getRightGoalCentre();
-			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 25);
+			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() - 25);
 			shootPoint.setX(shootPoint.getX() + 20);
 		} else {
 			topCornerOfGoal = state.getLeftGoalCentre();
-			topCornerOfGoal.setY(topCornerOfGoal.getY() - 25);
+			topCornerOfGoal.setY(topCornerOfGoal.getY() + 25);
 			bottomCornerOfGoal = state.getLeftGoalCentre();
-			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 25);
+			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() - 25);
 			shootPoint.setX(shootPoint.getX() - 20);
 		}
 		shootStratInitalised = true;
