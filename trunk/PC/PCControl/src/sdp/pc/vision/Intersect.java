@@ -112,14 +112,77 @@ public class Intersect {
 	}
 
 	/**
-	 * Given an x co-ordinate, where does this intersection data first cross
-	 * that boundary?
+	 * Auxiliary method used to check if a given x-value forms a boundary
+	 * between two points.
+	 * 
+	 * @param x
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	private static boolean xBetween(int x, Point2 a, Point2 b) {
+		int min = Math.min(a.x, b.x);
+		int max = Math.max(a.x, b.x);
+		return (min <= x && x <= max);
+	}
+
+	/**
+	 * Auxiliary method for finding the intersection point formed by two similar
+	 * triangles, for making the robot move along an axis to block the ball.
+	 * 
+	 * @param x
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public static Point2 xIntersect(int x, Point2 a, Point2 b) {
+		double theta = a.angleTo(b) + 360.0;
+		double xdiff = b.x - a.x;
+		return new Point2(x, (int) (a.y + xdiff
+				* Math.tan(theta * Math.PI / 180.0)));
+	}
+
+	/**
+	 * Given an x coordinate, where does this intersection data first cross that
+	 * boundary?
 	 * 
 	 * @param x
 	 * @return
 	 */
 	public Point2 getEstimateIntersectX(int x) {
 
+		// First check the ball with respect to the first intersection if it
+		// exists
+		if (intersections.size() > 0) {
+			if (xBetween(x, ball, intersections.get(0))) {
+				return xIntersect(x, ball, intersections.get(0));
+			}
+
+			// Then check all the intersection points
+			for (int q = 0; q < intersections.size() - 1; q++) {
+				if (xBetween(x, intersections.get(q), intersections.get(q + 1))) {
+					return xIntersect(x, intersections.get(q),
+							intersections.get(q + 1));
+				}
+			}
+
+			// Lastly, check the last intersection point compared to the final
+			// estimate
+			if (xBetween(x, intersections.get(intersections.size() - 1),
+					estimate)) {
+				return xIntersect(x,
+						intersections.get(intersections.size() - 1), estimate);
+			}
+		} else {
+
+			if (xBetween(x, ball, estimate)) {
+				return xIntersect(x, ball, estimate);
+			}
+		}
+
+		// If that also doesn't work, the ball prediction never crosses the
+		// robot, so just return the predicted y (old behaviour)
+		return estimate;
 	}
 
 	/**

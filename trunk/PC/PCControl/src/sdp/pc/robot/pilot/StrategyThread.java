@@ -224,9 +224,13 @@ public class StrategyThread extends Thread {
 		} else if (botState == Robot.State.PASS_TO_ATTACKER) {
 			defender.defenderPass();
 		} else if (botState == Robot.State.RESET) {
-			defender.goToReverse(
-					state.getPitch()
-							.getQuadrantCenter(defender.getMyQuadrant()), 10.0);
+			//if (defender.getPrevState() == Robot.State.PASS_TO_ATTACKER) {
+				//defender.turnTo(state.getBallPosition(), 20.0);
+			//} else {
+				defender.goToReverse(
+						state.getPitch()
+								.getQuadrantCenter(defender.getMyQuadrant()), 10.0);
+			//}
 		} else {
 			if (defender.assertNearGoalLine(10.0)) {
 				if (defender.assertPerpendicular(10.0)) {

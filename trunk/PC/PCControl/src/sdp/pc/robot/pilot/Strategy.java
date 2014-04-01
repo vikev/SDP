@@ -147,6 +147,7 @@ public class Strategy implements ActionListener {
 	 * The click listener for the button which connects, starts, pauses, or
 	 * restarts the robots
 	 */
+
 	public void actionPerformed(ActionEvent e) {
 		try {
 			if (guiState == 0) {
