@@ -1053,6 +1053,9 @@ public class Robot {
 		double maxRotate = 180.0;
 		double minRotate = epsilon;
 		rotateBy = Math.abs(rotateBy);
+		
+		//int divFactor = 5;
+		//int multFactor = 24
 
 		// If the value is under the epsilon distance don't turn at all
 		if (rotateBy < epsilon) {
@@ -1063,10 +1066,11 @@ public class Robot {
 		return (int) ((maxSpeed - minSpeed) / (maxRotate - minRotate)
 				* (rotateBy - minRotate) + minSpeed);
 		
-/*		//function that increases sharply when increasing at small angles
-		if(rotateBy >= 1 ){
+/*		//function that has a sharper increase in returned values compared to
+  		//the above function, at small angels.
+		if(rotateBy >= divfactor ){
 			if (rotateBy < 60){
-				return (int) (Math.log(rotateBy/5)*24 + minSpeed);
+				return (int) (Math.log(rotateBy/divfactor)*multFactor + minSpeed);
 			}else{
 				return (int) maxSpeed;
 			}
