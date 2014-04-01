@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 import sdp.pc.common.Constants;
-import sdp.pc.common.GaussianIntFilter;
 import sdp.pc.common.Parallel;
 import sdp.pc.common.Parallel.Operation;
 import sdp.pc.vision.settings.SettingsManager;
