@@ -24,8 +24,6 @@ public class Pitch {
 
 	private static final int PITCH_SIDE_X_NPOINTS = 99;
 
-	private static final int SOME_SHANO_VALUE = 4;
-
 	private static final int Y_END = 360, Y_BEGIN = 85;
 	private static final int X_END = 570, X_BEGIN = 310;
 
@@ -56,8 +54,8 @@ public class Pitch {
 	int[] pitchY = new int[2];
 
 	int[] pitchCornerX = new int[2];
-	
-	private static Point2[] quadrantCentres = new Point2[4];
+
+	private Point2[] quadrantCentres = new Point2[4];
 
 	boolean initialized = false;
 
@@ -180,7 +178,7 @@ public class Pitch {
 
 		goalLineY[0] = cy.x;
 		goalLineY[1] = cy.y;
-		
+
 		quadrantCentres[0] = getQuadrantCenter(1);
 		quadrantCentres[1] = getQuadrantCenter(2);
 		quadrantCentres[2] = getQuadrantCenter(3);
@@ -483,7 +481,7 @@ public class Pitch {
 		return Alg.isInHull(new LinkedList<Point2>(getArrayListOfPoints()), q);
 	}
 
-	public static Point2[] getQuadrantCentres() {
+	public Point2[] getQuadrantCentres() {
 		return quadrantCentres;
 	}
 
