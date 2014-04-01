@@ -263,8 +263,7 @@ public class Robot {
 			// TODO: Needs to be an intersection of the future data with the
 			// robot position.
 			int myX = state.getRobotPosition(myTeam, myIdentifier).getX();
-			Point2 predBallPos = state.getFutureData().getEstimateIntersectX(
-					myX);
+			Point2 predBallPos = state.getFutureData().getEstimateIntersectX(myX);
 
 			// If that position exists, go to its Y coordinate, otherwise stop.
 			if (!predBallPos.equals(Point2.EMPTY)) {
@@ -606,25 +605,27 @@ public class Robot {
 
 			// If ball close to wall
 			if (!Alg.inMinorHullWeighted(
-					getQuadrantVerticesWide(getMyQuadrant()), 15, ball, 0.05, 1)) {
+					getQuadrantVerticesWide(getMyQuadrant()), 20, ball, 1, 0.05)) {
 				// First go to x-coordinate of ball, then to ball itself
 				if (kickSubState == 0)
 					kickSubState = -2;
-				if (kickSubState == -2 && goTo(new Point2(ball.x, pos.y), 20.0)) {
-					kickSubState = -1;
+				if (kickSubState == -2) {
+					if (goTo(new Point2(pos.x, ball.y), 20.0)) {
+						kickSubState = -1;
+					}
 				}
 				if (kickSubState == -1) {
 
 					// Offset ball slightly away from boundary
-					ball = new Point2(
+					/*ball = new Point2(
 							ball.offset(4, ball.angleTo(state.getPitch()
 									.getQuadrantCentres()[getMyQuadrant() - 1])).x,
-							ball.y);
+							ball.y);*/
 
 					// If close to ball, grab
 					System.out.println("Check if close to ball");
 					if (goTo(
-							ball.offset(16.0 + 30 * pitchId, ball.angleTo(pos)),
+							ball.offset(18.0 + 0 * pitchId, ball.angleTo(pos)),
 							10.0)) {
 
 						driver.stop();
@@ -639,7 +640,7 @@ public class Robot {
 			} else {
 				if (kickSubState < 0)
 					kickSubState = 0;
-				if (goTo(ball.offset(18.0 + 30 * pitchId, ball.angleTo(pos)),
+				if (goTo(ball.offset(20.0 + 0 * pitchId, ball.angleTo(pos)),
 						10.0)) {
 
 					driver.stop();
@@ -702,12 +703,10 @@ public class Robot {
 	 */
 	public boolean kickGrabbedBallTo(Point2 target)
 			throws InterruptedException, Exception {
-		if (turnTo(target, 5)) {
-			driver.stop();
+		if (turnTo(target, 8)) {
+			driver.forward(100);
 			driver.kick(900);
-
-			// reset variables
-			onShootPoint = false;
+			driver.stop();
 
 			return true;
 
@@ -722,16 +721,16 @@ public class Robot {
 		// Calculate shoot point and goal corners
 		if (state.getDirection() == 1) {
 			topCornerOfGoal = state.getRightGoalCentre();
-			topCornerOfGoal.setY(topCornerOfGoal.getY() - 50);
+			topCornerOfGoal.setY(topCornerOfGoal.getY() - 20);
 			bottomCornerOfGoal = state.getRightGoalCentre();
-			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 50);
-			shootPoint.setX(shootPoint.getX() + 44);
+			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 20);
+			shootPoint.setX(shootPoint.getX() + 20);
 		} else {
 			topCornerOfGoal = state.getLeftGoalCentre();
-			topCornerOfGoal.setY(topCornerOfGoal.getY() - 50);
+			topCornerOfGoal.setY(topCornerOfGoal.getY() - 20);
 			bottomCornerOfGoal = state.getLeftGoalCentre();
-			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 50);
-			shootPoint.setX(shootPoint.getX() - 44);
+			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 20);
+			shootPoint.setX(shootPoint.getX() - 20);
 		}
 	}
 
@@ -751,7 +750,7 @@ public class Robot {
 			initScorePoints();
 
 		// Check we still have the ball
-		checkHoldingBall(state.getRobotPosition(getOtherTeam(), myIdentifier),
+		checkHoldingBall(state.getRobotPosition(getTeam(), myIdentifier),
 				state.getBallPosition());
 
 		// Move to a point close to the opposing defender's zone that also
@@ -770,7 +769,8 @@ public class Robot {
 						shootBot = true;
 						if (kickGrabbedBallTo(bottomCornerOfGoal)) {
 							shootStratSubState++;
-							if (shootStratSubState > 8) {
+							driver.stop();
+							if (shootStratSubState > 5) {
 								// Reset variables
 								shootBot = false;
 								shootStratInitalised = false;
@@ -784,7 +784,7 @@ public class Robot {
 						if (kickGrabbedBallTo(topCornerOfGoal)) {
 							// avoid moving when kicking the ball
 							shootStratSubState++;
-							if (shootStratSubState > 8) {
+							if (shootStratSubState > 5) {
 								// Reset variables
 								shootBot = false;
 								shootStratInitalised = false;
@@ -801,7 +801,7 @@ public class Robot {
 			} else if (turnTo(topCornerOfGoal, 8)) {
 				turnedTowardsTopOfGoal = true;
 			}
-		} else if (goTo(shootPoint, 15)) {
+		} else if (goTo(shootPoint, 40)) {
 			onShootPoint = true;
 		}
 	}
@@ -1164,13 +1164,15 @@ public class Robot {
 	 * 
 	 * @return TODO: speed in motor-degrees (?) per second
 	 */
-	private static int getRotateSpeed(double rotateBy, double epsilon) {
+	private int getRotateSpeed(double rotateBy, double epsilon) {
 		// TODO: Should be refactored (constants)
 		double maxSpeed = 120.0;
-		double minSpeed = 8.0;
+		double minSpeed = 15.0;
 		double maxRotate = 180.0;
 		double minRotate = epsilon;
 		rotateBy = Math.abs(rotateBy);
+		int speed = (int) ((maxSpeed - minSpeed) / (maxRotate - minRotate)
+				* (rotateBy - minRotate) + minSpeed);
 
 		// int divFactor = 5;
 		// int multFactor = 24
@@ -1179,10 +1181,13 @@ public class Robot {
 		if (rotateBy < epsilon) {
 			return 0;
 		}
+		
+		if (onShootPoint) {
+			return speed + 30;
+		}
 
 		// Don't change this, just change the constants.
-		return (int) ((maxSpeed - minSpeed) / (maxRotate - minRotate)
-				* (rotateBy - minRotate) + minSpeed);
+		return speed;
 
 		/*
 		 * //function that has a sharper increase in returned values compared to
@@ -1234,14 +1239,14 @@ public class Robot {
 		// TODO: Need to test with final gear ratios and robots! Also refactor
 		// out these constants
 		double maxSpeed = 300.0;
-		double minSpeed = 60.0;
+		double minSpeed = 30.0;
 		double maxDist = 150.0;
 		dist = Math.abs(dist);
 		// Don't change this! Change the constants
 		int speed = (int) (((maxSpeed - minSpeed) / (maxDist) * dist) + minSpeed);
 
 		if (myState != State.GET_BALL && myState != State.PASS_TO_ATTACKER) {
-			return speed + 100;
+			return speed + 120;
 		} else if (kickSubState < 0) {
 			return (int) (speed / 1.5);
 		} else {
