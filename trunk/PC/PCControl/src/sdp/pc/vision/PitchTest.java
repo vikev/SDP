@@ -13,7 +13,6 @@ public class PitchTest {
 	@Test
 	public void testGetLeftGoalRandom() throws InterruptedException {
 		Strategy s = new Strategy();
-		s.startVisionSystem();
 		Thread.sleep(3000);
 		WorldState st = s.getState();
 		Pitch p = st.getPitch();

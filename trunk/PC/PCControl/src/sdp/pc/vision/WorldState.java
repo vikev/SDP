@@ -2,6 +2,8 @@ package sdp.pc.vision;
 
 import java.util.ArrayList;
 
+import sdp.pc.robot.pilot.Robot;
+
 /**
  * Class for recording and maintaining the positions and facing angles of
  * objects in "world". Must be instantiated.
@@ -24,6 +26,11 @@ public class WorldState {
 	 * duplication.
 	 */
 	public static final int TEAM_COUNT = 2;
+
+	/**
+	 * How much to contract the size of the goal when looking for a random point
+	 */
+	private static final int GOAL_CONTRACT_SIZE = 5;
 
 	/**
 	 * The pitch ID associated with this instance of WorldState. 0 for Main, 1
@@ -137,6 +144,88 @@ public class WorldState {
 		for (int t = 0; t < TEAM_COUNT; t++)
 			for (int p = 0; p < PLAYERS_PER_TEAM; p++)
 				robotLoc[t][p] = new Point2();
+	}
+
+	/**
+	 * Turns a quadrant into the correct description of the ball as a String.
+	 * Possible results include:
+	 * 
+	 * <ul>
+	 * <li>Enemy Defender</li>
+	 * <li>Our Attacker</li>
+	 * <li>Enemy Attacker</li>
+	 * <li>Our Defender</li>
+	 * <li>"" Empty String (unrecognised input)</li>
+	 * </ul>
+	 * 
+	 * This method assumes state.getDirection() works as intended.
+	 * 
+	 * @param quad
+	 *            - the integer quadrant the ball is in (0, 1, 2, 3, or 4)
+	 * @return - String describing ball position
+	 */
+	public String parseQuadrant(int quad) {
+		if (this.getDirection() == 0) {
+			if (quad == 1) {
+				return "Enemy Defender";
+			} else if (quad == 2) {
+				return "Our Attacker";
+			} else if (quad == 3) {
+				return "Enemy Attacker";
+			} else if (quad == 4) {
+				return "Our Defender";
+			}
+		} else {
+			if (quad == 1) {
+				return "Our Defender";
+			} else if (quad == 2) {
+				return "Enemy Attacker";
+			} else if (quad == 3) {
+				return "Our Attacker";
+			} else if (quad == 4) {
+				return "Enemy Defender";
+			}
+		}
+		return "";
+	}
+
+	/**
+	 * Returns the random of the goal of their defender
+	 * 
+	 * @return
+	 */
+	public Point2 getTheirGoalRandom() {
+		if (this.getDirection() == 0) {
+			return this.getPitch().getLeftGoalRandom(GOAL_CONTRACT_SIZE);
+		}
+		return this.getPitch().getRightGoalRandom(GOAL_CONTRACT_SIZE);
+	}
+
+	/**
+	 * The speed of the ball with respect to the robot is just the ball's
+	 * velocity vector dotted to the vector between the ball and the robot,
+	 * divided by the modulus of the vector between ball and robot. See
+	 * http://goo.gl/mJdekQ for example
+	 * 
+	 * @param ballPos
+	 *            - position of the ball
+	 * @param ballVel
+	 *            - velocity of the ball
+	 * @param bot
+	 *            - a Robot object
+	 * @return - the speed of the ball with respect to the robot (how fast the
+	 *         ball is moving towards the the robot
+	 */
+	public double getSpeedWrt(Point2 ballPos, Point2 ballVel, Robot bot) {
+
+		// Initialise necessary components for calculation
+		Point2 robotPosition = this
+				.getRobotPosition(bot.getTeam(), bot.getId());
+		Point2 ballToBot = robotPosition.sub(ballPos);
+		double dist = ballToBot.modulus();
+
+		// Calculate the projection
+		return (ballVel.dot(ballToBot) / dist);
 	}
 
 	/**
@@ -414,7 +503,8 @@ public class WorldState {
 	 */
 	public int quadrantFromPoint(Point2 q) {
 		int x = q.getX();
-		if (q.equals(Point2.EMPTY)) return 0;
+		if (q.equals(Point2.EMPTY))
+			return 0;
 		ArrayList<Point2> points = pitch.getArrayListOfPoints();
 		if (x < points.get(2).x) {
 			return 1;
