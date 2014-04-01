@@ -14,10 +14,9 @@ import sdp.pc.vision.WorldState;
 import au.edu.jcu.v4l4j.exceptions.V4L4JException;
 
 /**
- * Strategy is the global static class for running a match in SDP. Here we
- * initialise a Vision and Robot pair, and conduct all the state-based decision
- * model related data to command the robot pair. Then we iterate several times
- * per second, parsing the game state and ordering the robots to do things.
+ * Strategy is the class we use to launch a match of SDP. It starts a vision
+ * instance and builds the GUI which can be used to start and interrupt an
+ * instance of StrategyThread.
  * 
  * @author s1133141
  * 
@@ -39,7 +38,10 @@ public class Strategy implements ActionListener {
 	 */
 	private static int attackerId;
 
-	private JButton button = null;
+	/**
+	 * The button used to start/pause StrategyThread
+	 */
+	private JButton startButton = null;
 
 	/**
 	 * the defending robot
@@ -56,8 +58,14 @@ public class Strategy implements ActionListener {
 	 */
 	private WorldState state = new WorldState();
 
+	/**
+	 * A state handler for the connect/start button (FSM pattern)
+	 */
 	private static int guiState = 0;
 
+	/**
+	 * The currently running (or not) instance of StrategyThread.
+	 */
 	private static StrategyThread instance;
 
 	/**
@@ -114,6 +122,11 @@ public class Strategy implements ActionListener {
 		});
 	}
 
+	/**
+	 * Constructor which turns on the vision system, builds the GUI
+	 * 
+	 * @throws InterruptedException
+	 */
 	public Strategy() throws InterruptedException {
 		this.startVisionSystem();
 
@@ -123,13 +136,18 @@ public class Strategy implements ActionListener {
 		frame.setIconImage(q.getImage());
 		frame.setBounds(600, 200, 300, 150);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		button = new JButton();
-		button.setText("Connect");
-		button.addActionListener(this);
-		frame.add(button);
+		startButton = new JButton();
+		startButton.setText("Connect");
+		startButton.addActionListener(this);
+		frame.add(startButton);
 		frame.setVisible(true);
 	}
-	
+
+	/**
+	 * The click listener for the button which connects, starts, pauses, or
+	 * restarts the robots
+	 */
+
 	public void actionPerformed(ActionEvent e) {
 		try {
 			if (guiState == 0) {
@@ -144,7 +162,7 @@ public class Strategy implements ActionListener {
 				addShutdownHook();
 
 				// Change the button
-				button.setText("Start");
+				startButton.setText("Start");
 
 				guiState = 1;
 			} else if (guiState == 1) {
@@ -152,11 +170,11 @@ public class Strategy implements ActionListener {
 				// executeStrategy();
 				instance = new StrategyThread(attacker, defender, state);
 				instance.start();
-				button.setText("Pause");
+				startButton.setText("Pause");
 				guiState = 2;
 			} else if (guiState == 2) {
 				instance.interrupt();
-				button.setText("Restart");
+				startButton.setText("Restart");
 				guiState = 1;
 			}
 		} catch (Exception e1) {
@@ -165,7 +183,7 @@ public class Strategy implements ActionListener {
 	}
 
 	/**
-	 * Main method
+	 * Main method which simply runs an instance of Strategy.
 	 * 
 	 * @param args
 	 */
@@ -177,6 +195,11 @@ public class Strategy implements ActionListener {
 		}
 	}
 
+	/**
+	 * Returns the world state attached to this Strategy/Vision bundle
+	 * 
+	 * @return
+	 */
 	public WorldState getState() {
 		return this.state;
 	}
