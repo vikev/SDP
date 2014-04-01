@@ -284,10 +284,10 @@ public class StrategyThread extends Thread {
 			executeShootStrategy();
 		} else if (botState == Robot.State.RESET) {
 
-			// TODO: Just go there the best way
-			attacker.goToReverse(
-					state.getPitch()
-							.getQuadrantCenter(attacker.getMyQuadrant()), 10.0);
+			// TODO: Verify doesn't cause any problems.
+			Point2 target = state.getPitch().getQuadrantCenter(
+					attacker.getMyQuadrant());
+			attacker.goToFast(target, 10.0);
 		} else {
 			attacker.assertPerpendicular(10.0);
 		}

@@ -129,7 +129,10 @@ public class Robot {
 	 */
 	private int kickSubState = 0;
 
-	// TODO:
+	/**
+	 * A substate used in the goTo method, which helps prevent the robot from
+	 * overturning.
+	 */
 	private int turnSubState = 0;
 
 	private int shootStratSubState = 0;
@@ -382,6 +385,14 @@ public class Robot {
 		return false;
 	}
 
+	/**
+	 * Makes the robot face the point + 180 (non-blocking)
+	 * 
+	 * @param to
+	 * @param eps
+	 * @return
+	 * @throws Exception
+	 */
 	public boolean turnToReverse(Point2 to, double eps) throws Exception {
 		double ang = normalizeToUnitDegrees(state.getRobotPosition(myTeam,
 				myIdentifier).angleTo(to) + 180.0);
@@ -389,6 +400,32 @@ public class Robot {
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * A method which signals the robot to go to a point the fastest way
+	 * possible. Checks the facing angle of the robot and decides to go forwards
+	 * or backwards to get there.
+	 * 
+	 * @param to
+	 * @param eps
+	 * @return
+	 * @throws Exception
+	 */
+	public boolean goToFast(Point2 to, double eps) throws Exception {
+
+		// Get the necessary angles
+		double angleToPoint = normalizeToUnitDegrees(state.getRobotPosition(
+				myTeam, myIdentifier).angleTo(to));
+		double facing = normalizeToUnitDegrees(state.getRobotFacing(myTeam,
+				myIdentifier));
+
+		// Compare them
+		double diff = normalizeToUnitDegrees(facing - angleToPoint);
+		if (Math.abs(diff) > 90.0) {
+			return goToReverse(to, eps);
+		}
+		return goTo(to, eps);
 	}
 
 	/**
@@ -412,6 +449,15 @@ public class Robot {
 		return false;
 	}
 
+	/**
+	 * Makes the robot turn backwards with respect to a point, and then move
+	 * backwards to it (non-blocking)
+	 * 
+	 * @param to
+	 * @param eps
+	 * @return
+	 * @throws Exception
+	 */
 	public boolean goToReverse(Point2 to, double eps) throws Exception {
 		if (turnToReverse(to, SAFE_ANGLE_EPSILON)) {
 			if (moveBackwardTo(to, eps)) {
@@ -1352,7 +1398,9 @@ public class Robot {
 	}
 
 	/**
-	 * TODO: Docu
+	 * Returns a list of quadrant vertices given a quadrant. Essentially just
+	 * takes the pitch boundary vertices and returns a subset of them, depending
+	 * on the quadrant requested.
 	 * 
 	 * @param q
 	 * @return
