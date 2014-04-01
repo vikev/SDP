@@ -18,8 +18,7 @@ import sdp.pc.vision.relay.TCPClient;
 
 /**
  * An abstract class for conducting non-trivial orders on a Robot. A delegator
- * for a Driver. In theory, we could re-write M3att and M3def to use this
- * instead.
+ * for a Driver.
  * 
  * Only methods useful from a strategic standpoint should be public.
  * 
@@ -50,26 +49,26 @@ public class Robot {
 	private static final double DEFEND_EPSILON_DISTANCE = 8.0;
 
 	/**
-	 * The size of the extra buffer a defender can travel beyond the goalmouth,
-	 * in pixels.
-	 */
-	@SuppressWarnings("unused")
-	private static final int BETWEEN_GOALS_EPSILON = 15;
-
-	/**
 	 * If an epsilon value doesn't make sense to know in some context, this is a
 	 * safe angle value to use
 	 */
 	private static final double SAFE_ANGLE_EPSILON = 8.0;
 
 	/**
-	 * Determines how much you want to squeeze the fields (for making sure the
-	 * bots stay in their fields)
+	 * An epsilon value for the robot to be perpendicular in the defendBall
+	 * method
+	 */
+	private static final double DEFEND_ANGLE_EPSILON = 16.0;
+
+	/**
+	 * Determines how much you want to squeeze the quadrants (for making sure
+	 * the robots avoid their boundaries)
 	 */
 	private static final double HULL_OFFSET = 60.0;
 
 	/**
-	 * Safe distance between enemy attacker and straight line between our robots
+	 * Safe distance between the enemy attacker, and a straight line between our
+	 * robots, in order to decide if a direct pass is possible.
 	 */
 	private static final double SAFE_PASS_DISTANCE = 50.0;
 
@@ -106,35 +105,32 @@ public class Robot {
 	private int myState = State.UNKNOWN;
 
 	/**
-	 * An incremental "sub-state" value which can be used to handle sub-tasks
-	 * within a state. For example, if a robot's state is "pass to attacker",
-	 * sub-states could be:
-	 * <ol>
-	 * <li>Go to the ball</li>
-	 * <li>Grab the ball</li>
-	 * <li>Turn to the new point</li>
-	 * <li>Kick the ball</li>
-	 * </ol>
+	 * An incremental substate for the defendBall method. TODO: What does the
+	 * defendBall method use substates for?
 	 */
-	private int subState = 0;
+	private int defendSubState = 0;
 
 	/**
 	 * An incremental "sub-state" value denoting which sub-task has been
-	 * performed or is being performed within the kickBalltoPoint method.
+	 * performed or is being performed within the kickBallToPoint method.
 	 * Current states are:
 	 * <ol>
 	 * <li>Going to the ball</li>
 	 * <li>Think we have grabbed the ball</li>
 	 * </ol>
+	 * TODO: There are many new substates; documentation should be updated
 	 */
 	private int kickSubState = 0;
 
 	/**
 	 * A substate used in the goTo method, which helps prevent the robot from
-	 * overturning.
+	 * overturning. TODO: What are those states?
 	 */
 	private int turnSubState = 0;
 
+	/**
+	 * A substate used for shooting strategy. TODO: What are the states?
+	 */
 	private int shootStratSubState = 0;
 
 	/**
@@ -147,16 +143,49 @@ public class Robot {
 	 */
 	public Point2 defenderPosWhenBouncePointcalc = new Point2(0, 0);
 
+	/**
+	 * Part of the shooting strategy; a flag which makes the attacker aim to the
+	 * top of the goal first, potentially making the opposing defender get out
+	 * of position.
+	 */
 	public boolean turnedTowardsTopOfGoal = false;
 
+	/**
+	 * Part of the shooting strategy; a flag which tells if the attacker is in
+	 * position to shoot.
+	 */
 	public boolean onShootPoint = false;
 
+	/**
+	 * A point above the opposing goal.
+	 */
 	Point2 topCornerOfGoal = new Point2(0, 0);
+
+	/**
+	 * A point below the opposing goal.
+	 */
 	Point2 bottomCornerOfGoal = new Point2(0, 0);
+
+	/**
+	 * Some specific point near the goal centre where we want our attacker to
+	 * shoot from. Part of shooting strategy.
+	 */
 	Point2 shootPoint = new Point2(0, 0);
+
+	/**
+	 * A flag which tells if the shooting strategy is initialized. TODO: This is
+	 * never enabled!
+	 */
 	boolean shootStratInitalised = false;
+
+	/**
+	 * TODO: No idea. Something to do with shooting strategy.
+	 */
 	boolean shootBot = false;
 
+	/**
+	 * TODO: Something to do with wall kick strategy.. no idea.
+	 */
 	public int adjustKickPoint = 10;
 
 	/**
@@ -176,13 +205,6 @@ public class Robot {
 	 */
 	public Robot(Driver driver, WorldState state, int myTeam, int myId) {
 		this.driver = driver;
-		this.state = state;
-		this.myTeam = myTeam;
-		this.myIdentifier = myId;
-	}
-
-	// used for code testing
-	public Robot(WorldState state, int myTeam, int myId) {
 		this.state = state;
 		this.myTeam = myTeam;
 		this.myIdentifier = myId;
@@ -211,22 +233,33 @@ public class Robot {
 		this.myIdentifier = myId;
 	}
 
+	/**
+	 * Orders the robot's driver to simply stop.
+	 * 
+	 * @throws Exception
+	 */
 	public void stop() throws Exception {
 		driver.stop();
 	}
 
+	/**
+	 * Closes the connection to the robot.
+	 */
 	public void closeConnection() {
 		driver.closeConnection();
 	}
 
 	/**
-	 * Synchronous method which performs (briefly) the goal of defending the
-	 * ball. It checks the predicted stop location of the ball and moves to its
-	 * Y coordinate by going forwards or backwards.
+	 * Synchronous method which performs the goal of defending the ball. It
+	 * checks the predicted stop location of the ball and moves to its Y
+	 * coordinate by going forwards or backwards.
 	 */
 	public void defendBall() throws Exception {
-		if (assertPerpendicular(2 * SAFE_ANGLE_EPSILON)) {
+		if (assertPerpendicular(DEFEND_ANGLE_EPSILON)) {
+
 			// Get predicted ball stop point
+			// TODO: Needs to be an intersection of the future data with the
+			// robot position.
 			Point2 predBallPos = state.getFutureData().getEstimate();
 
 			// If that position exists, go to its Y coordinate, otherwise stop.
@@ -242,12 +275,12 @@ public class Robot {
 				}
 				if (defendToY(destination, DEFEND_EPSILON_DISTANCE)) {
 					driver.stop();
-					subState++;
-					if (subState > 20) {
+					defendSubState++;
+					if (defendSubState > 20) {
 						goTo(state.getPitch()
 								.getQuadrantCenter(getMyQuadrant()), 10.0);
-					} else if (subState > 50) {
-						subState = 0;
+					} else if (defendSubState > 50) {
+						defendSubState = 0;
 					}
 				}
 			} else {
@@ -1378,14 +1411,14 @@ public class Robot {
 	 * @return
 	 */
 	public int getSubState() {
-		return this.subState;
+		return this.defendSubState;
 	}
 
 	/**
 	 * Setter method for the sub-state of the robot.
 	 */
 	public void setSubState(int s) {
-		this.subState = s;
+		this.defendSubState = s;
 	}
 
 	/**

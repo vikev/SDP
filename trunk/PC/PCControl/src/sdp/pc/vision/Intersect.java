@@ -103,12 +103,23 @@ public class Intersect {
 	}
 
 	/**
-	 * Getter method for the initial estimate point
+	 * Getter method for estimated ball result.
 	 * 
 	 * @return
 	 */
 	public Point2 getEstimate() {
 		return this.estimate;
+	}
+
+	/**
+	 * Given an x co-ordinate, where does this intersection data first cross
+	 * that boundary?
+	 * 
+	 * @param x
+	 * @return
+	 */
+	public Point2 getEstimateIntersectX(int x) {
+
 	}
 
 	/**
