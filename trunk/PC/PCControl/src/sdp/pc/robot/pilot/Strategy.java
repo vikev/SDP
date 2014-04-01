@@ -129,7 +129,7 @@ public class Strategy implements ActionListener {
 		frame.add(button);
 		frame.setVisible(true);
 	}
-
+	
 	public void actionPerformed(ActionEvent e) {
 		try {
 			if (guiState == 0) {

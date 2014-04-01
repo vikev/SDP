@@ -104,6 +104,8 @@ public class Robot {
 	 * The most recent calculated state of <b>this</b>
 	 */
 	private int myState = State.UNKNOWN;
+	
+	private int prevState = State.UNKNOWN;
 
 	/**
 	 * An incremental "sub-state" value which can be used to handle sub-tasks
@@ -522,9 +524,8 @@ public class Robot {
 		if (kickSubState <= 0) {
 
 			// If ball close to wall
-			if (!Alg.inMinorHullWeighted(
-					getQuadrantVerticesWide(getMyQuadrant()), 15, ball, 0.05, 1)) {
-
+			if (!Alg.inMinorHullWeighted(getQuadrantVerticesWide(getMyQuadrant()),
+					15, ball, 0.05, 1)) {
 				// First go to x-coordinate of ball, then to ball itself
 				if (kickSubState == 0)
 					kickSubState = -2;
@@ -541,9 +542,7 @@ public class Robot {
 
 					// If close to ball, grab
 					System.out.println("Check if close to ball");
-					if (goTo(
-							ball.offset(18.0 + 30 * pitchId, ball.angleTo(pos)),
-							10.0)) {
+					if (goTo(ball.offset(16.0 + 30*pitchId, ball.angleTo(pos)), 10.0)) {
 
 						driver.stop();
 						System.out.println("Grab!");
@@ -555,29 +554,23 @@ public class Robot {
 				}
 				// If ball is not close to wall, do it simply
 			} else {
-				if (kickSubState < 0)
-					kickSubState = 0;
-				if (goTo(ball.offset(20.0 + 30 * pitchId, ball.angleTo(pos)),
-						10.0)) {
+				if (kickSubState < 0) kickSubState = 0;
+				if (goTo(ball.offset(18.0 + 30*pitchId, ball.angleTo(pos)), 10.0)) {
 
 					driver.stop();
 					driver.grab();
 					kickSubState = 1;
 				}
 			}
-		} else {
-			kickSubState++;
 		}
+		if (kickSubState >= 1 && kickSubState < 5) kickSubState++;
 		if (kickSubState >= 5) {
 			checkHoldingBall(pos, ball);
 
 			// If this is attacker, do Shoot Strategy
 			if (myIdentifier == state.getDirection()) {
-				if (kickSubState >= 6) {
-					kickGrabbedBallTo(where);
-				}
-			} else if (kickSubState >= 6) {
-
+				kickGrabbedBallTo(where);
+			} else {
 				// If defender, execute pass strategy
 				passStrategy(where);
 			}
@@ -728,16 +721,16 @@ public class Robot {
 	}
 
 	public void passStrategy(Point2 where) throws Exception {
-		if (kickSubState >= 5 && kickSubState < 12) {
+		if (kickSubState >= 5 && kickSubState < 9) {
 			if (turnTo(where, 9.0)) {
 				driver.stop();
 				kickSubState++;
 			}
-		} else if (kickSubState >= 12) {
+		} else if (kickSubState >= 9) {
 			driver.stop();
 			driver.kick(900);
 			kickSubState++;
-			if (kickSubState >= 20) {
+			if (kickSubState >= 15) {
 				kickSubState = 0;
 			}
 		}
@@ -771,28 +764,19 @@ public class Robot {
 		// - change target to goal target
 		if (target.equals(Point2.EMPTY)) {
 			target = getTheirGoalCentre();
-
-			// Check if there is opponents attacker between our defender and
-			// target
-			// and if yes - do bounce shot.
-		} else if (isEnemyBotBlocking(enemyAttacker, ourDefender, target)) {
-			// Potentially avoid recalculating the bounce point if
-			// the defender is in the process of turning to face an
-			// already calculated bounce point
-			// TODO what if enemy defender moved during our turn?
-			// Code is only reached if isEnemyBotBlocking is still true
-			// If the enemy defender tries to block our bounce pass we will just
-			// do
-			// simple pass instead.
-			if (!(ourDefender.withinRangeOfPoint(
-					defenderPosWhenBouncePointcalc, 3))) {
-				setBouncePoint(enemyAttacker, ourDefender, target);
-				// bouncePoint = wallKick(ourDefender, target, enemyAttacker);
-				kickBallToPoint(bouncePoint);
-			}
+		}
+		// Check if there is opponents attacker between our defender and target
+		// and if yes - do bounce shot.
+		if (isEnemyBotBlocking(enemyAttacker, ourDefender, target)) {
+			//setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
+			bouncePoint = wallKick(ourDefender, target, enemyAttacker);
+			System.out.println("Bounce: " + bouncePoint);
+			kickBallToPoint(bouncePoint);
 		} else {
 			// Otherwise - just kick straight to the target point
 			kickBallToPoint(target);
+			
+			System.out.println("Straight: " + target);
 		}
 	}
 
@@ -1316,6 +1300,10 @@ public class Robot {
 	public int getState() {
 		return this.myState;
 	}
+	
+	public int getPrevState() {
+		return this.prevState;
+	}
 
 	/**
 	 * Set <b>this</b> to have a new state
@@ -1323,6 +1311,7 @@ public class Robot {
 	 * @param newState
 	 */
 	public void setState(int newState) {
+		this.prevState = this.myState;
 		this.myState = newState;
 	}
 
