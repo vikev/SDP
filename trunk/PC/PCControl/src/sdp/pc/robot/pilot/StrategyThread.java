@@ -283,7 +283,7 @@ public class StrategyThread extends Thread {
 		} else if (botState == Robot.State.DEFEND_ENEMY_DEFENDER) {
 			attacker.defendRobot(attacker.getOtherTeam(), attacker.getId());
 		} else if (botState == Robot.State.GET_BALL) {
-			attacker.kickBallToPoint(targetPoint);
+			attacker.kickBallToPoint(targetPoint, true);
 		} else if (botState == Robot.State.ATTEMPT_GOAL) {
 			executeShootStrategy();
 		} else if (botState == Robot.State.RESET) {
@@ -312,9 +312,9 @@ public class StrategyThread extends Thread {
 		if (state.getRobotPosition(attacker.getId(), (1 - attacker.getTeam())) == Point2.EMPTY
 				&& attacker.onShootPoint) {
 			if (state.getDirection() == 1) {
-				attacker.kickBallToPoint(state.getRightGoalCentre());
+				attacker.kickBallToPoint(state.getRightGoalCentre(),false);
 			} else {
-				attacker.kickBallToPoint(state.getLeftGoalCentre());
+				attacker.kickBallToPoint(state.getLeftGoalCentre(),false);
 			}
 		} else {
 			attacker.shootStrategy1();
