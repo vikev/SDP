@@ -310,7 +310,7 @@ public class StrategyThread extends Thread {
 		// position to score
 		// then aim shoot at the centre of the correct goal. Otherwise perform
 		// our normal shoot strategy.
-		if (state.getRobotPosition(attacker.getId(), (1 - attacker.getTeam())) == Point2.EMPTY
+		if (state.getRobotPosition(attacker.getOtherTeam(), (attacker.getId())) == Point2.EMPTY
 				&& attacker.onShootPoint) {
 			if (state.getDirection() == 1) {
 				attacker.kickBallToPoint(state.getRightGoalCentre(),false);
