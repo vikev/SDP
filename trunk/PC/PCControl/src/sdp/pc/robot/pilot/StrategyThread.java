@@ -23,7 +23,7 @@ public class StrategyThread extends Thread {
 	 * The minimum speed for the ball to be considered fast, in pixels per
 	 * second.
 	 */
-	private static final double FAST_BALL_SPEED = 150.0;
+	private static final double FAST_BALL_SPEED = 100.0;
 
 	private static Point2 targetPoint = new Point2();
 
@@ -190,6 +190,7 @@ public class StrategyThread extends Thread {
 				parseAttacker();
 
 				parseDefender();
+				System.out.println(state.getBallVelocity().modulus());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -224,13 +225,13 @@ public class StrategyThread extends Thread {
 		} else if (botState == Robot.State.PASS_TO_ATTACKER) {
 			defender.defenderPass();
 		} else if (botState == Robot.State.RESET) {
-			//if (defender.getPrevState() == Robot.State.PASS_TO_ATTACKER) {
-				//defender.turnTo(state.getBallPosition(), 20.0);
-			//} else {
+			if (defender.getPrevState() == Robot.State.PASS_TO_ATTACKER) {
+				defender.turnTo(state.getBallPosition(), 20.0);
+			} else {
 				defender.goToReverse(
 						state.getPitch()
 								.getQuadrantCenter(defender.getMyQuadrant()), 10.0);
-			//}
+			}
 		} else {
 			if (defender.assertNearGoalLine(10.0)) {
 				if (defender.assertPerpendicular(10.0)) {

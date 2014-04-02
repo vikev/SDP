@@ -625,7 +625,7 @@ public class Robot {
 					// If close to ball, grab
 					System.out.println("Check if close to ball");
 					if (goTo(
-							ball.offset(18.0 + 0 * pitchId, ball.angleTo(pos)),
+							ball.offset(20.0, ball.angleTo(pos)),
 							10.0)) {
 
 						driver.stop();
@@ -640,9 +640,8 @@ public class Robot {
 			} else {
 				if (kickSubState < 0)
 					kickSubState = 0;
-				if (goTo(ball.offset(20.0 + 0 * pitchId, ball.angleTo(pos)),
+				if (goTo(ball.offset(22.0, ball.angleTo(pos)),
 						10.0)) {
-
 					driver.stop();
 					driver.grab();
 					kickSubState = 1;
@@ -807,12 +806,12 @@ public class Robot {
 	}
 
 	public void passStrategy(Point2 where) throws Exception {
-		if (kickSubState >= 5 && kickSubState < 9) {
+		if (kickSubState >= 5 && kickSubState < 7) {
 			if (turnTo(where, 9.0)) {
 				driver.stop();
 				kickSubState++;
 			}
-		} else if (kickSubState >= 9) {
+		} else if (kickSubState >= 7) {
 			driver.stop();
 			driver.kick(900);
 			kickSubState++;
@@ -856,12 +855,10 @@ public class Robot {
 		if (isEnemyBotBlocking(enemyAttacker, ourDefender, target)) {
 			// setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
 			bouncePoint = wallKick(ourDefender, target, enemyAttacker);
-			System.out.println("Bounce: " + bouncePoint);
 			kickBallToPoint(bouncePoint);
 		} else {
 			// Otherwise - just kick straight to the target point
 			kickBallToPoint(target);
-
 			System.out.println("Straight: " + target);
 		}
 	}
@@ -1167,7 +1164,7 @@ public class Robot {
 	private int getRotateSpeed(double rotateBy, double epsilon) {
 		// TODO: Should be refactored (constants)
 		double maxSpeed = 120.0;
-		double minSpeed = 15.0;
+		double minSpeed = 25.0;
 		double maxRotate = 180.0;
 		double minRotate = epsilon;
 		rotateBy = Math.abs(rotateBy);
