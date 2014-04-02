@@ -651,7 +651,6 @@ public class Robot {
 		if (kickSubState >= 1 && kickSubState < 5)
 			kickSubState++;
 		if (kickSubState >= 5) {
-<<<<<<< HEAD
 			if(checkHoldingBall(pos, ball)){
 				if(!justGrab){
 					// If this is attacker, do Shoot Strategy
@@ -662,17 +661,6 @@ public class Robot {
 						passStrategy(where);
 					}
 				}
-=======
-			checkHoldingBall(pos, ball);
-
-			// If this is attacker, do Shoot Strategy
-			if (myIdentifier == state.getDirection()) {
-				//kickGrabbedBallTo(where);
-				shootStrategy1();
-			} else {
-				// If defender, execute pass strategy
-				passStrategy(where);
->>>>>>> ace047115509630a2241c76422cd9a368e15bc9a
 			}
 		}
 	}
@@ -694,13 +682,9 @@ public class Robot {
 			shootStratInitalised = false;
 			shootStratSubState = 0;
 			kickSubState = 0;
-<<<<<<< HEAD
-			return true;
-=======
 			turnedTowardsTopOfGoal = false;
 			onShootPoint = false;
-			
->>>>>>> ace047115509630a2241c76422cd9a368e15bc9a
+			return true;
 			// TODO: If robot has the ball, always say that ball is in front of
 			// robot
 		}
@@ -745,7 +729,6 @@ public class Robot {
 		// Calculate shoot point and goal corners
 		if (state.getDirection() == 1) {
 			topCornerOfGoal = state.getRightGoalCentre();
-<<<<<<< HEAD
 			topCornerOfGoal.setY(topCornerOfGoal.getY() - 25);
 			bottomCornerOfGoal = state.getRightGoalCentre();
 			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 25);
@@ -755,17 +738,6 @@ public class Robot {
 			topCornerOfGoal.setY(topCornerOfGoal.getY() - 25);
 			bottomCornerOfGoal = state.getLeftGoalCentre();
 			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 25);
-=======
-			topCornerOfGoal.setY(topCornerOfGoal.getY() - 35);
-			bottomCornerOfGoal = state.getRightGoalCentre();
-			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 35);
-			shootPoint.setX(shootPoint.getX() + 20);
-		} else {
-			topCornerOfGoal = state.getLeftGoalCentre();
-			topCornerOfGoal.setY(topCornerOfGoal.getY() - 35);
-			bottomCornerOfGoal = state.getLeftGoalCentre();
-			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 35);
->>>>>>> ace047115509630a2241c76422cd9a368e15bc9a
 			shootPoint.setX(shootPoint.getX() - 20);
 		}
 		shootStratInitalised = true;
@@ -876,11 +848,7 @@ public class Robot {
 			} else if (turnTo(topCornerOfGoal, 5)) {
 				turnedTowardsTopOfGoal = true;
 			}
-<<<<<<< HEAD
-		} else if (goTo(shootPoint, 10)) {
-=======
-		} else if (goTo(shootPoint, 50)) {
->>>>>>> ace047115509630a2241c76422cd9a368e15bc9a
+		} else if (goTo(shootPoint, 25)) {
 			onShootPoint = true;
 		}
 	}
@@ -933,23 +901,12 @@ public class Robot {
 		// Check if there is opponents attacker between our defender and target
 		// and if yes - do bounce shot.
 		if (isEnemyBotBlocking(enemyAttacker, ourDefender, target)) {
-<<<<<<< HEAD
-			setBouncePoint(enemyAttacker, ourDefender, target);
-			//bouncePoint = wallKick(ourDefender, target, enemyAttacker);
-			System.out.println("Bounce: " + bouncePoint);
-			kickBallToPoint(bouncePoint,false);
-		} else {
-			// Otherwise - just kick straight to the target point
-			kickBallToPoint(target,false);
-
-=======
-			// setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
+			//setBouncePoint(enemyAttacker, ourDefender, target);
 			bouncePoint = wallKick(ourDefender, target, enemyAttacker);
-			kickBallToPoint(bouncePoint);
+			kickBallToPoint(bouncePoint, false);
 		} else {
 			// Otherwise - just kick straight to the target point
-			kickBallToPoint(target);
->>>>>>> ace047115509630a2241c76422cd9a368e15bc9a
+			kickBallToPoint(target, false);
 			System.out.println("Straight: " + target);
 		}
 	}
