@@ -136,10 +136,14 @@ public class Intersect {
 	 * @return
 	 */
 	public static Point2 xIntersect(int x, Point2 a, Point2 b) {
-		double theta = a.angleTo(b) + 360.0;
-		double xdiff = b.x - a.x;
-		return new Point2(x, (int) (a.y + xdiff
-				* Math.tan(theta * Math.PI / 180.0)));
+
+		// Use the law of similar triangles to find the y difference
+		double theta = Alg.normalizeToUnitDegrees(a.angleTo(b));
+		double xdiff = x - a.x;
+		theta = theta * Math.PI / 180.0;
+
+		// Round the y value to the nearest integer and return
+		return new Point2(x, (int) (Math.round(a.y + xdiff * Math.tan(theta))));
 	}
 
 	/**
@@ -150,6 +154,11 @@ public class Intersect {
 	 * @return
 	 */
 	public Point2 getEstimateIntersectX(int x) {
+
+		// Short circuit the whole method if the ball is unknown!
+		if (ball.equals(Point2.EMPTY)) {
+			return Point2.EMPTY;
+		}
 
 		// First check the ball with respect to the first intersection if it
 		// exists
@@ -182,7 +191,7 @@ public class Intersect {
 
 		// If that also doesn't work, the ball prediction never crosses the
 		// robot, so just return the predicted y (old behaviour)
-		return estimate;
+		return new Point2(x, estimate.y);
 	}
 
 	/**
@@ -190,5 +199,23 @@ public class Intersect {
 	 */
 	public void setEstimate(Point2 pt) {
 		this.estimate = pt;
+	}
+
+	@Override
+	public String toString() {
+		String q = new String();
+		q = q.concat("\nIntersect Data:\n");
+		q = q.concat("Ball at: " + ball.toString() + "\n");
+		q = q.concat("Estimate at: " + estimate.toString() + "\n");
+		if (intersections.size() > 0) {
+			q = q.concat(intersections.size() + " intersections at: [");
+			for (Point2 p : intersections) {
+				q = q.concat(p.toString() + " ");
+			}
+			q = q.concat("]\n");
+		} else {
+			q = q.concat("(No Intersections)\n");
+		}
+		return q;
 	}
 }

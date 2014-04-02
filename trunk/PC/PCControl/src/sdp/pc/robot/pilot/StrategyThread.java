@@ -248,11 +248,6 @@ public class StrategyThread extends Thread {
 		if (frameCounter == 10) {
 			System.out.println();
 			System.out.println("Attacker, Defender states:");
-			System.out.println("Attacker is turning to the top corner:"
-					+ !attacker.turnedTowardsTopOfGoal);
-			System.out.println("Attacker is holding the ball:"
-					+ (attacker.getKickSubState() >= 6));
-			System.out.println("Attacker, Defender states:");
 			Robot.State.print(attacker.getState());
 			Robot.State.print(defender.getState());
 			frameCounter = 0;

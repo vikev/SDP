@@ -155,8 +155,6 @@ public class Strategy implements ActionListener {
 				myTeam = this.getState().getOurColor();
 				attackerId = this.getState().getDirection();
 				defenderId = 1 - this.getState().getDirection();
-				System.out.println("Sanity Check! " + "Our Team: " + myTeam
-						+ ", Defender Side: " + defenderId);
 				// Connect to robots
 				this.connectRobots();
 				addShutdownHook();
