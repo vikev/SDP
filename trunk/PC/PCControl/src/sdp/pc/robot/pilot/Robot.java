@@ -175,8 +175,7 @@ public class Robot {
 	Point2 shootPoint = new Point2(0, 0);
 
 	/**
-	 * A flag which tells if the shooting strategy is initialized. TODO: This is
-	 * never enabled!
+	 * A flag which tells if the shooting strategy is initialized.
 	 */
 	boolean shootStratInitalised = false;
 
@@ -189,6 +188,7 @@ public class Robot {
 	 * TODO: Something to do with wall kick strategy.. no idea.
 	 */
 	public int adjustKickPoint = 10;
+	
 
 	/**
 	 * Class for controlling a robot from a more abstract point of view
@@ -593,7 +593,7 @@ public class Robot {
 	 * @param where
 	 * @throws Exception
 	 */
-	public void kickBallToPoint(Point2 where) throws Exception {
+	public void kickBallToPoint(Point2 where, boolean justGrab) throws Exception {
 
 		// Turn to ball, move to ball, grab the ball, turn to the point, kick
 		Point2 ball = state.getBallPosition();
@@ -651,15 +651,16 @@ public class Robot {
 		if (kickSubState >= 1 && kickSubState < 5)
 			kickSubState++;
 		if (kickSubState >= 5) {
-			checkHoldingBall(pos, ball);
-
-			// If this is attacker, do Shoot Strategy
-			if (myIdentifier == state.getDirection()) {
-				//kickGrabbedBallTo(where);
-				shootStrategy1();
-			} else {
-				// If defender, execute pass strategy
-				passStrategy(where);
+			if(checkHoldingBall(pos, ball)){
+				if(!justGrab){
+					// If this is attacker, do Shoot Strategy
+					if (myIdentifier == state.getDirection()) {
+						kickGrabbedBallTo(where);
+					} else {
+						// If defender, execute pass strategy
+						passStrategy(where);
+					}
+				}
 			}
 		}
 	}
@@ -672,7 +673,7 @@ public class Robot {
 	 * @param ballPos
 	 * @throws Exception
 	 */
-	public void checkHoldingBall(Point2 robotPos, Point2 ballPos)
+	public boolean checkHoldingBall(Point2 robotPos, Point2 ballPos)
 			throws Exception {
 		if (robotPos.distance(ballPos) > 40 && !ballPos.equals(Point2.EMPTY)) {
 			driver.stop();
@@ -683,10 +684,11 @@ public class Robot {
 			kickSubState = 0;
 			turnedTowardsTopOfGoal = false;
 			onShootPoint = false;
-			
+			return true;
 			// TODO: If robot has the ball, always say that ball is in front of
 			// robot
 		}
+		return false;
 	}
 
 	public boolean closeTo(Point2 source, Point2 dest, Point2 obstacle) {
@@ -727,17 +729,18 @@ public class Robot {
 		// Calculate shoot point and goal corners
 		if (state.getDirection() == 1) {
 			topCornerOfGoal = state.getRightGoalCentre();
-			topCornerOfGoal.setY(topCornerOfGoal.getY() - 35);
+			topCornerOfGoal.setY(topCornerOfGoal.getY() - 25);
 			bottomCornerOfGoal = state.getRightGoalCentre();
-			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 35);
+			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 25);
 			shootPoint.setX(shootPoint.getX() + 20);
 		} else {
 			topCornerOfGoal = state.getLeftGoalCentre();
-			topCornerOfGoal.setY(topCornerOfGoal.getY() - 35);
+			topCornerOfGoal.setY(topCornerOfGoal.getY() - 25);
 			bottomCornerOfGoal = state.getLeftGoalCentre();
-			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 35);
+			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 25);
 			shootPoint.setX(shootPoint.getX() - 20);
 		}
+		shootStratInitalised = true;
 	}
 
 	/**
@@ -842,10 +845,10 @@ public class Robot {
 				} else {
 					shootStratSubState++;
 				}
-			} else if (turnTo(topCornerOfGoal, 8)) {
+			} else if (turnTo(topCornerOfGoal, 5)) {
 				turnedTowardsTopOfGoal = true;
 			}
-		} else if (goTo(shootPoint, 50)) {
+		} else if (goTo(shootPoint, 25)) {
 			onShootPoint = true;
 		}
 	}
@@ -898,12 +901,12 @@ public class Robot {
 		// Check if there is opponents attacker between our defender and target
 		// and if yes - do bounce shot.
 		if (isEnemyBotBlocking(enemyAttacker, ourDefender, target)) {
-			// setBouncePoint(enemyAttacker, ourDefender, ourAttacker);
+			//setBouncePoint(enemyAttacker, ourDefender, target);
 			bouncePoint = wallKick(ourDefender, target, enemyAttacker);
-			kickBallToPoint(bouncePoint);
+			kickBallToPoint(bouncePoint, false);
 		} else {
 			// Otherwise - just kick straight to the target point
-			kickBallToPoint(target);
+			kickBallToPoint(target, false);
 			System.out.println("Straight: " + target);
 		}
 	}
@@ -1217,9 +1220,6 @@ public class Robot {
 		int speed = (int) ((maxSpeed - minSpeed) / (maxRotate - minRotate)
 				* (rotateBy - minRotate) + minSpeed);
 
-		// int divFactor = 5;
-		// int multFactor = 24
-
 		// If the value is under the epsilon distance don't turn at all
 		if (rotateBy < epsilon) {
 			return 0;
@@ -1232,13 +1232,22 @@ public class Robot {
 		// Don't change this, just change the constants.
 		return speed;
 
-		/*
-		 * //function that has a sharper increase in returned values compared to
-		 * //the above function, at small angels. if(rotateBy >= divfactor ){ if
-		 * (rotateBy < 60){ return (int)
-		 * (Math.log(rotateBy/divfactor)*multFactor + minSpeed); }else{ return
-		 * (int) maxSpeed; } }else{ return (int) minSpeed; }
-		 */
+		
+		 //function that has a sharper increase in returned values compared to
+		 //the above function, at small angels.
+/*		 int divFactor = 5;
+		 int multFactor = 20;
+		 minSpeed = 4.0;
+		 if(rotateBy >= divFactor ){
+			 if(rotateBy < 60){
+				return (int)
+			 (Math.log(rotateBy/divFactor)*multFactor + minSpeed);
+			 }else {
+				 return	 (int) maxSpeed;
+			 }
+		 }else{
+			 return (int) minSpeed;
+		 }*/
 	}
 
 	/**
