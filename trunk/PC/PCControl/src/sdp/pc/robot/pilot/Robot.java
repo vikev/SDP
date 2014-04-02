@@ -70,7 +70,7 @@ public class Robot {
 	 * Safe distance between the enemy attacker, and a straight line between our
 	 * robots, in order to decide if a direct pass is possible.
 	 */
-	private static final double SAFE_PASS_DISTANCE = 50.0;
+	private static final double SAFE_PASS_DISTANCE = 40.0;
 
 	/**
 	 * The primitive driver used to control the NXT
@@ -794,7 +794,7 @@ public class Robot {
 					onShootPoint = false;
 				}
 			}
-		}
+		} else
 			
 
 		// Move to a point close to the opposing defender's zone that also
@@ -814,7 +814,7 @@ public class Robot {
 						if (kickGrabbedBallTo(bottomCornerOfGoal)) {
 							shootStratSubState++;
 							driver.stop();
-							if (shootStratSubState > 5) {
+							if (shootStratSubState > 4) {
 								// Reset variables
 								shootBot = false;
 								shootStratInitalised = false;
@@ -828,7 +828,7 @@ public class Robot {
 						if (kickGrabbedBallTo(topCornerOfGoal)) {
 							// avoid moving when kicking the ball
 							shootStratSubState++;
-							if (shootStratSubState > 5) {
+							if (shootStratSubState > 4) {
 								// Reset variables
 								shootBot = false;
 								shootStratInitalised = false;
