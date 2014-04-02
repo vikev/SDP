@@ -660,6 +660,7 @@ public class Robot {
 			if(checkHoldingBall(pos, ball)){
 				if(!justGrab){
 					// If this is attacker, do Shoot Strategy
+					//System.out.println(kickSubState + " " +  myIdentifier + " " + state.getDirection());
 					if (myIdentifier == state.getDirection()) {
 						kickGrabbedBallTo(where);
 						//shootStrategy1();
@@ -683,7 +684,7 @@ public class Robot {
 	 */
 	public boolean checkHoldingBall(Point2 robotPos, Point2 ballPos)
 			throws Exception {
-		if (robotPos.distance(ballPos) > 50 && !ballPos.equals(Point2.EMPTY)) {
+		if (robotPos.distance(ballPos) > 40 && !ballPos.equals(Point2.EMPTY)) {
 			System.out.println("Distance: " + robotPos.distance(ballPos));
 			System.out.println("Robotpos: " + robotPos);
 			System.out.println("ballpos: " + ballPos);
@@ -694,7 +695,8 @@ public class Robot {
 			// TODO: If robot has the ball, always say that ball is in front of
 			// robot
 		}
-		return false;
+		//return false; // works for attacker, but not defender !!!
+		return true;
 	}
 
 	public boolean closeTo(Point2 source, Point2 dest, Point2 obstacle) {
