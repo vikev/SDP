@@ -794,11 +794,10 @@ public class Robot {
 					onShootPoint = false;
 				}
 			}
-		}
+		} else if (onShootPoint) {
+			// Move to a point close to the opposing defender's zone that also
+			// has the y coordinate of the centre of our attackers quadrant.
 
-		// Move to a point close to the opposing defender's zone that also
-		// has the y coordinate of the centre of our attackers quadrant.
-		if (onShootPoint == true) {
 			// Attempt to make opposing defender go into the top corner of the
 			// goal
 			if (turnedTowardsTopOfGoal) {
@@ -813,7 +812,7 @@ public class Robot {
 						if (kickGrabbedBallTo(bottomCornerOfGoal)) {
 							shootStratSubState++;
 							driver.stop();
-							if (shootStratSubState > 5) {
+							if (shootStratSubState > 4) {
 								// Reset variables
 								shootBot = false;
 								shootStratInitalised = false;
@@ -827,7 +826,7 @@ public class Robot {
 						if (kickGrabbedBallTo(topCornerOfGoal)) {
 							// avoid moving when kicking the ball
 							shootStratSubState++;
-							if (shootStratSubState > 5) {
+							if (shootStratSubState > 4) {
 								// Reset variables
 								shootBot = false;
 								shootStratInitalised = false;
