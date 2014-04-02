@@ -64,7 +64,7 @@ public class Robot {
 	 * Determines how much you want to squeeze the quadrants (for making sure
 	 * the robots avoid their boundaries)
 	 */
-	private static final double HULL_OFFSET = 60.0;
+	private static final double HULL_OFFSET = 70.0;
 
 	/**
 	 * Safe distance between the enemy attacker, and a straight line between our
@@ -598,7 +598,6 @@ public class Robot {
 		// Turn to ball, move to ball, grab the ball, turn to the point, kick
 		Point2 ball = state.getBallPosition();
 		Point2 pos = state.getRobotPosition(getTeam(), getId());
-		int pitchId = state.getPitchId();
 
 		// If not grabbed ball yet
 		if (kickSubState <= 0) {
@@ -610,22 +609,22 @@ public class Robot {
 				if (kickSubState == 0)
 					kickSubState = -2;
 				if (kickSubState == -2) {
+					// Offset ball slightly away from walls
+					/*int dumm = 
+							ball.offset(8, ball.angleTo(state.getPitch()
+									.getQuadrantCentres()[getMyQuadrant() - 1])).y;
+					System.out.println(dumm);*/
 					if (goTo(new Point2(pos.x, ball.y), 20.0)) {
 						kickSubState = -1;
 					}
 				}
 				if (kickSubState == -1) {
 
-					// Offset ball slightly away from boundary
-					/*ball = new Point2(
-							ball.offset(4, ball.angleTo(state.getPitch()
-									.getQuadrantCentres()[getMyQuadrant() - 1])).x,
-							ball.y);*/
-
 					// If close to ball, grab
 					System.out.println("Check if close to ball");
 					if (goTo(
-							ball.offset(20.0, ball.angleTo(pos)),
+							// Main pitch - 20.0; Side pitch - 18.0
+							ball.offset(18.0, ball.angleTo(pos)),
 							10.0)) {
 
 						driver.stop();
@@ -640,7 +639,8 @@ public class Robot {
 			} else {
 				if (kickSubState < 0)
 					kickSubState = 0;
-				if (goTo(ball.offset(22.0, ball.angleTo(pos)),
+				// Main pitch - 22.0; Side pitch - 20.0
+				if (goTo(ball.offset(20.0, ball.angleTo(pos)),
 						10.0)) {
 					driver.stop();
 					driver.grab();
@@ -655,7 +655,8 @@ public class Robot {
 
 			// If this is attacker, do Shoot Strategy
 			if (myIdentifier == state.getDirection()) {
-				kickGrabbedBallTo(where);
+				//kickGrabbedBallTo(where);
+				shootStrategy1();
 			} else {
 				// If defender, execute pass strategy
 				passStrategy(where);
@@ -676,7 +677,13 @@ public class Robot {
 		if (robotPos.distance(ballPos) > 40 && !ballPos.equals(Point2.EMPTY)) {
 			driver.stop();
 			driver.open();
+			shootBot = false;
+			shootStratInitalised = false;
+			shootStratSubState = 0;
 			kickSubState = 0;
+			turnedTowardsTopOfGoal = false;
+			onShootPoint = false;
+			
 			// TODO: If robot has the ball, always say that ball is in front of
 			// robot
 		}
@@ -720,15 +727,15 @@ public class Robot {
 		// Calculate shoot point and goal corners
 		if (state.getDirection() == 1) {
 			topCornerOfGoal = state.getRightGoalCentre();
-			topCornerOfGoal.setY(topCornerOfGoal.getY() - 20);
+			topCornerOfGoal.setY(topCornerOfGoal.getY() - 35);
 			bottomCornerOfGoal = state.getRightGoalCentre();
-			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 20);
+			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 35);
 			shootPoint.setX(shootPoint.getX() + 20);
 		} else {
 			topCornerOfGoal = state.getLeftGoalCentre();
-			topCornerOfGoal.setY(topCornerOfGoal.getY() - 20);
+			topCornerOfGoal.setY(topCornerOfGoal.getY() - 35);
 			bottomCornerOfGoal = state.getLeftGoalCentre();
-			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 20);
+			bottomCornerOfGoal.setY(bottomCornerOfGoal.getY() + 35);
 			shootPoint.setX(shootPoint.getX() - 20);
 		}
 	}
@@ -751,6 +758,44 @@ public class Robot {
 		// Check we still have the ball
 		checkHoldingBall(state.getRobotPosition(getTeam(), myIdentifier),
 				state.getBallPosition());
+		
+		if (!isEnemyBotBlocking(state.getRobotPosition(getOtherTeam(),
+											myIdentifier),
+									state.getRobotPosition(myTeam, myIdentifier),
+									topCornerOfGoal)) {
+			System.out.println("MONKEYS");
+			if (kickGrabbedBallTo(topCornerOfGoal)) {
+				shootStratSubState++;
+				driver.stop();
+				if (shootStratSubState > 5) {
+					// Reset variables
+					shootBot = false;
+					shootStratInitalised = false;
+					shootStratSubState = 0;
+					kickSubState = 0;
+					turnedTowardsTopOfGoal = false;
+					onShootPoint = false;
+				}
+			}
+		} else if (!isEnemyBotBlocking(state.getRobotPosition(getOtherTeam(),
+				myIdentifier),
+				state.getRobotPosition(myTeam, myIdentifier),
+				bottomCornerOfGoal)) {
+			if (kickGrabbedBallTo(bottomCornerOfGoal)) {
+				shootStratSubState++;
+				driver.stop();
+				if (shootStratSubState > 5) {
+					// Reset variables
+					shootBot = false;
+					shootStratInitalised = false;
+					shootStratSubState = 0;
+					kickSubState = 0;
+					turnedTowardsTopOfGoal = false;
+					onShootPoint = false;
+				}
+			}
+		}
+			
 
 		// Move to a point close to the opposing defender's zone that also
 		// has the y coordinate of the centre of our attackers quadrant.
@@ -800,7 +845,7 @@ public class Robot {
 			} else if (turnTo(topCornerOfGoal, 8)) {
 				turnedTowardsTopOfGoal = true;
 			}
-		} else if (goTo(shootPoint, 40)) {
+		} else if (goTo(shootPoint, 50)) {
 			onShootPoint = true;
 		}
 	}
@@ -920,6 +965,7 @@ public class Robot {
 		// Trigonometry FTW!
 		double x = a
 				* Math.sin(Math.acos((a * a + c * c - b * b) / (2 * a * c)));
+		System.out.println(x);
 		if (x < SAFE_PASS_DISTANCE) {
 			return true;
 		}
@@ -1180,7 +1226,7 @@ public class Robot {
 		}
 		
 		if (onShootPoint) {
-			return speed + 30;
+			return speed + 10;
 		}
 
 		// Don't change this, just change the constants.

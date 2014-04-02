@@ -120,14 +120,14 @@ public class StrategyThread extends Thread {
 				attacker.setState(Robot.State.DEFEND_BALL);
 			} else {
 				defender.setState(Robot.State.DEFEND_BALL);
-				if (attacker.getKickSubState() >= 5) {
+				/*if (attacker.getKickSubState() >= 5) {
 					attacker.setState(Robot.State.ATTEMPT_GOAL);
 				} else {
 					if (attacker.getState() != Robot.State.GET_BALL) {
 						targetPoint = state.getTheirGoalRandom();
-					}
+					}*/
 					attacker.setState(Robot.State.GET_BALL);
-				}
+				//}
 			}
 		} else if (position.equals("Our Defender")) {
 			if (speed > FAST_BALL_SPEED && defender.getSubState() == 0) {
@@ -190,7 +190,7 @@ public class StrategyThread extends Thread {
 				parseAttacker();
 
 				parseDefender();
-				System.out.println(state.getBallVelocity().modulus());
+				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
