@@ -55,12 +55,6 @@ public class Robot {
 	private static final double SAFE_ANGLE_EPSILON = 8.0;
 
 	/**
-	 * An epsilon value for the robot to be perpendicular in the defendBall
-	 * method
-	 */
-	private static final double DEFEND_ANGLE_EPSILON = 16.0;
-
-	/**
 	 * Determines how much you want to squeeze the quadrants (for making sure
 	 * the robots avoid their boundaries)
 	 */
@@ -71,6 +65,10 @@ public class Robot {
 	 * robots, in order to decide if a direct pass is possible.
 	 */
 	private static final double SAFE_PASS_DISTANCE = 40.0;
+	
+
+	public static final double DIST_EPSILON = 35;
+	public static final double ANGLE_EPSILON = 17;
 
 	/**
 	 * The primitive driver used to control the NXT
@@ -258,7 +256,7 @@ public class Robot {
 	 * coordinate by going forwards or backwards.
 	 */
 	public void defendBall() throws Exception {
-		if (assertPerpendicular(DEFEND_ANGLE_EPSILON)) {
+		if (assertPerpendicular(2 * SAFE_ANGLE_EPSILON)) {
 
 			// Get predicted ball stop point
 			// TODO: Needs test
@@ -318,24 +316,6 @@ public class Robot {
 	}
 
 	/**
-	 * Synchronous method which performs the goal of defending the robot. It
-	 * should only be called when the ball is not moving (or ball is not on the
-	 * pitch) and the opponent's attacker is on the pitch. It checks the
-	 * predicted stop location of the imaginary ball if the attacking robot
-	 * would kick now and moves to predicted position's Y coordinate by going
-	 * forwards or backwards.
-	 * 
-	 * This method is for the defending robot. Assumes <b>this</b> is already
-	 * perpendicular.
-	 */
-	public void defendEnemyAttacker() throws Exception {
-
-		// The enemy attacker is the opposite team, and opposite id (since this
-		// is a defender)
-		defendRobot(1 - this.myTeam, 1 - this.myIdentifier);
-	}
-
-	/**
 	 * Synchronous method which defends against a given robot. Assumes
 	 * <b>this</b> is already perpendicular.
 	 * 
@@ -359,10 +339,16 @@ public class Robot {
 
 			// If that position exists, defend it, otherwise just defend the
 			// ball
-			if (!predictedBallPos.equals(Point2.EMPTY)
-					& FutureBall.pitchContains(predictedBallPos)) {
-				if (defendToY(predictedBallPos.getY(), DEFEND_EPSILON_DISTANCE)) {
-					driver.stop();
+			if (!predictedBallPos.equals(Point2.EMPTY)) {
+				if(FutureBall.pitchContains(predictedBallPos)) {
+					if (defendToY(predictedBallPos.getY(), DEFEND_EPSILON_DISTANCE)) {
+						driver.stop();
+					}
+				} else {
+					Point2 corrPoint = FutureBall.correspondingOnBounds(predictedBallPos);
+					if (defendToY(corrPoint.getY(), DEFEND_EPSILON_DISTANCE)) {
+						driver.stop();
+					}
 				}
 			} else {
 				defendBall();
@@ -1622,5 +1608,26 @@ public class Robot {
 		} else {
 			return false;
 		}
+	}
+	
+	/**
+	 * Gets whether the robot holds the ball in its kicker
+	 * TODO: has arbitrary (untested) constants
+	 * @return
+	 */
+	public boolean hasBall(int team, int id) {
+		//TODO: Figure out a better method
+		
+		Point2 pos = state.getRobotPosition(team, id);
+		Point2 ballPos = state.getBallPosition();
+		
+		double facing = state.getRobotFacing(team, id);
+		double angleToBall = pos.angleTo(ballPos);
+
+		double ballRobotAngle = Alg.normalizeToBiDirection(angleToBall - facing);
+		double ballRobotDist = pos.distance(ballPos);
+		
+		return Math.abs(ballRobotAngle) < ANGLE_EPSILON 
+				&& 0 < ballRobotDist && ballRobotDist < DIST_EPSILON;
 	}
 }
