@@ -286,7 +286,7 @@ public class Alg {
 	public static Point2 correspondingOnHull(LinkedList<Point2> borderPoints, Point2 p) {
 		int i;
 		int j;
-		double intDist = 0;
+		double intDist = 10000;
 		Point2 intPoint = Point2.EMPTY;
 		for (i = 0; i < borderPoints.size() - 1; i++) {
 			Point2 norm = borderPoints.get(i+1).subtract(borderPoints.get(i));
@@ -294,14 +294,15 @@ public class Alg {
 			Point2 rP = p.subtract(borderPoints.get(i));
 			Point2 rP2 = rP.add(bP);
 			Point2D.Double inter = Point2.getLinesIntersection(Point2.EMPTY, norm, rP, rP2);
-			Point2 point = new Point2(inter);
-			Point2 intercept = point.subtract(borderPoints.get(i));
-			double dist = intercept.distance(p);
-			if (dist < intDist) {
-				intDist = dist;
-				intPoint = point;
+			if (inter != new Point2D.Double()) {
+				Point2 point = new Point2(inter);
+				Point2 intercept = point.subtract(borderPoints.get(i));
+				double dist = intercept.distance(p);
+				if (dist < intDist) {
+					intDist = dist;
+					intPoint = intercept;
+				}
 			}
-			
 		}
 		return intPoint;
 	}

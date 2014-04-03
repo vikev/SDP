@@ -339,10 +339,12 @@ public class Robot {
 						driver.stop();
 					}
 				} else {
-					Point2 corrPoint = FutureBall.correspondingOnBounds(predictedBallPos);
-					if (defendToY(corrPoint.getY(), DEFEND_EPSILON_DISTANCE)) {
-						driver.stop();
-					}
+					//Point2 corrPoint = FutureBall.correspondingOnBounds(predictedBallPos);
+					//System.out.println("ble " + corrPoint);
+					//if (defendToY(corrPoint.getY(), DEFEND_EPSILON_DISTANCE)) {
+					//	driver.stop();
+					//}
+					defendBall();
 				}
 			} else {
 				defendBall();
