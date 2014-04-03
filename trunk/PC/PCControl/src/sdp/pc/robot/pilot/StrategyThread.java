@@ -120,11 +120,14 @@ public class StrategyThread extends Thread {
 				attacker.setState(Robot.State.DEFEND_BALL);
 			} else {
 				defender.setState(Robot.State.DEFEND_BALL);
-				if (attacker.getKickSubState() >= 5) {
+				/*if (attacker.getKickSubState() >= 5) {
 					attacker.setState(Robot.State.ATTEMPT_GOAL);
 				} else {
+					if (attacker.getState() != Robot.State.GET_BALL) {
+						targetPoint = state.getTheirGoalRandom();
+					}*/
 					attacker.setState(Robot.State.GET_BALL);
-				}
+				//}
 			}
 		} else if (position.equals("Our Defender")) {
 			if (speed > FAST_BALL_SPEED && defender.getSubState() == 0) {
@@ -291,63 +294,28 @@ public class StrategyThread extends Thread {
 	}
 
 	/**
-	 * Executes a shoot strategy.
+	 * Executes a shoot strategy. Could have conditions on which strategy to use
+	 * in the future.
 	 * 
 	 * @throws InterruptedException
 	 * @throws Exception
 	 */
 	private void executeShootStrategy() throws InterruptedException, Exception {
-		if (!attacker.shootStratInitalised)
-			attacker.initScorePoints();
-	// If the enemy defender has been removed from the pitch
-	// then shoot at the centre of the opposing goal. Otherwise perform
-	// our normal shoot strategy.
-	if (state.getRobotPosition(attacker.getOtherTeam(), (attacker.getId())) == Point2.EMPTY) {
-			attacker.kickBallToPoint(attacker.centreOfGoal, false);
-	}else{
-		if (state.getDirection() == 1){
-			//If the opposing defender is above the goal line set the goal target to the bottom corner
-			//or if it is below the goal line set the goal target to the top corner.
-			if(state.getRobotPosition(attacker.getOtherTeam(), (attacker.getId())).getY() < state.getRightGoalCentre().getY()-70){
-				attacker.currentGoalTarget = attacker.bottomCornerOfGoal;
-			}else if (state.getRobotPosition(attacker.getOtherTeam(), (attacker.getId())).getY() > state.getRightGoalCentre().getY()+70){
-				attacker.currentGoalTarget = attacker.topCornerOfGoal;
+		// If the enemy defender has been removed from the pitch and we are in a
+		// position to score
+		// then aim shoot at the centre of the correct goal. Otherwise perform
+		// our normal shoot strategy.
+		if (state.getRobotPosition(attacker.getOtherTeam(), (attacker.getId())) == Point2.EMPTY
+				&& attacker.onShootPoint) {
+			if (state.getDirection() == 1) {
+				attacker.kickBallToPoint(state.getRightGoalCentre(),false);
+			} else {
+				attacker.kickBallToPoint(state.getLeftGoalCentre(),false);
 			}
-			//If the opposing defender is close to our attacker's zone then try to shoot around it at one of the
-			//goal corners provided the shots path is not blocked by the defender.
-			if(attacker.currentGoalTarget == Point2.EMPTY){
-				if(Math.abs(state.getRobotPosition(attacker.getOtherTeam(), (attacker.getId())).getX() - state.getRightGoalCentre().getX()) > 50);
-					attacker.shootStrategy1();
-			}else{
-				attacker.shootStrategy1();
-			}
-			
-			//If we weren't able to set a goal target above then attempt to move the opposing defender away from the goal line before shooting
-			if(attacker.currentGoalTarget == Point2.EMPTY)	
-				attacker.shootStrategy2();
-		}else{
-			//If the opposing defender is above the goal line set the goal target to the bottom corner
-			//or if it is below the goal line set the goal target to the top corner.
-			if(state.getRobotPosition(attacker.getOtherTeam(), (attacker.getId())).getY() < state.getLeftGoalCentre().getY()-70){
-				attacker.currentGoalTarget = attacker.bottomCornerOfGoal;
-			}else if (state.getRobotPosition(attacker.getOtherTeam(), (attacker.getId())).getY() > state.getLeftGoalCentre().getY()+70){
-				attacker.currentGoalTarget = attacker.topCornerOfGoal;
-			}
-			//If the opposing defender is close to our attacker's zone then try to shoot around it at one of the
-			//goal corners provided the shots path is not blocked by the defender.
-			if(attacker.currentGoalTarget == Point2.EMPTY){
-				if(Math.abs(state.getRobotPosition(attacker.getOtherTeam(), (attacker.getId())).getX() - state.getLeftGoalCentre().getX()) > 50);
-					attacker.shootStrategy1();
-			}else{
-				attacker.shootStrategy1();
-			}
-			
-			//If we weren't able to set a goal target above then attempt to move the opposing defender away from the goal line before shooting
-			if(attacker.currentGoalTarget == Point2.EMPTY)	
-				attacker.shootStrategy2();
+		} else {
+			attacker.shootStrategy1();
 		}
 	}
-}
 
 	@Override
 	public void run() {
