@@ -162,6 +162,14 @@ public class StrategyThread extends Thread {
 			System.err.println("Resetting defender");
 		}
 		lastBallPos = state.getBallPosition();
+		
+		// Reset kicking variables if robot goes in a new state
+		if (attacker.getState() != Robot.State.GET_BALL) {
+			attacker.resetKickingVariables();
+		}
+		if (defender.getState() != Robot.State.PASS_TO_ATTACKER) {
+			defender.resetKickingVariables();
+		}
 	}
 
 	/**
@@ -189,7 +197,7 @@ public class StrategyThread extends Thread {
 
 				parseAttacker();
 
-				parseDefender();
+				//parseDefender();
 				
 			} catch (Exception e) {
 				e.printStackTrace();

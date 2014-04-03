@@ -41,6 +41,11 @@ public class Point2 implements java.io.Serializable {
 		this.x = x;
 		this.y = y;
 	}
+	
+	public Point2(Point2D.Double p) {
+		this.x = (int) Math.round(p.getX());
+		this.y = (int) Math.round(p.getY());
+	}
 
 	/**
 	 * Constructs a new point with coordinates (0,0)
@@ -494,6 +499,10 @@ public class Point2 implements java.io.Serializable {
 	 */
 	public double gradTo(Point2 vecB) {
 		return (vecB.y - this.y / vecB.y - this.y);
+	}
+	
+	public static Point2 getPerpendicular(Point2 vec) {
+		return new Point2(vec.y, vec.x);
 	}
 
 	/**

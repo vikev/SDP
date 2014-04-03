@@ -62,6 +62,11 @@ public class FutureBall {
 		return Alg.isInHull(new LinkedList<Point2>(state.getPitch()
 				.getArrayListOfPoints()), q);
 	}
+	
+	public static Point2 correspondingOnBounds(Point2 p) {
+		return Alg.correspondingOnHull(new LinkedList<Point2>(state.getPitch()
+				.getArrayListOfPoints()), p);
+	}
 
 	/**
 	 * Draw a line to the world state (you naughty boy) between a and b
