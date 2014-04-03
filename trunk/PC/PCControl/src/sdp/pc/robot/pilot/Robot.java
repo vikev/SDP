@@ -64,7 +64,7 @@ public class Robot {
 	 * Determines how much you want to squeeze the quadrants (for making sure
 	 * the robots avoid their boundaries)
 	 */
-	private static final double HULL_OFFSET = 70.0;
+	private static final double HULL_OFFSET = 75.0;
 
 	/**
 	 * Safe distance between the enemy attacker, and a straight line between our
@@ -580,6 +580,18 @@ public class Robot {
 		}
 		return false;
 	}
+	
+	/**
+	 *  Resets all variables that are used by the robot for kicking
+	 */
+	public void resetKickingVariables() {
+		shootBot = false;
+		shootStratInitalised = false;
+		shootStratSubState = 0;
+		kickSubState = 0;
+		turnedTowardsTopOfGoal = false;
+		onShootPoint = false;
+	}
 
 	public void grabBall() throws Exception {
 		Point2 ball = state.getBallPosition();
@@ -608,7 +620,7 @@ public class Robot {
 
 			// If ball close to wall
 			if (!Alg.inMinorHullWeighted(
-					getQuadrantVerticesWide(getMyQuadrant()), 20, ball, 1, 0.05)) {
+					getQuadrantVerticesWide(getMyQuadrant()), 30, ball, 1, 0.05)) {
 				// First go to x-coordinate of ball, then to ball itself
 				if (kickSubState == 0)
 					kickSubState = -2;
@@ -619,7 +631,8 @@ public class Robot {
 					 * .getQuadrantCentres()[getMyQuadrant() - 1])).y;
 					 * System.out.println(dumm);
 					 */
-					if (goTo(new Point2(pos.x, ball.y), 20.0)) {
+					if (goTo(new Point2(state.getPitch().
+							getQuadrantCenter(getMyQuadrant()).x, ball.y), 40.0)) {
 						kickSubState = -1;
 					}
 				}
@@ -649,8 +662,9 @@ public class Robot {
 				}
 			}
 		}
-		if (kickSubState >= 1 && kickSubState < 5)
+		if (kickSubState >= 1 && kickSubState < 5) {
 			kickSubState++;
+		}
 		if (kickSubState >= 5) {
 			if (checkHoldingBall(pos, ball)) {
 				// for some reason just grab is always true
@@ -682,12 +696,8 @@ public class Robot {
 		if (robotPos.distance(ballPos) > 40 && !ballPos.equals(Point2.EMPTY)) {
 			driver.stop();
 			driver.open();
-			shootBot = false;
-			shootStratInitalised = false;
-			shootStratSubState = 0;
-			kickSubState = 0;
-			turnedTowardsTopOfGoal = false;
-			onShootPoint = false;
+			
+			resetKickingVariables();
 			return false;
 			// TODO: If robot has the ball, always say that ball is in front of
 			// robot
@@ -837,13 +847,7 @@ public class Robot {
 				shootStratSubState++;
 				driver.stop();
 				if (shootStratSubState > 5) {
-					// Reset variables
-					shootBot = false;
-					shootStratInitalised = false;
-					shootStratSubState = 0;
-					kickSubState = 0;
-					turnedTowardsTopOfGoal = false;
-					onShootPoint = false;
+					resetKickingVariables();
 				}
 			}
 		} else if (!isEnemyBotBlocking(
@@ -854,13 +858,7 @@ public class Robot {
 				shootStratSubState++;
 				driver.stop();
 				if (shootStratSubState > 5) {
-					// Reset variables
-					shootBot = false;
-					shootStratInitalised = false;
-					shootStratSubState = 0;
-					kickSubState = 0;
-					turnedTowardsTopOfGoal = false;
-					onShootPoint = false;
+					resetKickingVariables();
 				}
 			}
 		} else if (onShootPoint) {
@@ -882,13 +880,7 @@ public class Robot {
 							shootStratSubState++;
 							driver.stop();
 							if (shootStratSubState > 4) {
-								// Reset variables
-								shootBot = false;
-								shootStratInitalised = false;
-								shootStratSubState = 0;
-								kickSubState = 0;
-								turnedTowardsTopOfGoal = false;
-								onShootPoint = false;
+								resetKickingVariables();
 							}
 						}
 					} else {
@@ -896,13 +888,7 @@ public class Robot {
 							// avoid moving when kicking the ball
 							shootStratSubState++;
 							if (shootStratSubState > 4) {
-								// Reset variables
-								shootBot = false;
-								shootStratInitalised = false;
-								shootStratSubState = 0;
-								kickSubState = 0;
-								turnedTowardsTopOfGoal = false;
-								onShootPoint = false;
+								resetKickingVariables();
 							}
 						}
 					}
