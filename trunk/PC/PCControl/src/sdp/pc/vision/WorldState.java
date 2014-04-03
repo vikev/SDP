@@ -221,8 +221,8 @@ public class WorldState {
 		// Initialise necessary components for calculation
 		Point2 robotPosition = this
 				.getRobotPosition(bot.getTeam(), bot.getId());
-		Point2 ballToBot = robotPosition.sub(ballPos);
-		double dist = ballToBot.modulus();
+		Point2 ballToBot = robotPosition.subtract(ballPos);
+		double dist = ballToBot.length();
 
 		// Calculate the projection
 		return (ballVel.dot(ballToBot) / dist);
@@ -447,7 +447,7 @@ public class WorldState {
 	 */
 	public void setBallVelocity(Point2 ballVelocity) {
 		this.ballVelocity = ballVelocity;
-		this.ballSpeed = ballVelocity.modulus();
+		this.ballSpeed = ballVelocity.length();
 		this.ballFacing = ballVelocity.angle();
 	}
 

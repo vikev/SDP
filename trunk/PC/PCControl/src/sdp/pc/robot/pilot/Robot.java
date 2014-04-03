@@ -1574,12 +1574,12 @@ public class Robot {
 		LinkedList<Point2> vertices = new LinkedList<Point2>();
 		Point2 expander = new Point2(50, 0);
 		if (q == 1) {
-			vertices.add(pts.get(1).sub(expander));
+			vertices.add(pts.get(1).subtract(expander));
 			vertices.add(pts.get(2));
 			vertices.add(pts.get(11));
-			vertices.add(pts.get(12).sub(expander));
-			vertices.add(pts.get(13).sub(expander));
-			vertices.add(pts.get(14).sub(expander));
+			vertices.add(pts.get(12).subtract(expander));
+			vertices.add(pts.get(13).subtract(expander));
+			vertices.add(pts.get(14).subtract(expander));
 		} else if (q == 4) {
 			vertices.add(pts.get(4));
 			vertices.add(pts.get(5).add(expander));

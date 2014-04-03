@@ -346,5 +346,113 @@ public class Alg {
 			i++;
 		return i;
 	}
+	
+	
 
+	static final double FRICTION_COEF = 1 - FutureBall.ESTIMATED_BALL_FRICTION / FutureBall.ESTIMATED_BALL_FRICTION;
+	
+	private static double vFromD(double d) {
+		return d / FRICTION_COEF;
+	}
+	
+	
+	/**
+	 * Finds the best point for a robot to intercept a ball trajectory and returns 
+	 * how much time the robot will have left if he is as fast as possible
+	 * @param ball
+	 * @param robot
+	 * @param robotV
+	 * @param outPoint
+	 * @return
+	 */
+	static public double getRobotInterceptTiming(Intersect ball, 
+			Point2 robot, double robotV, double robotA,
+			Point2 outPoint) {
+		
+		//get intersect data
+		ArrayList<Point2> bi = new ArrayList<Point2>(ball.getIntersections());
+		ArrayList<Double> bt = ball.getTimings();
+		ArrayList<Double> bd = new ArrayList<Double>();
+		
+		double distLeft = 0;
+		double bestTiming = -100;
+		
+		//subtract robot pos from intersect pts
+		for(int i = 0; i < bi.size(); i++) {
+			bi.set(i, bi.get(i).subtract(robot));
+		}
+		
+		//record distance between intersects
+		for(int i = 0; i < bi.size() - 1; i++) {
+			bd.set(i, bi.get(i).distance(bi.get(i+1)));
+			distLeft += bd.get(i);
+		}
+		
+		
+		//loop thru the paths
+		Point2 dest, pa, pb;
+		double pbt;
+		for(int i = 0; i < bi.size() - 1; i++) {
+			
+			pa = bi.get(i);
+			pb = bi.get(i+1);
+			double d = bd.get(i);
+			double v = vFromD(d);
+			
+			//check intersect pt
+			if(pa.lengthSq() > pb.lengthSq()) {
+				//go to pb
+				dest = pb;
+				pbt = bt.get(i+1);	//b
+			}
+			else if(pa.negate().dot(pb) > 0) {
+				//interpolate linearly
+			}
+			else {
+				//find perpencidular
+			}
+			
+			distLeft -= d;
+			
+			double prt = getTimeRobotReach(pb, robotV, robotA);
+		}
+		
+		
+		return 0;
+	}
+	
+	static private double getTimeRobotReach(Point2 dest, double v, double a) {
+		//TODO: account for robot angle
+		return dest.length() / v;
+	}
+	
+	//static private double getTimeBallReach()
+	
+
+	static public Point2D getRayLineIntersection(Point2 ra, Point2 rb, Point2 la, Point2 lb) {
+		
+		Point2D.Double intersect = Point2.getLinesIntersection(ra, rb, la, lb);
+		
+		boolean 
+			afterRayStart,	//whether intersect is after the ray's start point
+			betweenLine;	//whether intersect is between la and lb
+		
+		if(ra.x - rb.x == 0)
+			//check if rb.Y and intersect.Y lie on the same side of ra.Y
+			afterRayStart = (intersect.y >= ra.y) ^ (rb.y < ra.y);
+		else
+			//check if rb.X and intersect.X lie on the same side of ra.X
+			afterRayStart = (intersect.x >= ra.x) ^ (rb.x < ra.x);
+		
+		if(la.x - lb.x == 0)
+			//check if intersect.Y is between la.Y and lb.Y
+			betweenLine = (intersect.y <= la.y) ^ (intersect.y > lb.y);
+		else
+			//check if intersect.X is between la.X and lb.X
+			betweenLine = (intersect.x <= la.x) ^ (intersect.x > lb.x);
+		
+		if(afterRayStart && betweenLine)
+			return intersect;
+		return null;
+	}
 }

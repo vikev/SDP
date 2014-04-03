@@ -51,12 +51,12 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	/**
 	 * Width of the video feed
 	 */
-	static final int WIDTH = 640;
+	public static final int WIDTH = 640;
 
 	/**
 	 * Height of the video feed
 	 */
-	static final int HEIGHT = 480;
+	public static final int HEIGHT = 480;
 
 	/**
 	 * Video standard used by V4L4J (should be PAL)
@@ -100,7 +100,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * Painter which draws any highlighted pixels or control data to the vision
 	 * stream
 	 */
-	private WorldStatePainter statePainter;
+	public static WorldStatePainter statePainter;
 
 	/**
 	 * Main label for the video feed frame
@@ -127,7 +127,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 * distortion
 	 */
 	private static Point2 cameraCenter = new Point2(WIDTH / 2, HEIGHT / 2);
-
+	
+	public static SettingsGUI settingsGui;
+	
 	/**
 	 * angleSmoothing was a system which buffered orientation values to smooth
 	 * the facing angles of our robots. It's disabled now because the new
@@ -239,6 +241,8 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 				// Draw the world overlay to the buffer
 				Point2 mousePos = new Point2(Vision.frame.getContentPane()
 						.getMousePosition());
+				mousePos.x = mousePos.x * WIDTH / frameLabel.getWidth();
+				mousePos.y = mousePos.y * HEIGHT / frameLabel.getHeight();
 				if (mousePos instanceof Point2 && mousePos.getX() > 0
 						&& mousePos.getY() > 0) {
 					statePainter.drawWorld(buffer, mousePos);
@@ -248,7 +252,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 
 				// Draw the result to the frameLabel
 				Graphics labelG = frameLabel.getGraphics();
-				labelG.drawImage(buffer, 0, 0, WIDTH, HEIGHT, null);
+				labelG.drawImage(buffer, 0, 0, frameLabel.getWidth(), frameLabel.getHeight(), null);
 				labelG.dispose();
 			}
 		});
@@ -257,7 +261,9 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		frameGrabber.startCapture();
 
 		// Add the mouse Listener
-		frame.addMouseListener(new VisionMouseAdapter());
+		VisionMouseAdapter mouseAdapter = new VisionMouseAdapter();
+		frame.addMouseListener(mouseAdapter);
+		frame.addMouseWheelListener(mouseAdapter);
 	}
 
 	/**
@@ -291,6 +297,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 	 */
 	private void initGUI() {
 		frame = new JFrame();
+		frame.setTitle("Infin8 Vision");
 		ImageIcon q = new ImageIcon("resource/vision.png");
 		frame.setIconImage(q.getImage());
 		frameLabel = new JLabel();
@@ -304,11 +311,11 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 			 */
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				SettingsGUI gui = new SettingsGUI();
-				gui.setWorldPainter(statePainter);
-				gui.setWorldListener(stateListener);
-				gui.setSettingsManager(SettingsManager.defaultSettings);
-				gui.setVisible(true);
+				settingsGui = new SettingsGUI();
+				settingsGui.setWorldPainter(statePainter);
+				settingsGui.setWorldListener(stateListener);
+				settingsGui.setSettingsManager(SettingsManager.defaultSettings);
+				settingsGui.setVisible(true);
 			}
 		});
 		frame.getContentPane().add(frameLabel);
@@ -316,7 +323,7 @@ public class Vision extends WindowAdapter implements CaptureCallback {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.addWindowListener(this);
 		frame.setVisible(true);
-		frame.setSize(WIDTH, HEIGHT);
+		frame.setSize(640, 480);
 	}
 
 	/**

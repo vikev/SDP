@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import sdp.pc.common.Constants;
 import sdp.pc.common.Parallel;
@@ -51,20 +52,19 @@ public class WorldStateUpdater extends WorldStateListener {
 	 * The amount of points observed for each robot
 	 */
 	private int[][] robotPtsCount = new int[2][2];
-
+	
 	/**
 	 * The sum (later average) of the observed points
 	 */
 	private Point2[][] robotPos = new Point2[2][2];
 
 	@SuppressWarnings("unchecked")
-	// can't create generic arrays
 	/**
 	 *  The list of points for each robot
 	 */
 	private ArrayList<Point2>[][] robotPts = new ArrayList[][] {
-			new ArrayList[] { new ArrayList<Point2>(), new ArrayList<Point2>(), },
-			new ArrayList[] { new ArrayList<Point2>(), new ArrayList<Point2>() } };
+			new ArrayList[] { new ArrayList<Point2>(), new ArrayList<Point2>() },
+			new ArrayList[] { new ArrayList<Point2>(), new ArrayList<Point2>() }, };
 
 	/**
 	 * The list of points for ball position
@@ -73,14 +73,23 @@ public class WorldStateUpdater extends WorldStateListener {
 
 	// TODO: Docu
 	private Point2 ballPos;
+	
 
 	// TODO: Docu
 	private LinkedList<Point2> ballPastPos = new LinkedList<Point2>();
 
+	private AtomicInteger[][][] colorFilterMap = new AtomicInteger[640][480][SettingsManager.N_SETTINGS];
+	
 	/**
 	 * List of points belonging to the green plates
 	 */
-	private ArrayList<ArrayList<Point2>> greenPlatePoints = new ArrayList<ArrayList<Point2>>();
+	@SuppressWarnings("rawtypes")
+	private ArrayList[] greenPlatePoints = new ArrayList[] {
+		new ArrayList<Point2>(),
+		new ArrayList<Point2>(),
+		new ArrayList<Point2>(),
+		new ArrayList<Point2>(),
+	};
 
 	/**
 	 * Clusters giving the positions of the four green plates The given points
@@ -104,6 +113,10 @@ public class WorldStateUpdater extends WorldStateListener {
 	 */
 	public WorldStateUpdater(int targetFps, WorldState state) {
 		super(targetFps, state);
+		for(int ix = 0; ix < Vision.WIDTH; ix++)
+			for(int iy = 0; iy < Vision.HEIGHT; iy++)
+				for(int is = 0; is < SettingsManager.N_SETTINGS; is++)
+					colorFilterMap[ix][iy][is] = new AtomicInteger();
 	}
 
 	/**
@@ -126,15 +139,17 @@ public class WorldStateUpdater extends WorldStateListener {
 	 * values for the ball position and velocity, and the robots' position and
 	 * facing.
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void updateWorld(final Color[][] cRgbs, final float[][][] cHsbs) {
 
 		// reset ball/robot averages and collected points
 		ballPtsCount = 0;
 		ballPos = new Point2();
-		greenPlatePoints.clear();
+		
 		for (int i = 0; i < 4; i++)
-			greenPlatePoints.add(new ArrayList<Point2>());
+			greenPlatePoints[i].clear();
+		
 		for (int i = 0; i < 2; i++)
 			for (int j = 0; j < 2; j++) {
 				robotPtsCount[i][j] = 0;
@@ -201,8 +216,8 @@ public class WorldStateUpdater extends WorldStateListener {
 
 		// Find the green plate clusters
 		for (int i = 0; i < 4; i++) {
-			if (greenPlatePoints.get(i).size() > 10) {
-				clusters[i] = Kmeans.doKmeans(greenPlatePoints.get(i),
+			if (greenPlatePoints[i].size() > 10) {
+				clusters[i] = Kmeans.doKmeans(greenPlatePoints[i],
 						clusters[i].getMean())[0];
 			} else
 				clusters[i] = new Cluster(new ArrayList<Point2>(), Point2.EMPTY);
@@ -282,12 +297,19 @@ public class WorldStateUpdater extends WorldStateListener {
 			ballPos = ballPos.add(p);
 			ballPtsCount++;
 		}
+		
+		
 
 		// Check if it's a green plate
-		if (Colors.isGreen(cRgb, cHsb)) {
+		boolean filterVal = colorFilterMap[p.x][p.y][SettingsManager.COLOR_CODE_PLATE].get() > filterHalfSize;
+		boolean clrVal = Colors.isGreen(cRgb, cHsb);
+		boolean val = (p.x < 640 ? filterVal : clrVal);
+		
+		if(val) {
 			int quad = state.quadrantFromPoint(p) - 1;
 			if (quad >= 0 && quad <= 3) {
-				ArrayList<Point2> gpts = greenPlatePoints.get(quad);
+				@SuppressWarnings("unchecked")
+				ArrayList<Point2> gpts = greenPlatePoints[quad];
 				synchronized (gpts) {
 					gpts.add(p);	
 				}
@@ -315,6 +337,10 @@ public class WorldStateUpdater extends WorldStateListener {
 			}
 
 		}
+		
+		for(int i = 0; i < SettingsManager.N_SETTINGS; i++)
+			colorFilterMap[p.x][p.y][i].set(0);
+		
 	}
 
 	/**
@@ -385,20 +411,16 @@ public class WorldStateUpdater extends WorldStateListener {
 	}
 
 	
+	private int filterHalfSize = 0,
+				filterRadius = 0;
 	
 	private void processPixel(Point2 p, BufferedImage img, Color[][] cRgbs,
 			float[][][] cHsbs) {
 		Color cRgb;
 		float[] cHsb;
-		
-		// get RGB handle
-		   
 		Point2 imgP = p;
 		
-		//fisheye
 		imgP = doFisheye(p.x, p.y);
-		
-		
 		cRgb = new Color(img.getRGB(imgP.x, imgP.y));
 
 		// get HSB handle
@@ -416,9 +438,22 @@ public class WorldStateUpdater extends WorldStateListener {
 		cHsb[2] = br;
 
 		// save RGB
-		cRgbs[p.x][p.y] = new Color(Color.HSBtoRGB(cHsb[0], cHsb[1],
+		cRgb = new Color(Color.HSBtoRGB(cHsb[0], cHsb[1],
 				cHsb[2]));
+		cRgbs[p.x][p.y] = cRgb;
 
+		//TODO: do it for all colorz
+		for(int i = 1; i < 2; i++)	//for each colour
+			if(Colors.isColorCode(cRgb, cHsb, i)) {			//if the pixel is such color
+				int sx = p.x - filterRadius,
+					sy = p.y - filterRadius,
+					ex = p.x + filterRadius,
+					ey = p.y + filterRadius;
+				
+				for(int ix = sx; ix <= ex; ix++)		//get it and the vals 'round it
+					for(int iy = sy; iy <= ey; iy++)
+						colorFilterMap[ix][iy][i].incrementAndGet();
+			}
 		// HSB is up to date
 	}
 	
@@ -429,6 +464,9 @@ public class WorldStateUpdater extends WorldStateListener {
 	@Override
 	protected void processImage(final BufferedImage img, final Color[][] cRgbs,
 			final float[][][] cHsbs) {
+		filterRadius = SettingsManager.defaultSettings.getMedianFilterSize();
+		int filterLen = filterRadius * 2 + 1;
+		filterHalfSize = filterLen * filterLen / 2;
 		
 		if(SettingsManager.defaultSettings.isMulticoreProcessing()) {
 			Parallel.For(pitchPointSplit, new Operation<Point2>() {

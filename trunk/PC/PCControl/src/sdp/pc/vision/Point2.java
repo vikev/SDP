@@ -57,7 +57,7 @@ public class Point2 implements java.io.Serializable {
 			this.y = p.y;
 		}
 	}
-
+	
 	/**
 	 * Builds a symmetric point (x=y=v)
 	 * 
@@ -113,8 +113,12 @@ public class Point2 implements java.io.Serializable {
 	 * 
 	 * @return
 	 */
-	public double modulus() {
-		return Math.sqrt(this.x * this.x + this.y * this.y);
+	public double length() {
+		return Math.sqrt(lengthSq());
+	}
+	
+	public int lengthSq() {
+		return x * x + y * y;
 	}
 
 	/**
@@ -322,17 +326,6 @@ public class Point2 implements java.io.Serializable {
 	}
 
 	/**
-	 * Gets a new point which is <b>this</b> minus the components of p. Useful
-	 * for calculating a vector between two points, as well.
-	 * 
-	 * @param p
-	 * @return
-	 */
-	public Point2 sub(Point2 p) {
-		return new Point2(x - p.x, y - p.y);
-	}
-
-	/**
 	 * Gets a point which is the sum of this point and the given point
 	 * 
 	 * @param p
@@ -419,8 +412,8 @@ public class Point2 implements java.io.Serializable {
 	 * @return
 	 */
 	public double angleBetween(Point2 v) {
-		double vecAMagnitude = this.modulus();
-		double vecBMagnitude = v.modulus();
+		double vecAMagnitude = this.length();
+		double vecBMagnitude = v.length();
 
 		int dotProduct = this.dot(v);
 
@@ -522,5 +515,9 @@ public class Point2 implements java.io.Serializable {
 	public boolean withinRangeOfPoint(Point2 comPoint, int range){
 		return(Math.abs(comPoint.getX() - this.getX()) <= range && 
 				Math.abs(comPoint.getY() - this.getY()) <= range);
+	}
+
+	public Point2 negate() {
+		return new Point2(-x, -y);
 	}
 }

@@ -18,11 +18,31 @@ import java.util.LinkedList;
  */
 public class Pitch {
 
-	private static final int PITCH_SIDE_Y_NPOINTS = 300;
+	
+	
+	/**
+	 * The minimum number of white points needed 
+	 * to consider a given Y as part of the pitch side.
+	 * <p>
+	 * A correct pitch must have two intervals of this kind - upper and lower. 
+	 */
+	private static final int SIDE_Y_NPOINTS = 300;
 
-	private static final int PITCH_ZONE_X_NPOINTS = 195;
+	/**
+	 * The minimum number of white points needed 
+	 * to consider a given X as a pitch zone delimiter.
+	 * <p>
+	 * A correct pitch must have three intervals of this kind - left, middle and right. 
+	 */
+	private static final int ZONE_X_NPOINTS = 195;
 
-	private static final int PITCH_SIDE_X_NPOINTS = 99;
+	/**
+	 * The minimum number of white points needed 
+	 * to consider a given X as a pitch goal mouth.
+	 * <p>
+	 * A correct pitch must have two intervals of this kind - left and right. 
+	 */
+	private static final int SIDE_X_NPOINTS = 99;
 
 	private static final int Y_END = 360, Y_BEGIN = 85;
 	private static final int X_END = 570, X_BEGIN = 310;
@@ -107,7 +127,15 @@ public class Pitch {
 
 	public Pitch() {
 	}
-
+	
+	/** 
+	 * Gets the first and last occurrences of white pixels along a given Y
+	 * @param rgb The RGB colormap
+	 * @param hsb The HSB colormap
+	 * @param y The Y of the line to sweep
+	 * @return A Point2 (treated as a tuple) with its elements 
+	 * the X of the first/last occurrence of a white pixel
+	 */
 	private Point2 horizontalSwipe(Color[][] rgb, float[][][] hsb, int y) {
 		Point2 p = new Point2(0, Vision.WIDTH - 1);
 
@@ -120,6 +148,14 @@ public class Pitch {
 		return p;
 	}
 
+	/** 
+	 * Gets the first and last occurrences of white pixels along a given X
+	 * @param rgb The RGB colormap
+	 * @param hsb The HSB colormap
+	 * @param x The x of the line to sweep
+	 * @return A Point2 (treated as a tuple) with its elements 
+	 * the Y of the first/last occurrence of a white pixel
+	 */
 	private Point2 verticalSwipe(Color[][] rgb, float[][][] hsb, int x) {
 		Point2 p = new Point2(0, Vision.HEIGHT - 1);
 
@@ -128,6 +164,7 @@ public class Pitch {
 
 		while (!Colors.isWhite(rgb[x][p.y], hsb[x][p.y]) && p.y >= 0)
 			p.y--;
+		
 		return p;
 	}
 
@@ -136,7 +173,11 @@ public class Pitch {
 	 */
 	public boolean Initialize(Color[][] rgb, float[][][] hsb) {
 
+		System.out.print("Detecting pitch area... ");
+		
 		Iterable<Point2> pitchPoints = Vision.stateListener.getPitchPoints();
+		
+		//record the nr of white pixels for each x/y
 		int[] xs = new int[Vision.WIDTH];
 		int[] ys = new int[Vision.HEIGHT];
 
@@ -149,15 +190,17 @@ public class Pitch {
 			}
 		}
 
+		//try to determine the pitch size from the intervals
 		ArrayList<Point2>[] xpts = Alg.getIntervals(xs, 7,
-				PITCH_SIDE_X_NPOINTS, PITCH_ZONE_X_NPOINTS);
+				SIDE_X_NPOINTS, ZONE_X_NPOINTS);
 
 		ArrayList<Point2>[] ypts = Alg
-				.getIntervals(ys, 5, PITCH_SIDE_Y_NPOINTS);
+				.getIntervals(ys, 5, SIDE_Y_NPOINTS);
 
-		if (xpts[0].size() < 2 || xpts[1].size() < 3 || ypts[0].isEmpty())
+		if (xpts[0].size() < 2 || xpts[1].size() < 3 || ypts[0].isEmpty()) {
+			System.out.println("failed! (unable to determine pitch corners and zones)");
 			return false;
-
+		}
 		goalLineX[0] = xpts[0].get(0).x;
 		goalLineX[1] = xpts[0].get(xpts[0].size() - 1).y;
 
@@ -170,7 +213,6 @@ public class Pitch {
 		pitchY[1] = ypts[0].get(ypts[0].size() - 1).y;
 
 		Point2 cx = horizontalSwipe(rgb, hsb, pitchY[0] + 2);
-
 		Point2 cy = verticalSwipe(rgb, hsb, goalLineX[0] + 0);
 
 		pitchCornerX[0] = cx.x;
@@ -185,6 +227,7 @@ public class Pitch {
 		quadrantCentres[3] = getQuadrantCenter(4);
 
 		initialized = true;
+		System.out.println("done!");
 		return true;
 	}
 

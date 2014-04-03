@@ -2,15 +2,18 @@ package sdp.pc.vision;
 
 import static sdp.pc.vision.settings.SettingsManager.defaultSettings;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import sdp.pc.common.GaussianIntFilter;
+import sdp.pc.vision.settings.SettingsManager;
 
 import static sdp.pc.common.Constants.*;
 
@@ -23,6 +26,7 @@ import static sdp.pc.common.Constants.*;
  */
 public class WorldStatePainter {
 
+	
 	public ActionListener customPaintCode;
 
 	/**
@@ -109,6 +113,31 @@ public class WorldStatePainter {
 		None, Red, White, Yellow, Blue, Green, Black, All
 	}
 
+	
+	/**
+	 * Gets the color code of the currently highlighted color.
+	 * <p>
+	 * To be used in conjunction with SettingsManager and clickz
+	 * @return
+	 */
+	public int getColorSettingId() {
+		switch(highlightMode) {
+		case Red:
+			return SettingsManager.COLOR_CODE_BALL;
+		case Yellow:
+			return SettingsManager.COLOR_CODE_YELLOW;
+		case Blue:
+			return SettingsManager.COLOR_CODE_BLUE;
+		case Green:
+			return SettingsManager.COLOR_CODE_PLATE;
+		case Black:
+			return SettingsManager.COLOR_CODE_GRAY;
+		default:
+			return -1;
+		
+		}
+	}
+	
 	/**
 	 * Gets the colour that should be drawn on the image for the given RGB/HSB
 	 * pair according to the current highlighting mode
@@ -192,6 +221,14 @@ public class WorldStatePainter {
 	 */
 	public void drawWorld(BufferedImage image, Point2 mousePos) {
 		Graphics g = image.getGraphics();
+
+		/**
+		 * Makes lines thicker and applies fish-eye to all output.
+		 */
+		boolean screenshotMode =  SettingsManager.defaultSettings.isScreenshotMode();
+		if(screenshotMode)
+			((Graphics2D)g).setStroke(new BasicStroke(2f));
+		
 		g.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 		// HSB/RGB values used 'at the moment'
 		float[] cHsb = new float[3];
@@ -206,7 +243,7 @@ public class WorldStatePainter {
 
 		// draw highlight, if any
 		// considerably reduces FPS on DICE machines if other than None!
-		if (highlightMode != HighlightMode.None) {
+		if (highlightMode != HighlightMode.None || screenshotMode) {
 			Iterable<Point2> pitch = stateListener.getPitchPoints();
 			for (Point2 p : pitch) {
 				cRgb = stateListener.getNormalisedRgb(p.x, p.y);

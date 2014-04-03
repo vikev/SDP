@@ -30,7 +30,7 @@ public class FutureBall {
 	/**
 	 * The estimated fraction of the ball velocity lost per second
 	 */
-	private static final double ESTIMATED_BALL_FRICTION = 0.7;
+	public static final double ESTIMATED_BALL_FRICTION = 0.7;
 
 	/**
 	 * The world state attached to FutureBall.
@@ -116,9 +116,9 @@ public class FutureBall {
 		// Search for collision
 		double iteratorX = ball.getX(), iteratorY = ball.getY();
 		double distToStop = (new Point2((int) (tarX - iteratorX),
-				(int) (tarY - iteratorY)).modulus());
+				(int) (tarY - iteratorY)).length());
 
-		// Compute a normalised del pair with modulus 1.0
+		// Get X/Y step size for steps with length 1 towards the goal
 		double vHatX = tarX - iteratorX;
 		double vHatY = tarY - iteratorY;
 		vHatX /= distToStop;
@@ -127,8 +127,10 @@ public class FutureBall {
 		// Initialise empty collision point and Intersection
 		Intersect inter = new Intersect(ball, ball);
 
+		double t = 0, curV = distToStop / frameFriction;
+		
 		// Only estimate data if the ball is moving at a reasonable velocity
-		if (vel.modulus() > MIN_ESTIMATE_VELOCITY) {
+		if (vel.length() > MIN_ESTIMATE_VELOCITY) {
 
 			// Loop until a collision is recognised or the the iterator reaches
 			// the initial estimate
@@ -141,7 +143,7 @@ public class FutureBall {
 					// Apply COR
 					distToStop *= COEFFICIENT_OF_RESTITUTION;
 
-					inter.addIntersection(iteratorPt);
+					inter.addIntersection(iteratorPt, t, curV);
 					double newAng = getDeflectionAngle(ball, iteratorPt)
 							* Math.PI / 180.0;
 					if (goalLine) {
@@ -155,7 +157,10 @@ public class FutureBall {
 				// between ball and initialEstimate)
 				iteratorX += vHatX;
 				iteratorY += vHatY;
+				
 				distToStop -= 1;
+				curV = distToStop / frameFriction;
+				t += 1 / curV;
 			}
 		}
 

@@ -21,11 +21,22 @@ public class Intersect {
 	 * The location of the any estimated intersections (empty otherwise)
 	 */
 	private ArrayList<Point2> intersections = new ArrayList<Point2>();
+	
+	/**
+	 * The time needed by the ball to reach each intersection. 
+	 */
+	private ArrayList<Double> timings = new ArrayList<Double>();
+	
+	/**
+	 * The speed of the ball when it reaches each intersection. 
+	 */
+	private ArrayList<Double> speeds = new ArrayList<Double>();
 
 	/**
 	 * The location of the estimated stopping point
 	 */
 	private Point2 estimate;
+
 
 	/**
 	 * Empty constructor
@@ -85,21 +96,22 @@ public class Intersect {
 	}
 
 	/**
-	 * Setter method for the intersections
-	 * 
-	 * @param intersections
+	 * Gets the intersection timings
 	 */
-	public void setIntersections(ArrayList<Point2> intersections) {
-		this.intersections = intersections;
+	public ArrayList<Double> getTimings() {
+		return this.timings;
 	}
 
 	/**
 	 * Adds an intersection point to the intersections list
 	 * 
-	 * @param intersect
+	 * @param intersect the point of the intersection
+	 * @param timestamp the time of the intersection
 	 */
-	public void addIntersection(Point2 intersect) {
+	public void addIntersection(Point2 intersect, double timestamp, double speed) {
 		this.intersections.add(intersect);
+		timings.add(timestamp);
+		speeds.add(speed);
 	}
 
 	/**

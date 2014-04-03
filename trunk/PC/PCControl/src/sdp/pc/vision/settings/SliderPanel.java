@@ -1,5 +1,7 @@
 package sdp.pc.vision.settings;
 
+import java.beans.DesignMode;
+
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
@@ -19,6 +21,19 @@ import com.jgoodies.forms.layout.RowSpec;
 @SuppressWarnings("serial")
 public class SliderPanel extends JPanel {
 
+	
+	/**
+	 * the min/max thresholds
+	 */
+	private int[] minColors, maxColors;
+	
+	private JLabel lblRed;
+	private JLabel lblGreen;
+	private JLabel lblBlue;
+	private JLabel lblSat;
+	private JLabel lblHue;
+	private JLabel lblBr;
+	
 	private RangeSlider slRed;
 	private RangeSlider slGreen;
 	private RangeSlider slBlue;
@@ -27,6 +42,32 @@ public class SliderPanel extends JPanel {
 	private RangeSlider slBrightness;
 
 	private RangeSlider[] sliders;
+	
+	private boolean isAlt;
+	
+	public void setUseAltColors(boolean alt) {
+		isAlt = alt;
+		slSaturation.setEnabled(!alt);
+		slBrightness.setEnabled(!alt);
+		lblHue.setText(alt ? "Distance" : "Hue");
+		lblSat.setEnabled(!alt);
+		lblBr.setEnabled(!alt);
+		if(maxColors != null) {
+			maxColors[0] = 255;
+			maxColors[1] = 255;
+			maxColors[2] = 255;
+			maxColors[3] = 100;
+		}
+		System.out.println("Changed colorz!");
+	}
+	
+	public void update() {
+		for(int i = 0; i < sliders.length; i++)
+			if(minColors != null && maxColors != null) {
+				 sliders[i].setValue(minColors[i]);
+				 sliders[i].setUpperValue(maxColors[i]);
+			}
+	}
 	
 	/**
 	 * Whether the control is currently updating its values 
@@ -48,7 +89,10 @@ public class SliderPanel extends JPanel {
 				if(sl == sliders[i]) {
 					if(minColors != null && maxColors != null) {
 						minColors[i] = sl.getValue();
-						maxColors[i] = sl.getUpperValue();
+						if(!isAlt)
+							maxColors[i] = sl.getUpperValue();
+						else
+							sl.setUpperValue(sl.getMaximum());
 						SettingsManager.defaultSettings.registerChange();
 					}
 					//break;
@@ -57,17 +101,13 @@ public class SliderPanel extends JPanel {
 		}
 		
 	};
-	
-	/**
-	 * the min/max thresholds
-	 */
-	private int[] minColors, maxColors;
 
 	/**
 	 * Create the panel.
 	 * Do not edit this manually!
 	 */
 	public SliderPanel() {
+		
 		setLayout(new FormLayout(new ColumnSpec[] {
 				FormFactory.UNRELATED_GAP_COLSPEC, ColumnSpec.decode("40dlu"),
 				ColumnSpec.decode("max(32dlu;default):grow"),
@@ -80,7 +120,7 @@ public class SliderPanel extends JPanel {
 				FormFactory.RELATED_GAP_ROWSPEC, RowSpec.decode("pref:grow"),
 				RowSpec.decode("12px"), }));
 
-		JLabel lblRed = new JLabel("Red:");
+		lblRed = new JLabel("Red:");
 		add(lblRed, "2, 2");
 
 		slRed = new RangeSlider();
@@ -95,7 +135,7 @@ public class SliderPanel extends JPanel {
 		slRed.addChangeListener(sliderChange);
 		add(slRed, "3, 2");
 
-		JLabel lblGreen = new JLabel("Green:");
+		lblGreen = new JLabel("Green:");
 		add(lblGreen, "2, 4");
 
 		slGreen = new RangeSlider();
@@ -109,7 +149,7 @@ public class SliderPanel extends JPanel {
 		slGreen.addChangeListener(sliderChange);
 		add(slGreen, "3, 4");
 
-		JLabel lblBlue = new JLabel("Blue:");
+		lblBlue = new JLabel("Blue:");
 		add(lblBlue, "2, 6");
 
 		slBlue = new RangeSlider();
@@ -123,8 +163,8 @@ public class SliderPanel extends JPanel {
 		slBlue.addChangeListener(sliderChange);
 		add(slBlue, "3, 6");
 
-		JLabel label = new JLabel("Hue:");
-		add(label, "2, 8");
+		lblHue = new JLabel("Hue:");
+		add(lblHue, "2, 8");
 
 		slHue = new RangeSlider();
 		slHue.setValue(25);
@@ -137,8 +177,8 @@ public class SliderPanel extends JPanel {
 		slHue.addChangeListener(sliderChange);
 		add(slHue, "3, 8");
 
-		JLabel label_1 = new JLabel("Saturation:");
-		add(label_1, "2, 10");
+		lblSat = new JLabel("Saturation:");
+		add(lblSat, "2, 10");
 
 		slSaturation = new RangeSlider();
 		slSaturation.setValue(25);
@@ -151,8 +191,8 @@ public class SliderPanel extends JPanel {
 		slSaturation.addChangeListener(sliderChange);
 		add(slSaturation, "3, 10");
 
-		JLabel label_2 = new JLabel("Brightness:");
-		add(label_2, "2, 12");
+		lblBr = new JLabel("Brightness:");
+		add(lblBr, "2, 12");
 
 		slBrightness = new RangeSlider();
 		slBrightness.setValue(25);
@@ -167,6 +207,10 @@ public class SliderPanel extends JPanel {
 
 		sliders = new RangeSlider[] { slRed, slGreen, slBlue, slHue,
 				slSaturation, slBrightness };
+		
+		
+
+		setUseAltColors(SettingsManager.defaultSettings.isUseAltColors());
 	}
 
 	/**

@@ -56,6 +56,14 @@ public class Colors {
 			&& hsb[2] * 100 	<= ref[5];
 	}
 	
+	private static boolean around(Color rgb, int[] ref) {
+		int 
+			dr = Math.abs(rgb.getRed() - ref[0]),
+			dg = Math.abs(rgb.getGreen() - ref[1]),
+			db = Math.abs(rgb.getBlue() - ref[2]);
+		return dr * dr + dg * dg + db * db <= ref[3] * ref[3];
+	}
+	
 	/**
 	 * Returns whether the given colour, represented by an RGB and an HSB object matches 
 	 * the predicate for a given colour code
@@ -67,8 +75,10 @@ public class Colors {
 	public static boolean isColorCode(Color rgb, float[] hsb, int colorCode) {
 		if(rgb == null)
 			return false;
-		
-		return moreThan(rgb, hsb, getSettingsManager().getMinValues(colorCode))
+		if(SettingsManager.defaultSettings.isUseAltColors())
+			return around(rgb, getSettingsManager().getMinValues(colorCode));
+		else
+			return moreThan(rgb, hsb, getSettingsManager().getMinValues(colorCode))
 				&& lessThan(rgb, hsb, getSettingsManager().getMaxValues(colorCode));
 	}
 	

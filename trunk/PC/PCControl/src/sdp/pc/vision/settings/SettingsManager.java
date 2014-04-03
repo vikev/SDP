@@ -130,6 +130,13 @@ public class SettingsManager implements java.io.Serializable {
 	private boolean fisheyeEnabled = false;
 	
 	
+	private boolean useAltColors = true;
+	
+	private boolean screenshotMode = false;
+	
+	private int medianFilterSize = 0;
+	
+	
 	/**
 	 * The power of the fisheye filter. In the range 1-100. 
 	 */
@@ -361,6 +368,19 @@ public class SettingsManager implements java.io.Serializable {
 	}
 
 
+	public boolean isScreenshotMode() {
+		return screenshotMode;
+	}
+
+
+	public void setScreenshotMode(boolean screenshotMode) {
+		if(this.screenshotMode != screenshotMode) {
+			this.screenshotMode = screenshotMode;
+			registerChange();
+		}
+	}
+
+
 	/**
 	 * Gets whether there are changes unsaved to the backing file
 	 */
@@ -470,5 +490,31 @@ public class SettingsManager implements java.io.Serializable {
 		val.fileName = fileName;
 		
 		return val;
+	}
+
+
+	public boolean isUseAltColors() {
+		return useAltColors;
+	}
+
+
+	public void setUseAltColors(boolean useAltColors) {
+		if(this.useAltColors != useAltColors) {
+			this.useAltColors = useAltColors;
+			registerChange();
+		}
+	}
+
+
+	public int getMedianFilterSize() {
+		return medianFilterSize;
+	}
+
+
+	public void setMedianFilterSize(int medianFilterSize) {
+		if(this.medianFilterSize != medianFilterSize) {
+			this.medianFilterSize = medianFilterSize;
+			registerChange();
+		}
 	}	
 }

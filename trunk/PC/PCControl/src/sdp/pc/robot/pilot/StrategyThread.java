@@ -96,7 +96,7 @@ public class StrategyThread extends Thread {
 		double speedWrtDefender = state.getSpeedWrt(ballPos, vel, defender);
 
 		// Since getSpeedWrt is unimplemented, just use the literal ball speed:
-		double speed = vel.modulus();
+		double speed = vel.length();
 
 		// Set states
 		if (position.equals("Enemy Attacker")) {
