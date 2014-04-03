@@ -519,8 +519,8 @@ public class Point2 implements java.io.Serializable {
 	 * @return
 	 */
 	
-	public boolean withinRangeOfPoint(Point2 comPoint, int xrange, int yrange){
-		return(Math.abs(comPoint.getX() - this.getX()) <= xrange && 
-				Math.abs(comPoint.getY() - this.getY()) <= yrange);
+	public boolean withinRangeOfPoint(Point2 comPoint, int range){
+		return(Math.abs(comPoint.getX() - this.getX()) <= range && 
+				Math.abs(comPoint.getY() - this.getY()) <= range);
 	}
 }
