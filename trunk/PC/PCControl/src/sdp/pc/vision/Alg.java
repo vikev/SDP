@@ -289,13 +289,13 @@ public class Alg {
 		double intDist = 0;
 		Point2 intPoint = Point2.EMPTY;
 		for (i = 0; i < borderPoints.size() - 1; i++) {
-			Point2 norm = borderPoints.get(i+1).sub(borderPoints.get(i));
+			Point2 norm = borderPoints.get(i+1).subtract(borderPoints.get(i));
 			Point2 bP = Point2.getPerpendicular(norm);
-			Point2 rP = p.sub(borderPoints.get(i));
+			Point2 rP = p.subtract(borderPoints.get(i));
 			Point2 rP2 = rP.add(bP);
 			Point2D.Double inter = Point2.getLinesIntersection(Point2.EMPTY, norm, rP, rP2);
 			Point2 point = new Point2(inter);
-			Point2 intercept = point.sub(borderPoints.get(i));
+			Point2 intercept = point.subtract(borderPoints.get(i));
 			double dist = intercept.distance(p);
 			if (dist < intDist) {
 				intDist = dist;

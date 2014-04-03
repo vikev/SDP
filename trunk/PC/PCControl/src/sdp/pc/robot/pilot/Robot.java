@@ -55,16 +55,10 @@ public class Robot {
 	private static final double SAFE_ANGLE_EPSILON = 8.0;
 
 	/**
-	 * Determines how much you want to squeeze the quadrants (for making sure
-	 * the robots avoid their boundaries)
-	 */
-	private static final double HULL_OFFSET = 75.0;
-
-	/**
 	 * Safe distance between the enemy attacker, and a straight line between our
 	 * robots, in order to decide if a direct pass is possible.
 	 */
-	private static final double SAFE_PASS_DISTANCE = 40.0;
+	private static final double SAFE_PASS_DISTANCE = 35.0;
 	
 
 	public static final double DIST_EPSILON = 35;
@@ -603,10 +597,11 @@ public class Robot {
 
 		// If not grabbed ball yet
 		if (kickSubState <= 0) {
+			driver.open();
 
 			// If ball close to wall
 			if (!Alg.inMinorHullWeighted(
-					getQuadrantVerticesWide(getMyQuadrant()), 30, ball, 1, 0.05)) {
+					getQuadrantVerticesWide(getMyQuadrant()), 35, ball, 1, 0.05)) {
 				// First go to x-coordinate of ball, then to ball itself
 				if (kickSubState == 0)
 					kickSubState = -2;
@@ -818,6 +813,8 @@ public class Robot {
 	 */
 	public void shootStrategy1() throws InterruptedException, Exception {
 		
+		Point2 pos = state.getRobotPosition(myTeam, myIdentifier);
+		
 		if (!shootStratInitalised)
 			initScorePoints();
 
@@ -825,11 +822,20 @@ public class Robot {
 		checkHoldingBall(state.getRobotPosition(getTeam(), myIdentifier),
 				state.getBallPosition());
 		
-
+		Point2 target1,target2;
+		if (pos.y < shootPoint.y) {
+			target1 = topCornerOfGoal;
+			target2 = bottomCornerOfGoal;
+		} else {
+			target1 = bottomCornerOfGoal;
+			target2 = topCornerOfGoal;
+		}
+		
 		if (!isEnemyBotBlocking(
 				state.getRobotPosition(getOtherTeam(), myIdentifier),
-				state.getRobotPosition(myTeam, myIdentifier), topCornerOfGoal)) {
-			if (kickGrabbedBallTo(topCornerOfGoal)) {
+				pos, target1)) {
+			
+			if (kickGrabbedBallTo(target1)) {
 				shootStratSubState++;
 				driver.stop();
 				if (shootStratSubState > 5) {
@@ -838,9 +844,9 @@ public class Robot {
 			}
 		} else if (!isEnemyBotBlocking(
 				state.getRobotPosition(getOtherTeam(), myIdentifier),
-				state.getRobotPosition(myTeam, myIdentifier),
-				bottomCornerOfGoal)) {
-			if (kickGrabbedBallTo(bottomCornerOfGoal)) {
+				pos,
+				target2)) {
+			if (kickGrabbedBallTo(target2)) {
 				shootStratSubState++;
 				driver.stop();
 				if (shootStratSubState > 5) {
@@ -1586,7 +1592,7 @@ public class Robot {
 	 * 
 	 * @return
 	 */
-	public boolean nearBoundary() {
+	public boolean nearBoundary(double offset) {
 
 		// Get instantaneous quadrant
 		int q = getMyQuadrant();
@@ -1604,7 +1610,7 @@ public class Robot {
 
 		if (vertices.size() > 2) {
 			return !Alg.inMinorHullWeighted(new LinkedList<Point2>(vertices),
-					HULL_OFFSET, pos, 1.0, 0.05);
+					offset, pos, 1.0, 0.05);
 		} else {
 			return false;
 		}

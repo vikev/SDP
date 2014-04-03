@@ -24,6 +24,12 @@ public class StrategyThread extends Thread {
 	 * second.
 	 */
 	private static final double FAST_BALL_SPEED = 100.0;
+	
+	/**
+	 * Determines how much you want to squeeze the quadrants (for making sure
+	 * the robots avoid their boundaries)
+	 */
+	private static final double HULL_OFFSET = 75.0;
 
 	private static Point2 targetPoint = new Point2();
 
@@ -85,8 +91,14 @@ public class StrategyThread extends Thread {
 
 		// Calculate Ball Position
 		int quad = state.getBallQuadrant();
-		boolean aQ = attacker.nearBoundary();
-		boolean dQ = defender.nearBoundary();
+		boolean aQ, dQ = false;
+		if (attacker.getState() == Robot.State.RESET) {
+			aQ = attacker.nearBoundary(HULL_OFFSET+10);
+			dQ = defender.nearBoundary(HULL_OFFSET+10);
+		} else {
+			aQ = attacker.nearBoundary(HULL_OFFSET);
+			dQ = defender.nearBoundary(HULL_OFFSET);
+		}
 		String position = state.parseQuadrant(quad);
 
 		// Calculate relative velocities
@@ -153,21 +165,23 @@ public class StrategyThread extends Thread {
 
 		// Override all states to "reset" if the robot gets close to its
 		// boundary
-		if (attacker.nearBoundary() && attacker.getKickSubState() >= 0) {
+		if (aQ && attacker.getKickSubState() >= 0) {
 			attacker.setState(Robot.State.RESET);
 			System.err.println("Resetting attacker");
 		}
-		if (defender.nearBoundary() && defender.getKickSubState() >= 0) {
+		if (dQ && defender.getKickSubState() >= 0) {
 			defender.setState(Robot.State.RESET);
 			System.err.println("Resetting defender");
 		}
 		lastBallPos = state.getBallPosition();
 		
 		// Reset kicking variables if robot goes in a new state
-		if (attacker.getState() != Robot.State.GET_BALL) {
+		if (attacker.getState() != Robot.State.GET_BALL && 
+				attacker.getState() != Robot.State.RESET) {
 			attacker.resetKickingVariables();
 		}
-		if (defender.getState() != Robot.State.PASS_TO_ATTACKER) {
+		if (defender.getState() != Robot.State.PASS_TO_ATTACKER &&
+				defender.getState() != Robot.State.RESET) {
 			defender.resetKickingVariables();
 		}
 	}
@@ -197,7 +211,7 @@ public class StrategyThread extends Thread {
 
 				parseAttacker();
 
-				//parseDefender();
+				parseDefender();
 				
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -233,13 +247,13 @@ public class StrategyThread extends Thread {
 		} else if (botState == Robot.State.PASS_TO_ATTACKER) {
 			defender.defenderPass();
 		} else if (botState == Robot.State.RESET) {
-			if (defender.getPrevState() == Robot.State.PASS_TO_ATTACKER) {
-				defender.turnTo(state.getBallPosition(), 20.0);
-			} else {
+			//if (defender.getPrevState() == Robot.State.PASS_TO_ATTACKER) {
+			//	defender.turnTo(state.getBallPosition(), 20.0);
+			//} else {
 				defender.goToReverse(
 						state.getPitch()
 								.getQuadrantCenter(defender.getMyQuadrant()), 10.0);
-			}
+			//}
 		} else {
 			if (defender.assertNearGoalLine(10.0)) {
 				if (defender.assertPerpendicular(10.0)) {

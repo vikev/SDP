@@ -27,24 +27,24 @@ public class IntersectTest {
 		ball = new Point2(50, 50);
 		estimate = new Point2(200, 32);
 		i = new Intersect(ball, estimate);
-		i.addIntersection(new Point2(100, 100));
+		i.addIntersection(new Point2(100, 100),0,0);
 		assertEquals(i.getEstimateIntersectX(75), new Point2(75, 75));
 
 		// Test case with two intersections in the second region
 		ball = new Point2(0, 0);
 		estimate = new Point2(300, 0);
 		i = new Intersect(ball, estimate);
-		i.addIntersection(new Point2(10, 100));
-		i.addIntersection(new Point2(110, 0));
+		i.addIntersection(new Point2(10, 100),0,0);
+		i.addIntersection(new Point2(110, 0),0,0);
 		assertEquals(i.getEstimateIntersectX(60), new Point2(60, 50));
 		
 		// Test case with three intersections in the final region
 		ball = new Point2(0, 0);
 		estimate = new Point2(300, 0);
 		i = new Intersect(ball, estimate);
-		i.addIntersection(new Point2(10, 100));
-		i.addIntersection(new Point2(110, 0));
-		i.addIntersection(new Point2(200,100));
+		i.addIntersection(new Point2(10, 100),0,0);
+		i.addIntersection(new Point2(110, 0),0,0);
+		i.addIntersection(new Point2(200,100),0,0);
 		assertEquals(i.getEstimateIntersectX(250), new Point2(250, 50));
 	}
 
