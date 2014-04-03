@@ -510,16 +510,17 @@ public class Point2 implements java.io.Serializable {
 	}
 	
 	/**
-	 * Returns whether or not this point is within the specified range
-	 * (in both the x and y coordinates) of the point comPoint.
+	 * Returns whether or not this point is within both the xrange and yrange
+	 * of the specified point comPoint.
 	 * 
 	 * @param comPoint
-	 * @param range
+	 * @param xrange
+	 * @param yrange
 	 * @return
 	 */
 	
-	public boolean withinRangeOfPoint(Point2 comPoint, int range){
-		return(Math.abs(comPoint.getX() - this.getX()) <= range && 
-				Math.abs(comPoint.getY() - this.getY()) <= range);
+	public boolean withinRangeOfPoint(Point2 comPoint, int xrange, int yrange){
+		return(Math.abs(comPoint.getX() - this.getX()) <= xrange && 
+				Math.abs(comPoint.getY() - this.getY()) <= yrange);
 	}
 }
