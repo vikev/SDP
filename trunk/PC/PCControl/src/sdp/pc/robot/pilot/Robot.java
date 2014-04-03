@@ -63,6 +63,7 @@ public class Robot {
 
 	public static final double DIST_EPSILON = 35;
 	public static final double ANGLE_EPSILON = 17;
+	public static int avoidShootLoop = 0;
 
 	/**
 	 * The primitive driver used to control the NXT
@@ -815,6 +816,7 @@ public class Robot {
 	 */
 	public void shootStrategy1() throws InterruptedException, Exception {
 		
+		avoidShootLoop++;
 		Point2 pos = state.getRobotPosition(myTeam, myIdentifier);
 		
 		if (!shootStratInitalised)
@@ -832,8 +834,9 @@ public class Robot {
 			target1 = bottomCornerOfGoal;
 			target2 = topCornerOfGoal;
 		}
+		if (avoidShootLoop > 5) System.out.println("shoot point targeted!!!");
 		
-		if (!isEnemyBotBlocking(
+		if (avoidShootLoop <= 5 && !isEnemyBotBlocking(
 				state.getRobotPosition(getOtherTeam(), myIdentifier),
 				pos, target1)) {
 			
@@ -844,7 +847,7 @@ public class Robot {
 					resetKickingVariables();
 				}
 			}
-		} else if (!isEnemyBotBlocking(
+		} else if (avoidShootLoop<=5 && !isEnemyBotBlocking(
 				state.getRobotPosition(getOtherTeam(), myIdentifier),
 				pos,
 				target2)) {
