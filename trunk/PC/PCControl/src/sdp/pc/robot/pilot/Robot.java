@@ -157,6 +157,8 @@ public class Robot {
 	 * position to shoot.
 	 */
 	public boolean onShootPoint = false;
+	
+	public boolean trickShootFaced = false;
 
 	/**
 	 * A point above the opposing goal.
@@ -651,15 +653,18 @@ public class Robot {
 			kickSubState++;
 		if (kickSubState >= 5) {
 			if (checkHoldingBall(pos, ball)) {
-				if (!justGrab) {
+				// for some reason just grab is always true
+				//if (!justGrab) {
 					// If this is attacker, do Shoot Strategy
 					if (myIdentifier == state.getDirection()) {
-						kickGrabbedBallTo(where);
+						//kickGrabbedBallTo(where);
+						shootStrategy1();
+						//trickShoot();
 					} else {
 						// If defender, execute pass strategy
 						passStrategy(where);
 					}
-				}
+				//}
 			}
 		}
 	}
@@ -683,11 +688,11 @@ public class Robot {
 			kickSubState = 0;
 			turnedTowardsTopOfGoal = false;
 			onShootPoint = false;
-			return true;
+			return false;
 			// TODO: If robot has the ball, always say that ball is in front of
 			// robot
 		}
-		return false;
+		return true;
 	}
 
 	public boolean closeTo(Point2 source, Point2 dest, Point2 obstacle) {
@@ -720,7 +725,69 @@ public class Robot {
 		}
 		return false;
 	}
-
+	
+	public void goalWall() throws InterruptedException, Exception {
+		Point2 ourAttacker = state.getRobotPosition(myTeam, 1 - myIdentifier);
+		Point2 target;
+		if (state.getDirection() == 1) 
+			target = state.getRightGoalCentre();
+		else 
+			target = state.getLeftGoalCentre();
+		Point2 enemyDefeneder = state.getRobotPosition(1 - myTeam, 1 - myIdentifier);
+		int frameWait = 0;
+		Point2 bounce = wallKick(ourAttacker, target, enemyDefeneder);
+			
+		if (turnTo(bounce, 8)) {
+			driver.forward(50);
+			if (frameWait >= 3) {
+				driver.kick(900);
+				driver.stop();
+			}
+			else frameWait++;
+		}
+	}
+	
+	public void trickShoot() throws InterruptedException, Exception {
+		// Calculate which angle is the closest perpendicular one
+		double target;
+		double face = state.getRobotFacing(myTeam, myIdentifier);
+		double a = normalizeToBiDirection(face - 90.0);
+		if (Math.abs(a) < 90.0) {
+			target = 90.0;
+		} else {
+			target = 270.0;
+		}
+		// Do it
+		if ( trickShootFaced || assertFacing(target, 16.0)) {
+			//return true;
+			trickShootFaced = true;
+			System.out.println("trickShoot faced!!!");
+			if (!shootStratInitalised)
+				initScorePoints();
+			
+			checkHoldingBall(state.getRobotPosition(getTeam(), myIdentifier),
+					state.getBallPosition());
+			Point2 pos = state.getRobotPosition(myTeam, myIdentifier);
+			pos.setY(topCornerOfGoal.y-25);
+			System.out.println("go to top Pos: " + pos);
+			if (goTo(pos, 20)) {
+				System.out.println("top corner achieved!!!");
+				pos.setY(bottomCornerOfGoal.y+10);
+				System.out.println("go to bottom Pos: " + pos);
+				if (goTo(pos, 20)) {
+					System.out.println("bottom corner achieved!!!");
+					shootStrategy1();
+				}
+				
+			}
+			
+		}
+		//return false;
+	}
+	
+	/**
+	 * Find shoot points for shooting strategy. They are the top and bottom corners of goal line.
+	 */
 	private void initScorePoints() {
 		shootPoint = state.getPitch().getQuadrantCentres()[getMyQuadrant() - 1]
 				.copy();
@@ -754,12 +821,14 @@ public class Robot {
 	 * @throws InterruptedException
 	 */
 	public void shootStrategy1() throws InterruptedException, Exception {
+		
 		if (!shootStratInitalised)
 			initScorePoints();
 
 		// Check we still have the ball
 		checkHoldingBall(state.getRobotPosition(getTeam(), myIdentifier),
 				state.getBallPosition());
+		
 
 		if (!isEnemyBotBlocking(
 				state.getRobotPosition(getOtherTeam(), myIdentifier),
