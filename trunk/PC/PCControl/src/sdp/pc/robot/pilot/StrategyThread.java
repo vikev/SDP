@@ -302,8 +302,10 @@ public class StrategyThread extends Thread {
 		} else if (botState == Robot.State.DEFEND_ENEMY_DEFENDER) {
 			attacker.defendRobot(attacker.getOtherTeam(), attacker.getId());
 		} else if (botState == Robot.State.GET_BALL) {
+			Robot.avoidShootLoop = 0;
 			attacker.kickBallToPoint(targetPoint, true);
 		} else if (botState == Robot.State.ATTEMPT_GOAL) {
+			Robot.avoidShootLoop = 0;
 			executeShootStrategy();
 		} else if (botState == Robot.State.RESET) {
 
