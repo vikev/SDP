@@ -250,7 +250,7 @@ public class Robot {
 	 * coordinate by going forwards or backwards.
 	 */
 	public void defendBall() throws Exception {
-		if (assertPerpendicular(2 * SAFE_ANGLE_EPSILON)) {
+		if (assertPerpendicular(3 * SAFE_ANGLE_EPSILON)) {
 
 			// Get predicted ball stop point
 			// TODO: Needs test
@@ -319,7 +319,7 @@ public class Robot {
 	 */
 	public void defendRobot(int team, int robot) throws Exception {
 
-		if (assertPerpendicular(2 * SAFE_ANGLE_EPSILON)) {
+		if (assertPerpendicular(3 * SAFE_ANGLE_EPSILON)) {
 			// Get my location
 			Point2 robotPos = state.getRobotPosition(myTeam, myIdentifier);
 
@@ -330,22 +330,15 @@ public class Robot {
 			// Get predicted ball position if that other robot shot just now
 			Point2 predictedBallPos = FutureBall.matchingYCoord(otherPos,
 					otherFacing, robotPos);
+			
+			//System.out.println(predictedBallPos);
 
 			// If that position exists, defend it, otherwise just defend the
 			// ball
 			if (!predictedBallPos.equals(Point2.EMPTY)) {
-				if(FutureBall.pitchContains(predictedBallPos)) {
 					if (defendToY(predictedBallPos.getY(), DEFEND_EPSILON_DISTANCE)) {
 						driver.stop();
 					}
-				} else {
-					//Point2 corrPoint = FutureBall.correspondingOnBounds(predictedBallPos);
-					//System.out.println("ble " + corrPoint);
-					//if (defendToY(corrPoint.getY(), DEFEND_EPSILON_DISTANCE)) {
-					//	driver.stop();
-					//}
-					defendBall();
-				}
 			} else {
 				defendBall();
 			}
@@ -603,7 +596,7 @@ public class Robot {
 
 			// If ball close to wall
 			if (!Alg.inMinorHullWeighted(
-					getQuadrantVerticesWide(getMyQuadrant()), 35, ball, 1, 0.05)) {
+					getQuadrantVerticesWide(getMyQuadrant()), 40, ball, 1, 0.05)) {
 				// First go to x-coordinate of ball, then to ball itself
 				if (kickSubState == 0)
 					kickSubState = -2;
@@ -1214,7 +1207,26 @@ public class Robot {
 	 * expect it to be finished.
 	 */
 	private boolean defendToY(int y, double eps) throws Exception {
-
+		
+		int quadrant = getMyQuadrant();
+		if (myIdentifier != state.getDirection())  {
+			Point2 centre = state.getPitch().getQuadrantCenter(quadrant);
+			if (y > centre.getY()) {
+				y = Math.min(y, centre.y+60);
+			}
+			else {
+				y = Math.max(y, centre.y-60);
+			}
+		} else {
+			Point2 centre = state.getPitch().getQuadrantCenter(quadrant);
+			if (y > centre.getY()) {
+				y = Math.min(y, centre.y+100);
+			}
+			else {
+				y = Math.max(y, centre.y-100);
+			}
+		}
+		
 		Point2 botPosition = state.getRobotPosition(myTeam, myIdentifier);
 		double botFacing = state.getRobotFacing(myTeam, myIdentifier);
 		if (botPosition.y - y > DEFEND_EPSILON_DISTANCE) {
@@ -1259,6 +1271,7 @@ public class Robot {
 		double maxRotate = 180.0;
 		double minRotate = epsilon;
 		rotateBy = Math.abs(rotateBy);
+		// Don't change this, just change the constants.
 		int speed = (int) ((maxSpeed - minSpeed) / (maxRotate - minRotate)
 				* (rotateBy - minRotate) + minSpeed);
 
@@ -1267,11 +1280,15 @@ public class Robot {
 			return 0;
 		}
 
-		if (onShootPoint) {
+		if (onShootPoint || ((myIdentifier == state.getDirection() && kickSubState>0 
+				&& myState!=State.RESET))) {
+			return speed + 12;
+		}
+		if (myIdentifier != state.getDirection() && kickSubState>0 
+				&& myState!=State.RESET) {
 			return speed + 10;
 		}
 
-		// Don't change this, just change the constants.
 		return speed;
 
 		// function that has a sharper increase in returned values compared to

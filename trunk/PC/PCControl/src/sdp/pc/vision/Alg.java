@@ -296,7 +296,7 @@ public class Alg {
 			Point2D.Double inter = Point2.getLinesIntersection(Point2.EMPTY, norm, rP, rP2);
 			if (inter != new Point2D.Double()) {
 				Point2 point = new Point2(inter);
-				Point2 intercept = point.subtract(borderPoints.get(i));
+				Point2 intercept = point.add(borderPoints.get(i));
 				double dist = intercept.distance(p);
 				if (dist < intDist) {
 					intDist = dist;

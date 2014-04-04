@@ -23,7 +23,7 @@ public class StrategyThread extends Thread {
 	 * The minimum speed for the ball to be considered fast, in pixels per
 	 * second.
 	 */
-	private static final double FAST_BALL_SPEED = 100.0;
+	private static final double FAST_BALL_SPEED = 120.0;
 	
 	/**
 	 * Determines how much you want to squeeze the quadrants (for making sure
@@ -127,9 +127,10 @@ public class StrategyThread extends Thread {
 				attacker.setState(Robot.State.DEFEND_ENEMY_DEFENDER);
 			}
 		} else if (position.equals("Our Attacker")) {
-			if (speed > FAST_BALL_SPEED && attacker.getSubState() == 0) {
+			if (speed > FAST_BALL_SPEED && attacker.getKickSubState() <= 0) {
 				defender.setState(Robot.State.DEFEND_BALL);
 				attacker.setState(Robot.State.DEFEND_BALL);
+				System.out.println("MONKEYS");
 			} else {
 				defender.setState(Robot.State.DEFEND_BALL);
 				/*if (attacker.getKickSubState() >= 5) {

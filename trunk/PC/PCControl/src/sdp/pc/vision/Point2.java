@@ -387,13 +387,13 @@ public class Point2 implements java.io.Serializable {
 	 */
 	public static Point2D.Double getLinesIntersection(Point2 la, Point2 las,
 			Point2 lb, Point2 lbs) {
-		double a1 = las.y, b1 = -las.x, c1 = a1 * la.x + b1 * la.y, a2 = lbs.y, b2 = -las.x, c2 = a2
-				* lb.x + b2 * lb.y;
+		double a1 = las.y - la.y, b1 = la.x - las.x, c1 = las.x * la.y - la.x * las.y, a2 = lbs.y - lb.y, b2 = lb.x - lbs.x, c2 = lbs.x * lb.y - lb.x * lbs.y;
 		double delta = a1 * b2 - a2 * b1;
 		if (delta == 0)
 			return new Point2D.Double();
-		return new Point2D.Double(((b2 * c1 - b1 * c2) / delta), ((a1 * c2 - a2
-				* c1) / delta));
+		double x = (b1 * c2 - c1 * b2) / delta;
+		double y = (a1 * x + c1) / b1;
+		return new Point2D.Double(x, y);
 	}
 
 	/**
