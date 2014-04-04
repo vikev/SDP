@@ -251,7 +251,7 @@ public class Robot {
 	 * coordinate by going forwards or backwards.
 	 */
 	public void defendBall() throws Exception {
-		if (assertPerpendicular(3 * SAFE_ANGLE_EPSILON)) {
+		if (assertPerpendicular(2 * SAFE_ANGLE_EPSILON)) {
 
 			// Get predicted ball stop point
 			// TODO: Needs test
@@ -320,7 +320,7 @@ public class Robot {
 	 */
 	public void defendRobot(int team, int robot) throws Exception {
 
-		if (assertPerpendicular(3 * SAFE_ANGLE_EPSILON)) {
+		if (assertPerpendicular(2 * SAFE_ANGLE_EPSILON)) {
 			// Get my location
 			Point2 robotPos = state.getRobotPosition(myTeam, myIdentifier);
 
@@ -336,7 +336,7 @@ public class Robot {
 
 			// If that position exists, defend it, otherwise just defend the
 			// ball
-			if (!predictedBallPos.equals(Point2.EMPTY)) {
+			if (!predictedBallPos.equals(Point2.EMPTY) && FutureBall.pitchContains(predictedBallPos)) {
 					if (defendToY(predictedBallPos.getY(), DEFEND_EPSILON_DISTANCE)) {
 						driver.stop();
 					}
@@ -618,7 +618,7 @@ public class Robot {
 					// If close to ball, grab
 					if (goTo(
 					// Main pitch - 20.0; Side pitch - 18.0
-							ball.offset(18.0, ball.angleTo(pos)), 10.0)) {
+							ball.offset(20.0, ball.angleTo(pos)), 10.0)) {
 
 						driver.stop();
 						driver.grab();
@@ -632,7 +632,7 @@ public class Robot {
 				if (kickSubState < 0)
 					kickSubState = 0;
 				// Main pitch - 22.0; Side pitch - 20.0
-				if (goTo(ball.offset(20.0, ball.angleTo(pos)), 10.0)) {
+				if (goTo(ball.offset(22.0, ball.angleTo(pos)), 10.0)) {
 					driver.stop();
 					driver.grab();
 					kickSubState = 1;
@@ -1229,6 +1229,7 @@ public class Robot {
 				y = Math.max(y, centre.y-100);
 			}
 		}
+		
 		
 		Point2 botPosition = state.getRobotPosition(myTeam, myIdentifier);
 		double botFacing = state.getRobotFacing(myTeam, myIdentifier);

@@ -93,8 +93,8 @@ public class StrategyThread extends Thread {
 		int quad = state.getBallQuadrant();
 		boolean aQ, dQ = false;
 		if (attacker.getState() == Robot.State.RESET) {
-			aQ = attacker.nearBoundary(HULL_OFFSET+10);
-			dQ = defender.nearBoundary(HULL_OFFSET+10);
+			aQ = attacker.nearBoundary(HULL_OFFSET+15);
+			dQ = defender.nearBoundary(HULL_OFFSET+15);
 		} else {
 			aQ = attacker.nearBoundary(HULL_OFFSET);
 			dQ = defender.nearBoundary(HULL_OFFSET);

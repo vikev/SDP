@@ -427,7 +427,7 @@ public class WorldStateUpdater extends WorldStateListener {
 		cHsb = cHsbs[p.x][p.y];
 		
 		Color.RGBtoHSB(cRgb.getRed(), cRgb.getGreen(), cRgb.getBlue(), cHsb);
-		/*
+		
 
 		// scale HSB
 		float br = cHsb[2];
@@ -442,7 +442,7 @@ public class WorldStateUpdater extends WorldStateListener {
 		// save RGB
 		cRgb = new Color(Color.HSBtoRGB(cHsb[0], cHsb[1],
 				cHsb[2]));
-		*/
+		
 		cRgbs[p.x][p.y] = cRgb;
 		
 

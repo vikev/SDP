@@ -45,6 +45,13 @@ public class VisionMouseAdapter extends MouseAdapter {
 	public void mousePressed(MouseEvent e) {
 		Point2 p = getMousePosition();
 		
+		
+		if(e.getButton() == 2) {
+			System.out.printf("rightclick\n");
+			SettingsManager.defaultSettings.setFisheyeCenter(p);
+			return;
+		}
+		
 		// If the system is waiting for a boundary set it
 		if (!SettingsManager.defaultSettings.hasBoundary()) {
 			SettingsManager.defaultSettings.addBoundary(p);
@@ -71,7 +78,7 @@ public class VisionMouseAdapter extends MouseAdapter {
 				min[1] = cRgb.getGreen();
 				min[2] = cRgb.getBlue();
 			}
-			else {
+			else if (cRgb != null) {
 				min[0] = Math.max(0, cRgb.getRed()	 	- 10);
 				min[1] = Math.max(0, cRgb.getGreen() 	- 10);
 				min[2] = Math.max(0, cRgb.getBlue()	 	- 10);
