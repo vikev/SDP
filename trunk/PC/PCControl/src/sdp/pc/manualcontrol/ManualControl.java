@@ -28,6 +28,8 @@ import sdp.pc.vision.relay.TCPClient;
  * 
  */
 public class ManualControl implements KeyListener {
+	int power = 0;
+	int lastCode = -1;
 
 	private TCPClient tcpClient;
 
@@ -94,30 +96,37 @@ public class ManualControl implements KeyListener {
 		System.out.println(code);
 
 		// Send a command depending on the key code
+		if (code != KeyCode.SPACE_BAR && code != KeyCode.G && code != KeyCode.O
+				&& lastCode == code) {
+			power += 10;
+		} else {
+			power = 10;
+		}
+		lastCode = code;
 		switch (code) {
 
 		// Left Arrow: Turn Left
 		case KeyCode.LEFT_ARROW:
-			tcpClient.sendCommand((byte) 3, 50);
+			tcpClient.sendCommand((byte) 3, power);
 			break;
 
 		// Up Arrow: Move Forward
 		case KeyCode.UP_ARROW:
-			tcpClient.sendCommand((byte) 1, 50);
+			tcpClient.sendCommand((byte) 1, power);
 			break;
 
 		// Right Arrow: Turn Right
 		case KeyCode.RIGHT_ARROW:
-			tcpClient.sendCommand((byte) 4, 50);
+			tcpClient.sendCommand((byte) 4, power);
 			break;
 
 		// Down Arrow: Move Backward
 		case KeyCode.DOWN_ARROW:
-			tcpClient.sendCommand((byte) 2, 50);
+			tcpClient.sendCommand((byte) 2, power);
 			break;
 		// s: Stop
 		case KeyCode.S:
-			tcpClient.sendCommand((byte) 5, 50);
+			tcpClient.sendCommand((byte) 5, power);
 			break;
 
 		// Space bar: Kick
