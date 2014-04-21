@@ -6,6 +6,6 @@
 *.nxd
 .gitignore~
 bin
-reports/*.aux
+*.aux
 reports/*.log
 .metadata/*
