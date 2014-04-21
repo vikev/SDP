@@ -423,11 +423,11 @@ public class Robot {
 	 * or backwards to get there.
 	 * 
 	 * @param to
-	 * @param eps
+	 * @param epsilon
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean goToFast(Point2 to, double eps) throws Exception {
+	public boolean goToFast(Point2 to, double epsilon) throws Exception {
 
 		// Get the necessary angles
 		double angleToPoint = normalizeToUnitDegrees(state.getRobotPosition(
@@ -438,9 +438,9 @@ public class Robot {
 		// Compare them
 		double diff = normalizeToUnitDegrees(facing - angleToPoint);
 		if (Math.abs(diff) > 90.0) {
-			return goToReverse(to, eps);
+			return goToReverse(to, epsilon);
 		}
-		return goTo(to, eps);
+		return goTo(to, epsilon);
 	}
 
 	/**

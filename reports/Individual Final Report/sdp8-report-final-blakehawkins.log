@@ -1,4 +1,4 @@
-This is pdfTeXk, Version 3.141592-1.40.3 (Web2C 7.5.6) (format=pdflatex 2012.9.11)  21 APR 2014 15:18
+This is pdfTeXk, Version 3.141592-1.40.3 (Web2C 7.5.6) (format=pdflatex 2012.9.11)  21 APR 2014 16:14
 entering extended mode
  %&-line parsing enabled.
 **sdp8-report-final-blakehawkins.tex
@@ -72,22 +72,26 @@ Package: times 2005/04/12 PSNFSS-v9.2a (SPQR)
 (/usr/share/texmf/tex/latex/tools/indentfirst.sty
 Package: indentfirst 1995/11/23 v1.03 Indent first paragraph (DPC)
 )
+(/usr/share/texmf/tex/latex/preprint/fullpage.sty
+Package: fullpage 1999/02/23 1.1 (PWD)
+\FP@margin=\skip46
+)
 (./sdp8-report-final-blakehawkins.aux)
 \openout1 = `sdp8-report-final-blakehawkins.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-LaTeX Font Info:    Try loading font information for OT1+ptm on input line 43.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 47.
+LaTeX Font Info:    ... okay on input line 47.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 47.
+LaTeX Font Info:    ... okay on input line 47.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 47.
+LaTeX Font Info:    ... okay on input line 47.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 47.
+LaTeX Font Info:    ... okay on input line 47.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 47.
+LaTeX Font Info:    ... okay on input line 47.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 47.
+LaTeX Font Info:    ... okay on input line 47.
+LaTeX Font Info:    Try loading font information for OT1+ptm on input line 47.
 
 (/usr/share/texmf/tex/latex/psnfss/ot1ptm.fd
 File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
@@ -105,34 +109,58 @@ File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
 \everyMPtoPDFconversion=\toks15
 )
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <12> on input line 45.
+(Font)              <12> on input line 49.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <8> on input line 45.
+(Font)              <8> on input line 49.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6> on input line 45.
+(Font)              <6> on input line 49.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <14.4> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 67.
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 71.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10.95> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 77.
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 81.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <10.95> on input line 81.
  [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2]
-(./sdp8-report-final-blakehawkins.aux) ) 
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <12> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 139.
+
+<test-example.png, id=11, 590.205pt x 314.17375pt>
+File: test-example.png Graphic file (type png)
+ <use test-example.png>
+<system2.jpg, id=12, 640.3925pt x 479.7925pt>
+File: system2.jpg Graphic file (type jpg)
+ <use system2.jpg>
+<tutorial-example.png, id=13, 705.63625pt x 313.17pt>
+File: tutorial-example.png Graphic file (type png)
+
+<use tutorial-example.png>
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 157--158
+ [][] 
+ []
+
+[3 <./test-example.png (PNG copy)> <./system2.jpg>]
+<strategy-example.png, id=17, 643.40375pt x 437.635pt>
+File: strategy-example.png Graphic file (type png)
+
+<use strategy-example.png> [4 <./tutorial-example.png (PNG copy)> <./strategy-e
+xample.png (PNG copy)>] (./sdp8-report-final-blakehawkins.aux) ) 
 Here is how much of TeX's memory you used:
- 1049 strings out of 256216
- 13127 string characters out of 1917072
- 61006 words of memory out of 1500000
- 4358 multiletter control sequences out of 10000+200000
- 17723 words of font info for 40 fonts, out of 1200000 for 2000
+ 1100 strings out of 256216
+ 13987 string characters out of 1917072
+ 61077 words of memory out of 1500000
+ 4397 multiletter control sequences out of 10000+200000
+ 21833 words of font info for 47 fonts, out of 1200000 for 2000
  645 hyphenation exceptions out of 8191
- 25i,6n,19p,689b,189s stack positions out of 5000i,500n,6000p,200000b,15000s
-{/usr/share/texmf/fonts/enc/dvips/base/
-8r.enc}</usr/share/texmf/fonts/type1/urw/times/utmb8a.pfb></usr/share/texmf/fon
-ts/type1/urw/times/utmr8a.pfb></usr/share/texmf/fonts/type1/urw/times/utmri8a.p
-fb>
-Output written on sdp8-report-final-blakehawkins.pdf (2 pages, 43715 bytes).
+ 25i,6n,19p,731b,206s stack positions out of 5000i,500n,6000p,200000b,15000s
+{/usr/share/tex
+mf/fonts/enc/dvips/base/8r.enc}</usr/share/texmf/fonts/type1/urw/times/utmb8a.p
+fb></usr/share/texmf/fonts/type1/urw/times/utmr8a.pfb></usr/share/texmf/fonts/t
+ype1/urw/times/utmri8a.pfb>
+Output written on sdp8-report-final-blakehawkins.pdf (4 pages, 203817 bytes).
 PDF statistics:
- 22 PDF objects out of 1000 (max. 8388607)
+ 32 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 131072)
- 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 21 words of extra memory for PDF output out of 10000 (max. 10000000)
 
