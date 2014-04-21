@@ -1,0 +1,23 @@
+
+2014.04.02:
+	- Created many unit tests for the ball projection behaviour made on 04.01. 
+	
+2014.04.01:
+	- Refactored strategy code into two separate classes, one extending JFrame and the other extending Thread; this improves the readability of our previously monolithic vision system and also allows us to make unit tests by removing many static keywords.
+	- Made a new method for telling a robot to go to a point in the fastest means possible, i.e. forward or backwards.
+	- Made a method for projecting a set of ball prediction data onto a robot's axis, to efficiently find the best intersection point for the robot to go to.
+
+2014.03.28:
+	- Helped Iain develop and plan a presentation, as well as contributing to the slide designs and speech
+	
+2014.03.25:
+	- Added unit tests for InMinorHull methods
+	
+2014.03.13:
+	- Added graphic icons to our various GUI windows to help differentiate them in the launcher
+	
+2014.03.12: 
+	- Added functionality to make a robot go to a point by driving backwards. Enabled it by default in the reset state to improve how quicky we could make a robot avoid a border.
+	- Added warnings to the console output when the vision system considers a robot to have changed quadrants (left its boundary)
+	- Began implementing a quadrant expander for the world state updater, which would allow us to detect robot pixels near the boundary
+	

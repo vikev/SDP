@@ -283,6 +283,7 @@ public class Alg {
 		return isInHull(borderPoints, p.x, p.y);
 	}
 	
+	@SuppressWarnings("unused")
 	public static Point2 correspondingOnHull(LinkedList<Point2> borderPoints, Point2 p) {
 		int i;
 		int j;
@@ -389,6 +390,7 @@ public class Alg {
 	 * @param outPoint
 	 * @return
 	 */
+	@SuppressWarnings("unused")
 	static public double getRobotInterceptTiming(Intersect ball, 
 			Point2 robot, double robotV, double robotA,
 			Point2 outPoint) {
