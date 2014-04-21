@@ -7,5 +7,5 @@
 .gitignore~
 bin
 *.aux
-reports/*.log
+*.log
 .metadata/*
