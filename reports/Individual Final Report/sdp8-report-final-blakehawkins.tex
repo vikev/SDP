@@ -20,13 +20,13 @@
 
 \setlength{\droptitle}{-8em}   % This is your set screw
 
-\setlength\parindent{2em} % Removes all indentation from paragraphs
+\setlength\parindent{0em} % Removes all indentation from paragraphs
 
 \renewcommand{\labelenumi}{\alph{enumi}.} % Make numbering in the enumerate environment by letter rather than number (e.g. section 6)
 
 \usepackage{times} % Uncomment to use the Times New Roman font
 
-\usepackage{indentfirst}
+%\usepackage{indentfirst}
 
 \setlength{\parskip}{0.5em plus1pt minus1pt}
 
@@ -49,9 +49,9 @@
 \maketitle % Insert the title, author and date
 
 \begin{center}
-Mentor: Katharina Heil, Guest Mentor: Tom Spink % Instructor/supervisor
+\textbf{Mentor:} Katharina Heil, \textbf{Guest Mentor:} Tom Spink % Instructor/supervisor
 \\
-Members: Blake Hawkins, % Partner names
+\textbf{Members:} Blake Hawkins, % Partner names
 Lubomir Vikev,
 Borislav Ikonomov,
 Yordan Stoyanov,
@@ -78,7 +78,7 @@ My contributions to our project spanned many topics, each of which will have a s
 
 \section{Software Design Contributions}
 
-My recent works in software design include a major refactoring to our monolithic \textbf{Strategy} class, in which I split it into two more cohesive classes: \textbf{Strategy}, which runs our GUI components and vision/world state; and \textbf{StrategyThread}, which is an interruptible state machine that keeps both robots updated with the latest commands. This refactoring also opened our strategy system to unit tests by completely eliminating \textit{static} references. Additionally, I wrote a total of 19 unit tests\textsuperscript{[1]} related to ball prediction, our \textbf{minorHull()} algorithm, and various vector mathematics methods.
+My recent works in software design include a major refactoring to our monolithic \textbf{Strategy} class, in which I split it into two more cohesive classes: \textbf{Strategy}, which runs our GUI components and vision/world state; and \textbf{StrategyThread}, which is an interruptible state machine that keeps both robots updated with the most recent commands. This refactoring also opened our strategy system to unit tests by completely eliminating \textit{static} references. Additionally, I wrote a total of 19 unit tests\textsuperscript{[1]} related to ball prediction, our \textbf{minorHull()} algorithm, and various vector mathematics methods.
 
 I conducted many smaller refactorings, wrote the majority of our project's JavaDocs, and made the initial transition from Milestone 3 to our \textbf{Strategy/Robot} class pair, thereby successfully providing abstract commands to both the attacker and defender. Further, I fixed many regressions left over by large refactorings written by others.
 
@@ -90,11 +90,11 @@ In relation to code re-usability, I believe these contributions are the most sig
 
 \section{Physics Simulation Contributions}
 
-I wrote a large ball prediction system which supported the ball reflecting\textsuperscript{[2]} off multiple boundary walls, provided abstract values for coefficients of restitution and friction, and distinguished goal lines from normal walls.
+With contributions from Brown, Dirzys, and Stoyanov, I wrote a ball prediction system which supported ball reflection\textsuperscript{[2]} off of multiple boundary walls, provided an abstraction for both coefficient of restitution and friction, and distinguished goal mouths from normal walls.
 
-During milestone 1 I also wrote an odometry module which allowed us to estimate our robot location after an arbitrary distance traveled, and any given number of turns. However, due to imprecision in our robot, the system was less accurate than a much simpler solution involving timers.
+During Milestone One, I implemented an odometry module which allowed us to estimate our robot location after an arbitrary distance traveled, and any given number of turns. Due to imprecision in our robot, the system was less accurate than a much simpler solution involving timers, and therefore not used.
 
-The ball prediction system is probably my single biggest contribution to the codebase, which I believe to be full-featured, well-made, and useful. It works by calculating an estimated total distance travelled by a ball using geometric series, and then iterating pixel by pixel looking for walls and re-calculating. The time complexity of the system is therefore linear in distance (assuming no walls struck) and could be improved by using a line-intersection algorithm (constant time complexity in distance, assuming no walls struck). However, due in part to the simplicity of the system and the nature of the coefficient of restitution feature, we never experienced performance issues with it.
+The ball prediction system is probably my single biggest contribution to the codebase, which I believe to be full-featured, well-made, and useful. It works by calculating an estimated total distance travelled by a ball using geometric series, and then iterating pixel by pixel looking for walls and re-calculating. The time complexity of the system is therefore linear in distance (assuming no walls struck) and could be improved by using a line-intersection algorithm (constant time complexity in distance, assuming no walls struck). However, due in part to the simplicity of the system, and to the nature of inelastic collisions, we never experienced performance issues with it.
 
 %----------------------------------------------------------------------------------------
 %	SECTION 4 (Project Management Contributions)
@@ -106,7 +106,7 @@ I acted as a project manager in cases where having one was academically necessar
 
 I also used paired programming on some occasions as a way of staying on track with everyone's activities, and found the process surprisingly useful and efficient. In addition, I worked on other tasks like presentation design and speech planning.
 
-Whether having no official group leader would become a problem was a gamble I took based on our performance in the first few weeks of development. We had so many meaningful contributions and active members that I believed changing anything would only cause problems. Even now, I doubt having myself as a final "shot-caller" would make a significant difference in our team's performance. I also appreciated splitting administrative tasks with other members as it allowed me to contribute more in software. 
+Whether lacking an official group leader would become a problem was a gamble I took based on our performance in the first few weeks of development. We had so many meaningful contributions and active members that I believed changing anything would only cause problems. Even now, I doubt having myself as a final "shot-caller" would make a significant difference in our team's performance. I also appreciated splitting administrative tasks with other members, namely Vikev, as it allowed me to contribute more in software. 
 
 %----------------------------------------------------------------------------------------
 %	SECTION 5 (Strategy Contributions)
@@ -118,7 +118,7 @@ I spent a large fraction of my time developing 20+ abstract methods for our robo
 
 I also introduced our team's first non-blocking, state-based strategy design during milestone 3, which was used all the way until our final match.
 
-I believe most of the work I did on strategy code could have been just as well or even better by others, but I feel that my direct and immediate contributions helped ignite the creativity of other members to contribute - having an existing, testable strategy codebase is much less intimidating than having the task of making it yourself.
+I believe most of the work I did on strategy code could have been written just as well, if not better, by others, but that my direct and immediate implementations helped encourage contributions - having an existing, testable strategy codebase can be less intimidating than having the task of making it from nothing.
 
 %----------------------------------------------------------------------------------------
 %	SECTION 6 (Conclusion)
@@ -126,7 +126,7 @@ I believe most of the work I did on strategy code could have been just as well o
 
 \section{Conclusion}
 
-I am pleased with my contributions, which I believe to be the right mixture of power and usefulness, easy to understand and maintain for other members and future developers, and efficient in terms of my personal strengths. I am also pleased that we performed well in matches, and believe under other conditions we could have easily improved our final performance to second or even first place.
+I am pleased with my contributions, which I believe to have the right mixture of usefulness, ease of understanding and maintainability for other members and future developers, and efficiency in terms of my personal strengths. I am also pleased that we performed well in matches, and believe under other tournament conditions, our final performance could have placed first or second.
 
 %----------------------------------------------------------------------------------------
 %	SECTION 7 (Appendix)
