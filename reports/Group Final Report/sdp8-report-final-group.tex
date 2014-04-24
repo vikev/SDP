@@ -34,6 +34,8 @@
 
 % \usepackage{fullpage}
 
+\usepackage{hyperref}
+
 %----------------------------------------------------------------------------------------
 %	DOCUMENT INFORMATION
 %----------------------------------------------------------------------------------------
@@ -74,6 +76,8 @@ Our goal for the course was to produce a reliable, extensible set of code to con
 
 This report aims to describe the steps we took regarding all aspects of the project to achieve these goals. It is divided up into loosely separable sections, each of which will mention the tasks we faced, solutions we deployed, problems we endured, lessons we learned, and our achievements. 
 
+
+
 %----------------------------------------------------------------------------------------
 %	SECTION 2 (Management and Organisation)
 %----------------------------------------------------------------------------------------
@@ -84,7 +88,7 @@ Our first day of SDP began with a group discussion of how to go about managing o
 
 As the semester progressed our issue tracker also became a centralised source of tutorials and event calendaring, in the form of a wiki. Along with paired programming and code review, things started smoothly and only improved as milestones were met. By the time of the first assessed friendly match, it was apparent to us that we were doing many things right.
 
-Now that the final tournament has ended, we are left with some time to consider our process more theoretically. How would things have been different with an official project manager? Would learning to use the git issue tracker and wiki improve our organisation? Was our scrum-like environment too disorganised for some members?
+Now that the final tournament has ended, we are left with some time to consider our process more theoretically. We wonder how things would have run differently with an official project manager, and compare ourselves to other groups. Using github's internal issue tracker and wiki  server may have saved us time, but would not have any major effect. For an academic group effort, our free-for-all environment was likely difficult to deal with for some students, and a more traditional management scheme may have improved that.
 
 
 
@@ -126,15 +130,16 @@ Initially, our communications client supported one robot per instance, and each 
 
 \section{Vision and World State}
 
-The vision system was to use the overhead camera feed to reliably track the positions of the ball and robots, as well as the robots’ orientations. This proved to be a difficult task due to changing illumination, large amounts of noise, similar colours, and subtle differences in camera optics and feed quality. In the end, we handled these issues to a reasonable extent, but our system still faces a few challenges.
+The vision system was to use the overhead camera feed to reliably track the positions of the ball and robots, as well as the robots' orientations. This proved to be a difficult task due to changing illumination, large amounts of noise, similar colours, and subtle differences in camera optics and feed quality. In the end, we handled these issues to a reasonable extent, but our system still faces a few challenges.
 
-Our vision code was initially based on Team 1’s from 2013 since it was relatively easy to understand. However, for improved software design, and due to the new rules and goals this year, we made major refactorings and changes to improve modularity and expandability. We used the V4J4L library, and also experimented with OpenCV, which crashed the JVM due to outdated drivers; and OpenGL, which introduced a prohibitive amount of delay without a shared memory bus.
+Our vision code was initially based on Team 1's from 2013 since it was relatively easy to understand. However, for improved software design, and due to the new rules and goals this year, we made major refactorings and changes to improve modularity and expandability. We used the V4J4L library, and also experimented with OpenCV, which crashed the JVM due to outdated drivers; and OpenGL, which introduced a prohibitive amount of delay without a shared memory bus.
 
-We were initially using a previous team’s GUI code but later rewrote it from scratch using WindowBuilder. This allowed us to not only choose appropriate color thresholds for different objects (e.g. the ball, the yellow colour patch, etc.) but to also easily extend and modify the interface as requirements changed. With this manual calibration, our vision could be adjusted to high levels of precision when needed. Adjusting this system often took significant time, so we later added an option to simply click on a pixel to automatically adjust an object’s thresholds to be near that pixel’s values. This method was slightly less precise, but it saved a lot of time during testing.
+We were initially using a previous team's GUI code but later rewrote it from scratch using WindowBuilder. This allowed us to not only choose appropriate color thresholds for different objects (e.g. the ball, the yellow colour patch, etc.) but to also easily extend and modify the interface as requirements changed. With this manual calibration, our vision could be adjusted to high levels of precision when needed. Adjusting this system often took significant time, so we later added an option to simply click on a pixel to automatically adjust an object's thresholds to be near that pixel's values. This method was slightly less precise, but it saved a lot of time during testing.
 
-At first, the system simply checked every pixel in the image and compared its values to the thresholds. This worked well for the ball, the green plates, and to an extent the yellow team’s colour patch. However, there were significant problems with the blue team’s patch and the black dots that were used for orientation - both had other pixels on the pitch that had very similar RGB and HSV values. Our solution was to first detect the green plates using K-means clustering, and then search for blue/yellow/black pixels only within the plates. This noticeably improved robot position and orientation tracking. 
+At first, the system simply checked every pixel in the image and compared its values to the thresholds. This worked well for the ball, the green plates, and to an extent the yellow team's colour patch. However, there were significant problems with the blue team's patch and the black dots that were used for orientation - both had other pixels on the pitch that had very similar RGB and HSV values. Our solution was to first detect the green plates using K-means clustering, and then search for blue/yellow/black pixels only within the plates. This noticeably improved robot position and orientation tracking. To further improve the frame-rate we first constricted the processed area to a rectangle and later implemented an automatic pitch detection algorithm to further reduce this area. This, in combination with concurrent processing of the parts deemed important gave us near-optimal FPS. 
 
-Furthermore, we had several methods to handle noise and distortion in order to get a more accurate picture of the playing field. We used a median filter to remove noise that would skew our results and greatly helped us in detecting plates. We further filtered objects’ positions using small Gaussians to remove further noise. Another filter we added, due to the ball-grabbing requiring exceptionally high precision to work properly, was to correct the fisheye distortion caused by the camera lens, which noticeably improved the accuracy of the data. To further improve this aspect, an algorithm that projected the robots’ plates’ positions down to the level of the pitch floor 
+We used several methods to handle noise and distortion in order to get a more accurate picture of the playing field. We used a median filter to remove noise that would skew our results and greatly helped us in detecting plates. We also filtered object positions using small Gaussians to remove any remaining noise. Another filter we added, due to the ball-grabbing requiring exceptionally high precision to work properly, was to correct the fisheye distortion caused by the camera lens, which noticeably improved the accuracy of the data. To further improve this aspect, we removed the parallax displacement by using an algorithm that would project the robot plate positions down to the level of the pitch floor.
+    
 
 %----------------------------------------------------------------------------------------
 %	SECTION 6 (Strategy)
@@ -158,9 +163,11 @@ One other important observation is that the leJOS subsumption architecture provi
 
 \section{Conclusion}
 
-In general we are pleased with our performance, and have learned a lot about solving …
-    If we were to repeat the process, we could potentially improve the organisation of the team both in development and planning thereof. We would occasionally have multiple people working on the same problem without communicating with each other, which could be addressed 
-    One interesting point is that our group spent GBP 0 of our allocated finances, so considering useful parts for purchase is one improvement point. We could look into the possibility of a 
+In general, we are pleased with our performance - the team worked well together as a group, as was reflected in the results achieved throughout the semester. We received high marks in the milestones and assessed friendly matches (21 of a possible 24 marks). As the result of our performance we placed third in the final tournament.
+
+If we were to repeat the process, we could potentially improve the organisation of the team both in development and planning thereof. We would occasionally have multiple people working on the same problem without communicating with each other, which could be addressed.
+
+One interesting point is that our group spent £0 of our allocated finances, so considering useful parts for purchase is one improvement point. We had considered using a holonomic-wheeled robot chassis design, but discounted it on the basis of much more complicated movement and tactical coding to fully utilise the capabilities of such a chassis. Had we been given more time to work on the project, it was felt that such a design would be feasible and may well improve our performance in matches.
     
     
     
@@ -170,17 +177,46 @@ In general we are pleased with our performance, and have learned a lot about sol
 
 \section{Appendices}
 
-Below are some links and screenshots to aid in the reader’s understanding of our group’s works and ...
+Below are some links and screenshots to aid in the reader's understanding of our group's works and tools used for work management and organisation. 
 
 \subsection{Links to our Resources}
 
 \begin{itemize}
-	\item http://www.github.com/vikev/SDP
-	\item http://trac.no-ip.biz/ Note, this is hosted on a personal web server and may be temporarily unavailable
+	\item \url{http://www.github.com/vikev/SDP} - Git Repository
+	\item \url{http://trac.no-ip.biz/} - Bug Tracker and Wiki; Note, this is hosted on a personal web server and may be temporarily unavailable
 \end{itemize}
 
 \subsection{Figures}
 
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=130mm]{both_robots_cropped.jpg}
+    \caption{Two Identical Robots}
+\end{figure}
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=110mm]{pneumatic.png}
+    \caption{Pneumatic Kicker Design}
+\end{figure}
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=110mm]{system.jpg}
+    \caption{Our System GUI}
+\end{figure}
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=110mm]{system2.jpg}
+    \caption{Ball Prediction}
+\end{figure}
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=130mm]{wheels-image.jpg}
+    \caption{Tyreless Wheels}
+\end{figure}
 
 \end{document}
 
